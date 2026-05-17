@@ -477,7 +477,7 @@ tr.g-block-sep td{
 .tsc-stamp-top{font-size:6px;font-weight:700;letter-spacing:1px;text-transform:uppercase;line-height:1.3}
 .tsc-stamp-mid{font-family:'Libre Baskerville',serif;font-size:12px;font-weight:700;margin:3px 0;color:#8B1A2E}
 .tsc-stamp-bot{font-size:7px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:rgba(139,26,46,.7)}
-.tsc-bottombar{display:flex;justify-content:space-between;padding:6px 44px;background:#0D1B2A;font-size:8px;color:rgba(255,255,255,.5);letter-spacing:.5px}
+.tsc-bottombar{display:flex;justify-content:space-between;padding:6px 44px;background:transparent;font-size:8px;color:#111;letter-spacing:.5px}
 .tsc-watermark{position:fixed;bottom:60px;right:40px;font-family:'Libre Baskerville',serif;font-size:160px;color:rgba(139,26,46,.03);font-weight:700;letter-spacing:-6px;pointer-events:none;z-index:0}
 
 
@@ -645,7 +645,7 @@ tr.g-block-sep td{
 #printTranscriptDoc .tsc-stamp-col{order:1!important;align-items:flex-start!important;margin-left:50mm!important;margin-bottom:1mm!important}
 #printTranscriptDoc .tsc-seal-img{width:36mm!important;height:36mm!important;opacity:.88!important;filter:grayscale(100%) contrast(110%)!important}
 #printTranscriptDoc .tsc-sig-left{order:2!important;width:100%!important}
-#printTranscriptDoc .tsc-bottombar{background:#fff!important;color:#111!important;border-top:1px solid #ccc!important;padding:3mm var(--print-x)!important;font-size:8px!important}
+#printTranscriptDoc .tsc-bottombar{background:transparent!important;color:#111!important;border-top:none!important;padding:3mm var(--print-x)!important;font-size:8px!important}
 #printTranscriptDoc .tsc-bottombar span{color:#111!important}
 #printConfirmation .pdoc-watermark{position:fixed!important;bottom:80px!important;right:60px!important;top:auto!important;left:auto!important;transform:none!important;font-family:'Roboto',Arial,sans-serif!important;font-size:120px!important;color:rgba(0,0,0,.035)!important;font-weight:700!important;letter-spacing:-4px!important;text-align:left!important}
 #printTranscriptDoc .tsc-watermark{position:fixed!important;bottom:60px!important;right:40px!important;top:auto!important;left:auto!important;transform:none!important;font-family:'Roboto',Arial,sans-serif!important;font-size:160px!important;color:rgba(0,0,0,.03)!important;font-weight:700!important;letter-spacing:-6px!important;text-align:left!important}
@@ -732,7 +732,7 @@ tr.g-block-sep td{
   margin-bottom:1mm!important;
 }
 
-/* Signature label: only Registrar / Secretariat */
+/* Signature label: only Registrar */
 #printConfirmation .pdoc-sig-name,
 #printTranscriptDoc .tsc-sig-name{
   font-weight:700!important;
@@ -746,6 +746,70 @@ tr.g-block-sep td{
 #printTranscriptDoc .tsc-official-record{
   text-align:justify!important;
   text-justify:inter-word;
+}
+
+
+/* ── FINAL USER REQUEST OVERRIDES ── */
+#printConfirmation .pdoc-para,
+#printConfirmation .pdoc-body,
+#printTranscriptDoc .tsc-note {
+  text-align: justify !important;
+  text-justify: inter-word !important;
+}
+
+#printConfirmation .pdoc-table {
+  border: 1px solid #bbb !important;
+  border-collapse: collapse !important;
+  margin-top: 6mm !important;
+  margin-bottom: 7mm !important;
+}
+
+#printConfirmation .pdoc-table tr {
+  border-bottom: 1px solid #ddd !important;
+}
+
+#printConfirmation .pdoc-lbl,
+#printConfirmation .pdoc-val {
+  padding: 3.2mm 4mm !important;
+}
+
+#printConfirmation .pdoc-sig-line,
+#printTranscriptDoc .tsc-sig-line {
+  display: none !important;
+  border: none !important;
+}
+
+#printConfirmation .pdoc-sig-name,
+#printTranscriptDoc .tsc-sig-name {
+  margin-top: 0 !important;
+}
+
+#printTranscriptDoc .tsc-grades-wrap table.gt {
+  table-layout: fixed !important;
+  width: 100% !important;
+}
+
+#printTranscriptDoc .tsc-grades-wrap table.gt col.c-credits {
+  width: 8% !important;
+}
+
+#printTranscriptDoc .tsc-grades-wrap table.gt col.c-year {
+  width: 8% !important;
+}
+
+#printTranscriptDoc .tsc-grades-wrap table.gt th,
+#printTranscriptDoc .tsc-grades-wrap table.gt td {
+  vertical-align: middle !important;
+}
+
+#printTranscriptDoc .tsc-grades-wrap table.gt th.tc,
+#printTranscriptDoc .tsc-grades-wrap table.gt td.tc {
+  text-align: center !important;
+}
+
+#printTranscriptDoc .tsc-section-head {
+  letter-spacing: 1.8px !important;
+  white-space: normal !important;
 }
 
 </style>
@@ -986,8 +1050,8 @@ tr.g-block-sep td{
           </div>
           <div class="tsc-divider"></div>
           <div class="pdoc-body">
-            <p class="pdoc-para">To Whom It May Concern,</p>
-            <p class="pdoc-para">This is to confirm that the following student is currently enrolled at the <strong>University of Medicine (2)</strong> under the Interim University Council:</p>
+            <p class="pdoc-para" style="text-align:justify;text-justify:inter-word;">To Whom It May Concern,</p>
+            <p class="pdoc-para" style="text-align:justify;text-justify:inter-word;">This is to confirm that the following student is currently enrolled at the <strong>University of Medicine (2)</strong> under the Interim University Council:</p>
             <table class="pdoc-table">
               <tr><td class="pdoc-lbl">Full Name</td><td class="pdoc-val pdoc-fullname">—</td></tr>
               <tr><td class="pdoc-lbl">Student ID</td><td class="pdoc-val pdoc-id">—</td></tr>
@@ -996,7 +1060,7 @@ tr.g-block-sep td{
               <tr><td class="pdoc-lbl">Current Status</td><td class="pdoc-val pdoc-status">—</td></tr>
               <tr><td class="pdoc-lbl">Enrollment Status</td><td class="pdoc-val pdoc-enroll">—</td></tr>
             </table>
-            <p class="pdoc-para">This letter is issued for official purposes. For further verification, please contact the Secretariat Office of the University of Medicine (2).</p>
+            <p class="pdoc-para" style="text-align:justify;text-justify:inter-word;">This letter is issued for official purposes. For further verification, please contact the Secretariat Office of the University of Medicine (2).</p>
           </div>
           <div class="pdoc-footer">
             <div class="pdoc-sig-block">
@@ -1004,8 +1068,7 @@ tr.g-block-sep td{
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#8B1A2E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
                 Electronically signed via UM2 Student Information System
               </div>
-              <div class="pdoc-sig-line"></div>
-              <div class="pdoc-sig-name">Registrar / Secretariat</div>
+              <div class="pdoc-sig-name">Registrar</div>
               <div class="pdoc-sig-inst">University of Medicine (2) Interim University Council</div>
             </div>
             <div class="pdoc-seal">
@@ -1078,9 +1141,8 @@ tr.g-block-sep td{
                 Electronically signed via UM2 Student Information System
               </div>
               <div class="tsc-sig-line-wrap">
-                <div class="tsc-sig-line"></div>
                 <div class="tsc-sig-name">Registrar</div>
-                <div class="tsc-sig-title">Registrar / Secretariat Office</div>
+                <div class="tsc-sig-title">Registrar</div>
                 <div class="tsc-sig-inst">University of Medicine (2) Interim University Council</div>
               </div>
             </div>
