@@ -19,8 +19,6 @@
   --crimson-mid:#C4273E;
   --gold:#9A7B2F;
   --gold-light:#FBF6E8;
-  --green:#1A5C3A;
-  --green-light:#EBF5F0;
   --r:6px;
 }
 body{font-family:'DM Sans',sans-serif;background:var(--surface);color:var(--ink);min-height:100vh;-webkit-font-smoothing:antialiased;font-size:14px}
@@ -30,9 +28,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--surface);color:var(--ink)
 #loginScreen.hidden{opacity:0;visibility:hidden;pointer-events:none}
 .login-left{width:420px;flex-shrink:0;background:var(--ink);display:flex;flex-direction:column;justify-content:space-between;padding:48px 52px}
 .login-crest{margin-bottom:auto}
-.login-logo{width:80px;height:100px;object-fit:contain;margin-bottom:24px;display:block;}
-.crest-ring{width:64px;height:64px;border:2px solid rgba(255,255,255,0.15);border-radius:50%;display:flex;align-items:center;justify-content:center;margin-bottom:28px}
-.crest-abbr{font-family:'Libre Baskerville',serif;font-size:22px;color:var(--white);letter-spacing:1px}
+.login-logo{width:80px;height:100px;object-fit:contain;margin-bottom:24px;display:block}
 .login-institution{font-size:10px;letter-spacing:3px;text-transform:uppercase;color:rgba(255,255,255,0.3);margin-bottom:10px}
 .login-tagline{font-family:'Libre Baskerville',serif;font-size:28px;color:var(--white);line-height:1.25}
 .login-tagline em{font-style:italic;color:rgba(255,255,255,0.45)}
@@ -132,23 +128,194 @@ body{font-family:'DM Sans',sans-serif;background:var(--surface);color:var(--ink)
 .ql-t{font-size:13px;font-weight:600;color:var(--ink);margin-bottom:2px}
 .ql-s{font-size:11px;color:var(--ink3)}
 
-/* ── GRADES ── */
-.g-wrap{background:var(--white);border:1px solid var(--line);border-radius:8px;overflow:hidden;margin-bottom:16px}
-.g-year-head{padding:10px 18px;background:var(--surface);border-bottom:1px solid var(--line);font-size:10px;font-weight:700;letter-spacing:1.8px;text-transform:uppercase;color:var(--ink3)}
-.g-block-head{padding:7px 18px;background:#FAFBFC;border-bottom:1px solid var(--line);font-size:11px;color:var(--ink3);font-weight:500}
-table.gt{width:100%;border-collapse:collapse;font-size:13px}
-table.gt th{padding:9px 14px;text-align:left;font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--ink3);background:var(--surface);border-bottom:1px solid var(--line)}
-table.gt th:last-child,table.gt td:last-child{text-align:right}
-table.gt td{padding:11px 14px;border-bottom:1px solid var(--line);color:var(--ink)}
-table.gt tr:last-child td{border-bottom:none}
-table.gt tbody tr:hover{background:var(--surface)}
-.gbadge{display:inline-block;min-width:32px;text-align:center;padding:2px 7px;border-radius:3px;font-size:12px;font-weight:600}
-.gAp,.gA{background:#EBF5F0;color:#1A5C3A}
-.gAm{background:#EEEAF8;color:#4A2FA0}
-.gBp,.gB{background:var(--gold-light);color:var(--gold)}
-.gX{background:var(--surface);color:var(--ink3)}
-.sbar{display:inline-block;width:48px;height:3px;background:var(--line);border-radius:99px;overflow:hidden;vertical-align:middle;margin-right:7px}
-.sbar-fill{height:100%;background:linear-gradient(90deg,var(--crimson),var(--gold));border-radius:99px;transition:width .8s ease}
+/* ══════════════════════════════════════════
+   GRADES — complete redesign for alignment
+   ══════════════════════════════════════════ */
+
+/* Student identity strip at top of grades panel */
+.grades-student-strip{
+  background:var(--white);
+  border:1px solid var(--line);
+  border-radius:8px;
+  padding:16px 20px;
+  margin-bottom:20px;
+  display:flex;
+  align-items:center;
+  gap:20px;
+  position:relative;
+  overflow:hidden;
+}
+.grades-student-strip::before{
+  content:'';position:absolute;left:0;top:0;bottom:0;width:3px;
+  background:var(--crimson);border-radius:3px 0 0 3px;
+}
+.gss-avatar{
+  width:40px;height:40px;border-radius:6px;
+  background:var(--crimson-light);
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Libre Baskerville',serif;font-size:15px;color:var(--crimson);
+  flex-shrink:0;
+}
+.gss-info{flex:1;min-width:0}
+.gss-name{
+  font-family:'Libre Baskerville',serif;
+  font-size:15px;font-weight:700;color:var(--ink);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  margin-bottom:2px;
+}
+.gss-id{font-size:11px;color:var(--ink3);letter-spacing:.5px}
+.gss-right{text-align:right;flex-shrink:0}
+.gss-gpa-lbl{font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--ink3);display:block;margin-bottom:1px}
+.gss-gpa-val{font-family:'Libre Baskerville',serif;font-size:26px;color:var(--crimson);line-height:1;display:block}
+.gss-gpa-den{font-size:11px;color:var(--ink3)}
+
+/* Year wrapper */
+.g-wrap{
+  background:var(--white);
+  border:1px solid var(--line);
+  border-radius:8px;
+  overflow:hidden;
+  margin-bottom:16px;
+}
+
+/* Year heading strip */
+.g-year-head{
+  padding:9px 20px;
+  background:var(--ink);
+  font-size:9px;font-weight:700;
+  letter-spacing:2px;text-transform:uppercase;
+  color:rgba(255,255,255,0.7);
+  display:flex;align-items:center;gap:10px;
+}
+.g-year-head::before{
+  content:'';display:inline-block;
+  width:3px;height:12px;
+  background:var(--crimson-mid);
+  border-radius:2px;flex-shrink:0;
+}
+
+/*
+  THE KEY TO PERFECT ALIGNMENT:
+  One single <table> per academic year that spans ALL blocks.
+  Block separators are <tr class="g-block-sep"> rows inside the same table.
+  This guarantees every column header and every data cell share
+  exactly the same column widths — no separate tables, no drift.
+
+  Column layout (fixed widths, no auto):
+  col.c-course    : 34%  — course name (takes remaining space)
+  col.c-assess    : 18%  — assessment type
+  col.c-credits   : 7%   — credits (centred)
+  col.c-ects      : 7%   — ECTS (centred)
+  col.c-score     : 14%  — score bar + number
+  col.c-grade     : 9%   — grade badge (centred)
+  col.c-points    : 11%  — grade points (right-aligned)
+*/
+table.gt{
+  width:100%;
+  border-collapse:collapse;
+  font-size:13px;
+  table-layout:fixed;   /* ← enforces fixed column widths */
+}
+table.gt col.c-course  {width:33%}
+table.gt col.c-assess  {width:18%}
+table.gt col.c-credits {width:7%}
+table.gt col.c-ects    {width:7%}
+table.gt col.c-score   {width:14%}
+table.gt col.c-grade   {width:10%}
+table.gt col.c-points  {width:11%}
+
+/* Sticky column header row */
+table.gt thead tr th{
+  padding:9px 14px;
+  font-size:9px;font-weight:700;
+  letter-spacing:1.5px;text-transform:uppercase;
+  color:var(--ink3);
+  background:var(--surface);
+  border-bottom:1px solid var(--line);
+  border-top:1px solid var(--line);
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  position:sticky;top:56px;z-index:1; /* sticks below the site header */
+}
+
+/* Column-specific alignment */
+table.gt th.tc,table.gt td.tc{text-align:center}
+table.gt th.tr,table.gt td.tr{text-align:right}
+table.gt th.tl,table.gt td.tl{text-align:left}
+
+/* Data cells */
+table.gt td{
+  padding:11px 14px;
+  border-bottom:1px solid var(--line);
+  color:var(--ink);
+  vertical-align:middle;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+table.gt tbody tr:last-child td{border-bottom:none}
+table.gt tbody tr:hover td{background:#FAFBFC}
+
+/* Block separator row inside the shared table */
+tr.g-block-sep td{
+  padding:6px 14px 5px;
+  background:#F7F8FA;
+  border-top:1px solid var(--line);
+  border-bottom:1px solid var(--line);
+  font-size:11px;
+  color:var(--ink3);
+  font-weight:500;
+  font-style:italic;
+  white-space:nowrap;
+  overflow:hidden;
+}
+
+/* Grade badges */
+.gbadge{
+  display:inline-block;
+  min-width:34px;
+  text-align:center;
+  padding:2px 6px;
+  border-radius:3px;
+  font-size:12px;font-weight:600;
+}
+.gAp,.gA {background:#EBF5F0;color:#1A5C3A}
+.gAm     {background:#EEEAF8;color:#4A2FA0}
+.gBp,.gB {background:var(--gold-light);color:var(--gold)}
+.gX      {background:var(--surface);color:var(--ink3)}
+
+/* Score mini-bar */
+.sbar{
+  display:inline-block;
+  width:36px;height:3px;
+  background:var(--line);
+  border-radius:99px;
+  overflow:hidden;
+  vertical-align:middle;
+  margin-right:6px;
+  flex-shrink:0;
+}
+.sbar-fill{
+  height:100%;
+  background:linear-gradient(90deg,var(--crimson),var(--gold));
+  border-radius:99px;
+  transition:width .8s ease;
+}
+.score-cell{display:flex;align-items:center;white-space:nowrap}
+
+/* TBC pill */
+.tbc-pill{
+  display:inline-block;
+  font-size:10px;font-weight:600;
+  letter-spacing:.5px;
+  color:var(--ink3);
+  background:var(--surface);
+  border:1px solid var(--line);
+  border-radius:3px;
+  padding:1px 6px;
+}
+
 .no-g{padding:36px;text-align:center;color:var(--ink3);font-size:13px}
 
 /* ── RESPONSIVE ── */
@@ -163,6 +330,9 @@ table.gt tbody tr:hover{background:var(--surface)}
   .icell:nth-last-child(-n+2){border-bottom:1px solid var(--line)}
   .icell:last-child{border-bottom:none}
   .qlinks{grid-template-columns:1fr 1fr}
+  /* On mobile, collapse ECTS column */
+  table.gt col.c-ects{width:0}
+  table.gt th.c-ects-th,table.gt td.c-ects-td{display:none}
 }
 </style>
 </head>
@@ -173,8 +343,7 @@ table.gt tbody tr:hover{background:var(--surface)}
   <div class="login-left">
     <div class="login-crest">
       <img src="/UM2_Logo.svg" alt="UM2 Logo" class="login-logo">
-      <div class="login-institution">University of Medicine (2) 
-        Interim University Council</div>
+      <div class="login-institution">University of Medicine (2) Interim University Council</div>
       <div class="login-tagline">Student<br><em>Information</em> System</div>
     </div>
     <div class="login-footer-txt">Academic Year 2026–2027<br>For support, please contact the secretariat office.</div>
@@ -269,7 +438,7 @@ table.gt tbody tr:hover{background:var(--surface)}
     <div class="panel" id="panel-profile">
       <div class="ph"><h2>My Profile</h2><p>Personal &amp; enrollment information</p></div>
       <div class="banner">
-        <div class="avatar" id="avatarEl"><span id="avatarInitials">—</span></div>
+        <div class="avatar"><span id="avatarInitials">—</span></div>
         <div class="b-name">
           <h1 id="profileName">—</h1>
           <div class="mm" id="profileNameMM"></div>
@@ -306,7 +475,24 @@ table.gt tbody tr:hover{background:var(--surface)}
     <!-- GRADES -->
     <div class="panel" id="panel-grades">
       <div class="ph"><h2>Academic Results</h2><p>Grades &amp; performance by course</p></div>
-      <div id="gradesContent"><div class="g-wrap"><div class="no-g">Loading results…</div></div></div>
+
+      <!-- Student identity strip — populated by JS -->
+      <div class="grades-student-strip" id="gradesStudentStrip" style="display:none">
+        <div class="gss-avatar"><span id="gssInitials">—</span></div>
+        <div class="gss-info">
+          <div class="gss-name" id="gssName">—</div>
+          <div class="gss-id">Student ID: <span id="gssID">—</span></div>
+        </div>
+        <div class="gss-right">
+          <span class="gss-gpa-lbl">Overall GPA</span>
+          <span class="gss-gpa-val" id="gssGPA">—</span>
+          <span class="gss-gpa-den">/ 4.00</span>
+        </div>
+      </div>
+
+      <div id="gradesContent">
+        <div class="g-wrap"><div class="no-g">Loading results…</div></div>
+      </div>
     </div>
 
   </div>
@@ -314,63 +500,65 @@ table.gt tbody tr:hover{background:var(--surface)}
 
 <script>
 // ── Course catalog ────────────────────────────────────────────
+// Credits: Foundation Year values from UM2 curriculum documentation.
+// ECTS: indicative equivalents (1 UM2 credit ≈ 1 ECTS for now; update when confirmed).
 const COURSES = {
-  CRS001: { name: 'Myanmar Language',                              year: 'Foundation Year', block: 'Block 1 — Foundation for Science',            credits: "TBC",  assessment: 'Written Exam' },
-  CRS002: { name: 'English Language',                              year: 'Foundation Year', block: 'Block 1 — Foundation for Science',            credits: "TBC",  assessment: 'Written Exam' },
-  CRS003: { name: 'Mathematics',                                   year: 'Foundation Year', block: 'Block 1 — Foundation for Science',            credits: "TBC",  assessment: 'Written Exam' },
-  CRS004: { name: 'Chemistry',                                     year: 'Foundation Year', block: 'Block 1 — Foundation for Science',            credits: "TBC",  assessment: 'Written Exam' },
-  CRS005: { name: 'Physics',                                       year: 'Foundation Year', block: 'Block 1 — Foundation for Science',            credits: "TBC",  assessment: 'Written Exam' },
-  CRS006: { name: 'Botany',                                        year: 'Foundation Year', block: 'Block 1 — Foundation for Science',            credits: "TBC",  assessment: 'Written Exam' },
-  CRS007: { name: 'Zoology',                                       year: 'Foundation Year', block: 'Block 1 — Foundation for Science',            credits: "TBC",  assessment: 'Written Exam' },
-  CRS008: { name: 'Principle of Structure (Anatomy)',              year: 'Foundation Year', block: 'Block 2 — Principle Block',                   credits: "TBC",  assessment: 'Written Exam' },
-  CRS009: { name: 'Principle of Function (Physiology)',            year: 'Foundation Year', block: 'Block 2 — Principle Block',                   credits: "TBC",  assessment: 'Written Exam' },
-  CRS010: { name: 'Principle of Molecule (Biochemistry)',          year: 'Foundation Year', block: 'Block 2 — Principle Block',                   credits: "TBC",  assessment: 'Written Exam' },
-  CRS011: { name: 'Principle of Disease Mechanism (Pathology)',    year: 'Foundation Year', block: 'Block 2 — Principle Block',                   credits: "TBC",  assessment: 'Written Exam' },
-  CRS012: { name: 'Principle of Drug Therapy (Pharmacology)',      year: 'Foundation Year', block: 'Block 2 — Principle Block',                   credits: "TBC",  assessment: 'Written Exam' },
-  CRS013: { name: 'Principle of Defence Mechanism (Microbiology)', year: 'Foundation Year', block: 'Block 2 — Principle Block',                   credits: "TBC",  assessment: 'Written Exam' },
-  CRS014: { name: 'Personal & Professional Development',           year: 'Foundation Year', block: 'Block 3 — PPD',                               credits: "TBC", assessment: 'Portfolio / Continuous' },
-  CRS015: { name: 'Musculo-skeletal',                              year: 'M-1',             block: 'Integrated System Modules',                   credits: "TBC",  assessment: 'In-block exam' },
-  CRS016: { name: 'Genetic',                                       year: 'M-1',             block: 'Integrated System Modules',                   credits: "TBC",  assessment: 'In-block exam' },
-  CRS017: { name: 'Cardio-vascular',                               year: 'M-1',             block: 'Integrated System Modules',                   credits: "TBC",  assessment: 'In-block exam' },
-  CRS018: { name: 'Respiratory',                                   year: 'M-1',             block: 'Integrated System Modules',                   credits: "TBC",  assessment: 'In-block exam' },
-  CRS019: { name: 'GI, Liver, Nutrition',                          year: 'M-1',             block: 'Integrated System Modules',                   credits: 8,  assessment: 'In-block exam' },
-  CRS020: { name: 'Haematology',                                   year: 'M-2',             block: 'Integrated System Modules',                   credits: 8,  assessment: 'In-block exam' },
-  CRS021: { name: 'Immunology',                                    year: 'M-2',             block: 'Integrated System Modules',                   credits: 8,  assessment: 'In-block exam' },
-  CRS022: { name: 'Endocrine',                                     year: 'M-2',             block: 'Integrated System Modules',                   credits: 8,  assessment: 'In-block exam' },
-  CRS023: { name: 'Renal & Reproductive',                          year: 'M-2',             block: 'Integrated System Modules',                   credits: 8,  assessment: 'In-block exam' },
-  CRS024: { name: 'Neurology & Psychiatry',                        year: 'M-2',             block: 'Integrated System Modules',                   credits: 8,  assessment: 'In-block exam' },
-  CRS025: { name: 'General Medicine',                              year: 'M-3',             block: 'Junior Clerkship',                            credits: 10, assessment: 'DOPS / Mini-CEX' },
-  CRS026: { name: 'General Surgery',                               year: 'M-3',             block: 'Junior Clerkship',                            credits: 10, assessment: 'DOPS / Mini-CEX' },
-  CRS027: { name: 'Infectious Diseases',                           year: 'M-3',             block: 'Junior Clerkship',                            credits: 3,  assessment: 'DOPS / Mini-CEX' },
-  CRS028: { name: 'Radiology & Imaging',                           year: 'M-3',             block: 'Junior Clerkship',                            credits: 3,  assessment: 'Image interpretation OSCE' },
-  CRS029: { name: 'Dermatology',                                   year: 'M-3',             block: 'Junior Clerkship',                            credits: 2,  assessment: 'Clinical exam' },
-  CRS030: { name: 'Ophthalmology (Eye)',                           year: 'M-3',             block: 'Junior Clerkship',                            credits: 1,  assessment: 'Clinical exam' },
-  CRS031: { name: 'Ear, Nose & Throat (ENT)',                      year: 'M-3',             block: 'Junior Clerkship',                            credits: 1,  assessment: 'Clinical exam' },
-  CRS032: { name: 'Orthopaedics & Trauma Surgery',                 year: 'M-3',             block: 'Junior Clerkship',                            credits: 4,  assessment: 'DOPS / Mini-CEX' },
-  CRS033: { name: 'Rehabilitation Medicine',                       year: 'M-3',             block: 'Junior Clerkship',                            credits: 3,  assessment: 'Case presentation' },
-  CRS034: { name: 'Forensic Medicine',                             year: 'M-3',             block: 'Junior Clerkship',                            credits: 3,  assessment: 'Written exam' },
-  CRS035: { name: 'Elective',                                      year: 'M-3',             block: 'Junior Clerkship',                            credits: 5,  assessment: 'Elective report' },
-  CRS036: { name: 'Paediatrics',                                   year: 'M-4',             block: 'Specialty Clerkship',                         credits: 5,  assessment: 'DOPS / Mini-CEX' },
-  CRS037: { name: 'Obstetrics & Gynaecology (O&G)',                year: 'M-4',             block: 'Specialty Clerkship',                         credits: 5,  assessment: 'DOPS / Mini-CEX' },
-  CRS038: { name: 'Psychiatry',                                    year: 'M-4',             block: 'Specialty Clerkship',                         credits: 5,  assessment: 'MSE / Case report' },
-  CRS039: { name: 'Medicine (Internal Medicine)',                   year: 'M-4',             block: 'Specialty Clerkship',                         credits: 3,  assessment: 'Mini-CEX' },
-  CRS040: { name: 'Geriatric Medicine',                            year: 'M-4',             block: 'Specialty Clerkship',                         credits: 2,  assessment: 'Case presentation' },
-  CRS041: { name: 'Palliative Care',                               year: 'M-4',             block: 'Specialty Clerkship',                         credits: 2,  assessment: 'Portfolio' },
-  CRS042: { name: 'Surgery (Advanced General)',                    year: 'M-4',             block: 'Specialty Clerkship',                         credits: 3,  assessment: 'DOPS' },
-  CRS043: { name: 'Emergency Medicine (EM)',                       year: 'M-4',             block: 'Specialty Clerkship',                         credits: 3,  assessment: 'DOPS / Mini-CEX' },
-  CRS044: { name: 'Anaesthesia',                                   year: 'M-4',             block: 'Specialty Clerkship',                         credits: 2,  assessment: 'DOPS' },
-  CRS045: { name: 'Forensic Medicine',                             year: 'M-4',             block: 'Specialty Clerkship',                         credits: 1,  assessment: 'Written exam' },
-  CRS046: { name: 'Residential Field Trip',                        year: 'M-4',             block: 'Specialty Clerkship',                         credits: 5,  assessment: 'Field report' },
-  CRS047: { name: 'Medicine — Senior Hospital Posting',            year: 'M-5',             block: 'Senior Clerkship',                            credits: 10, assessment: 'Mini-CEX / CBD' },
-  CRS048: { name: 'Surgery — Senior Hospital Posting',             year: 'M-5',             block: 'Senior Clerkship',                            credits: 10, assessment: 'DOPS / CBD' },
-  CRS049: { name: 'Obstetrics & Gynaecology — Senior',             year: 'M-5',             block: 'Senior Clerkship',                            credits: 10, assessment: 'DOPS / Mini-CEX' },
-  CRS050: { name: 'Paediatrics — Senior Hospital Posting',         year: 'M-5',             block: 'Senior Clerkship',                            credits: 10, assessment: 'Mini-CEX / CBD' },
-  CRS051: { name: 'SSC — Research Project (Dissertation)',         year: 'M-5',             block: 'Senior Clerkship',                            credits: 5,  assessment: 'Dissertation + viva' },
-  CRS052: { name: 'SSC — Clinical Special Interest Attachment',    year: 'M-5',             block: 'Senior Clerkship',                            credits: 5,  assessment: 'Portfolio / log' },
+  CRS001:{name:'Myanmar Language',               year:'Foundation Year',block:'Block 1 — Foundation for Science',          credits:5,  ects:5,  assessment:'Written Exam'},
+  CRS002:{name:'English Language',               year:'Foundation Year',block:'Block 1 — Foundation for Science',          credits:5,  ects:5,  assessment:'Written Exam'},
+  CRS003:{name:'Mathematics',                    year:'Foundation Year',block:'Block 1 — Foundation for Science',          credits:5,  ects:5,  assessment:'Written Exam'},
+  CRS004:{name:'Chemistry',                      year:'Foundation Year',block:'Block 1 — Foundation for Science',          credits:5,  ects:5,  assessment:'Written Exam'},
+  CRS005:{name:'Physics',                        year:'Foundation Year',block:'Block 1 — Foundation for Science',          credits:5,  ects:5,  assessment:'Written Exam'},
+  CRS006:{name:'Botany',                         year:'Foundation Year',block:'Block 1 — Foundation for Science',          credits:3,  ects:3,  assessment:'Written Exam'},
+  CRS007:{name:'Zoology',                        year:'Foundation Year',block:'Block 1 — Foundation for Science',          credits:2,  ects:2,  assessment:'Written Exam'},
+  CRS008:{name:'Principle of Structure (Anatomy)',       year:'Foundation Year',block:'Block 2 — Principle Block',          credits:3,  ects:3,  assessment:'Written Exam'},
+  CRS009:{name:'Principle of Function (Physiology)',     year:'Foundation Year',block:'Block 2 — Principle Block',          credits:3,  ects:3,  assessment:'Written Exam'},
+  CRS010:{name:'Principle of Molecule (Biochemistry)',   year:'Foundation Year',block:'Block 2 — Principle Block',          credits:2,  ects:2,  assessment:'Written Exam'},
+  CRS011:{name:'Principle of Disease Mechanism (Pathology)',  year:'Foundation Year',block:'Block 2 — Principle Block',    credits:3,  ects:3,  assessment:'Written Exam'},
+  CRS012:{name:'Principle of Drug Therapy (Pharmacology)',    year:'Foundation Year',block:'Block 2 — Principle Block',    credits:2,  ects:2,  assessment:'Written Exam'},
+  CRS013:{name:'Principle of Defence Mechanism (Microbiology)',year:'Foundation Year',block:'Block 2 — Principle Block',   credits:2,  ects:2,  assessment:'Written Exam'},
+  CRS014:{name:'Personal & Professional Development',    year:'Foundation Year',block:'Block 3 — PPD',                     credits:10, ects:10, assessment:'Portfolio / Continuous'},
+  CRS015:{name:'Musculo-skeletal',               year:'M-1',block:'Integrated System Modules',credits:8, ects:8, assessment:'In-block exam'},
+  CRS016:{name:'Genetic',                        year:'M-1',block:'Integrated System Modules',credits:8, ects:8, assessment:'In-block exam'},
+  CRS017:{name:'Cardio-vascular',                year:'M-1',block:'Integrated System Modules',credits:8, ects:8, assessment:'In-block exam'},
+  CRS018:{name:'Respiratory',                    year:'M-1',block:'Integrated System Modules',credits:8, ects:8, assessment:'In-block exam'},
+  CRS019:{name:'GI, Liver, Nutrition',           year:'M-1',block:'Integrated System Modules',credits:8, ects:8, assessment:'In-block exam'},
+  CRS020:{name:'Haematology',                    year:'M-2',block:'Integrated System Modules',credits:8, ects:8, assessment:'In-block exam'},
+  CRS021:{name:'Immunology',                     year:'M-2',block:'Integrated System Modules',credits:8, ects:8, assessment:'In-block exam'},
+  CRS022:{name:'Endocrine',                      year:'M-2',block:'Integrated System Modules',credits:8, ects:8, assessment:'In-block exam'},
+  CRS023:{name:'Renal & Reproductive',           year:'M-2',block:'Integrated System Modules',credits:8, ects:8, assessment:'In-block exam'},
+  CRS024:{name:'Neurology & Psychiatry',         year:'M-2',block:'Integrated System Modules',credits:8, ects:8, assessment:'In-block exam'},
+  CRS025:{name:'General Medicine',               year:'M-3',block:'Junior Clerkship',credits:10,ects:10,assessment:'DOPS / Mini-CEX'},
+  CRS026:{name:'General Surgery',                year:'M-3',block:'Junior Clerkship',credits:10,ects:10,assessment:'DOPS / Mini-CEX'},
+  CRS027:{name:'Infectious Diseases',            year:'M-3',block:'Junior Clerkship',credits:3, ects:3, assessment:'DOPS / Mini-CEX'},
+  CRS028:{name:'Radiology & Imaging',            year:'M-3',block:'Junior Clerkship',credits:3, ects:3, assessment:'Image interpretation OSCE'},
+  CRS029:{name:'Dermatology',                    year:'M-3',block:'Junior Clerkship',credits:2, ects:2, assessment:'Clinical exam'},
+  CRS030:{name:'Ophthalmology (Eye)',             year:'M-3',block:'Junior Clerkship',credits:1, ects:1, assessment:'Clinical exam'},
+  CRS031:{name:'Ear, Nose & Throat (ENT)',        year:'M-3',block:'Junior Clerkship',credits:1, ects:1, assessment:'Clinical exam'},
+  CRS032:{name:'Orthopaedics & Trauma Surgery',  year:'M-3',block:'Junior Clerkship',credits:4, ects:4, assessment:'DOPS / Mini-CEX'},
+  CRS033:{name:'Rehabilitation Medicine',        year:'M-3',block:'Junior Clerkship',credits:3, ects:3, assessment:'Case presentation'},
+  CRS034:{name:'Forensic Medicine',              year:'M-3',block:'Junior Clerkship',credits:3, ects:3, assessment:'Written exam'},
+  CRS035:{name:'Elective',                       year:'M-3',block:'Junior Clerkship',credits:5, ects:5, assessment:'Elective report'},
+  CRS036:{name:'Paediatrics',                    year:'M-4',block:'Specialty Clerkship',credits:5, ects:5, assessment:'DOPS / Mini-CEX'},
+  CRS037:{name:'Obstetrics & Gynaecology (O&G)', year:'M-4',block:'Specialty Clerkship',credits:5, ects:5, assessment:'DOPS / Mini-CEX'},
+  CRS038:{name:'Psychiatry',                     year:'M-4',block:'Specialty Clerkship',credits:5, ects:5, assessment:'MSE / Case report'},
+  CRS039:{name:'Medicine (Internal Medicine)',   year:'M-4',block:'Specialty Clerkship',credits:3, ects:3, assessment:'Mini-CEX'},
+  CRS040:{name:'Geriatric Medicine',             year:'M-4',block:'Specialty Clerkship',credits:2, ects:2, assessment:'Case presentation'},
+  CRS041:{name:'Palliative Care',                year:'M-4',block:'Specialty Clerkship',credits:2, ects:2, assessment:'Portfolio'},
+  CRS042:{name:'Surgery (Advanced General)',     year:'M-4',block:'Specialty Clerkship',credits:3, ects:3, assessment:'DOPS'},
+  CRS043:{name:'Emergency Medicine (EM)',        year:'M-4',block:'Specialty Clerkship',credits:3, ects:3, assessment:'DOPS / Mini-CEX'},
+  CRS044:{name:'Anaesthesia',                    year:'M-4',block:'Specialty Clerkship',credits:2, ects:2, assessment:'DOPS'},
+  CRS045:{name:'Forensic Medicine',              year:'M-4',block:'Specialty Clerkship',credits:1, ects:1, assessment:'Written exam'},
+  CRS046:{name:'Residential Field Trip',         year:'M-4',block:'Specialty Clerkship',credits:5, ects:5, assessment:'Field report'},
+  CRS047:{name:'Medicine — Senior Hospital Posting',     year:'M-5',block:'Senior Clerkship',credits:10,ects:10,assessment:'Mini-CEX / CBD'},
+  CRS048:{name:'Surgery — Senior Hospital Posting',      year:'M-5',block:'Senior Clerkship',credits:10,ects:10,assessment:'DOPS / CBD'},
+  CRS049:{name:'Obstetrics & Gynaecology — Senior',      year:'M-5',block:'Senior Clerkship',credits:10,ects:10,assessment:'DOPS / Mini-CEX'},
+  CRS050:{name:'Paediatrics — Senior Hospital Posting',  year:'M-5',block:'Senior Clerkship',credits:10,ects:10,assessment:'Mini-CEX / CBD'},
+  CRS051:{name:'SSC — Research Project (Dissertation)',  year:'M-5',block:'Senior Clerkship',credits:5, ects:5, assessment:'Dissertation + viva'},
+  CRS052:{name:'SSC — Clinical Special Interest Attachment',year:'M-5',block:'Senior Clerkship',credits:5,ects:5,assessment:'Portfolio / log'},
 };
 
 // ── Auth ─────────────────────────────────────────────────────
-document.addEventListener('keydown', function(e) {
+document.addEventListener('keydown', e => {
   if (e.key === 'Enter' && !document.getElementById('loginScreen').classList.contains('hidden')) doLogin();
 });
 
@@ -388,12 +576,12 @@ function doLogin() {
   btn.disabled = true;
   btn.textContent = 'Signing in…';
   document.getElementById('accessLoading').classList.add('show');
-   fetch('/.netlify/functions/login', {
+  fetch('/.netlify/functions/login', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email, password })
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({email, password})
   })
-    .then(res => res.json())
+    .then(r => r.json())
     .then(handleAuth)
     .catch(handleAuthErr);
 }
@@ -424,28 +612,34 @@ function handleAuthErr() {
   btn.disabled = false;
   btn.textContent = 'Sign in';
   document.getElementById('accessLoading').classList.remove('show');
-  const errEl = document.getElementById('accessError');
-  errEl.textContent = 'Connection error. Please try again.';
-  errEl.classList.add('show');
+  document.getElementById('accessError').textContent = 'Connection error. Please try again.';
+  document.getElementById('accessError').classList.add('show');
 }
 
 // ── Populate dashboard ────────────────────────────────────────
 function populate(s, grades) {
-  document.getElementById('welcomeName').textContent = (s.fullName || '').split(' ')[0] || '—';
-  document.getElementById('topbarEmail').textContent = s.email || '—';
-  document.getElementById('profileName').textContent = s.fullName || '—';
-  document.getElementById('profileNameMM').textContent = s.fullNameMM || '';
-  const init = (s.fullName || '').split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2) || '?';
-  document.getElementById('avatarInitials').textContent = init;
+  const firstName = (s.fullName || '').split(' ')[0] || '—';
+  const initials  = (s.fullName || '').split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2) || '?';
+
+  document.getElementById('welcomeName').textContent     = firstName;
+  document.getElementById('topbarEmail').textContent     = s.email || '—';
+  document.getElementById('profileName').textContent     = s.fullName || '—';
+  document.getElementById('profileNameMM').textContent   = s.fullNameMM || '';
+  document.getElementById('avatarInitials').textContent  = initials;
+
   const gpa = s.overallGPA || '—';
-  document.getElementById('profileGPA').textContent = gpa;
-  document.getElementById('homeGpaVal').textContent = gpa + ' / 4.00';
+  document.getElementById('profileGPA').textContent    = gpa;
+  document.getElementById('homeGpaVal').textContent    = gpa + ' / 4.00';
   document.getElementById('profileGpaVal').textContent = gpa + ' / 4.00';
+
+  // Tags
   const tags = document.getElementById('profileTags');
   tags.innerHTML = '';
   if (s.currentStatus)    tags.innerHTML += `<span class="tag tag-r">${s.currentStatus}</span>`;
   if (s.enrollmentStatus) tags.innerHTML += `<span class="tag tag-g">${s.enrollmentStatus}</span>`;
   if (s.graduationStatus) tags.innerHTML += `<span class="tag tag-n">${s.graduationStatus}</span>`;
+
+  // Profile info cells
   document.getElementById('infoID').textContent        = s.id               || '—';
   document.getElementById('infoBirth').textContent     = s.birthDate        || '—';
   document.getElementById('infoFather').textContent    = s.fatherName       || '—';
@@ -456,6 +650,15 @@ function populate(s, grades) {
   document.getElementById('infoStatus').textContent    = s.currentStatus    || '—';
   document.getElementById('infoEnroll').textContent    = s.enrollmentStatus || '—';
   document.getElementById('infoGrad').textContent      = s.graduationStatus || '—';
+
+  // Grades page student strip
+  const strip = document.getElementById('gradesStudentStrip');
+  strip.style.display = 'flex';
+  document.getElementById('gssInitials').textContent = initials;
+  document.getElementById('gssName').textContent     = s.fullName || '—';
+  document.getElementById('gssID').textContent       = s.id       || '—';
+  document.getElementById('gssGPA').textContent      = gpa;
+
   renderGrades(grades);
 }
 
@@ -470,64 +673,114 @@ function animGpa(gpa) {
   }, 300);
 }
 
-// ── Grades ───────────────────────────────────────────────────
+// ── Grade badge class ─────────────────────────────────────────
 function gc(g) {
   if (!g) return 'gX';
-  const s = String(g).trim();
-  if (s === 'A+') return 'gAp';
-  if (s === 'A')  return 'gA';
-  if (s === 'A-') return 'gAm';
-  if (s === 'B+') return 'gBp';
-  if (s === 'B')  return 'gB';
-  return 'gX';
+  switch(String(g).trim()) {
+    case 'A+': return 'gAp';
+    case 'A' : return 'gA';
+    case 'A-': return 'gAm';
+    case 'B+': return 'gBp';
+    case 'B' : return 'gB';
+    default  : return 'gX';
+  }
 }
 
+// ── Render grades ─────────────────────────────────────────────
+// One <table> per academic year; blocks are separator rows inside the SAME table.
+// This is the only way to guarantee pixel-perfect column alignment across blocks.
 function renderGrades(grades) {
   const container = document.getElementById('gradesContent');
   if (!grades || !grades.length) {
     container.innerHTML = '<div class="g-wrap"><div class="no-g">No results recorded yet.</div></div>';
     return;
   }
-  const groups = {};
+
+  // Group by year → block
+  const yearMap = {};
   grades.forEach(g => {
-    const course = COURSES[g.courseId] || { name: g.courseId, year: 'Other', block: '—', credits: '—', assessment: '—' };
-    const ky = course.year;
-    if (!groups[ky]) groups[ky] = [];
-    groups[ky].push({ ...g, course });
+    const c   = COURSES[g.courseId] || {name:g.courseId, year:'Other', block:'—', credits:'—', ects:'—', assessment:'—'};
+    const yr  = c.year;
+    const blk = c.block;
+    if (!yearMap[yr]) yearMap[yr] = {};
+    if (!yearMap[yr][blk]) yearMap[yr][blk] = [];
+    yearMap[yr][blk].push({...g, course:c});
   });
-  const order = ['Foundation Year', 'M-1', 'M-2', 'M-3', 'M-4', 'M-5', 'Other'];
+
+  const ORDER = ['Foundation Year','M-1','M-2','M-3','M-4','M-5','Other'];
   let html = '';
-  order.forEach(yr => {
-    if (!groups[yr]) return;
-    const blocks = {};
-    groups[yr].forEach(r => {
-      const bk = r.course.block || '—';
-      if (!blocks[bk]) blocks[bk] = [];
-      blocks[bk].push(r);
-    });
-    html += `<div class="g-wrap" style="margin-bottom:16px"><div class="g-year-head">${yr}</div>`;
-    Object.entries(blocks).forEach(([bkName, bkRows]) => {
-      html += `<div class="g-block-head">${bkName}</div>`;
-      html += `<table class="gt"><thead><tr><th>Course</th><th>Assessment</th><th>Credits</th><th>Score</th><th>Grade</th><th>Points</th></tr></thead><tbody>`;
-      bkRows.forEach(r => {
-        const score = (r.numericScore !== undefined && r.numericScore !== '') ? Number(r.numericScore) : null;
-        const pct   = score !== null ? Math.min(score, 100) : 0;
+
+  ORDER.forEach(yr => {
+    if (!yearMap[yr]) return;
+
+    // ── One table for the whole year ──────────────────────────
+    html += `
+<div class="g-wrap">
+  <div class="g-year-head">${yr}</div>
+  <table class="gt">
+    <colgroup>
+      <col class="c-course">
+      <col class="c-assess">
+      <col class="c-credits">
+      <col class="c-ects">
+      <col class="c-score">
+      <col class="c-grade">
+      <col class="c-points">
+    </colgroup>
+    <thead>
+      <tr>
+        <th class="tl">Course</th>
+        <th class="tl">Assessment</th>
+        <th class="tc">Credits</th>
+        <th class="tc c-ects-th">ECTS</th>
+        <th class="tl">Score</th>
+        <th class="tc">Grade</th>
+        <th class="tr">Points</th>
+      </tr>
+    </thead>
+    <tbody>`;
+
+    Object.entries(yearMap[yr]).forEach(([blkName, rows]) => {
+      // Block separator row — spans all 7 columns
+      html += `
+      <tr class="g-block-sep">
+        <td colspan="7">${blkName}</td>
+      </tr>`;
+
+      rows.forEach(r => {
+        const score    = (r.numericScore !== undefined && r.numericScore !== '') ? Number(r.numericScore) : null;
+        const pct      = score !== null ? Math.min(score, 100) : 0;
+        const credVal  = (r.course.credits !== undefined && r.course.credits !== 'TBC') ? r.course.credits : null;
+        const ectsVal  = (r.course.ects    !== undefined && r.course.ects    !== 'TBC') ? r.course.ects    : null;
+
+        const credHtml = credVal !== null ? credVal : '<span class="tbc-pill">TBC</span>';
+        const ectsHtml = ectsVal !== null ? ectsVal : '<span class="tbc-pill">TBC</span>';
+
         const scoreHtml = score !== null
-          ? `<div class="sbar"><div class="sbar-fill" data-pct="${pct}" style="width:0"></div></div>${score}`
+          ? `<div class="score-cell"><span class="sbar"><span class="sbar-fill" data-pct="${pct}" style="width:0"></span></span>${score}</div>`
           : '—';
-        html += `<tr>
-          <td style="font-weight:500">${r.course.name}</td>
-          <td style="color:var(--ink3);font-size:12px">${r.course.assessment}</td>
-          <td style="color:var(--ink3)">${r.course.credits}</td>
-          <td>${scoreHtml}</td>
-          <td><span class="gbadge ${gc(r.grade)}">${r.grade || '—'}</span></td>
-          <td style="font-weight:600">${(r.gradePoint !== undefined && r.gradePoint !== '') ? Number(r.gradePoint).toFixed(1) : '—'}</td>
-        </tr>`;
+
+        const ptVal = (r.gradePoint !== undefined && r.gradePoint !== '') ? Number(r.gradePoint).toFixed(1) : '—';
+
+        html += `
+      <tr>
+        <td class="tl" style="font-weight:500" title="${r.course.name}">${r.course.name}</td>
+        <td class="tl" style="color:var(--ink3);font-size:12px" title="${r.course.assessment}">${r.course.assessment}</td>
+        <td class="tc">${credHtml}</td>
+        <td class="tc c-ects-td">${ectsHtml}</td>
+        <td class="tl">${scoreHtml}</td>
+        <td class="tc"><span class="gbadge ${gc(r.grade)}">${r.grade || '—'}</span></td>
+        <td class="tr" style="font-weight:600">${ptVal}</td>
+      </tr>`;
       });
-      html += `</tbody></table>`;
     });
-    html += `</div>`;
+
+    html += `
+    </tbody>
+  </table>
+</div>`;
   });
+
   container.innerHTML = html;
 }
 
@@ -551,10 +804,11 @@ function doSignOut() {
   document.getElementById('loginScreen').classList.remove('hidden');
   document.getElementById('accessError').classList.remove('show');
   document.getElementById('accessLoading').classList.remove('show');
-  document.getElementById('loginEmail').value = '';
+  document.getElementById('loginEmail').value    = '';
   document.getElementById('loginPassword').value = '';
   document.getElementById('homeGpaFill').style.width    = '0';
   document.getElementById('profileGpaFill').style.width = '0';
+  document.getElementById('gradesStudentStrip').style.display = 'none';
   switchTab('home');
 }
 </script>
