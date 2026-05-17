@@ -812,6 +812,81 @@ tr.g-block-sep td{
   white-space: normal !important;
 }
 
+
+/* ── FINAL TABLE HEADER VISIBILITY + SEAL POSITION UPDATE ── */
+table.gt col.c-course  {width:28% !important;}
+table.gt col.c-assess  {width:18% !important;}
+table.gt col.c-credits {width:10% !important;}
+table.gt col.c-year    {width:10% !important;}
+table.gt col.c-score   {width:13% !important;}
+table.gt col.c-grade   {width:10% !important;}
+table.gt col.c-points  {width:11% !important;}
+
+table.gt thead tr th{
+  padding:9px 8px !important;
+  font-size:10px !important;
+  white-space:normal !important;
+  overflow:visible !important;
+  text-overflow:unset !important;
+  line-height:1.2 !important;
+}
+
+table.gt td{
+  padding-left:8px !important;
+  padding-right:8px !important;
+}
+
+#printTranscriptDoc .tsc-grades-wrap table.gt thead tr th{
+  padding:2.2mm 1.8mm !important;
+  font-size:8.4px !important;
+  white-space:normal !important;
+  overflow:visible !important;
+  text-overflow:unset !important;
+  line-height:1.15 !important;
+}
+
+#printTranscriptDoc .tsc-grades-wrap table.gt td{
+  padding:2.2mm 1.8mm !important;
+}
+
+/* Bigger seal, placed next to Registrar signature block */
+#printConfirmation .pdoc-footer,
+#printTranscriptDoc .tsc-footer{
+  display:flex !important;
+  flex-direction:row !important;
+  align-items:center !important;
+  justify-content:flex-start !important;
+  gap:12mm !important;
+}
+
+#printConfirmation .pdoc-seal,
+#printTranscriptDoc .tsc-stamp-col{
+  order:1 !important;
+  margin:0 !important;
+  align-self:center !important;
+  flex-shrink:0 !important;
+}
+
+#printConfirmation .pdoc-sig-block,
+#printTranscriptDoc .tsc-sig-left{
+  order:2 !important;
+  width:auto !important;
+  min-width:75mm !important;
+  flex:0 0 auto !important;
+}
+
+#printConfirmation .pdoc-seal-img{
+  width:42mm !important;
+  height:42mm !important;
+  object-fit:contain !important;
+}
+
+#printTranscriptDoc .tsc-seal-img{
+  width:44mm !important;
+  height:44mm !important;
+  object-fit:contain !important;
+}
+
 </style>
 </head>
 <body>
