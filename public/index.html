@@ -427,6 +427,7 @@ tr.g-block-sep td{
 .pdoc-val{padding:8px 0;color:#0D1B2A;font-size:12px}
 .pdoc-footer{display:flex;justify-content:space-between;align-items:flex-end;margin-top:40px;padding-top:16px;border-top:1px solid #E8EBF0}
 .pdoc-sig-block{}
+.pdoc-esign{font-size:9px;color:#7A8599;font-style:italic;margin-bottom:8px;letter-spacing:.3px}
 .pdoc-sig-line{width:180px;border-bottom:1.5px solid #0D1B2A;margin-bottom:6px}
 .pdoc-sig-name{font-size:11px;font-weight:600;color:#0D1B2A}
 .pdoc-sig-inst{font-size:10px;color:#7A8599}
@@ -438,7 +439,7 @@ tr.g-block-sep td{
 @media print{
   *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
   body{background:#fff;font-size:11px}
-  /* Hide everything UI */
+  /* Hide all UI */
   #loginScreen,.header,.nav,.btn-print,.doc-grid,
   #panel-home,#panel-profile,#panel-grades,
   .btn-out,.ntab{display:none!important}
@@ -447,9 +448,10 @@ tr.g-block-sep td{
   .panel{display:none!important}
   #panel-documents{display:block!important}
   .ph{display:none!important}
-  /* Show the printable doc */
-  .print-doc{display:block!important}
-  #printConfirmation,#printTranscriptDoc{display:block!important}
+  /* Show only the div that was made visible by JS — .print-doc inside it becomes block */
+  .print-doc{display:none}
+  #printConfirmation .print-doc,
+  #printTranscriptDoc .print-doc{display:block}
   /* Grade table in transcript */
   .g-wrap{border:1px solid #ccc;margin-bottom:12px;page-break-inside:avoid}
   .g-year-head{background:#0D1B2A!important;color:#fff!important;padding:7px 14px}
@@ -734,6 +736,7 @@ tr.g-block-sep td{
           </div>
           <div class="pdoc-footer">
             <div class="pdoc-sig-block">
+              <div class="pdoc-esign">Electronically signed via UM2 Student Information System</div>
               <div class="pdoc-sig-line"></div>
               <div class="pdoc-sig-name">Registrar / Secretariat Office</div>
               <div class="pdoc-sig-inst">University of Medicine (2) Interim University Council</div>
@@ -773,6 +776,7 @@ tr.g-block-sep td{
           </div>
           <div class="pdoc-footer" style="margin-top:24px">
             <div class="pdoc-sig-block">
+              <div class="pdoc-esign">Electronically signed via UM2 Student Information System</div>
               <div class="pdoc-sig-line"></div>
               <div class="pdoc-sig-name">Registrar / Secretariat Office</div>
               <div class="pdoc-sig-inst">University of Medicine (2) Interim University Council</div>
