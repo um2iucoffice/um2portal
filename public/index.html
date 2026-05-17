@@ -522,7 +522,8 @@ function restoreSession() {
   const dash = document.getElementById('dashboard');
   dash.style.display = 'flex';
   dash.classList.add('show');
-  animGpa(parseFloat(sess.student.overallGPA) || 0);
+  const gpaRaw2 = sess.student.overallGPA ?? sess.student.gpa ?? sess.student.GPA ?? sess.student.overall_gpa ?? sess.student.cumulativeGPA ?? 0;
+  animGpa(parseFloat(gpaRaw2) || 0);
 }
 
 // ── Auth ─────────────────────────────────────────────────────
@@ -559,6 +560,8 @@ function handleAuth(r) {
   btn.disabled = false;
   btn.textContent = 'Sign in';
   document.getElementById('accessLoading').classList.remove('show');
+  // ── DEBUG: open browser console to see exact API field names ──
+  console.log('API response:', JSON.stringify(r, null, 2));
   if (!r || !r.success) {
     const errEl = document.getElementById('accessError');
     errEl.textContent = r ? r.message : 'Invalid credentials.';
@@ -573,7 +576,8 @@ function handleAuth(r) {
   document.getElementById('loginScreen').classList.add('hidden');
   setTimeout(() => {
     document.getElementById('dashboard').classList.add('show');
-    animGpa(parseFloat(r.student.overallGPA) || 0);
+    const gpaRaw = r.student.overallGPA ?? r.student.gpa ?? r.student.GPA ?? r.student.overall_gpa ?? r.student.cumulativeGPA ?? 0;
+    animGpa(parseFloat(gpaRaw) || 0);
   }, 100);
 }
 
@@ -597,7 +601,10 @@ function populate(s, grades) {
   document.getElementById('profileNameMM').textContent   = s.fullNameMM || '';
   document.getElementById('avatarInitials').textContent  = initials;
 
-  const gpa = s.overallGPA || '—';
+  // Accept common field name variants from the API
+  const rawGpa = s.overallGPA ?? s.gpa ?? s.GPA ?? s.overall_gpa ?? s.cumulativeGPA ?? null;
+  const gpa = (rawGpa !== null && rawGpa !== '' && !isNaN(parseFloat(rawGpa)))
+    ? String(rawGpa) : '—';
   document.getElementById('profileGPA').textContent    = gpa;
   document.getElementById('homeGpaVal').textContent    = gpa + ' / 4.00';
   document.getElementById('profileGpaVal').textContent = gpa + ' / 4.00';
@@ -663,7 +670,9 @@ function renderGrades(grades) {
 
   const yearMap = {};
   grades.forEach(g => {
-    const c   = COURSES[g.courseId] || {name:g.courseId, year:'Other', block:'—', credits:'—', ects:'—', assessment:'—'};
+    // Accept common field name variants for the course ID
+    const cid = g.courseId || g.course_id || g.CourseId || g.course || '';
+    const c   = COURSES[cid] || {name: cid || g.courseName || g.course_name || g.name || '—', year:'Other', block:'—', credits:'—', ects:'—', assessment: g.assessment || '—'};
     const yr  = c.year;
     const blk = c.block;
     if (!yearMap[yr]) yearMap[yr] = {};
@@ -711,7 +720,9 @@ function renderGrades(grades) {
       </tr>`;
 
       rows.forEach(r => {
-        const score    = (r.numericScore !== undefined && r.numericScore !== '') ? Number(r.numericScore) : null;
+        // Field name variants for score, grade, gradePoint
+        const rawScore = r.numericScore ?? r.numeric_score ?? r.score ?? r.Score ?? null;
+        const score    = (rawScore !== null && rawScore !== '' && !isNaN(Number(rawScore))) ? Number(rawScore) : null;
         const pct      = score !== null ? Math.min(score, 100) : 0;
         const credHtml = '<span class="tbc-pill">TBC</span>';
 
@@ -719,7 +730,9 @@ function renderGrades(grades) {
           ? `<div class="score-cell"><span class="sbar"><span class="sbar-fill" data-pct="${pct}" style="width:0"></span></span>${score}</div>`
           : '—';
 
-        const ptVal = (r.gradePoint !== undefined && r.gradePoint !== '') ? Number(r.gradePoint).toFixed(1) : '—';
+        const rawPt  = r.gradePoint ?? r.grade_point ?? r.gradePoints ?? r.points ?? r.Points ?? null;
+        const ptVal  = (rawPt !== null && rawPt !== '' && !isNaN(Number(rawPt))) ? Number(rawPt).toFixed(1) : '—';
+        const rawGrade = r.grade ?? r.Grade ?? r.letterGrade ?? r.letter_grade ?? null;
 
         html += `
       <tr>
@@ -728,7 +741,7 @@ function renderGrades(grades) {
         <td class="tc hide-m">${credHtml}</td>
         <td class="tc hide-m" style="color:var(--ink3);font-size:12px">${r.year || '—'}</td>
         <td class="tl">${scoreHtml}</td>
-        <td class="tc"><span class="gbadge ${gc(r.grade)}">${r.grade || '—'}</span></td>
+        <td class="tc"><span class="gbadge ${gc(rawGrade)}">${rawGrade || '—'}</span></td>
         <td class="tr" style="font-weight:600">${ptVal}</td>
       </tr>`;
       });
