@@ -387,10 +387,14 @@ function doLogin() {
   btn.disabled = true;
   btn.textContent = 'Signing in…';
   document.getElementById('accessLoading').classList.add('show');
-  google.script.run
-    .withSuccessHandler(handleAuth)
-    .withFailureHandler(handleAuthErr)
-    .login(email, password);
+   fetch('/.netlify/functions/login', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, password })
+  })
+    .then(res => res.json())
+    .then(handleAuth)
+    .catch(handleAuthErr);
 }
 
 function handleAuth(r) {
