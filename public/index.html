@@ -372,6 +372,53 @@ tr.g-block-sep td{
 
 .no-g{padding:36px;text-align:center;color:var(--ink3);font-size:13px}
 
+/* ── PRINT BUTTON ── */
+.grades-ph{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:24px}
+.grades-ph .ph{margin-bottom:0}
+.btn-print{
+  display:flex;align-items:center;gap:7px;
+  padding:9px 16px;
+  background:var(--crimson);
+  color:var(--white);
+  border:none;border-radius:var(--r);
+  font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;
+  cursor:pointer;white-space:nowrap;flex-shrink:0;
+  transition:background .15s,box-shadow .15s;
+  box-shadow:0 2px 8px rgba(139,26,46,0.20);
+}
+.btn-print:hover{background:var(--crimson-mid);box-shadow:0 4px 14px rgba(139,26,46,0.28)}
+
+/* ── PRINT / PDF STYLES ── */
+@media print{
+  *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  body{background:#fff;font-size:11px}
+  #loginScreen,
+  .header,
+  .nav,
+  .btn-print,
+  #panel-home,
+  #panel-profile,
+  .grades-ph > button{display:none!important}
+  #dashboard{display:block!important;min-height:unset}
+  .main{padding:0;max-width:100%}
+  .panel{display:none!important}
+  #panel-grades{display:block!important}
+  .grades-ph{margin-bottom:12px}
+
+  /* Transcript header */
+  .transcript-header{display:flex!important}
+
+  /* Keep grade table readable */
+  .g-wrap{border:1px solid #ccc;margin-bottom:12px;page-break-inside:avoid}
+  .g-year-head{background:var(--ink)!important;color:#fff!important;padding:7px 14px}
+  table.gt thead tr th{background:#f4f5f8!important;position:static}
+  table.gt td,table.gt th{padding:7px 10px;font-size:10.5px}
+  .sbar{display:none}
+  .score-cell{display:block}
+  .gbadge{border:1px solid #ccc}
+  .grades-student-strip{display:flex!important;margin-bottom:12px}
+}
+
 /* ── RESPONSIVE ── */
 @media(max-width:700px){
   .login-left{display:none}
@@ -546,7 +593,31 @@ tr.g-block-sep td{
 
     <!-- GRADES -->
     <div class="panel" id="panel-grades">
-      <div class="ph"><h2>Academic Results</h2><p>Grades &amp; performance by course</p></div>
+      <div class="ph grades-ph">
+        <div>
+          <h2>Academic Results</h2>
+          <p>Grades &amp; performance by course</p>
+        </div>
+        <button class="btn-print" onclick="printTranscript()" title="Download PDF Transcript">
+          <svg width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 9H1.5A1.5 1.5 0 0 0 0 10.5v3A1.5 1.5 0 0 0 1.5 15h12a1.5 1.5 0 0 0 1.5-1.5v-3A1.5 1.5 0 0 0 13.5 9H12M3 5.5V1a1 1 0 0 1 1-1h5l3 3v2.5M3 5.5h9M3 5.5v6h9v-6" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="11.5" r=".75" fill="currentColor"/></svg>
+          Print Transcript
+        </button>
+      </div>
+
+      <!-- Transcript header — visible only when printing -->
+      <div class="transcript-header" id="transcriptHeader" style="display:none;align-items:center;gap:20px;border-bottom:2px solid var(--ink);padding-bottom:14px;margin-bottom:18px">
+        <img src="/UM2_Logo.svg" alt="UM2" style="width:52px;height:64px;object-fit:contain;flex-shrink:0">
+        <div style="flex:1">
+          <div style="font-size:9px;letter-spacing:2.5px;text-transform:uppercase;color:#7A8599;margin-bottom:3px">University of Medicine (2) Interim University Council</div>
+          <div style="font-family:'Libre Baskerville',serif;font-size:18px;color:#0D1B2A;font-weight:700;margin-bottom:2px">Official Academic Transcript</div>
+          <div style="font-size:10px;color:#7A8599">Generated via Student Information System &nbsp;·&nbsp; <span id="transcriptDate"></span></div>
+        </div>
+        <div style="text-align:right;flex-shrink:0">
+          <div style="font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:#7A8599;margin-bottom:2px">Overall GPA</div>
+          <div style="font-family:'Libre Baskerville',serif;font-size:28px;color:#8B1A2E;line-height:1" id="transcriptGPA">—</div>
+          <div style="font-size:10px;color:#7A8599">/ 4.00</div>
+        </div>
+      </div>
 
       <!-- Student identity strip — populated by JS -->
       <div class="grades-student-strip" id="gradesStudentStrip" style="display:none">
@@ -882,7 +953,26 @@ function switchTab(id, btn) {
   }
 }
 
-// ── Sign out ──────────────────────────────────────────────────
+// ── Print Transcript ──────────────────────────────────────────
+function printTranscript() {
+  // Populate transcript header fields
+  const gpa = document.getElementById('gssGPA').textContent || '—';
+  document.getElementById('transcriptGPA').textContent = gpa;
+  document.getElementById('transcriptDate').textContent = new Date().toLocaleDateString('en-GB', {day:'numeric',month:'long',year:'numeric'});
+  document.getElementById('transcriptHeader').style.display = 'flex';
+
+  // Ensure grades panel is the active one
+  switchTab('grades');
+
+  setTimeout(() => {
+    window.print();
+    // Hide header again after print dialog closes
+    setTimeout(() => {
+      document.getElementById('transcriptHeader').style.display = 'none';
+    }, 1000);
+  }, 120);
+}
+
 function doSignOut() {
   try { sessionStorage.removeItem('um2_session'); } catch(e){}
   document.getElementById('dashboard').classList.remove('show');
