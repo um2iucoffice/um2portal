@@ -481,6 +481,55 @@ tr.g-block-sep td{
 .tsc-watermark{position:fixed;bottom:60px;right:40px;font-family:'Libre Baskerville',serif;font-size:160px;color:rgba(139,26,46,.03);font-weight:700;letter-spacing:-6px;pointer-events:none;z-index:0}
 
 
+
+
+/* ── OFFICIAL PRINT REFINEMENTS — balanced A4 layout ── */
+:root{--print-x:18mm;--print-y:12mm}
+.print-doc,.tsc-paper{background:#fff}
+.tsc-letterhead{padding:18mm var(--print-x) 8mm;gap:9mm;align-items:center}
+.tsc-logo{width:26mm;height:31mm;object-fit:contain;image-rendering:auto}
+.tsc-letterhead-center{padding:0 4mm;text-align:center}
+.tsc-univ-name{font-size:18px;line-height:1.25}
+.tsc-council{font-size:9.5px;letter-spacing:2.4px;margin-top:2px;margin-bottom:7px}
+.tsc-doc-title{font-size:10px;letter-spacing:2.6px;padding:5px 16px}
+.tsc-ref-block{min-width:40mm;margin-right:4mm;padding-right:2mm;text-align:left}
+.tsc-ref-row{display:grid;grid-template-columns:18mm 1fr;gap:4mm;justify-content:unset;align-items:baseline;margin-bottom:3.5px}
+.tsc-ref-lbl{font-size:8.4px;white-space:nowrap}
+.tsc-ref-val{font-size:9.2px;white-space:nowrap}
+.tsc-divider{margin:0 var(--print-x)}
+.pdoc-body{padding:11mm var(--print-x) 0;font-size:12.2px;line-height:1.78;position:relative;z-index:1}
+.pdoc-para{margin-bottom:4.5mm}
+.pdoc-table{margin:5mm 0 6mm;font-size:12px;border-top:1px solid #E8EBF0}
+.pdoc-table tr{border-bottom:1px solid #E8EBF0}
+.pdoc-lbl{padding:3.4mm 5mm 3.4mm 0;width:36%;font-size:9.7px;letter-spacing:.85px}
+.pdoc-val{padding:3.4mm 0;font-size:12.1px}
+.pdoc-footer{margin:17mm var(--print-x) 0;padding-top:6mm;align-items:flex-end;position:relative;z-index:1}
+.pdoc-sig-block{min-width:92mm}
+.pdoc-sig-line{width:62mm;margin-bottom:2.2mm}
+.pdoc-sig-name,.tsc-sig-name{font-size:10.6px;font-weight:700;letter-spacing:.1px}
+.pdoc-sig-title,.tsc-sig-title{font-size:9.3px;color:#0D1B2A;font-weight:600;margin-top:1.5px}
+.pdoc-sig-inst,.tsc-sig-inst{font-size:8.8px;color:#7A8599;line-height:1.45;margin-top:1px}
+.tsc-esign-badge{font-size:8.4px;margin-bottom:5mm;padding:3.2px 8px}
+.pdoc-seal-img{width:24mm;height:24mm;opacity:.82}
+.pdoc-watermark,.tsc-watermark{position:fixed;top:50%;left:50%;right:auto;bottom:auto;transform:translate(-50%,-50%) rotate(-18deg);font-family:'Libre Baskerville',serif;font-size:48mm;color:rgba(139,26,46,.035);font-weight:700;letter-spacing:-2mm;pointer-events:none;z-index:0;text-align:center;line-height:1}
+.tsc-identity{padding:7mm var(--print-x);align-items:stretch;gap:7mm;position:relative;z-index:1}
+.tsc-id-col{padding-right:0}
+.tsc-id-field{margin-bottom:3mm}
+.tsc-id-lbl{font-size:8.2px;margin-bottom:1.4mm}
+.tsc-id-val{font-size:11.2px}
+.tsc-name-large{font-size:13.4px}
+.tsc-gpa-badge{width:31mm;padding:4mm 3mm;border-radius:5px}
+.tsc-gpa-num{font-size:28px}
+.tsc-section-head{padding:4mm var(--print-x) 2.5mm;font-size:8.3px}
+.tsc-grades-wrap{padding:0 var(--print-x);position:relative;z-index:1}
+.tsc-footer{padding:6mm var(--print-x) 4mm;margin-top:6mm;gap:9mm;align-items:flex-end;position:relative;z-index:1}
+.tsc-note{font-size:8.4px;line-height:1.55;max-width:130mm;margin-bottom:4mm}
+.tsc-sig-line{width:64mm;margin-bottom:2mm}
+.tsc-seal-img{width:26mm;height:26mm;opacity:.82}
+.tsc-bottombar{padding:2.8mm var(--print-x);font-size:7.7px;line-height:1.45;gap:10mm;align-items:center;position:relative;z-index:1}
+.tsc-bottombar span:first-child{max-width:120mm}
+.tsc-bottombar-right{text-align:right}
+
 /* ── OFFICIAL SEAL IMAGES ── */
 .pdoc-seal{flex-shrink:0;display:flex;align-items:center;justify-content:center}
 .pdoc-seal-img{width:90px;height:90px;object-fit:contain;opacity:0.85}
@@ -516,22 +565,27 @@ tr.g-block-sep td{
   .tsc-topbar,.tsc-bottombar,.tsc-stamp,.tsc-gpa-badge{-webkit-print-color-adjust:exact;print-color-adjust:exact}
   /* Official print document polish */
   #printConfirmation[style*="block"] .print-doc,
-  #printTranscriptDoc[style*="block"] .tsc-paper{padding:0 0 8mm;overflow:hidden}
+  #printTranscriptDoc[style*="block"] .tsc-paper{min-height:297mm;width:210mm;margin:0 auto;box-sizing:border-box;overflow:hidden;position:relative;padding:0 0 6mm}
   #printConfirmation[style*="block"] .tsc-letterhead,
-  #printTranscriptDoc[style*="block"] .tsc-letterhead{padding-left:48px!important;padding-right:48px!important}
+  #printTranscriptDoc[style*="block"] .tsc-letterhead{padding-left:var(--print-x)!important;padding-right:var(--print-x)!important;padding-top:15mm!important;padding-bottom:7mm!important}
   #printConfirmation[style*="block"] .tsc-logo,
-  #printTranscriptDoc[style*="block"] .tsc-logo{width:78px!important;height:94px!important}
+  #printTranscriptDoc[style*="block"] .tsc-logo{width:26mm!important;height:31mm!important}
   #printConfirmation[style*="block"] .tsc-ref-block,
-  #printTranscriptDoc[style*="block"] .tsc-ref-block{margin-right:8mm!important}
-  #printConfirmation[style*="block"] .pdoc-body{padding-left:48px!important;padding-right:48px!important;padding-top:28px!important}
-  #printConfirmation[style*="block"] .pdoc-footer{margin-left:48px!important;margin-right:48px!important}
-  #printTranscriptDoc[style*="block"] .tsc-divider,
+  #printTranscriptDoc[style*="block"] .tsc-ref-block{margin-right:4mm!important;padding-right:2mm!important}
+  #printConfirmation[style*="block"] .pdoc-body{padding-left:var(--print-x)!important;padding-right:var(--print-x)!important;padding-top:10mm!important}
+  #printConfirmation[style*="block"] .pdoc-footer{margin-left:var(--print-x)!important;margin-right:var(--print-x)!important;margin-top:14mm!important}
+  #printTranscriptDoc[style*="block"] .tsc-divider{margin-left:var(--print-x)!important;margin-right:var(--print-x)!important;padding-left:0!important;padding-right:0!important}
   #printTranscriptDoc[style*="block"] .tsc-identity,
   #printTranscriptDoc[style*="block"] .tsc-section-head,
   #printTranscriptDoc[style*="block"] .tsc-grades-wrap,
   #printTranscriptDoc[style*="block"] .tsc-footer,
-  #printTranscriptDoc[style*="block"] .tsc-bottombar{padding-left:48px!important;padding-right:48px!important}
-  #printTranscriptDoc[style*="block"] .tsc-divider{margin-left:48px!important;margin-right:48px!important;padding-left:0!important;padding-right:0!important}
+  #printTranscriptDoc[style*="block"] .tsc-bottombar{padding-left:var(--print-x)!important;padding-right:var(--print-x)!important}
+  #printTranscriptDoc[style*="block"] .tsc-grades-wrap .g-wrap{margin-bottom:5mm!important}
+  #printTranscriptDoc[style*="block"] .tsc-grades-wrap table.gt thead tr th{padding:2.1mm 2.6mm!important}
+  #printTranscriptDoc[style*="block"] .tsc-grades-wrap table.gt td{padding:2.3mm 2.6mm!important}
+  #printTranscriptDoc[style*="block"] .tsc-grades-wrap .g-block-sep td{padding:2mm 2.6mm!important}
+  #printConfirmation[style*="block"] .pdoc-watermark,
+  #printTranscriptDoc[style*="block"] .tsc-watermark{top:50%!important;left:50%!important;right:auto!important;bottom:auto!important;transform:translate(-50%,-50%) rotate(-18deg)!important}
 }
 
 
@@ -819,7 +873,8 @@ tr.g-block-sep td{
                 Electronically signed via UM2 Student Information System
               </div>
               <div class="pdoc-sig-line"></div>
-              <div class="pdoc-sig-name">Registrar / Secretariat Office</div>
+              <div class="pdoc-sig-name">Registrar</div>
+              <div class="pdoc-sig-title">Registrar / Secretariat Office</div>
               <div class="pdoc-sig-inst">University of Medicine (2) Interim University Council</div>
             </div>
             <div class="pdoc-seal">
@@ -894,7 +949,8 @@ tr.g-block-sep td{
               </div>
               <div class="tsc-sig-line-wrap">
                 <div class="tsc-sig-line"></div>
-                <div class="tsc-sig-name">Registrar / Secretariat Office</div>
+                <div class="tsc-sig-name">Registrar</div>
+                <div class="tsc-sig-title">Registrar / Secretariat Office</div>
                 <div class="tsc-sig-inst">University of Medicine (2) Interim University Council</div>
               </div>
             </div>
@@ -1242,8 +1298,10 @@ function getStudentData() {
 function fillDocFields(containerId, s, gpa) {
   const el = document.getElementById(containerId);
   const today = new Date().toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'});
-  // Generate a doc number from student ID + date
-  const docNo = 'UM2-' + (s.id || 'XXX') + '-' + new Date().getFullYear() + ('0'+(new Date().getMonth()+1)).slice(-2);
+  // Clear official document number: UM2/IUC/YYYY/MM/STUDENTID
+  const now = new Date();
+  const safeId = String(s.id || 'XXX').replace(/[^A-Za-z0-9]/g, '').toUpperCase();
+  const docNo = 'UM2/IUC/' + now.getFullYear() + '/' + String(now.getMonth()+1).padStart(2,'0') + '/' + safeId;
   el.querySelectorAll('.pdoc-date,.tsc-ref-val.pdoc-date').forEach(e => e.textContent = today);
   el.querySelectorAll('.tsc-docno').forEach(e => e.textContent = docNo);
   el.querySelectorAll('.pdoc-fullname,.tsc-id-val.pdoc-fullname').forEach(e => e.textContent = s.fullName || '—');
