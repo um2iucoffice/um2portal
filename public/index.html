@@ -148,7 +148,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--surface);color:var(--ink)
 .gss-info{flex:1;min-width:0}
 .gss-name{font-family:'Libre Baskerville',serif;font-size:15px;font-weight:700;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:2px}
 .gss-id{font-size:11px;color:var(--ink3);letter-spacing:.5px}
-.gss-right{text-align:right;flex-shrink:0}
+.gss-right{text-align:right;flex-shrink:0;min-width:60px}
 .gss-gpa-lbl{font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--ink3);display:block;margin-bottom:1px}
 .gss-gpa-val{font-family:'Libre Baskerville',serif;font-size:26px;color:var(--crimson);line-height:1;display:block}
 .gss-gpa-den{font-size:11px;color:var(--ink3)}
@@ -160,7 +160,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--surface);color:var(--ink)
 /* Scrollable grades wrapper on mobile */
 .g-table-scroll{width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch}
 
-table.gt{width:100%;border-collapse:collapse;font-size:13px;table-layout:fixed;min-width:560px}
+table.gt{width:100%;border-collapse:collapse;font-size:13px;table-layout:fixed;min-width:480px}
 table.gt col.c-course  {width:32%}
 table.gt col.c-assess  {width:20%}
 table.gt col.c-credits {width:8%}
@@ -173,7 +173,7 @@ table.gt thead tr th{
   padding:9px 14px;font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;
   color:var(--ink3);background:var(--surface);border-bottom:1px solid var(--line);
   border-top:1px solid var(--line);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
-  position:sticky;top:56px;z-index:1;
+  /* sticky disabled inside overflow-x:auto — works on desktop, skip on mobile */
 }
 table.gt th.tc,table.gt td.tc{text-align:center}
 table.gt th.tr,table.gt td.tr{text-align:right}
@@ -197,6 +197,11 @@ tr.g-block-sep td{padding:6px 14px 5px;background:#F7F8FA;border-top:1px solid v
 .tbc-pill{display:inline-block;font-size:10px;font-weight:600;letter-spacing:.5px;color:var(--ink3);background:var(--surface);border:1px solid var(--line);border-radius:3px;padding:1px 6px}
 
 .no-g{padding:36px;text-align:center;color:var(--ink3);font-size:13px}
+
+/* Desktop: sticky thead is safe (no overflow-x wrapper) */
+@media(min-width:701px){
+  table.gt thead tr th{position:sticky;top:56px;z-index:1}
+}
 
 /* ══════════════════════════════════════════
    RESPONSIVE — MOBILE
@@ -251,9 +256,20 @@ tr.g-block-sep td{padding:6px 14px 5px;background:#F7F8FA;border-top:1px solid v
   .gss-name{font-size:14px}
   .gss-gpa-val{font-size:22px}
 
-  /* Grade tables scroll horizontally */
+  /* Grade tables scroll horizontally — hide Credits & Year cols to save space */
   .g-table-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
   .g-year-head{padding:8px 16px}
+  table.gt col.c-credits,table.gt col.c-year{width:0}
+  table.gt th.hide-m,table.gt td.hide-m{display:none}
+  /* Redistribute freed space */
+  table.gt col.c-course {width:38%}
+  table.gt col.c-assess {width:24%}
+  table.gt col.c-score  {width:18%}
+  table.gt col.c-grade  {width:12%}
+  table.gt col.c-points {width:8%}
+  table.gt{min-width:0;font-size:12px}
+  table.gt td{padding:10px 10px}
+  table.gt thead tr th{padding:8px 10px}
 }
 
 @media(max-width:400px){
@@ -479,29 +495,26 @@ const COURSES = {
 };
 
 // ── Session persistence ───────────────────────────────────────
-// We store the login response in sessionStorage so a page refresh
-// doesn't log the user out. Closing the tab/browser clears it.
+// localStorage persists across refreshes and browser restarts.
+// restoreSession() is called at the bottom after all functions are defined.
 const SESSION_KEY = 'um2_session';
 
 function saveSession(student, grades) {
-  try {
-    sessionStorage.setItem(SESSION_KEY, JSON.stringify({ student, grades }));
-  } catch(e) { /* quota or private-mode issue — silent fail */ }
+  try { localStorage.setItem(SESSION_KEY, JSON.stringify({ student, grades })); } catch(e) {}
 }
 
 function loadSession() {
   try {
-    const raw = sessionStorage.getItem(SESSION_KEY);
+    const raw = localStorage.getItem(SESSION_KEY);
     return raw ? JSON.parse(raw) : null;
   } catch(e) { return null; }
 }
 
 function clearSession() {
-  try { sessionStorage.removeItem(SESSION_KEY); } catch(e) {}
+  try { localStorage.removeItem(SESSION_KEY); } catch(e) {}
 }
 
-// On page load — restore session if present
-(function restoreSession() {
+function restoreSession() {
   const sess = loadSession();
   if (!sess || !sess.student) return;
   populate(sess.student, sess.grades || []);
@@ -510,7 +523,7 @@ function clearSession() {
   dash.style.display = 'flex';
   dash.classList.add('show');
   animGpa(parseFloat(sess.student.overallGPA) || 0);
-})();
+}
 
 // ── Auth ─────────────────────────────────────────────────────
 document.addEventListener('keydown', e => {
@@ -682,8 +695,8 @@ function renderGrades(grades) {
       <tr>
         <th class="tl">Course</th>
         <th class="tl">Assessment</th>
-        <th class="tc">Credits</th>
-        <th class="tc">Year</th>
+        <th class="tc hide-m">Credits</th>
+        <th class="tc hide-m">Year</th>
         <th class="tl">Score</th>
         <th class="tc">Grade</th>
         <th class="tr">Points</th>
@@ -712,8 +725,8 @@ function renderGrades(grades) {
       <tr>
         <td class="tl" style="font-weight:500" title="${r.course.name}">${r.course.name}</td>
         <td class="tl" style="color:var(--ink3);font-size:12px" title="${r.course.assessment}">${r.course.assessment}</td>
-        <td class="tc">${credHtml}</td>
-        <td class="tc" style="color:var(--ink3);font-size:12px">${r.year || '—'}</td>
+        <td class="tc hide-m">${credHtml}</td>
+        <td class="tc hide-m" style="color:var(--ink3);font-size:12px">${r.year || '—'}</td>
         <td class="tl">${scoreHtml}</td>
         <td class="tc"><span class="gbadge ${gc(r.grade)}">${r.grade || '—'}</span></td>
         <td class="tr" style="font-weight:600">${ptVal}</td>
@@ -759,6 +772,8 @@ function doSignOut() {
   document.getElementById('gradesStudentStrip').style.display = 'none';
   switchTab('home');
 }
+// Restore on load — runs after all functions are defined
+restoreSession();
 </script>
 </body>
 </html>
