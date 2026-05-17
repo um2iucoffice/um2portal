@@ -205,6 +205,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--surface);color:var(--ink)
   col.c-course    : 34%  — course name (takes remaining space)
   col.c-assess    : 18%  — assessment type
   col.c-credits   : 7%   — credits (centred)
+  col.c-ects      : 7%   — ECTS (centred)
   col.c-score     : 14%  — score bar + number
   col.c-grade     : 9%   — grade badge (centred)
   col.c-points    : 11%  — grade points (right-aligned)
@@ -215,13 +216,13 @@ table.gt{
   font-size:13px;
   table-layout:fixed;   /* ← enforces fixed column widths */
 }
-table.gt col.c-course  {width:33%}
-table.gt col.c-assess  {width:18%}
-table.gt col.c-credits {width:7%}
-table.gt col.c-ects    {width:7%}
+table.gt col.c-course  {width:32%}
+table.gt col.c-assess  {width:20%}
+table.gt col.c-credits {width:8%}
+table.gt col.c-year    {width:7%}
 table.gt col.c-score   {width:14%}
 table.gt col.c-grade   {width:10%}
-table.gt col.c-points  {width:11%}
+table.gt col.c-points  {width:9%}
 
 /* Sticky column header row */
 table.gt thead tr th{
@@ -329,9 +330,7 @@ tr.g-block-sep td{
   .icell:nth-last-child(-n+2){border-bottom:1px solid var(--line)}
   .icell:last-child{border-bottom:none}
   .qlinks{grid-template-columns:1fr 1fr}
-  /* On mobile, collapse ECTS column */
-  table.gt col.c-ects{width:0}
-  table.gt th.c-ects-th,table.gt td.c-ects-td{display:none}
+
 }
 </style>
 </head>
@@ -721,7 +720,7 @@ function renderGrades(grades) {
       <col class="c-course">
       <col class="c-assess">
       <col class="c-credits">
-      <col class="c-ects">
+      <col class="c-year">
       <col class="c-score">
       <col class="c-grade">
       <col class="c-points">
@@ -731,7 +730,7 @@ function renderGrades(grades) {
         <th class="tl">Course</th>
         <th class="tl">Assessment</th>
         <th class="tc">Credits</th>
-        <th class="tc c-ects-th">ECTS</th>
+        <th class="tc">Year</th>
         <th class="tl">Score</th>
         <th class="tc">Grade</th>
         <th class="tr">Points</th>
@@ -749,11 +748,7 @@ function renderGrades(grades) {
       rows.forEach(r => {
         const score    = (r.numericScore !== undefined && r.numericScore !== '') ? Number(r.numericScore) : null;
         const pct      = score !== null ? Math.min(score, 100) : 0;
-        const credVal  = (r.course.credits !== undefined && r.course.credits !== 'TBC') ? r.course.credits : null;
-        const ectsVal  = (r.course.ects    !== undefined && r.course.ects    !== 'TBC') ? r.course.ects    : null;
-
-        const credHtml = credVal !== null ? credVal : '<span class="tbc-pill">TBC</span>';
-        const ectsHtml = ectsVal !== null ? ectsVal : '<span class="tbc-pill">TBC</span>';
+        const credHtml = '<span class="tbc-pill">TBC</span>';
 
         const scoreHtml = score !== null
           ? `<div class="score-cell"><span class="sbar"><span class="sbar-fill" data-pct="${pct}" style="width:0"></span></span>${score}</div>`
@@ -766,7 +761,7 @@ function renderGrades(grades) {
         <td class="tl" style="font-weight:500" title="${r.course.name}">${r.course.name}</td>
         <td class="tl" style="color:var(--ink3);font-size:12px" title="${r.course.assessment}">${r.course.assessment}</td>
         <td class="tc">${credHtml}</td>
-        <td class="tc c-ects-td">${ectsHtml}</td>
+        <td class="tc" style="color:var(--ink3);font-size:12px">${r.year || '—'}</td>
         <td class="tl">${scoreHtml}</td>
         <td class="tc"><span class="gbadge ${gc(r.grade)}">${r.grade || '—'}</span></td>
         <td class="tr" style="font-weight:600">${ptVal}</td>
