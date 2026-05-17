@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>UM2 · Student Information System</title>
-<link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -589,6 +589,72 @@ tr.g-block-sep td{
 }
 
 
+/* ── REQUESTED PRINT DOCUMENT OVERRIDES — black/white official layout ── */
+:root{--print-x:20mm;--print-y:12mm}
+#printConfirmation .print-doc,
+#printTranscriptDoc .tsc-paper,
+#printConfirmation .print-doc *,
+#printTranscriptDoc .tsc-paper *{font-family:'Roboto',Arial,sans-serif!important;color:#111!important}
+#printConfirmation .tsc-topbar,
+#printTranscriptDoc .tsc-topbar,
+#printConfirmation .tsc-divider,
+#printTranscriptDoc .tsc-divider{display:none!important}
+#printConfirmation .tsc-letterhead,
+#printTranscriptDoc .tsc-letterhead{padding:16mm var(--print-x) 8mm!important;gap:8mm!important;border-bottom:none!important}
+#printConfirmation .tsc-logo,
+#printTranscriptDoc .tsc-logo{width:27mm!important;height:33mm!important;object-fit:contain!important;image-rendering:auto!important}
+#printConfirmation .tsc-univ-name,
+#printTranscriptDoc .tsc-univ-name{font-family:'Roboto',Arial,sans-serif!important;font-size:18px!important;font-weight:700!important;color:#111!important}
+#printConfirmation .tsc-council,
+#printTranscriptDoc .tsc-council{color:#333!important;letter-spacing:2px!important}
+#printConfirmation .tsc-doc-title,
+#printTranscriptDoc .tsc-doc-title{background:transparent!important;color:#111!important;border:1px solid #111!important;border-radius:0!important;padding:4px 12px!important;font-weight:700!important;letter-spacing:2px!important}
+#printConfirmation .tsc-ref-block,
+#printTranscriptDoc .tsc-ref-block{min-width:34mm!important;margin-right:7mm!important;padding-right:0!important;text-align:left!important}
+#printConfirmation .tsc-ref-row,
+#printTranscriptDoc .tsc-ref-row{grid-template-columns:18mm 1fr!important;gap:3mm!important}
+#printConfirmation .pdoc-body{padding:10mm var(--print-x) 0!important;line-height:1.72!important}
+#printConfirmation .pdoc-table,
+#printTranscriptDoc .tsc-grades-wrap .g-wrap{border-top:1px solid #bbb!important;border-bottom:1px solid #bbb!important}
+#printConfirmation .pdoc-table tr,
+#printTranscriptDoc .tsc-grades-wrap table.gt td{border-bottom:1px solid #ddd!important}
+#printConfirmation .pdoc-lbl{padding:3.2mm 6mm 3.2mm 0!important;color:#333!important}
+#printConfirmation .pdoc-val{padding:3.2mm 0!important;color:#111!important}
+#printConfirmation .pdoc-footer,
+#printTranscriptDoc .tsc-footer{border-top:none!important;margin-top:11mm!important;padding-top:0!important;align-items:flex-start!important;gap:3mm!important;position:relative!important;z-index:1!important}
+#printConfirmation .pdoc-footer{display:flex!important;flex-direction:column!important;margin-left:var(--print-x)!important;margin-right:var(--print-x)!important}
+#printConfirmation .pdoc-seal{order:1!important;margin:0 0 2mm 48mm!important;align-self:flex-start!important}
+#printConfirmation .pdoc-seal-img{width:34mm!important;height:34mm!important;opacity:.88!important;filter:grayscale(100%) contrast(110%)!important}
+#printConfirmation .pdoc-sig-block{order:2!important;min-width:92mm!important}
+#printConfirmation .pdoc-sig-line,
+#printTranscriptDoc .tsc-sig-line{border-bottom:1px solid #111!important;width:64mm!important}
+#printConfirmation .tsc-esign-badge,
+#printTranscriptDoc .tsc-esign-badge{background:transparent!important;border:none!important;padding:0!important;color:#1a5fb4!important;font-style:normal!important;font-weight:500!important}
+#printConfirmation .tsc-esign-badge *,
+#printTranscriptDoc .tsc-esign-badge *{color:#1a5fb4!important;stroke:#1a5fb4!important}
+#printConfirmation .tsc-esign-badge svg,
+#printTranscriptDoc .tsc-esign-badge svg{display:none!important}
+#printTranscriptDoc .tsc-identity{background:#fff!important;border-top:1px solid #ddd!important;border-bottom:1px solid #ddd!important;padding:6mm var(--print-x)!important}
+#printTranscriptDoc .tsc-gpa-badge{background:#fff!important;color:#111!important;border:1px solid #111!important;border-radius:0!important}
+#printTranscriptDoc .tsc-section-head{background:#fff!important;border-bottom:1px solid #ddd!important;color:#111!important}
+#printTranscriptDoc .tsc-grades-wrap .g-year-head{background:#fff!important;color:#111!important;border-bottom:1px solid #ccc!important}
+#printTranscriptDoc .tsc-grades-wrap .g-year-head::before{display:none!important}
+#printTranscriptDoc .tsc-grades-wrap table.gt thead tr th{background:#fff!important;color:#111!important;border-top:none!important;border-bottom:1px solid #bbb!important}
+#printTranscriptDoc .gbadge{background:#fff!important;color:#111!important;border:1px solid #111!important}
+#printTranscriptDoc .tsc-footer{display:flex!important;flex-direction:column!important;padding-left:var(--print-x)!important;padding-right:var(--print-x)!important}
+#printTranscriptDoc .tsc-stamp-col{order:1!important;align-items:flex-start!important;margin-left:50mm!important;margin-bottom:1mm!important}
+#printTranscriptDoc .tsc-seal-img{width:36mm!important;height:36mm!important;opacity:.88!important;filter:grayscale(100%) contrast(110%)!important}
+#printTranscriptDoc .tsc-sig-left{order:2!important;width:100%!important}
+#printTranscriptDoc .tsc-bottombar{background:#fff!important;color:#111!important;border-top:1px solid #ccc!important;padding:3mm var(--print-x)!important;font-size:8px!important}
+#printTranscriptDoc .tsc-bottombar span{color:#111!important}
+#printConfirmation .pdoc-watermark{position:fixed!important;bottom:80px!important;right:60px!important;top:auto!important;left:auto!important;transform:none!important;font-family:'Roboto',Arial,sans-serif!important;font-size:120px!important;color:rgba(0,0,0,.035)!important;font-weight:700!important;letter-spacing:-4px!important;text-align:left!important}
+#printTranscriptDoc .tsc-watermark{position:fixed!important;bottom:60px!important;right:40px!important;top:auto!important;left:auto!important;transform:none!important;font-family:'Roboto',Arial,sans-serif!important;font-size:160px!important;color:rgba(0,0,0,.03)!important;font-weight:700!important;letter-spacing:-6px!important;text-align:left!important}
+@media print{
+  #printConfirmation[style*="block"] .pdoc-watermark{bottom:80px!important;right:60px!important;top:auto!important;left:auto!important;transform:none!important}
+  #printTranscriptDoc[style*="block"] .tsc-watermark{bottom:60px!important;right:40px!important;top:auto!important;left:auto!important;transform:none!important}
+}
+
+
 /* ── RESPONSIVE ── */
 @media(max-width:700px){
   .login-left{display:none}
@@ -849,7 +915,6 @@ tr.g-block-sep td{
             </div>
             <div class="tsc-ref-block">
               <div class="tsc-ref-row"><span class="tsc-ref-lbl">Date Issued</span><span class="tsc-ref-val pdoc-date">—</span></div>
-              <div class="tsc-ref-row"><span class="tsc-ref-lbl">Document No.</span><span class="tsc-ref-val tsc-docno">—</span></div>
             </div>
           </div>
           <div class="tsc-divider"></div>
@@ -906,7 +971,6 @@ tr.g-block-sep td{
             </div>
             <div class="tsc-ref-block">
               <div class="tsc-ref-row"><span class="tsc-ref-lbl">Date Issued</span><span class="tsc-ref-val pdoc-date">—</span></div>
-              <div class="tsc-ref-row"><span class="tsc-ref-lbl">Document No.</span><span class="tsc-ref-val tsc-docno">—</span></div>
             </div>
           </div>
 
@@ -1298,12 +1362,7 @@ function getStudentData() {
 function fillDocFields(containerId, s, gpa) {
   const el = document.getElementById(containerId);
   const today = new Date().toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'});
-  // Clear official document number: UM2/IUC/YYYY/MM/STUDENTID
-  const now = new Date();
-  const safeId = String(s.id || 'XXX').replace(/[^A-Za-z0-9]/g, '').toUpperCase();
-  const docNo = 'UM2/IUC/' + now.getFullYear() + '/' + String(now.getMonth()+1).padStart(2,'0') + '/' + safeId;
   el.querySelectorAll('.pdoc-date,.tsc-ref-val.pdoc-date').forEach(e => e.textContent = today);
-  el.querySelectorAll('.tsc-docno').forEach(e => e.textContent = docNo);
   el.querySelectorAll('.pdoc-fullname,.tsc-id-val.pdoc-fullname').forEach(e => e.textContent = s.fullName || '—');
   el.querySelectorAll('.pdoc-id').forEach(e => e.textContent = s.id || '—');
   el.querySelectorAll('.pdoc-dob,.tsc-dob').forEach(e => e.textContent = s.birthDate || '—');
