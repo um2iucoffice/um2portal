@@ -30,8 +30,8 @@ body{font-family:'DM Sans',sans-serif;background:var(--surface);color:var(--ink)
 .login-crest{margin-bottom:auto}
 .login-logo{width:80px;height:100px;object-fit:contain;margin-bottom:24px;display:block}
 .login-institution{font-size:10px;letter-spacing:3px;text-transform:uppercase;color:rgba(255,255,255,0.3);margin-bottom:10px}
-.login-tagline{font-family:'Libre Baskerville',serif;font-size:28px;color:var(--white);line-height:1.25}
-.login-tagline em{font-style:italic;color:rgba(255,255,255,0.45)}
+.login-tagline{font-family:'Libre Baskerville',serif;font-size:32px;color:var(--white);line-height:1.2;letter-spacing:-.3px}
+.login-tagline em{font-style:italic;color:rgba(255,255,255,0.5);font-size:0.95em}
 .login-footer-txt{font-size:11px;color:rgba(255,255,255,0.2);line-height:1.6}
 .login-right{flex:1;display:flex;align-items:center;justify-content:center;padding:40px}
 .login-form-wrap{width:100%;max-width:380px}
@@ -321,7 +321,21 @@ tr.g-block-sep td{
 /* ── RESPONSIVE ── */
 @media(max-width:700px){
   .login-left{display:none}
-  .login-right{padding:32px 24px}
+  .login-right{
+    padding:0;
+    align-items:flex-start;
+    overflow-y:auto;
+    -webkit-overflow-scrolling:touch;
+  }
+  .login-form-wrap{
+    width:100%;
+    max-width:100%;
+    padding:40px 24px 60px;
+    min-height:100vh;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+  }
   .header-inner,.nav-inner,.main{padding-left:16px;padding-right:16px}
   .banner{grid-template-columns:1fr;gap:12px}
   .gpa-block{text-align:left}
@@ -330,7 +344,6 @@ tr.g-block-sep td{
   .icell:nth-last-child(-n+2){border-bottom:1px solid var(--line)}
   .icell:last-child{border-bottom:none}
   .qlinks{grid-template-columns:1fr 1fr}
-
 }
 </style>
 </head>
@@ -556,6 +569,17 @@ const COURSES = {
 };
 
 // ── Auth ─────────────────────────────────────────────────────
+// Restore session on page load / refresh
+(function restoreSession() {
+  try {
+    const saved = sessionStorage.getItem('um2_session');
+    if (saved) {
+      const {student, grades} = JSON.parse(saved);
+      if (student) { showDashboard(student, grades || []); return; }
+    }
+  } catch(e) {}
+})();
+
 document.addEventListener('keydown', e => {
   if (e.key === 'Enter' && !document.getElementById('loginScreen').classList.contains('hidden')) doLogin();
 });
@@ -597,11 +621,17 @@ function handleAuth(r) {
     document.getElementById('loginPassword').focus();
     return;
   }
-  populate(r.student, r.grades || []);
+  // Persist session so refresh doesn't log the user out
+  try { sessionStorage.setItem('um2_session', JSON.stringify({student: r.student, grades: r.grades || []})); } catch(e){}
+  showDashboard(r.student, r.grades || []);
+}
+
+function showDashboard(student, grades) {
+  populate(student, grades);
   document.getElementById('loginScreen').classList.add('hidden');
   setTimeout(() => {
     document.getElementById('dashboard').classList.add('show');
-    animGpa(parseFloat(r.student.overallGPA) || 0);
+    animGpa(parseFloat(student.overallGPA) || 0);
   }, 100);
 }
 
@@ -793,6 +823,7 @@ function switchTab(id, btn) {
 
 // ── Sign out ──────────────────────────────────────────────────
 function doSignOut() {
+  try { sessionStorage.removeItem('um2_session'); } catch(e){}
   document.getElementById('dashboard').classList.remove('show');
   document.getElementById('dashboard').style.display = 'none';
   document.getElementById('loginScreen').classList.remove('hidden');
