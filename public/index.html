@@ -682,6 +682,72 @@ tr.g-block-sep td{
   .icell:last-child{border-bottom:none}
   .qlinks{grid-template-columns:1fr 1fr}
 }
+
+
+/* ── FINAL OFFICIAL PRINT UPDATES ── */
+#printConfirmation .print-doc,
+#printTranscriptDoc .tsc-paper,
+#printConfirmation .print-doc *,
+#printTranscriptDoc .tsc-paper *{
+  font-family:"Times New Roman", Times, serif!important;
+}
+
+/* Keep document titles clean without the black title line */
+#printConfirmation .tsc-doc-title{
+  border:none!important;
+  background:transparent!important;
+  padding:0!important;
+  margin:0!important;
+  letter-spacing:1.6px!important;
+}
+
+#printConfirmation .tsc-divider{display:none!important}
+
+.official-study-note{
+  margin-top:5px;
+  font-size:10.5px;
+  font-style:italic;
+  line-height:1.35;
+  color:#111!important;
+  text-align:center;
+  letter-spacing:.1px;
+}
+
+/* Blue official seal and slightly higher position above signature */
+#printConfirmation .pdoc-seal{
+  order:1!important;
+  margin:-7mm 0 1.5mm 45mm!important;
+  align-self:flex-start!important;
+}
+#printConfirmation .pdoc-seal-img,
+#printTranscriptDoc .tsc-seal-img{
+  filter:brightness(0) saturate(100%) invert(27%) sepia(88%) saturate(1860%) hue-rotate(204deg) brightness(90%) contrast(96%)!important;
+  opacity:.92!important;
+}
+#printTranscriptDoc .tsc-stamp-col{
+  order:1!important;
+  align-items:flex-start!important;
+  margin-left:50mm!important;
+  margin-top:-6mm!important;
+  margin-bottom:1mm!important;
+}
+
+/* Signature label: only Registrar / Secretariat */
+#printConfirmation .pdoc-sig-name,
+#printTranscriptDoc .tsc-sig-name{
+  font-weight:700!important;
+}
+#printConfirmation .pdoc-sig-title,
+#printTranscriptDoc .tsc-sig-title{
+  display:none!important;
+}
+
+/* Transcript official record paragraph */
+#printTranscriptDoc .tsc-official-record{
+  text-align:justify!important;
+  text-justify:inter-word;
+}
+
 </style>
 </head>
 <body>
@@ -912,6 +978,7 @@ tr.g-block-sep td{
               <div class="tsc-univ-name">University of Medicine (2)</div>
               <div class="tsc-council">Interim University Council</div>
               <div class="tsc-doc-title">CONFIRMATION OF STUDENT ENROLLMENT</div>
+              <div class="official-study-note">This is to confirm the study under the administration of the Interim University Council.</div>
             </div>
             <div class="tsc-ref-block">
               <div class="tsc-ref-row"><span class="tsc-ref-lbl">Date Issued</span><span class="tsc-ref-val pdoc-date">—</span></div>
@@ -938,8 +1005,7 @@ tr.g-block-sep td{
                 Electronically signed via UM2 Student Information System
               </div>
               <div class="pdoc-sig-line"></div>
-              <div class="pdoc-sig-name">Registrar</div>
-              <div class="pdoc-sig-title">Registrar / Secretariat Office</div>
+              <div class="pdoc-sig-name">Registrar / Secretariat</div>
               <div class="pdoc-sig-inst">University of Medicine (2) Interim University Council</div>
             </div>
             <div class="pdoc-seal">
@@ -1006,7 +1072,7 @@ tr.g-block-sep td{
           <!-- FOOTER / SIGNATURE -->
           <div class="tsc-footer">
             <div class="tsc-sig-left">
-              <p class="tsc-note">This transcript is an official record issued by the Student Information System of the University of Medicine (2) Interim University Council. Any alteration renders this document invalid.</p>
+              <p class="tsc-note tsc-official-record">This transcript is an official record issued by the Student Information System of the University of Medicine (2) Interim University Council. Any alteration renders this document invalid.</p>
               <div class="tsc-esign-badge">
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#8B1A2E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
                 Electronically signed via UM2 Student Information System
