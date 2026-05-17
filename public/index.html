@@ -58,20 +58,20 @@ body{font-family:'DM Sans',sans-serif;background:var(--surface);color:var(--ink)
 /* ── HEADER ── */
 .header{background:var(--white);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:50}
 .header-inner{max-width:1120px;margin:0 auto;padding:0 28px;height:56px;display:flex;align-items:center;gap:16px}
-.h-brand{display:flex;align-items:center;gap:12px;margin-right:auto;min-width:0}
-.h-badge{background:var(--crimson);color:var(--white);font-family:'Libre Baskerville',serif;font-size:13px;padding:4px 10px;border-radius:4px;letter-spacing:.5px;flex-shrink:0}
-.h-name{font-size:13px;color:var(--ink3);font-weight:400;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.h-divider{width:1px;height:20px;background:var(--line);flex-shrink:0}
-.h-user{font-size:13px;color:var(--ink2);font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:180px}
+.h-brand{display:flex;align-items:center;gap:12px;margin-right:auto}
+.h-badge{background:var(--crimson);color:var(--white);font-family:'Libre Baskerville',serif;font-size:13px;padding:4px 10px;border-radius:4px;letter-spacing:.5px}
+.h-name{font-size:13px;color:var(--ink3);font-weight:400}
+.h-divider{width:1px;height:20px;background:var(--line)}
+.h-user{font-size:13px;color:var(--ink2);font-weight:500}
 .h-user span{color:var(--ink3);font-weight:400;margin-right:4px}
-.btn-out{font-family:'DM Sans',sans-serif;font-size:12px;color:var(--ink3);background:none;border:1px solid var(--line);border-radius:4px;padding:5px 12px;cursor:pointer;transition:all .15s;flex-shrink:0;white-space:nowrap}
+.btn-out{font-family:'DM Sans',sans-serif;font-size:12px;color:var(--ink3);background:none;border:1px solid var(--line);border-radius:4px;padding:5px 12px;cursor:pointer;transition:all .15s}
 .btn-out:hover{border-color:var(--crimson);color:var(--crimson)}
 
 /* ── NAV ── */
 .nav{background:var(--white);border-bottom:1px solid var(--line)}
-.nav-inner{max-width:1120px;margin:0 auto;padding:0 28px;display:flex;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.nav-inner{max-width:1120px;margin:0 auto;padding:0 28px;display:flex;overflow-x:auto;scrollbar-width:none}
 .nav-inner::-webkit-scrollbar{display:none}
-.ntab{padding:13px 16px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:400;color:var(--ink3);background:none;border:none;border-bottom:2px solid transparent;cursor:pointer;white-space:nowrap;transition:color .15s,border-color .15s;-webkit-tap-highlight-color:transparent}
+.ntab{padding:13px 16px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:400;color:var(--ink3);background:none;border:none;border-bottom:2px solid transparent;cursor:pointer;white-space:nowrap;transition:color .15s,border-color .15s}
 .ntab:hover{color:var(--ink)}
 .ntab.active{color:var(--crimson);border-bottom-color:var(--crimson);font-weight:500}
 .ntab.ext::after{content:'↗';font-size:10px;margin-left:4px;opacity:.5}
@@ -117,11 +117,11 @@ body{font-family:'DM Sans',sans-serif;background:var(--surface);color:var(--ink)
 .icell:nth-child(odd){border-right:1px solid var(--line)}
 .icell:nth-last-child(-n+2){border-bottom:none}
 .ic-lbl{font-size:10px;font-weight:600;letter-spacing:.9px;text-transform:uppercase;color:var(--ink3);margin-bottom:3px}
-.ic-val{font-size:13px;color:var(--ink);word-break:break-word}
+.ic-val{font-size:13px;color:var(--ink)}
 
 /* ── QUICK LINKS ── */
 .qlinks{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px;margin-bottom:16px}
-.ql{background:var(--white);border:1px solid var(--line);border-radius:8px;padding:16px 18px;cursor:pointer;transition:border-color .15s,box-shadow .15s,transform .12s;text-align:left;-webkit-tap-highlight-color:transparent}
+.ql{background:var(--white);border:1px solid var(--line);border-radius:8px;padding:16px 18px;cursor:pointer;transition:border-color .15s,box-shadow .15s,transform .12s;text-align:left}
 .ql:hover{border-color:var(--crimson);box-shadow:0 2px 12px rgba(139,26,46,.08);transform:translateY(-1px)}
 .ql.dim{opacity:.4;cursor:not-allowed;pointer-events:none}
 .ql-bar{width:24px;height:2px;background:var(--crimson);border-radius:99px;margin-bottom:10px}
@@ -129,38 +129,93 @@ body{font-family:'DM Sans',sans-serif;background:var(--surface);color:var(--ink)
 .ql-s{font-size:11px;color:var(--ink3)}
 
 /* ══════════════════════════════════════════
-   GRADES
+   GRADES — complete redesign for alignment
    ══════════════════════════════════════════ */
+
+/* Student identity strip at top of grades panel */
 .grades-student-strip{
-  background:var(--white);border:1px solid var(--line);border-radius:8px;
-  padding:16px 20px;margin-bottom:20px;display:flex;align-items:center;gap:20px;
-  position:relative;overflow:hidden;
+  background:var(--white);
+  border:1px solid var(--line);
+  border-radius:8px;
+  padding:16px 20px;
+  margin-bottom:20px;
+  display:flex;
+  align-items:center;
+  gap:20px;
+  position:relative;
+  overflow:hidden;
 }
 .grades-student-strip::before{
   content:'';position:absolute;left:0;top:0;bottom:0;width:3px;
   background:var(--crimson);border-radius:3px 0 0 3px;
 }
 .gss-avatar{
-  width:40px;height:40px;border-radius:6px;background:var(--crimson-light);
+  width:40px;height:40px;border-radius:6px;
+  background:var(--crimson-light);
   display:flex;align-items:center;justify-content:center;
-  font-family:'Libre Baskerville',serif;font-size:15px;color:var(--crimson);flex-shrink:0;
+  font-family:'Libre Baskerville',serif;font-size:15px;color:var(--crimson);
+  flex-shrink:0;
 }
 .gss-info{flex:1;min-width:0}
-.gss-name{font-family:'Libre Baskerville',serif;font-size:15px;font-weight:700;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:2px}
+.gss-name{
+  font-family:'Libre Baskerville',serif;
+  font-size:15px;font-weight:700;color:var(--ink);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  margin-bottom:2px;
+}
 .gss-id{font-size:11px;color:var(--ink3);letter-spacing:.5px}
-.gss-right{text-align:right;flex-shrink:0;min-width:60px}
+.gss-right{text-align:right;flex-shrink:0}
 .gss-gpa-lbl{font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--ink3);display:block;margin-bottom:1px}
 .gss-gpa-val{font-family:'Libre Baskerville',serif;font-size:26px;color:var(--crimson);line-height:1;display:block}
 .gss-gpa-den{font-size:11px;color:var(--ink3)}
 
-.g-wrap{background:var(--white);border:1px solid var(--line);border-radius:8px;overflow:hidden;margin-bottom:16px}
-.g-year-head{padding:9px 20px;background:var(--ink);font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.7);display:flex;align-items:center;gap:10px}
-.g-year-head::before{content:'';display:inline-block;width:3px;height:12px;background:var(--crimson-mid);border-radius:2px;flex-shrink:0}
+/* Year wrapper */
+.g-wrap{
+  background:var(--white);
+  border:1px solid var(--line);
+  border-radius:8px;
+  overflow:hidden;
+  margin-bottom:16px;
+}
 
-/* Scrollable grades wrapper on mobile */
-.g-table-scroll{width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch}
+/* Year heading strip */
+.g-year-head{
+  padding:9px 20px;
+  background:var(--ink);
+  font-size:9px;font-weight:700;
+  letter-spacing:2px;text-transform:uppercase;
+  color:rgba(255,255,255,0.7);
+  display:flex;align-items:center;gap:10px;
+}
+.g-year-head::before{
+  content:'';display:inline-block;
+  width:3px;height:12px;
+  background:var(--crimson-mid);
+  border-radius:2px;flex-shrink:0;
+}
 
-table.gt{width:100%;border-collapse:collapse;font-size:13px;table-layout:fixed;min-width:480px}
+/*
+  THE KEY TO PERFECT ALIGNMENT:
+  One single <table> per academic year that spans ALL blocks.
+  Block separators are <tr class="g-block-sep"> rows inside the same table.
+  This guarantees every column header and every data cell share
+  exactly the same column widths — no separate tables, no drift.
+
+  Column layout (fixed widths, no auto):
+  col.c-course    : 34%  — course name (takes remaining space)
+  col.c-assess    : 18%  — assessment type
+  col.c-credits   : 7%   — credits (centred)
+  col.c-ects      : 7%   — ECTS (centred)
+  col.c-score     : 14%  — score bar + number
+  col.c-grade     : 9%   — grade badge (centred)
+  col.c-points    : 11%  — grade points (right-aligned)
+*/
+table.gt{
+  width:100%;
+  border-collapse:collapse;
+  font-size:13px;
+  table-layout:fixed;   /* ← enforces fixed column widths */
+}
 table.gt col.c-course  {width:32%}
 table.gt col.c-assess  {width:20%}
 table.gt col.c-credits {width:8%}
@@ -169,112 +224,113 @@ table.gt col.c-score   {width:14%}
 table.gt col.c-grade   {width:10%}
 table.gt col.c-points  {width:9%}
 
+/* Sticky column header row */
 table.gt thead tr th{
-  padding:9px 14px;font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;
-  color:var(--ink3);background:var(--surface);border-bottom:1px solid var(--line);
-  border-top:1px solid var(--line);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
-  /* sticky disabled inside overflow-x:auto — works on desktop, skip on mobile */
+  padding:9px 14px;
+  font-size:9px;font-weight:700;
+  letter-spacing:1.5px;text-transform:uppercase;
+  color:var(--ink3);
+  background:var(--surface);
+  border-bottom:1px solid var(--line);
+  border-top:1px solid var(--line);
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  position:sticky;top:56px;z-index:1; /* sticks below the site header */
 }
+
+/* Column-specific alignment */
 table.gt th.tc,table.gt td.tc{text-align:center}
 table.gt th.tr,table.gt td.tr{text-align:right}
 table.gt th.tl,table.gt td.tl{text-align:left}
-table.gt td{padding:11px 14px;border-bottom:1px solid var(--line);color:var(--ink);vertical-align:middle;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+/* Data cells */
+table.gt td{
+  padding:11px 14px;
+  border-bottom:1px solid var(--line);
+  color:var(--ink);
+  vertical-align:middle;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
 table.gt tbody tr:last-child td{border-bottom:none}
 table.gt tbody tr:hover td{background:#FAFBFC}
 
-tr.g-block-sep td{padding:6px 14px 5px;background:#F7F8FA;border-top:1px solid var(--line);border-bottom:1px solid var(--line);font-size:11px;color:var(--ink3);font-weight:500;font-style:italic;white-space:nowrap;overflow:hidden}
+/* Block separator row inside the shared table */
+tr.g-block-sep td{
+  padding:6px 14px 5px;
+  background:#F7F8FA;
+  border-top:1px solid var(--line);
+  border-bottom:1px solid var(--line);
+  font-size:11px;
+  color:var(--ink3);
+  font-weight:500;
+  font-style:italic;
+  white-space:nowrap;
+  overflow:hidden;
+}
 
-.gbadge{display:inline-block;min-width:34px;text-align:center;padding:2px 6px;border-radius:3px;font-size:12px;font-weight:600}
+/* Grade badges */
+.gbadge{
+  display:inline-block;
+  min-width:34px;
+  text-align:center;
+  padding:2px 6px;
+  border-radius:3px;
+  font-size:12px;font-weight:600;
+}
 .gAp,.gA {background:#EBF5F0;color:#1A5C3A}
 .gAm     {background:#EEEAF8;color:#4A2FA0}
 .gBp,.gB {background:var(--gold-light);color:var(--gold)}
 .gX      {background:var(--surface);color:var(--ink3)}
 
-.sbar{display:inline-block;width:36px;height:3px;background:var(--line);border-radius:99px;overflow:hidden;vertical-align:middle;margin-right:6px;flex-shrink:0}
-.sbar-fill{height:100%;background:linear-gradient(90deg,var(--crimson),var(--gold));border-radius:99px;transition:width .8s ease}
+/* Score mini-bar */
+.sbar{
+  display:inline-block;
+  width:36px;height:3px;
+  background:var(--line);
+  border-radius:99px;
+  overflow:hidden;
+  vertical-align:middle;
+  margin-right:6px;
+  flex-shrink:0;
+}
+.sbar-fill{
+  height:100%;
+  background:linear-gradient(90deg,var(--crimson),var(--gold));
+  border-radius:99px;
+  transition:width .8s ease;
+}
 .score-cell{display:flex;align-items:center;white-space:nowrap}
 
-.tbc-pill{display:inline-block;font-size:10px;font-weight:600;letter-spacing:.5px;color:var(--ink3);background:var(--surface);border:1px solid var(--line);border-radius:3px;padding:1px 6px}
+/* TBC pill */
+.tbc-pill{
+  display:inline-block;
+  font-size:10px;font-weight:600;
+  letter-spacing:.5px;
+  color:var(--ink3);
+  background:var(--surface);
+  border:1px solid var(--line);
+  border-radius:3px;
+  padding:1px 6px;
+}
 
 .no-g{padding:36px;text-align:center;color:var(--ink3);font-size:13px}
 
-/* Desktop: sticky thead is safe (no overflow-x wrapper) */
-@media(min-width:701px){
-  table.gt thead tr th{position:sticky;top:56px;z-index:1}
-}
-
-/* ══════════════════════════════════════════
-   RESPONSIVE — MOBILE
-   ══════════════════════════════════════════ */
+/* ── RESPONSIVE ── */
 @media(max-width:700px){
-  /* Login */
   .login-left{display:none}
   .login-right{padding:32px 24px}
-
-  /* Header — hide label, keep badge + email + signout */
-  .header-inner{padding:0 16px;gap:10px}
-  .h-name,.h-divider{display:none}
-  .h-user{font-size:12px;max-width:140px}
-
-  /* Nav */
-  .nav-inner{padding:0 8px}
-  .ntab{padding:12px 12px;font-size:12px}
-
-  /* Main */
-  .main{padding:20px 16px 80px}
-
-  /* Page header */
-  .ph{margin-bottom:18px}
-  .ph h2{font-size:20px}
-
-  /* Banner — stack vertically */
-  .banner{grid-template-columns:48px 1fr;grid-template-rows:auto auto;gap:14px 12px;padding:18px 20px}
-  .avatar{width:48px;height:48px;font-size:18px}
-  .b-name h1{font-size:17px}
-  .gpa-block{grid-column:1/-1;text-align:left;display:flex;align-items:baseline;gap:8px}
-  .gpa-big{font-size:32px}
-  .gpa-block .lbl{margin-bottom:0}
-  .gpa-den{margin-top:0}
-
-  /* GPA bar card */
-  .gpa-bar-card{flex-wrap:wrap;gap:10px;padding:14px 16px}
-  .gba-lbl{width:100%;font-size:11px}
-  .gba-track{min-width:0}
-
-  /* Info grid — single column */
+  .header-inner,.nav-inner,.main{padding-left:16px;padding-right:16px}
+  .banner{grid-template-columns:1fr;gap:12px}
+  .gpa-block{text-align:left}
   .igrid{grid-template-columns:1fr}
   .icell:nth-child(odd){border-right:none}
   .icell:nth-last-child(-n+2){border-bottom:1px solid var(--line)}
   .icell:last-child{border-bottom:none}
+  .qlinks{grid-template-columns:1fr 1fr}
 
-  /* Quick links — 2 col */
-  .qlinks{grid-template-columns:1fr 1fr;gap:8px}
-  .ql{padding:14px}
-
-  /* Grades student strip */
-  .grades-student-strip{padding:14px 16px;gap:12px}
-  .gss-name{font-size:14px}
-  .gss-gpa-val{font-size:22px}
-
-  /* Grade tables scroll horizontally — hide Credits & Year cols to save space */
-  .g-table-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
-  .g-year-head{padding:8px 16px}
-  table.gt col.c-credits,table.gt col.c-year{width:0}
-  table.gt th.hide-m,table.gt td.hide-m{display:none}
-  /* Redistribute freed space */
-  table.gt col.c-course {width:38%}
-  table.gt col.c-assess {width:24%}
-  table.gt col.c-score  {width:18%}
-  table.gt col.c-grade  {width:12%}
-  table.gt col.c-points {width:8%}
-  table.gt{min-width:0;font-size:12px}
-  table.gt td{padding:10px 10px}
-  table.gt thead tr th{padding:8px 10px}
-}
-
-@media(max-width:400px){
-  .qlinks{grid-template-columns:1fr}
-  .h-user{display:none}
 }
 </style>
 </head>
@@ -417,6 +473,8 @@ tr.g-block-sep td{padding:6px 14px 5px;background:#F7F8FA;border-top:1px solid v
     <!-- GRADES -->
     <div class="panel" id="panel-grades">
       <div class="ph"><h2>Academic Results</h2><p>Grades &amp; performance by course</p></div>
+
+      <!-- Student identity strip — populated by JS -->
       <div class="grades-student-strip" id="gradesStudentStrip" style="display:none">
         <div class="gss-avatar"><span id="gssInitials">—</span></div>
         <div class="gss-info">
@@ -429,6 +487,7 @@ tr.g-block-sep td{padding:6px 14px 5px;background:#F7F8FA;border-top:1px solid v
           <span class="gss-gpa-den">/ 4.00</span>
         </div>
       </div>
+
       <div id="gradesContent">
         <div class="g-wrap"><div class="no-g">Loading results…</div></div>
       </div>
@@ -439,6 +498,8 @@ tr.g-block-sep td{padding:6px 14px 5px;background:#F7F8FA;border-top:1px solid v
 
 <script>
 // ── Course catalog ────────────────────────────────────────────
+// Credits: Foundation Year values from UM2 curriculum documentation.
+// ECTS: indicative equivalents (1 UM2 credit ≈ 1 ECTS for now; update when confirmed).
 const COURSES = {
   CRS001:{name:'Myanmar Language',               year:'Foundation Year',block:'Block 1 — Foundation for Science',          credits:5,  ects:5,  assessment:'Written Exam'},
   CRS002:{name:'English Language',               year:'Foundation Year',block:'Block 1 — Foundation for Science',          credits:5,  ects:5,  assessment:'Written Exam'},
@@ -494,38 +555,6 @@ const COURSES = {
   CRS052:{name:'SSC — Clinical Special Interest Attachment',year:'M-5',block:'Senior Clerkship',credits:5,ects:5,assessment:'Portfolio / log'},
 };
 
-// ── Session persistence ───────────────────────────────────────
-// localStorage persists across refreshes and browser restarts.
-// restoreSession() is called at the bottom after all functions are defined.
-const SESSION_KEY = 'um2_session';
-
-function saveSession(student, grades) {
-  try { localStorage.setItem(SESSION_KEY, JSON.stringify({ student, grades })); } catch(e) {}
-}
-
-function loadSession() {
-  try {
-    const raw = localStorage.getItem(SESSION_KEY);
-    return raw ? JSON.parse(raw) : null;
-  } catch(e) { return null; }
-}
-
-function clearSession() {
-  try { localStorage.removeItem(SESSION_KEY); } catch(e) {}
-}
-
-function restoreSession() {
-  const sess = loadSession();
-  if (!sess || !sess.student) return;
-  populate(sess.student, sess.grades || []);
-  document.getElementById('loginScreen').classList.add('hidden');
-  const dash = document.getElementById('dashboard');
-  dash.style.display = 'flex';
-  dash.classList.add('show');
-  const gpaRaw2 = sess.student.overallGPA ?? sess.student.gpa ?? sess.student.GPA ?? sess.student.overall_gpa ?? sess.student.cumulativeGPA ?? 0;
-  animGpa(parseFloat(gpaRaw2) || 0);
-}
-
 // ── Auth ─────────────────────────────────────────────────────
 document.addEventListener('keydown', e => {
   if (e.key === 'Enter' && !document.getElementById('loginScreen').classList.contains('hidden')) doLogin();
@@ -560,8 +589,6 @@ function handleAuth(r) {
   btn.disabled = false;
   btn.textContent = 'Sign in';
   document.getElementById('accessLoading').classList.remove('show');
-  // ── DEBUG: open browser console to see exact API field names ──
-  console.log('API response:', JSON.stringify(r, null, 2));
   if (!r || !r.success) {
     const errEl = document.getElementById('accessError');
     errEl.textContent = r ? r.message : 'Invalid credentials.';
@@ -570,14 +597,11 @@ function handleAuth(r) {
     document.getElementById('loginPassword').focus();
     return;
   }
-  // Save to session before populating
-  saveSession(r.student, r.grades || []);
   populate(r.student, r.grades || []);
   document.getElementById('loginScreen').classList.add('hidden');
   setTimeout(() => {
     document.getElementById('dashboard').classList.add('show');
-    const gpaRaw = r.student.overallGPA ?? r.student.gpa ?? r.student.GPA ?? r.student.overall_gpa ?? r.student.cumulativeGPA ?? 0;
-    animGpa(parseFloat(gpaRaw) || 0);
+    animGpa(parseFloat(r.student.overallGPA) || 0);
   }, 100);
 }
 
@@ -601,20 +625,19 @@ function populate(s, grades) {
   document.getElementById('profileNameMM').textContent   = s.fullNameMM || '';
   document.getElementById('avatarInitials').textContent  = initials;
 
-  // Accept common field name variants from the API
-  const rawGpa = s.overallGPA ?? s.gpa ?? s.GPA ?? s.overall_gpa ?? s.cumulativeGPA ?? null;
-  const gpa = (rawGpa !== null && rawGpa !== '' && !isNaN(parseFloat(rawGpa)))
-    ? String(rawGpa) : '—';
+  const gpa = s.overallGPA || '—';
   document.getElementById('profileGPA').textContent    = gpa;
   document.getElementById('homeGpaVal').textContent    = gpa + ' / 4.00';
   document.getElementById('profileGpaVal').textContent = gpa + ' / 4.00';
 
+  // Tags
   const tags = document.getElementById('profileTags');
   tags.innerHTML = '';
   if (s.currentStatus)    tags.innerHTML += `<span class="tag tag-r">${s.currentStatus}</span>`;
   if (s.enrollmentStatus) tags.innerHTML += `<span class="tag tag-g">${s.enrollmentStatus}</span>`;
   if (s.graduationStatus) tags.innerHTML += `<span class="tag tag-n">${s.graduationStatus}</span>`;
 
+  // Profile info cells
   document.getElementById('infoID').textContent        = s.id               || '—';
   document.getElementById('infoBirth').textContent     = s.birthDate        || '—';
   document.getElementById('infoFather').textContent    = s.fatherName       || '—';
@@ -626,6 +649,7 @@ function populate(s, grades) {
   document.getElementById('infoEnroll').textContent    = s.enrollmentStatus || '—';
   document.getElementById('infoGrad').textContent      = s.graduationStatus || '—';
 
+  // Grades page student strip
   const strip = document.getElementById('gradesStudentStrip');
   strip.style.display = 'flex';
   document.getElementById('gssInitials').textContent = initials;
@@ -661,6 +685,8 @@ function gc(g) {
 }
 
 // ── Render grades ─────────────────────────────────────────────
+// One <table> per academic year; blocks are separator rows inside the SAME table.
+// This is the only way to guarantee pixel-perfect column alignment across blocks.
 function renderGrades(grades) {
   const container = document.getElementById('gradesContent');
   if (!grades || !grades.length) {
@@ -668,11 +694,10 @@ function renderGrades(grades) {
     return;
   }
 
+  // Group by year → block
   const yearMap = {};
   grades.forEach(g => {
-    // Accept common field name variants for the course ID
-    const cid = g.courseId || g.course_id || g.CourseId || g.course || '';
-    const c   = COURSES[cid] || {name: cid || g.courseName || g.course_name || g.name || '—', year:'Other', block:'—', credits:'—', ects:'—', assessment: g.assessment || '—'};
+    const c   = COURSES[g.courseId] || {name:g.courseId, year:'Other', block:'—', credits:'—', ects:'—', assessment:'—'};
     const yr  = c.year;
     const blk = c.block;
     if (!yearMap[yr]) yearMap[yr] = {};
@@ -686,10 +711,10 @@ function renderGrades(grades) {
   ORDER.forEach(yr => {
     if (!yearMap[yr]) return;
 
+    // ── One table for the whole year ──────────────────────────
     html += `
 <div class="g-wrap">
   <div class="g-year-head">${yr}</div>
-  <div class="g-table-scroll">
   <table class="gt">
     <colgroup>
       <col class="c-course">
@@ -704,8 +729,8 @@ function renderGrades(grades) {
       <tr>
         <th class="tl">Course</th>
         <th class="tl">Assessment</th>
-        <th class="tc hide-m">Credits</th>
-        <th class="tc hide-m">Year</th>
+        <th class="tc">Credits</th>
+        <th class="tc">Year</th>
         <th class="tl">Score</th>
         <th class="tc">Grade</th>
         <th class="tr">Points</th>
@@ -714,15 +739,14 @@ function renderGrades(grades) {
     <tbody>`;
 
     Object.entries(yearMap[yr]).forEach(([blkName, rows]) => {
+      // Block separator row — spans all 7 columns
       html += `
       <tr class="g-block-sep">
         <td colspan="7">${blkName}</td>
       </tr>`;
 
       rows.forEach(r => {
-        // Field name variants for score, grade, gradePoint
-        const rawScore = r.numericScore ?? r.numeric_score ?? r.score ?? r.Score ?? null;
-        const score    = (rawScore !== null && rawScore !== '' && !isNaN(Number(rawScore))) ? Number(rawScore) : null;
+        const score    = (r.numericScore !== undefined && r.numericScore !== '') ? Number(r.numericScore) : null;
         const pct      = score !== null ? Math.min(score, 100) : 0;
         const credHtml = '<span class="tbc-pill">TBC</span>';
 
@@ -730,18 +754,16 @@ function renderGrades(grades) {
           ? `<div class="score-cell"><span class="sbar"><span class="sbar-fill" data-pct="${pct}" style="width:0"></span></span>${score}</div>`
           : '—';
 
-        const rawPt  = r.gradePoint ?? r.grade_point ?? r.gradePoints ?? r.points ?? r.Points ?? null;
-        const ptVal  = (rawPt !== null && rawPt !== '' && !isNaN(Number(rawPt))) ? Number(rawPt).toFixed(1) : '—';
-        const rawGrade = r.grade ?? r.Grade ?? r.letterGrade ?? r.letter_grade ?? null;
+        const ptVal = (r.gradePoint !== undefined && r.gradePoint !== '') ? Number(r.gradePoint).toFixed(1) : '—';
 
         html += `
       <tr>
         <td class="tl" style="font-weight:500" title="${r.course.name}">${r.course.name}</td>
         <td class="tl" style="color:var(--ink3);font-size:12px" title="${r.course.assessment}">${r.course.assessment}</td>
-        <td class="tc hide-m">${credHtml}</td>
-        <td class="tc hide-m" style="color:var(--ink3);font-size:12px">${r.year || '—'}</td>
+        <td class="tc">${credHtml}</td>
+        <td class="tc" style="color:var(--ink3);font-size:12px">${r.year || '—'}</td>
         <td class="tl">${scoreHtml}</td>
-        <td class="tc"><span class="gbadge ${gc(rawGrade)}">${rawGrade || '—'}</span></td>
+        <td class="tc"><span class="gbadge ${gc(r.grade)}">${r.grade || '—'}</span></td>
         <td class="tr" style="font-weight:600">${ptVal}</td>
       </tr>`;
       });
@@ -750,7 +772,6 @@ function renderGrades(grades) {
     html += `
     </tbody>
   </table>
-  </div>
 </div>`;
   });
 
@@ -772,7 +793,6 @@ function switchTab(id, btn) {
 
 // ── Sign out ──────────────────────────────────────────────────
 function doSignOut() {
-  clearSession(); // ← wipe stored session
   document.getElementById('dashboard').classList.remove('show');
   document.getElementById('dashboard').style.display = 'none';
   document.getElementById('loginScreen').classList.remove('hidden');
@@ -785,8 +805,6 @@ function doSignOut() {
   document.getElementById('gradesStudentStrip').style.display = 'none';
   switchTab('home');
 }
-// Restore on load — runs after all functions are defined
-restoreSession();
 </script>
 </body>
 </html>
