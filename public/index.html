@@ -372,51 +372,93 @@ tr.g-block-sep td{
 
 .no-g{padding:36px;text-align:center;color:var(--ink3);font-size:13px}
 
-/* ── PRINT BUTTON ── */
+/* ── PRINT BUTTON (kept for Documents panel) ── */
 .grades-ph{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:24px}
 .grades-ph .ph{margin-bottom:0}
-.btn-print{
-  display:flex;align-items:center;gap:7px;
-  padding:9px 16px;
-  background:var(--crimson);
-  color:var(--white);
-  border:none;border-radius:var(--r);
-  font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;
-  cursor:pointer;white-space:nowrap;flex-shrink:0;
-  transition:background .15s,box-shadow .15s;
-  box-shadow:0 2px 8px rgba(139,26,46,0.20);
-}
+.btn-print{display:flex;align-items:center;gap:7px;padding:9px 16px;background:var(--crimson);color:var(--white);border:none;border-radius:var(--r);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap;flex-shrink:0;transition:background .15s,box-shadow .15s;box-shadow:0 2px 8px rgba(139,26,46,0.20)}
 .btn-print:hover{background:var(--crimson-mid);box-shadow:0 4px 14px rgba(139,26,46,0.28)}
 
-/* ── PRINT / PDF STYLES ── */
+/* ── DOCUMENTS PANEL ── */
+.doc-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
+@media(max-width:700px){.doc-grid{grid-template-columns:1fr}}
+.doc-card{
+  background:var(--white);border:1px solid var(--line);border-radius:10px;
+  padding:24px;display:flex;flex-direction:column;gap:16px;
+  transition:border-color .15s,box-shadow .15s;
+  position:relative;overflow:hidden;
+}
+.doc-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--crimson);border-radius:3px 0 0 3px}
+.doc-card:hover{border-color:rgba(139,26,46,.25);box-shadow:0 4px 20px rgba(139,26,46,.08)}
+.doc-card-icon{width:48px;height:48px;background:var(--crimson-light);border-radius:8px;display:flex;align-items:center;justify-content:center;color:var(--crimson)}
+.doc-card-body{flex:1}
+.doc-card-title{font-family:'Libre Baskerville',serif;font-size:16px;color:var(--ink);font-weight:700;margin-bottom:6px}
+.doc-card-desc{font-size:13px;color:var(--ink3);line-height:1.6;margin-bottom:10px}
+.doc-card-meta{display:flex;gap:6px;flex-wrap:wrap}
+.doc-tag{font-size:10px;font-weight:600;letter-spacing:.6px;text-transform:uppercase;padding:3px 8px;border-radius:3px;background:var(--crimson-light);color:var(--crimson);border:1px solid rgba(139,26,46,.12)}
+.doc-btn{
+  display:flex;align-items:center;gap:8px;
+  width:100%;padding:10px 16px;
+  background:var(--crimson);color:var(--white);
+  border:none;border-radius:var(--r);
+  font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;
+  cursor:pointer;justify-content:center;
+  transition:background .15s,box-shadow .15s;
+  box-shadow:0 2px 8px rgba(139,26,46,.18);
+}
+.doc-btn:hover{background:var(--crimson-mid);box-shadow:0 4px 14px rgba(139,26,46,.28)}
+
+/* ── PRINTABLE DOCUMENT STYLES ── */
+.print-doc{display:none} /* hidden on screen — shown only via @media print */
+.pdoc-header{display:flex;align-items:center;gap:20px;border-bottom:2px solid #0D1B2A;padding-bottom:16px;margin-bottom:20px}
+.pdoc-logo{width:52px;height:64px;object-fit:contain;flex-shrink:0}
+.pdoc-header-text{flex:1}
+.pdoc-univ{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#7A8599;margin-bottom:4px}
+.pdoc-title{font-family:'Libre Baskerville',serif;font-size:20px;color:#0D1B2A;font-weight:700;margin-bottom:2px}
+.pdoc-sub{font-size:10px;color:#7A8599}
+.pdoc-gpa-block{text-align:right;flex-shrink:0}
+.pdoc-gpa-lbl{font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:#7A8599;display:block;margin-bottom:2px}
+.pdoc-gpa-val{font-family:'Libre Baskerville',serif;font-size:30px;color:#8B1A2E;line-height:1;display:block}
+.pdoc-gpa-den{font-size:10px;color:#7A8599;display:block}
+.pdoc-body{font-size:12px;color:#0D1B2A;line-height:1.7}
+.pdoc-para{margin-bottom:12px}
+.pdoc-table{width:100%;border-collapse:collapse;margin-bottom:16px;font-size:12px}
+.pdoc-table tr{border-bottom:1px solid #E8EBF0}
+.pdoc-lbl{padding:8px 12px 8px 0;color:#7A8599;font-weight:600;text-transform:uppercase;font-size:10px;letter-spacing:.8px;width:38%;vertical-align:top}
+.pdoc-val{padding:8px 0;color:#0D1B2A;font-size:12px}
+.pdoc-footer{display:flex;justify-content:space-between;align-items:flex-end;margin-top:40px;padding-top:16px;border-top:1px solid #E8EBF0}
+.pdoc-sig-block{}
+.pdoc-sig-line{width:180px;border-bottom:1.5px solid #0D1B2A;margin-bottom:6px}
+.pdoc-sig-name{font-size:11px;font-weight:600;color:#0D1B2A}
+.pdoc-sig-inst{font-size:10px;color:#7A8599}
+.pdoc-stamp{width:72px;height:72px;border:2.5px solid rgba(139,26,46,.35);border-radius:50%;display:flex;align-items:center;justify-content:center;color:rgba(139,26,46,.5);font-size:9px;font-weight:700;letter-spacing:1px;text-align:center;line-height:1.3;text-transform:uppercase}
+.pdoc-stamp-inner{}
+.pdoc-watermark{position:fixed;bottom:80px;right:60px;font-family:'Libre Baskerville',serif;font-size:120px;color:rgba(139,26,46,.04);font-weight:700;letter-spacing:-4px;pointer-events:none;z-index:0}
+
+/* ── PRINT MEDIA ── */
 @media print{
   *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
   body{background:#fff;font-size:11px}
-  #loginScreen,
-  .header,
-  .nav,
-  .btn-print,
-  #panel-home,
-  #panel-profile,
-  .grades-ph > button{display:none!important}
+  /* Hide everything UI */
+  #loginScreen,.header,.nav,.btn-print,.doc-grid,
+  #panel-home,#panel-profile,#panel-grades,
+  .btn-out,.ntab{display:none!important}
   #dashboard{display:block!important;min-height:unset}
   .main{padding:0;max-width:100%}
   .panel{display:none!important}
-  #panel-grades{display:block!important}
-  .grades-ph{margin-bottom:12px}
-
-  /* Transcript header */
-  .transcript-header{display:flex!important}
-
-  /* Keep grade table readable */
+  #panel-documents{display:block!important}
+  .ph{display:none!important}
+  /* Show the printable doc */
+  .print-doc{display:block!important}
+  #printConfirmation,#printTranscriptDoc{display:block!important}
+  /* Grade table in transcript */
   .g-wrap{border:1px solid #ccc;margin-bottom:12px;page-break-inside:avoid}
-  .g-year-head{background:var(--ink)!important;color:#fff!important;padding:7px 14px}
-  table.gt thead tr th{background:#f4f5f8!important;position:static}
-  table.gt td,table.gt th{padding:7px 10px;font-size:10.5px}
+  .g-year-head{background:#0D1B2A!important;color:#fff!important;padding:7px 14px}
+  table.gt thead tr th{background:#f4f5f8!important;position:static;font-size:9px}
+  table.gt td,table.gt th{padding:6px 10px;font-size:10px}
   .sbar{display:none}
   .score-cell{display:block}
-  .gbadge{border:1px solid #ccc}
-  .grades-student-strip{display:flex!important;margin-bottom:12px}
+  .gbadge{border:1px solid #ccc;font-size:10px}
+  .g-block-sep td{font-size:10px}
 }
 
 /* ── RESPONSIVE ── */
@@ -506,6 +548,7 @@ tr.g-block-sep td{
       <button class="ntab active" data-tab="home" onclick="switchTab('home',this)">Home</button>
       <button class="ntab" data-tab="profile" onclick="switchTab('profile',this)">My Profile</button>
       <button class="ntab" data-tab="grades" onclick="switchTab('grades',this)">Academic Results</button>
+      <button class="ntab" data-tab="documents" onclick="switchTab('documents',this)">Documents</button>
       <button class="ntab ext" onclick="window.open('https://supportportal.um2campus.org','_blank')">Support</button>
       <button class="ntab ext" onclick="window.open('https://um2campus.com/login/index.php','_blank')">Moodle</button>
     </div>
@@ -529,6 +572,11 @@ tr.g-block-sep td{
           <div class="ql-bar"></div>
           <div class="ql-t">Academic Results</div>
           <div class="ql-s">Grades &amp; grade points</div>
+        </div>
+        <div class="ql" onclick="switchTab('documents')">
+          <div class="ql-bar"></div>
+          <div class="ql-t">Documents</div>
+          <div class="ql-s">Print official letters &amp; transcript</div>
         </div>
         <div class="ql" onclick="window.open('https://um2campus.com/login/index.php','_blank')">
           <div class="ql-bar"></div>
@@ -593,31 +641,7 @@ tr.g-block-sep td{
 
     <!-- GRADES -->
     <div class="panel" id="panel-grades">
-      <div class="ph grades-ph">
-        <div>
-          <h2>Academic Results</h2>
-          <p>Grades &amp; performance by course</p>
-        </div>
-        <button class="btn-print" onclick="printTranscript()" title="Download PDF Transcript">
-          <svg width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 9H1.5A1.5 1.5 0 0 0 0 10.5v3A1.5 1.5 0 0 0 1.5 15h12a1.5 1.5 0 0 0 1.5-1.5v-3A1.5 1.5 0 0 0 13.5 9H12M3 5.5V1a1 1 0 0 1 1-1h5l3 3v2.5M3 5.5h9M3 5.5v6h9v-6" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="11.5" r=".75" fill="currentColor"/></svg>
-          Print Transcript
-        </button>
-      </div>
-
-      <!-- Transcript header — visible only when printing -->
-      <div class="transcript-header" id="transcriptHeader" style="display:none;align-items:center;gap:20px;border-bottom:2px solid var(--ink);padding-bottom:14px;margin-bottom:18px">
-        <img src="/UM2_Logo.svg" alt="UM2" style="width:52px;height:64px;object-fit:contain;flex-shrink:0">
-        <div style="flex:1">
-          <div style="font-size:9px;letter-spacing:2.5px;text-transform:uppercase;color:#7A8599;margin-bottom:3px">University of Medicine (2) Interim University Council</div>
-          <div style="font-family:'Libre Baskerville',serif;font-size:18px;color:#0D1B2A;font-weight:700;margin-bottom:2px">Official Academic Transcript</div>
-          <div style="font-size:10px;color:#7A8599">Generated via Student Information System &nbsp;·&nbsp; <span id="transcriptDate"></span></div>
-        </div>
-        <div style="text-align:right;flex-shrink:0">
-          <div style="font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:#7A8599;margin-bottom:2px">Overall GPA</div>
-          <div style="font-family:'Libre Baskerville',serif;font-size:28px;color:#8B1A2E;line-height:1" id="transcriptGPA">—</div>
-          <div style="font-size:10px;color:#7A8599">/ 4.00</div>
-        </div>
-      </div>
+      <div class="ph"><h2>Academic Results</h2><p>Grades &amp; performance by course</p></div>
 
       <!-- Student identity strip — populated by JS -->
       <div class="grades-student-strip" id="gradesStudentStrip" style="display:none">
@@ -636,6 +660,131 @@ tr.g-block-sep td{
       <div id="gradesContent">
         <div class="g-wrap"><div class="no-g">Loading results…</div></div>
       </div>
+    </div>
+
+    <!-- DOCUMENTS -->
+    <div class="panel" id="panel-documents">
+      <div class="ph"><h2>Documents</h2><p>Generate &amp; print official university documents</p></div>
+
+      <div class="doc-grid">
+
+        <!-- Confirmation of Study -->
+        <div class="doc-card">
+          <div class="doc-card-icon">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+          </div>
+          <div class="doc-card-body">
+            <div class="doc-card-title">Confirmation of Study</div>
+            <div class="doc-card-desc">Official letter confirming your current enrollment status at the University of Medicine (2).</div>
+            <div class="doc-card-meta">
+              <span class="doc-tag">Official Document</span>
+              <span class="doc-tag">Instant</span>
+            </div>
+          </div>
+          <button class="doc-btn" onclick="printConfirmation()">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+            Print / Save PDF
+          </button>
+        </div>
+
+        <!-- Transcript -->
+        <div class="doc-card">
+          <div class="doc-card-icon">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><line x1="8" y1="9" x2="10" y2="9"/></svg>
+          </div>
+          <div class="doc-card-body">
+            <div class="doc-card-title">Academic Transcript</div>
+            <div class="doc-card-desc">Complete record of your academic performance including all course grades, scores, and overall GPA.</div>
+            <div class="doc-card-meta">
+              <span class="doc-tag">Official Document</span>
+              <span class="doc-tag">Instant</span>
+            </div>
+          </div>
+          <button class="doc-btn" onclick="printTranscript()">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+            Print / Save PDF
+          </button>
+        </div>
+
+      </div>
+
+      <!-- Hidden printable: Confirmation of Study -->
+      <div id="printConfirmation" style="display:none">
+        <div class="print-doc">
+          <div class="pdoc-header">
+            <img src="/UM2_Logo.svg" alt="UM2" class="pdoc-logo">
+            <div class="pdoc-header-text">
+              <div class="pdoc-univ">University of Medicine (2) Interim University Council</div>
+              <div class="pdoc-title">Confirmation of Study</div>
+              <div class="pdoc-sub">Student Information System &nbsp;·&nbsp; <span class="pdoc-date"></span></div>
+            </div>
+          </div>
+          <div class="pdoc-body">
+            <p class="pdoc-para">To Whom It May Concern,</p>
+            <p class="pdoc-para">This is to confirm that the following student is currently enrolled at the <strong>University of Medicine (2)</strong> under the Interim University Council:</p>
+            <table class="pdoc-table">
+              <tr><td class="pdoc-lbl">Full Name</td><td class="pdoc-val pdoc-fullname">—</td></tr>
+              <tr><td class="pdoc-lbl">Student ID</td><td class="pdoc-val pdoc-id">—</td></tr>
+              <tr><td class="pdoc-lbl">Date of Birth</td><td class="pdoc-val pdoc-dob">—</td></tr>
+              <tr><td class="pdoc-lbl">Admission Year</td><td class="pdoc-val pdoc-admission">—</td></tr>
+              <tr><td class="pdoc-lbl">Current Status</td><td class="pdoc-val pdoc-status">—</td></tr>
+              <tr><td class="pdoc-lbl">Enrollment Status</td><td class="pdoc-val pdoc-enroll">—</td></tr>
+            </table>
+            <p class="pdoc-para">This letter is issued for official purposes. For further verification, please contact the Secretariat Office of the University of Medicine (2).</p>
+          </div>
+          <div class="pdoc-footer">
+            <div class="pdoc-sig-block">
+              <div class="pdoc-sig-line"></div>
+              <div class="pdoc-sig-name">Registrar / Secretariat Office</div>
+              <div class="pdoc-sig-inst">University of Medicine (2) Interim University Council</div>
+            </div>
+            <div class="pdoc-stamp">
+              <div class="pdoc-stamp-inner">OFFICIAL<br>DOCUMENT</div>
+            </div>
+          </div>
+          <div class="pdoc-watermark">UM2</div>
+        </div>
+      </div>
+
+      <!-- Hidden printable: Transcript -->
+      <div id="printTranscriptDoc" style="display:none">
+        <div class="print-doc">
+          <div class="pdoc-header">
+            <img src="/UM2_Logo.svg" alt="UM2" class="pdoc-logo">
+            <div class="pdoc-header-text">
+              <div class="pdoc-univ">University of Medicine (2) Interim University Council</div>
+              <div class="pdoc-title">Official Academic Transcript</div>
+              <div class="pdoc-sub">Student Information System &nbsp;·&nbsp; <span class="pdoc-date"></span></div>
+            </div>
+            <div class="pdoc-gpa-block">
+              <div class="pdoc-gpa-lbl">Overall GPA</div>
+              <div class="pdoc-gpa-val pdoc-gpa">—</div>
+              <div class="pdoc-gpa-den">/ 4.00</div>
+            </div>
+          </div>
+          <div class="pdoc-body">
+            <table class="pdoc-table" style="margin-bottom:20px">
+              <tr><td class="pdoc-lbl">Full Name</td><td class="pdoc-val pdoc-fullname">—</td></tr>
+              <tr><td class="pdoc-lbl">Student ID</td><td class="pdoc-val pdoc-id">—</td></tr>
+              <tr><td class="pdoc-lbl">Admission Year</td><td class="pdoc-val pdoc-admission">—</td></tr>
+              <tr><td class="pdoc-lbl">Current Status</td><td class="pdoc-val pdoc-status">—</td></tr>
+            </table>
+            <div id="transcriptGradesContent"></div>
+          </div>
+          <div class="pdoc-footer" style="margin-top:24px">
+            <div class="pdoc-sig-block">
+              <div class="pdoc-sig-line"></div>
+              <div class="pdoc-sig-name">Registrar / Secretariat Office</div>
+              <div class="pdoc-sig-inst">University of Medicine (2) Interim University Council</div>
+            </div>
+            <div class="pdoc-stamp">
+              <div class="pdoc-stamp-inner">OFFICIAL<br>TRANSCRIPT</div>
+            </div>
+          </div>
+          <div class="pdoc-watermark">UM2</div>
+        </div>
+      </div>
+
     </div>
 
   </div>
@@ -953,25 +1102,71 @@ function switchTab(id, btn) {
   }
 }
 
-// ── Print Transcript ──────────────────────────────────────────
-function printTranscript() {
-  // Populate transcript header fields
-  const gpa = document.getElementById('gssGPA').textContent || '—';
-  document.getElementById('transcriptGPA').textContent = gpa;
-  document.getElementById('transcriptDate').textContent = new Date().toLocaleDateString('en-GB', {day:'numeric',month:'long',year:'numeric'});
-  document.getElementById('transcriptHeader').style.display = 'flex';
-
-  // Ensure grades panel is the active one
-  switchTab('grades');
-
-  setTimeout(() => {
-    window.print();
-    // Hide header again after print dialog closes
-    setTimeout(() => {
-      document.getElementById('transcriptHeader').style.display = 'none';
-    }, 1000);
-  }, 120);
+// ── Document printing ─────────────────────────────────────────
+function getStudentData() {
+  try {
+    const saved = sessionStorage.getItem('um2_session');
+    if (saved) return JSON.parse(saved);
+  } catch(e){}
+  return null;
 }
+
+function fillDocFields(containerId, s, gpa) {
+  const el = document.getElementById(containerId);
+  const today = new Date().toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'});
+  el.querySelectorAll('.pdoc-date').forEach(e => e.textContent = today);
+  el.querySelectorAll('.pdoc-fullname').forEach(e => e.textContent = s.fullName || '—');
+  el.querySelectorAll('.pdoc-id').forEach(e => e.textContent = s.id || '—');
+  el.querySelectorAll('.pdoc-dob').forEach(e => e.textContent = s.birthDate || '—');
+  el.querySelectorAll('.pdoc-admission').forEach(e => e.textContent = s.admissionYear || '—');
+  el.querySelectorAll('.pdoc-status').forEach(e => e.textContent = s.currentStatus || '—');
+  el.querySelectorAll('.pdoc-enroll').forEach(e => e.textContent = s.enrollmentStatus || '—');
+  el.querySelectorAll('.pdoc-gpa').forEach(e => e.textContent = gpa);
+}
+
+function printConfirmation() {
+  const session = getStudentData();
+  if (!session) return;
+  const s   = session.student;
+  const gpa = s.overallGPA || '—';
+  fillDocFields('printConfirmation', s, gpa);
+  // Show only confirmation doc, hide transcript doc
+  document.getElementById('printConfirmation').style.display    = 'block';
+  document.getElementById('printTranscriptDoc').style.display   = 'none';
+  window._printMode = 'confirmation';
+  window.print();
+  setTimeout(() => {
+    document.getElementById('printConfirmation').style.display = 'none';
+    window._printMode = null;
+  }, 1500);
+}
+
+function printTranscript() {
+  const session = getStudentData();
+  if (!session) return;
+  const s     = session.student;
+  const grades = session.grades || [];
+  const gpa   = s.overallGPA || '—';
+  fillDocFields('printTranscriptDoc', s, gpa);
+  // Clone grades content into transcript doc
+  const src  = document.getElementById('gradesContent').innerHTML;
+  document.getElementById('transcriptGradesContent').innerHTML = src;
+  // Animate score bars in the clone
+  setTimeout(() => {
+    document.querySelectorAll('#transcriptGradesContent .sbar-fill[data-pct]').forEach(el => {
+      el.style.width = el.dataset.pct + '%';
+    });
+  }, 50);
+  document.getElementById('printTranscriptDoc').style.display  = 'block';
+  document.getElementById('printConfirmation').style.display   = 'none';
+  window._printMode = 'transcript';
+  window.print();
+  setTimeout(() => {
+    document.getElementById('printTranscriptDoc').style.display = 'none';
+    window._printMode = null;
+  }, 1500);
+}
+
 
 function doSignOut() {
   try { sessionStorage.removeItem('um2_session'); } catch(e){}
