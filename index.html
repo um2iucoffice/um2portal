@@ -1227,125 +1227,114 @@ window.addEventListener('afterprint', function() {
 
 // ── Document print ────────────────────────────────────────────
 function printDocument(type) {
-  // Collect student data from the DOM
-  const name       = document.getElementById('profileName').textContent || '—';
-  const nameMM     = document.getElementById('profileNameMM').textContent || '';
-  const sid        = document.getElementById('infoID').textContent || '—';
-  const birth      = document.getElementById('infoBirth').textContent || '—';
-  const father     = document.getElementById('infoFather').textContent || '—';
-  const fatherMM   = document.getElementById('infoFatherMM').textContent || '—';
-  const phone      = document.getElementById('infoPhone').textContent || '—';
-  const email      = document.getElementById('infoEmail').textContent || '—';
-  const admission  = document.getElementById('infoAdmission').textContent || '—';
-  const status     = document.getElementById('infoStatus').textContent || '—';
-  const enroll     = document.getElementById('infoEnroll').textContent || '—';
-  const grad       = document.getElementById('infoGrad').textContent || '—';
-  const gpa        = document.getElementById('profileGPA').textContent || '—';
-  const today      = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+  const name      = document.getElementById('profileName').textContent || '—';
+  const nameMM    = document.getElementById('profileNameMM').textContent || '';
+  const sid       = document.getElementById('infoID').textContent || '—';
+  const birth     = document.getElementById('infoBirth').textContent || '—';
+  const father    = document.getElementById('infoFather').textContent || '—';
+  const fatherMM  = document.getElementById('infoFatherMM').textContent || '—';
+  const phone     = document.getElementById('infoPhone').textContent || '—';
+  const email     = document.getElementById('infoEmail').textContent || '—';
+  const admission = document.getElementById('infoAdmission').textContent || '—';
+  const status    = document.getElementById('infoStatus').textContent || '—';
+  const enroll    = document.getElementById('infoEnroll').textContent || '—';
+  const grad      = document.getElementById('infoGrad').textContent || '—';
+  const gpa       = document.getElementById('profileGPA').textContent || '—';
+  const today     = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
 
-  // Build transcript grade rows from the rendered DOM
-  let transcriptBody = '';
+  // ── Collect grade data grouped by year then block ─────────────
+  // Structure: [ { year, blocks: [ { block, rows: [{courseId,course,grade,score,credits,pts}] } ] } ]
+  const yearGroups = [];
   if (type === 'transcript') {
     const gradeContainer = document.getElementById('gradesContent');
     gradeContainer.querySelectorAll('.g-wrap').forEach(wrap => {
-      const yearHead  = wrap.querySelector('.g-year-head')?.textContent?.trim() || '';
-      wrap.querySelectorAll('tbody tr').forEach(tr => {
-        const tds = tr.querySelectorAll('td');
-        if (tds.length < 6) return;
-        const course  = tds[0].querySelector('.gt-course')?.textContent?.trim() || tds[0].textContent.trim();
-        const assess  = tds[1].textContent.trim();
-        const credits = tds[2].textContent.trim();
-        const score   = tds[3].querySelector('.sbar-num')?.textContent?.trim() || tds[3].textContent.trim() || '—';
-        const grade   = tds[4].textContent.trim();
-        const pts     = tds[5].textContent.trim();
-        transcriptBody += `<tr>
-          <td style="padding:5px 8px;border-bottom:1px solid #e8e8e8;font-size:9.5pt;color:#111">${course}</td>
-          <td style="padding:5px 8px;border-bottom:1px solid #e8e8e8;font-size:8.5pt;color:#555">${assess}</td>
-          <td style="padding:5px 8px;border-bottom:1px solid #e8e8e8;text-align:center;font-size:9pt">${credits}</td>
-          <td style="padding:5px 8px;border-bottom:1px solid #e8e8e8;text-align:center;font-size:9pt">${score}</td>
-          <td style="padding:5px 8px;border-bottom:1px solid #e8e8e8;text-align:center;font-weight:700;font-size:9.5pt">${grade}</td>
-          <td style="padding:5px 8px;border-bottom:1px solid #e8e8e8;text-align:center;font-weight:700;font-size:9.5pt">${pts}</td>
-        </tr>`;
+      const yearLabel = wrap.querySelector('.g-year-head')?.textContent?.trim() || '';
+      const blocks = [];
+      let currentBlock = null;
+      wrap.querySelectorAll('.g-block-head, tbody tr').forEach(el => {
+        if (el.classList.contains('g-block-head')) {
+          currentBlock = { block: el.textContent.trim(), rows: [] };
+          blocks.push(currentBlock);
+        } else {
+          const tds = el.querySelectorAll('td');
+          if (tds.length < 6) return;
+          if (!currentBlock) { currentBlock = { block: '', rows: [] }; blocks.push(currentBlock); }
+          currentBlock.rows.push({
+            course:  tds[0].querySelector('.gt-course')?.textContent?.trim() || tds[0].textContent.trim(),
+            assess:  tds[1].textContent.trim(),
+            credits: tds[2].textContent.trim(),
+            score:   tds[3].querySelector('.sbar-num')?.textContent?.trim() || '—',
+            grade:   tds[4].textContent.trim(),
+            pts:     tds[5].textContent.trim(),
+          });
+        }
       });
-
-      // Year totals row
-      const totals = wrap.querySelector('.g-year-totals');
-      if (totals) {
-        transcriptBody += `<tr>
-          <td colspan="6" style="padding:5px 8px;background:#f5f5f5;font-size:8pt;color:#555;text-align:right;border-top:1px solid #ccc">
-            ${totals.textContent.trim()}
-          </td>
-        </tr>`;
-      }
-
-      // Spacer between years
-      transcriptBody += `<tr><td colspan="6" style="height:10px;background:#f9f9f9;border-bottom:2px solid #ddd;font-size:8pt;color:#666;padding:3px 8px;font-weight:600;letter-spacing:.5px">${yearHead}</td></tr>`;
+      const totalsEl = wrap.querySelector('.g-year-totals');
+      const totalsText = totalsEl ? totalsEl.textContent.trim() : '';
+      if (blocks.length) yearGroups.push({ year: yearLabel, blocks, totalsText });
     });
   }
 
-  // Shared header HTML for both documents
-  const header = `
-    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:24px;padding-bottom:16px;border-bottom:2px solid #0D1B2A">
-      <div>
-        <div style="font-size:9pt;letter-spacing:3px;text-transform:uppercase;color:#7A8599;margin-bottom:6px">University of Medicine (2)</div>
-        <div style="font-family:'Libre Baskerville',Georgia,serif;font-size:22pt;color:#0D1B2A;font-weight:700;line-height:1.1">
-          ${type === 'transcript' ? 'Academic Transcript' : 'Confirmation of Study'}
-        </div>
-        <div style="font-size:9pt;color:#7A8599;margin-top:6px">Academic Year 2025–2026 &nbsp;·&nbsp; Issued ${today}</div>
-      </div>
-      <div style="text-align:right">
-        <div style="font-size:8pt;letter-spacing:1.5px;text-transform:uppercase;color:#7A8599;margin-bottom:3px">Student ID</div>
-        <div style="font-family:'Libre Baskerville',Georgia,serif;font-size:18pt;color:#8B1A2E;font-weight:700">${sid}</div>
-      </div>
-    </div>`;
+  // ── Helper: render one semester column (block) ────────────────
+  const TD  = 'padding:3px 5px;border:1px solid #ccc;font-size:8pt;';
+  const TDH = 'padding:3px 5px;border:1px solid #555;font-size:7pt;font-weight:700;letter-spacing:.6px;text-transform:uppercase;background:#e8e8e8;color:#333;text-align:center;';
 
-  // Student info table
-  const infoTable = `
-    <table style="width:100%;border-collapse:collapse;margin-bottom:20px;font-size:10pt">
-      <tr>
-        <td style="padding:7px 10px;background:#f5f5f5;border:1px solid #ddd;width:25%;font-size:8pt;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:#555">Full Name</td>
-        <td style="padding:7px 10px;border:1px solid #ddd;color:#0D1B2A;font-weight:500">${name}</td>
-        <td style="padding:7px 10px;background:#f5f5f5;border:1px solid #ddd;width:25%;font-size:8pt;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:#555">Date of Birth</td>
-        <td style="padding:7px 10px;border:1px solid #ddd;color:#0D1B2A">${birth}</td>
-      </tr>
-      <tr>
-        <td style="padding:7px 10px;background:#f5f5f5;border:1px solid #ddd;font-size:8pt;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:#555">Name (Myanmar)</td>
-        <td style="padding:7px 10px;border:1px solid #ddd;color:#0D1B2A">${nameMM || '—'}</td>
-        <td style="padding:7px 10px;background:#f5f5f5;border:1px solid #ddd;font-size:8pt;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:#555">Father's Name</td>
-        <td style="padding:7px 10px;border:1px solid #ddd;color:#0D1B2A">${father}</td>
-      </tr>
-      <tr>
-        <td style="padding:7px 10px;background:#f5f5f5;border:1px solid #ddd;font-size:8pt;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:#555">Admission Year</td>
-        <td style="padding:7px 10px;border:1px solid #ddd;color:#0D1B2A">${admission}</td>
-        <td style="padding:7px 10px;background:#f5f5f5;border:1px solid #ddd;font-size:8pt;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:#555">Current Status</td>
-        <td style="padding:7px 10px;border:1px solid #ddd;color:#0D1B2A">${status}</td>
-      </tr>
-      <tr>
-        <td style="padding:7px 10px;background:#f5f5f5;border:1px solid #ddd;font-size:8pt;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:#555">Enrollment</td>
-        <td style="padding:7px 10px;border:1px solid #ddd;color:#0D1B2A">${enroll}</td>
-        <td style="padding:7px 10px;background:#f5f5f5;border:1px solid #ddd;font-size:8pt;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:#555">Overall GPA</td>
-        <td style="padding:7px 10px;border:1px solid #ddd;color:#8B1A2E;font-weight:700;font-size:11pt">${gpa} / 4.00</td>
-      </tr>
-    </table>`;
+  function blockTable(block) {
+    let rows = '';
+    block.rows.forEach((r, i) => {
+      const bg = i % 2 === 1 ? 'background:#fafafa;' : '';
+      rows += `<tr>
+        <td style="${TD}${bg}color:#222;font-weight:500">${r.course}</td>
+        <td style="${TD}${bg}text-align:center">${r.grade}</td>
+        <td style="${TD}${bg}text-align:center">${r.credits}</td>
+        <td style="${TD}${bg}text-align:center">${r.pts}</td>
+      </tr>`;
+    });
+    return `
+      <div style="font-size:7pt;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:#555;margin:8px 0 3px;padding-left:2px">${block.block}</div>
+      <table style="width:100%;border-collapse:collapse">
+        <thead><tr>
+          <th style="${TDH}text-align:left;width:56%">Course Description</th>
+          <th style="${TDH}width:11%">Grade</th>
+          <th style="${TDH}width:11%">Credits</th>
+          <th style="${TDH}width:11%">Pts</th>
+        </tr></thead>
+        <tbody>${rows}</tbody>
+      </table>`;
+  }
 
-  // Transcript-specific table
-  const transcriptTable = type === 'transcript' ? `
-    <div style="font-size:8pt;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#555;margin-bottom:8px;margin-top:20px">Academic Record</div>
-    <table style="width:100%;border-collapse:collapse;font-size:9.5pt">
-      <thead>
-        <tr style="background:#0D1B2A">
-          <th style="padding:7px 8px;text-align:left;font-size:7.5pt;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:rgba(255,255,255,.85);width:38%">Course</th>
-          <th style="padding:7px 8px;text-align:left;font-size:7.5pt;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:rgba(255,255,255,.85)">Assessment</th>
-          <th style="padding:7px 8px;text-align:center;font-size:7.5pt;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:rgba(255,255,255,.85)">Cr.</th>
-          <th style="padding:7px 8px;text-align:center;font-size:7.5pt;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:rgba(255,255,255,.85)">Score</th>
-          <th style="padding:7px 8px;text-align:center;font-size:7.5pt;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:rgba(255,255,255,.85)">Grade</th>
-          <th style="padding:7px 8px;text-align:center;font-size:7.5pt;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:rgba(255,255,255,.85)">Pts</th>
-        </tr>
-      </thead>
-      <tbody>${transcriptBody}</tbody>
-    </table>` : '';
+  // ── Build academic record HTML ────────────────────────────────
+  let academicRecord = '';
+  if (type === 'transcript') {
+    yearGroups.forEach(yg => {
+      // Flatten all blocks into pairs for two-column layout
+      let blockCols = '';
+      const allBlocks = yg.blocks;
+      for (let i = 0; i < allBlocks.length; i += 2) {
+        const left  = allBlocks[i];
+        const right = allBlocks[i + 1];
+        blockCols += `<tr>
+          <td style="vertical-align:top;padding-right:8px;width:50%">${blockTable(left)}</td>
+          <td style="vertical-align:top;padding-left:8px;width:50%">${right ? blockTable(right) : ''}</td>
+        </tr>`;
+      }
+      academicRecord += `
+        <!-- Year block -->
+        <div style="margin-bottom:14px;border:1px solid #bbb;border-radius:3px;overflow:hidden;page-break-inside:avoid">
+          <!-- Year heading bar -->
+          <div style="background:#0D1B2A;padding:6px 12px;display:flex;justify-content:space-between;align-items:center">
+            <span style="font-family:'Libre Baskerville',Georgia,serif;font-size:10pt;font-weight:700;color:#fff;letter-spacing:.3px">${yg.year}</span>
+            <span style="font-size:7.5pt;color:rgba(255,255,255,.6)">${yg.totalsText}</span>
+          </div>
+          <!-- Two-column blocks -->
+          <div style="padding:8px 10px">
+            <table style="width:100%;border-collapse:collapse">${blockCols}</table>
+          </div>
+        </div>`;
+    });
+  }
 
-  // Confirmation body text
+  // ── Confirmation body ─────────────────────────────────────────
   const confirmationBody = type === 'confirmation' ? `
     <div style="margin:28px 0;font-size:11pt;color:#0D1B2A;line-height:1.9">
       <p>This is to confirm that <strong>${name}</strong> (Student ID: <strong>${sid}</strong>) is currently enrolled as a student at the <strong>University of Medicine (2), Interim University Council, Republic of the Union of Myanmar</strong>.</p>
@@ -1355,99 +1344,182 @@ function printDocument(type) {
       <p>This letter is issued upon the student's request for official purposes.</p>
     </div>` : '';
 
-  // Closing / signature block
+  // ── Closing / signature ───────────────────────────────────────
   const closing = `
-    <div style="margin-top:40px;padding-top:20px;border-top:1px solid #ddd;display:flex;justify-content:space-between;align-items:flex-end">
-      <div style="font-size:9pt;color:#555;line-height:1.7;max-width:320px">
-        <div style="font-size:8pt;letter-spacing:1px;text-transform:uppercase;color:#888;margin-bottom:4px">Official Notice</div>
-        This document is an official record issued by the Student Information System of the University of Medicine (2) Interim University Council. Any alteration or modification renders it invalid.
-        <br><br>
-        <span style="color:#2a4fc7;font-size:9pt">Electronically issued via UM2 Student Information System</span>
+    <div style="margin-top:28px;border-top:1.5px solid #0D1B2A;display:flex;justify-content:space-between;align-items:stretch">
+      <!-- Grading key (like reference photo bottom bar) -->
+      <div style="flex:1;padding:10px 14px;border-right:1px solid #bbb">
+        <div style="font-size:7pt;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#777;margin-bottom:5px">Grading System</div>
+        <table style="border-collapse:collapse;font-size:8pt">
+          <tr>
+            <td style="padding:1px 10px 1px 0;color:#333"><strong>A+</strong> Excellent (4.0)</td>
+            <td style="padding:1px 10px 1px 0;color:#333"><strong>A</strong> Very Good (4.0)</td>
+            <td style="padding:1px 10px 1px 0;color:#333"><strong>A−</strong> Good (3.7)</td>
+          </tr>
+          <tr>
+            <td style="padding:1px 10px 1px 0;color:#333"><strong>B+</strong> Above Avg (3.3)</td>
+            <td style="padding:1px 10px 1px 0;color:#333"><strong>B</strong> Average (3.0)</td>
+            <td style="padding:1px 0;color:#333"><strong>CR</strong> Credit</td>
+          </tr>
+        </table>
       </div>
-      <div style="text-align:right">
-        <div style="margin-bottom:32px;font-size:9pt;color:#888">Issued: ${today}</div>
-        <div style="font-weight:700;font-size:11pt;color:#0D1B2A">Registrar</div>
-        <div style="font-size:9pt;color:#555">University of Medicine (2)</div>
-        <div style="font-size:9pt;color:#555">Interim University Council</div>
+      <!-- Official notice -->
+      <div style="flex:1;padding:10px 14px;border-right:1px solid #bbb;font-size:7.5pt;color:#555;line-height:1.6">
+        <div style="font-size:7pt;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#777;margin-bottom:4px">Official Notice</div>
+        This document is an official record of the University of Medicine (2) Interim University Council. Any alteration renders it invalid. Issued ${today}.
+      </div>
+      <!-- Registrar -->
+      <div style="padding:10px 14px;text-align:right;display:flex;flex-direction:column;justify-content:flex-end">
+        <div style="margin-bottom:28px;font-size:8pt;color:#888">Registrar's Office</div>
+        <div style="border-top:1px solid #555;padding-top:5px;min-width:160px">
+          <div style="font-weight:700;font-size:9.5pt;color:#0D1B2A">Registrar</div>
+          <div style="font-size:8pt;color:#555">University of Medicine (2)</div>
+        </div>
       </div>
     </div>`;
 
-  // Watermark
-  const watermark = `
-    <div style="position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) rotate(-35deg);font-family:'Libre Baskerville',Georgia,serif;font-size:110pt;font-weight:700;color:rgba(139,26,46,0.06);letter-spacing:10px;pointer-events:none;z-index:0;white-space:nowrap">UM2</div>`;
-
-  // Full print window HTML
+  // ── Full print window HTML ────────────────────────────────────
   const html = `<!DOCTYPE html>
 <html>
 <head>
   <meta charset="UTF-8">
   <title>${type === 'transcript' ? 'Academic Transcript' : 'Confirmation of Study'} — ${name}</title>
-  <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:wght@400;700&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,600&display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; }
     body { font-family: 'DM Sans', sans-serif; color: #0D1B2A; background: #fff; font-size: 10pt; }
-    @page {
-      margin: 18mm 22mm 26mm 22mm;
-      @bottom-left {
-        content: "University of Medicine (2)  ·  Student ID: ${sid}";
-        font-family: sans-serif; font-size: 7.5pt; color: #555;
-        border-top: 1px solid #999;
-        padding-top: 4pt;
-      }
-      @bottom-center {
-        content: "";
-        border-top: 1px solid #999;
-      }
-      @bottom-right {
-        content: "Page " counter(page) " of " counter(pages);
-        font-family: sans-serif; font-size: 7.5pt; color: #555;
-        border-top: 1px solid #999;
-        padding-top: 4pt;
-      }
+    @page { margin: 14mm 16mm; }
+    @media print { * { -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
+
+    /* thead/tfoot in this outer table repeat on every page natively in Chrome & Safari */
+    body > table { width: 100%; border-collapse: collapse; }
+    body > table > tbody > tr > td { vertical-align: top; }
+
+    .pg-hdr {
+      display: flex; justify-content: space-between; align-items: center;
+      padding-bottom: 6px; border-bottom: 2px solid #0D1B2A; margin-bottom: 2px;
+      font-size: 7.5pt; color: #666; letter-spacing: .3px;
     }
-    @media print {
-      * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-      .doc-fixed-footer { display: flex !important; }
+    .pg-hdr b { color: #8B1A2E; }
+
+    .pg-ftr {
+      display: flex; justify-content: space-between; align-items: center;
+      padding-top: 6px; border-top: 1.5px solid #0D1B2A; margin-top: 2px;
+      font-size: 7.5pt; color: #666;
     }
-    .doc-fixed-footer {
-      display: none;
-      position: fixed;
-      bottom: 0; left: 0; right: 0;
-      border-top: 2px solid #0D1B2A;
-      padding: 5px 22mm;
-      font-family: 'DM Sans', sans-serif;
-      font-size: 7.5pt;
-      color: #444;
-      justify-content: space-between;
-      align-items: center;
-      background: #fff;
-      z-index: 9999;
+    .pg-ftr b { color: #8B1A2E; }
+    .pg-ftr-page::before { content: "Page " counter(page); counter-increment: page; }
+
+    /* Watermark on every page via fixed positioning */
+    .wm {
+      position: fixed; top: 50%; left: 50%;
+      transform: translate(-50%,-50%) rotate(-35deg);
+      font-family: 'Libre Baskerville', Georgia, serif;
+      font-size: 90pt; font-weight: 700;
+      color: rgba(139,26,46,0.05); letter-spacing: 10px;
+      pointer-events: none; white-space: nowrap; z-index: 0;
     }
-    .doc-footer-sid { font-weight: 700; color: #8B1A2E; }
+
+    /* Institution header block */
+    .inst-hdr {
+      display: flex; justify-content: space-between; align-items: flex-start;
+      margin-bottom: 10px; padding-bottom: 10px; border-bottom: 2px solid #0D1B2A;
+    }
+    .inst-name {
+      font-family: 'Libre Baskerville', Georgia, serif;
+      font-size: 15pt; font-weight: 700; color: #0D1B2A; line-height: 1.15;
+    }
+    .inst-sub { font-size: 8pt; color: #666; margin-top: 3px; }
+    .doc-type-badge {
+      font-family: 'Libre Baskerville', Georgia, serif;
+      font-size: 13pt; font-weight: 700; color: #0D1B2A;
+      text-transform: uppercase; letter-spacing: .5px;
+      text-align: right;
+    }
+    .doc-meta { font-size: 7.5pt; color: #666; text-align: right; margin-top: 4px; line-height: 1.6; }
+
+    /* Student info bar */
+    .stu-bar {
+      background: #f2f2f2; border: 1px solid #ccc;
+      padding: 7px 12px; margin-bottom: 12px;
+      display: flex; gap: 24px; flex-wrap: wrap; align-items: center;
+      font-size: 8pt; color: #333;
+    }
+    .stu-bar-item { display: flex; flex-direction: column; gap: 1px; }
+    .stu-bar-lbl { font-size: 6.5pt; font-weight: 700; letter-spacing: .8px; text-transform: uppercase; color: #888; }
+    .stu-bar-val { font-size: 8.5pt; color: #0D1B2A; font-weight: 500; }
+    .stu-bar-gpa { font-family: 'Libre Baskerville', Georgia, serif; font-size: 13pt; font-weight: 700; color: #8B1A2E; }
+
+    .section-label {
+      font-size: 7pt; font-weight: 700; letter-spacing: 1.5px;
+      text-transform: uppercase; color: #666;
+      margin: 12px 0 6px; border-bottom: 1px solid #ddd; padding-bottom: 3px;
+    }
   </style>
 </head>
 <body>
-  ${watermark}
-  <div class="doc-fixed-footer">
-    <span>University of Medicine (2) &nbsp;·&nbsp; Student ID: <span class="doc-footer-sid">${sid}</span></span>
-    <span>Official Document – University of Medicine (2)</span>
-  </div>
-  <div style="position:relative;z-index:1">
-    ${header}
-    ${infoTable}
-    ${confirmationBody}
-    ${transcriptTable}
-    ${closing}
-  </div>
+  <div class="wm">UM2</div>
+  <table>
+    <thead><tr><td style="padding-bottom:10px">
+      <div class="pg-hdr">
+        <span>University of Medicine (2) &nbsp;·&nbsp; Interim University Council &nbsp;·&nbsp; ${type === 'transcript' ? 'Official Academic Transcript' : 'Confirmation of Study'}</span>
+        <span>Student ID: <b>${sid}</b></span>
+      </div>
+    </td></tr></thead>
+
+    <tfoot><tr><td style="padding-top:10px">
+      <div class="pg-ftr">
+        <span>University of Medicine (2) &nbsp;·&nbsp; Student ID: <b>${sid}</b> &nbsp;·&nbsp; ${name}</span>
+        <span class="pg-ftr-page"></span>
+      </div>
+    </td></tr></tfoot>
+
+    <tbody><tr><td style="position:relative;z-index:1">
+
+      <!-- Institution header -->
+      <div class="inst-hdr">
+        <div>
+          <div class="inst-name">University of Medicine (2)</div>
+          <div class="inst-name" style="font-size:10pt;font-weight:400;font-style:italic">Interim University Council, Republic of the Union of Myanmar</div>
+          <div class="inst-sub">Office of the Registrar &nbsp;·&nbsp; Issued: ${today}</div>
+        </div>
+        <div>
+          <div class="doc-type-badge">${type === 'transcript' ? 'Official Transcript' : 'Confirmation of Study'}</div>
+          <div class="doc-meta">
+            Student ID: <strong style="color:#8B1A2E">${sid}</strong><br>
+            Final GPA: <strong style="color:#8B1A2E">${gpa} / 4.00</strong><br>
+            ${grad ? 'Degree Awarded: ' + grad : ''}
+          </div>
+        </div>
+      </div>
+
+      <!-- Student info bar -->
+      <div class="stu-bar">
+        <div class="stu-bar-item"><span class="stu-bar-lbl">Full Name</span><span class="stu-bar-val">${name}${nameMM ? ' · ' + nameMM : ''}</span></div>
+        <div class="stu-bar-item"><span class="stu-bar-lbl">Student ID</span><span class="stu-bar-val">${sid}</span></div>
+        <div class="stu-bar-item"><span class="stu-bar-lbl">Date of Birth</span><span class="stu-bar-val">${birth}</span></div>
+        <div class="stu-bar-item"><span class="stu-bar-lbl">Father's Name</span><span class="stu-bar-val">${father}</span></div>
+        <div class="stu-bar-item"><span class="stu-bar-lbl">Admission</span><span class="stu-bar-val">${admission}</span></div>
+        <div class="stu-bar-item"><span class="stu-bar-lbl">Status</span><span class="stu-bar-val">${status}</span></div>
+        <div class="stu-bar-item"><span class="stu-bar-lbl">Enrollment</span><span class="stu-bar-val">${enroll}</span></div>
+        <div class="stu-bar-item" style="margin-left:auto;text-align:right"><span class="stu-bar-lbl">Overall GPA</span><span class="stu-bar-gpa">${gpa}</span></div>
+      </div>
+
+      ${type === 'transcript' ? `<div class="section-label">Academic Record</div>${academicRecord}` : ''}
+      ${confirmationBody}
+      ${closing}
+
+    </td></tr></tbody>
+  </table>
+
   <script>
-    window.onload = function() {
-      setTimeout(function() { window.print(); }, 400);
-    };
+    window.onload = function() { setTimeout(function() { window.print(); }, 600); };
   <\/script>
 </body>
 </html>`;
 
-  const win = window.open('', '_blank', 'width=900,height=700');
+  const win = window.open('', '_blank', 'width=960,height=750');
   win.document.write(html);
   win.document.close();
 }
