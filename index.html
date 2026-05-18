@@ -210,9 +210,13 @@ table.gt tbody tr:hover{background:var(--surface)}
     padding: 24mm 28mm;   /* increased left/right margins */
   }
 
-  /* Remove the seal / avatar */
+  /* Remove the seal / avatar — hide and collapse grid column */
   #panel-profile .avatar,
-  #panel-profile #avatarEl { display: none !important; }
+  #panel-profile #avatarEl {
+    display: none !important;
+    width: 0 !important;
+    min-width: 0 !important;
+  }
 
   /* Banner layout without avatar column */
   #panel-profile .banner {
