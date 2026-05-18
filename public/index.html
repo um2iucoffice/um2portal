@@ -1226,9 +1226,9 @@ function printDocument(type) {
   }
 
   // ── Helper: render one semester table ────────────────────────
-  const TNR = "'Times New Roman', Times, serif";
-  const TD  = `padding:5px 10px;border-bottom:1px solid #e8e8e8;font-size:9pt;color:#0D1B2A;font-family:'Times New Roman',Times,serif;`;
-  const TDH = `padding:6px 10px;font-size:8pt;font-weight:bold;letter-spacing:.4px;text-transform:uppercase;color:#444;border-bottom:1.5px solid #0D1B2A;text-align:left;white-space:nowrap;font-family:'Times New Roman',Times,serif;`;
+  const TNR = "'Libre Baskerville', Georgia, serif";
+  const TD  = `padding:5px 10px;border-bottom:1px solid #e8e8e8;font-size:9pt;color:#0D1B2A;font-family:'Libre Baskerville',Georgia,serif;`;
+  const TDH = `padding:6px 10px;font-size:8pt;font-weight:bold;letter-spacing:.4px;text-transform:uppercase;color:#444;border-bottom:1.5px solid #0D1B2A;text-align:left;white-space:nowrap;font-family:'Libre Baskerville',Georgia,serif;`;
 
   function yearTable(group) {
     let rows = '';
@@ -1246,10 +1246,10 @@ function printDocument(type) {
     });
     return `
       <div style="margin-bottom:22px;page-break-inside:avoid">
-        <div style="font-family:'Times New Roman',Times,serif;font-size:13pt;font-weight:bold;color:#0D1B2A;margin-bottom:10px;padding-bottom:6px;border-bottom:2px solid #0D1B2A;display:flex;justify-content:space-between;align-items:baseline">
+        <div style="font-family:'Libre Baskerville',Georgia,serif;font-size:13pt;font-weight:bold;color:#0D1B2A;margin-bottom:10px;padding-bottom:6px;border-bottom:2px solid #0D1B2A;display:flex;justify-content:space-between;align-items:baseline">
           <span>— &nbsp;${group.year} &nbsp;·&nbsp; MBBS Program</span>
         </div>
-        <table style="width:100%;border-collapse:collapse;margin-bottom:14px;font-family:'Times New Roman',Times,serif">
+        <table style="width:100%;border-collapse:collapse;margin-bottom:14px;font-family:'Libre Baskerville',Georgia,serif">
           <thead><tr>
             <th style="${TDH}width:11%">Course Code</th>
             <th style="${TDH}width:34%">Course Title</th>
@@ -1274,7 +1274,7 @@ function printDocument(type) {
 const confirmationBody = type === 'confirmation' ? `
   <div style="
     margin:32px 0;
-    font-family:'Times New Roman',Times,serif;
+    font-family:'Libre Baskerville',Georgia,serif;
     font-size:12pt;
     color:#0D1B2A;
     line-height:2;
@@ -1303,10 +1303,10 @@ const confirmationBody = type === 'confirmation' ? `
 
   // ── Closing / signature ───────────────────────────────────────
 const closing = `
-  <div style="margin-top:28px;border-top:1.5px solid #0D1B2A;display:flex;justify-content:space-between;align-items:stretch;font-family:'Times New Roman',Times,serif">
+  <div style="margin-top:28px;border-top:1.5px solid #0D1B2A;display:flex;justify-content:space-between;align-items:stretch;font-family:'Libre Baskerville',Georgia,serif">
 
     <!-- Official Notice -->
-    <div style="flex:1;padding:12px 16px;border-right:1px solid #ccc;font-size:9pt;color:#444;line-height:1.7;font-family:'Times New Roman',Times,serif">
+    <div style="flex:1;padding:12px 16px;border-right:1px solid #ccc;font-size:9pt;color:#444;line-height:1.7;font-family:'Libre Baskerville',Georgia,serif">
       <div style="font-size:8pt;font-weight:bold;letter-spacing:.8px;text-transform:uppercase;color:#555;margin-bottom:5px">
         Official Notice
       </div>
@@ -1346,10 +1346,11 @@ const closing = `
 <head>
   <meta charset="UTF-8">
   <title>${type === 'transcript' ? 'Academic Transcript' : 'Confirmation of Study'} — ${name}</title>
+  <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     html, body { height: 100%; }
-    body { font-family: 'Times New Roman', Times, serif; color: #0D1B2A; background: #fff; font-size: 10.5pt; line-height: 1.5; }
+    body { font-family: 'Libre Baskerville', Georgia, serif; color: #0D1B2A; background: #fff; font-size: 10.5pt; line-height: 1.5; }
     @page { margin: 22mm 25mm 24mm 25mm; size: A4; }
     @media print { * { -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
 
@@ -1364,7 +1365,7 @@ const closing = `
   margin-bottom: 2px;
   font-size: 8.5pt;
   color: #555;
-  font-family: 'Times New Roman', Times, serif;
+  font-family: 'Libre Baskerville', Georgia, serif;
 }
 
 .pg-hdr b {
@@ -1380,7 +1381,7 @@ const closing = `
   margin-top: 2px;
   font-size: 8.5pt;
   color: #555;
-  font-family: 'Times New Roman', Times, serif;
+  font-family: 'Libre Baskerville', Georgia, serif;
 }
 
 .pg-ftr b {
@@ -1397,7 +1398,7 @@ const closing = `
   top: 50%;
   left: 50%;
   transform: translate(-50%,-50%) rotate(-35deg);
-  font-family: 'Times New Roman', Times, serif;
+  font-family: 'Libre Baskerville', Georgia, serif;
   font-size: 90pt;
   font-weight: bold;
   color: rgba(13,27,42,0.04);
@@ -1411,31 +1412,61 @@ const closing = `
       margin-bottom: 12px; padding-bottom: 10px; border-bottom: 2.5px solid #0D1B2A;
     }
     .inst-name {
-      font-family: 'Times New Roman', Times, serif;
+      font-family: 'Libre Baskerville', Georgia, serif;
       font-size: 17pt; font-weight: bold; color: #0D1B2A; line-height: 1.2;
     }
-    .inst-sub { font-size: 9.5pt; color: #555; margin-top: 4px; font-family: 'Times New Roman', Times, serif; font-style: italic; }
+    .inst-sub { font-size: 9.5pt; color: #555; margin-top: 4px; font-family: 'Libre Baskerville', Georgia, serif; font-style: italic; }
     .doc-type-badge {
-      font-family: 'Times New Roman', Times, serif;
+      font-family: 'Libre Baskerville', Georgia, serif;
       font-size: 13pt; font-weight: bold; color: #0D1B2A;
       text-transform: uppercase; letter-spacing: .5px; text-align: right;
     }
-    .doc-meta { font-size: 9pt; color: #444; text-align: right; margin-top: 5px; line-height: 1.7; font-family: 'Times New Roman', Times, serif; }
+    .doc-meta { font-size: 9pt; color: #444; text-align: right; margin-top: 5px; line-height: 1.7; font-family: 'Libre Baskerville', Georgia, serif; }
 
     .stu-bar {
       background: #f0f0f0; border: 1px solid #bbb;
       padding: 9px 14px; margin-bottom: 14px;
       display: flex; gap: 24px; flex-wrap: wrap; align-items: center;
-      font-size: 9pt; color: #333; font-family: 'Times New Roman', Times, serif;
+      font-size: 9pt; color: #333; font-family: 'Libre Baskerville', Georgia, serif;
     }
     .stu-bar-item { display: flex; flex-direction: column; gap: 2px; }
     .stu-bar-lbl { font-size: 7.5pt; font-weight: bold; letter-spacing: .5px; text-transform: uppercase; color: #666; }
     .stu-bar-val { font-size: 9.5pt; color: #0D1B2A; font-weight: bold; }
-    .stu-bar-gpa { font-family: 'Times New Roman', Times, serif; font-size: 15pt; font-weight: bold; color: #0D1B2A; }
+    .stu-bar-gpa { font-family: 'Libre Baskerville', Georgia, serif; font-size: 15pt; font-weight: bold; color: #0D1B2A; }
+
+    .transcript-student-section {
+      border: 1px solid #bbb;
+      margin: 10px 0 16px;
+      padding: 12px 14px;
+      display: grid;
+      grid-template-columns: 1.2fr 1.2fr .8fr;
+      gap: 14px;
+      background: #fff;
+      page-break-inside: avoid;
+    }
+    .transcript-student-item {
+      border-right: 1px solid #ddd;
+      padding-right: 12px;
+    }
+    .transcript-student-item:last-child { border-right: none; padding-right: 0; }
+    .transcript-student-label {
+      font-size: 7.5pt;
+      font-weight: bold;
+      letter-spacing: .8px;
+      text-transform: uppercase;
+      color: #555;
+      margin-bottom: 4px;
+    }
+    .transcript-student-value {
+      font-size: 10pt;
+      font-weight: bold;
+      color: #0D1B2A;
+      line-height: 1.35;
+    }
 
     .section-label {
       font-size: 8pt; font-weight: bold; letter-spacing: 1.2px;
-      text-transform: uppercase; color: #444; font-family: 'Times New Roman', Times, serif;
+      text-transform: uppercase; color: #444; font-family: 'Libre Baskerville', Georgia, serif;
       margin: 14px 0 6px; border-bottom: 1px solid #ccc; padding-bottom: 4px;
     }
   </style>
@@ -1471,7 +1502,23 @@ const closing = `
         </div>
       </div>
 
-      ${type === 'transcript' ? `<div class="section-label">Academic Record</div>${academicRecord}` : ''}
+      ${type === 'transcript' ? `
+      <div class="section-label">Student Details</div>
+      <div class="transcript-student-section">
+        <div class="transcript-student-item">
+          <div class="transcript-student-label">Name</div>
+          <div class="transcript-student-value">${name}</div>
+        </div>
+        <div class="transcript-student-item">
+          <div class="transcript-student-label">Father's Name</div>
+          <div class="transcript-student-value">${father}</div>
+        </div>
+        <div class="transcript-student-item">
+          <div class="transcript-student-label">Date of Birth</div>
+          <div class="transcript-student-value">${birth}</div>
+        </div>
+      </div>
+      <div class="section-label">Academic Record</div>${academicRecord}` : ''}
       ${confirmationBody}
       ${closing}
 
