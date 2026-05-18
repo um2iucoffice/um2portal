@@ -155,6 +155,8 @@ table.gt th {
   color: var(--ink3);
   background: transparent;
   white-space: nowrap;
+
+
 }
 table.gt th:nth-child(3),
 table.gt th:nth-child(4),
@@ -473,6 +475,15 @@ table.gt tbody tr:hover { background: #F8F9FC; }
     border-bottom: 1px solid #ebebeb !important;
     color: #111 !important;
     vertical-align: middle !important;
+table.gt th:last-child,
+table.gt td:last-child {
+  width: 80px;
+  min-width: 80px;
+  max-width: 80px;
+  text-align: center !important;
+}<td style="width:80px;text-align:center">
+  <span class="gbadge ${gc(r.grade)}">${r.grade || '—'}</span>
+</td>
   }
   table.gt tr:last-child td { border-bottom: none !important; }
   table.gt tbody tr:nth-child(even) td { background: #fafafa !important; }
@@ -654,37 +665,6 @@ table.gt tbody tr:hover { background: #F8F9FC; }
 </div>
 
 <!-- ═══════════════════ DASHBOARD ═══════════════════ -->
-<div style="display:flex;align-items:flex-start;gap:16px;">
-
-  <img 
-    src="UM2_logo.svg"
-    alt="UM2 Logo"
-    style="
-      width:75px;
-      height:auto;
-      margin-top:2px;
-    "
-  >
-
-  <div>
-    <div style="font-size:22pt;font-weight:bold;color:#0D1B2A;">
-      University of Medicine (2)
-    </div>
-
-    <div style="font-size:11pt;color:#333;">
-      Interim University Council
-    </div>
-
-    <div style="font-size:11pt;color:#333;">
-      Republic of the Union of Myanmar
-    </div>
-
-    <div style="margin-top:10px;font-style:italic;color:#666;">
-      Secretariat Office
-    </div>
-  </div>
-
-</div>
 <!-- Print overlay elements: watermark + footer, at body level -->
 <div class="print-watermark" aria-hidden="true">UM2</div>
 <div class="print-footer" style="display:none">
