@@ -186,7 +186,7 @@ table.gt tbody tr:hover { background: #F8F9FC; }
 /* Course name — smaller DM Sans title */
 .gt-course {
   font-family: 'DM Sans', sans-serif;
-  font-size: 6.2px;
+  font-size: 10.2px;
   font-weight: 500;
   color: var(--ink);
   line-height: 1.28;
@@ -495,11 +495,17 @@ table.gt tbody tr:hover { background: #F8F9FC; }
   table.gt tbody tr:nth-child(even) td { background: #fafafa !important; }
   table.gt tbody tr:hover { background: none !important; }
 
+
+  /* Print-only: Type of Completion column — 4pt smaller than regular table text */
+  table.gt td:nth-child(4) {
+    font-size: 5pt !important;
+  }
+
   /* Course cell */
   .gt-course {
     font-family: 'DM Sans', sans-serif !important;
     font-weight: 500 !important;
-    font-size: 8.2pt !important;
+    font-size: 4.2pt !important;
     line-height: 1.25 !important;
     color: #0D1B2A !important;
     letter-spacing: -.05px !important;
@@ -723,7 +729,7 @@ table.gt * {
       <button class="ntab" data-tab="grades" onclick="switchTab('grades',this)">Academic Results</button>
       <button class="ntab" data-tab="docs" onclick="switchTab('docs',this)">Documents</button>
       <button class="ntab ext" onclick="window.open('https://um2campus.com/login/index.php','_blank')">Moodle</button>
-      <button class="ntab ext" onclick="window.open('https://script.google.com/a/macros/um2campus.org/s/AKfycbyStAngqFLWQpMQ_ucEs8aKx43Hy3R_rlXtQClzfW3vjUi1c-3rxoBIn2lG4X847f6WGA/exec','_blank')">Support</button>
+      <button class="ntab ext" onclick="window.open('https://supportportal.um2campus.org','_blank')">Support</button>
     </div>
   </div>
 
@@ -751,10 +757,14 @@ table.gt * {
           <div class="ql-t">Moodle</div>
           <div class="ql-s">Courses &amp; materials</div>
         </div>
-        <div class="ql" onclick="window.open('https://script.google.com/a/macros/um2campus.org/s/AKfycbyStAngqFLWQpMQ_ucEs8aKx43Hy3R_rlXtQClzfW3vjUi1c-3rxoBIn2lG4X847f6WGA/exec','_blank')">
+        <div class="ql" onclick="window.open('https://supportportal.um2campus.org','_blank')">
           <div class="ql-bar"></div>
           <div class="ql-t">Support</div>
           <div class="ql-s">Submit a request</div>
+        </div>
+         <div class="ql" onclick="switchTab('documents')">
+          <div class="ql-bar"></div>
+          <div class="ql-t">Document</div>
         </div>
         <div class="ql dim">
           <div class="ql-bar" style="background:var(--line)"></div>
@@ -856,8 +866,8 @@ table.gt * {
     <!-- GRADES -->
     <div class="panel" id="panel-grades">
       <div class="ph">
-        <h2>Academic Record</h2>
-        <p>Full record of grades, credits and grade points at ${today}</p>
+        <h2>Academic Transcript</h2>
+        <p>Full record of grades, credits and grade points — Academic Year 2025–2026</p>
       </div>
       <div id="transcriptSummary" style="display:none" class="transcript-summary">
         <div class="ts-item">
@@ -1126,7 +1136,7 @@ function renderGrades(grades) {
           <th style="width:12%">Course Code</th>
           <th style="width:33%">Course Title</th>
           <th style="text-align:center">Credits</th>
-          <th style="text-align:center">Exam</th>
+          <th style="text-align:center">Type</th>
           <th style="text-align:center">Score</th>
           <th style="text-align:center">Year</th>
           <th style="text-align:center">Grade</th>
@@ -1146,7 +1156,7 @@ function renderGrades(grades) {
       const dateStr = getCompletionYear(r);
       const typeStr = r.completionType || r.CompletionType || r.course.assessment || '—';
       html += `<tr>
-        <td style="font-size:12px;color:var(--ink3)">${escHtml(r.courseId || '—')}</td>
+        <td style="font-size:10px;color:var(--ink3)">${escHtml(r.courseId || '—')}</td>
         <td><div class="gt-course">${escHtml(r.course.name)}</div></td>
         <td style="text-align:center"><span class="gt-cr">TBD</span></td>
         <td style="text-align:center;font-size:6px;color:var(--ink3)">${escHtml(typeStr)}</td>
@@ -1289,7 +1299,7 @@ function printDocument(type) {
             <th style="${TDH}width:11%">Course Code</th>
             <th style="${TDH}width:34%">Course Title</th>
             <th style="${TDH}width:7%;text-align:center">Credits</th>
-            <th style="${TDH}width:12%;text-align:center">Exam</th>
+            <th style="${TDH}width:12%;text-align:center">Type</th>
             <th style="${TDH}width:8%;text-align:center">Score</th>
             <th style="${TDH}width:14%;text-align:center">Year</th>
             <th style="${TDH}width:14%;text-align:center">Grade</th>
