@@ -1401,31 +1401,57 @@ const closing = `
 
     body > table { width: 100%; border-collapse: collapse; }
     body > table > tbody > tr > td { vertical-align: top; }
+.pg-hdr {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 6px;
+  border-bottom: 2px solid #0D1B2A;
+  margin-bottom: 2px;
+  font-size: 8.5pt;
+  color: #555;
+  font-family: 'Times New Roman', Times, serif;
+}
 
-    .pg-hdr {
-      display: flex; justify-content: space-between; align-items: center;
-      padding-bottom: 6px; border-bottom: 2px solid #0D1B2A; margin-bottom: 2px;
-      font-size: 8.5pt; color: #555; font-family: 'Times New Roman', Times, serif;
-    }
-    .pg-hdr b { color: #0D1B2A; }
+.pg-hdr b {
+  color: #0D1B2A;
+}
 
-    .pg-ftr {
-      display: flex; justify-content: space-between; align-items: center;
-      padding-top: 6px; border-top: 1.5px solid #0D1B2A; margin-top: 2px;
-      font-size: 8.5pt; color: #555; font-family: 'Times New Roman', Times, serif;
-    }
-    .pg-ftr b { color: #0D1B2A; }
-    .pg-ftr-page::before { content: "Page " counter(page) " of " counter(pages); counter-increment: page; }
+.pg-ftr {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 6px;
+  border-top: 1.5px solid #0D1B2A;
+  margin-top: 2px;
+  font-size: 8.5pt;
+  color: #555;
+  font-family: 'Times New Roman', Times, serif;
+}
 
-    .wm {
-      position: fixed; top: 50%; left: 50%;
-      transform: translate(-50%,-50%) rotate(-35deg);
-      font-family: 'Times New Roman', Times, serif;
-      font-size: 90pt; font-weight: bold;
-      color: rgba(13,27,42,0.04); letter-spacing: 10px;
-      pointer-events: none; white-space: nowrap; z-index: 0;
-    }
+.pg-ftr b {
+  color: #0D1B2A;
+}
 
+/* Page numbering removed */
+.pg-ftr-page::before {
+  content: "";
+}
+
+.wm {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%,-50%) rotate(-35deg);
+  font-family: 'Times New Roman', Times, serif;
+  font-size: 90pt;
+  font-weight: bold;
+  color: rgba(13,27,42,0.04);
+  letter-spacing: 10px;
+  pointer-events: none;
+  white-space: nowrap;
+  z-index: 0;
+}
     .inst-hdr {
       display: flex; justify-content: space-between; align-items: flex-start;
       margin-bottom: 12px; padding-bottom: 10px; border-bottom: 2.5px solid #0D1B2A;
