@@ -1092,7 +1092,7 @@ function renderGrades(grades) {
     blockOrder.forEach(bkName => {
       const bkRows = blocks[bkName];
       // Use block name as semester label styled like "SEMESTER: SPRING 2022"
-      html += `<div class="g-year-head">— &nbsp; Semester: ${bkName}</div>`;
+      html += `<div class="g-year-head">— &nbsp;${bkName}</div>`;
       html += `<table class="gt">
         <thead>
           <tr>
@@ -1100,7 +1100,7 @@ function renderGrades(grades) {
             <th style="width:38%">Course Title</th>
             <th style="text-align:center">Credits</th>
             <th style="text-align:center">Type of<br>Completion</th>
-            <th style="text-align:center">Date of<br>Insertion<br>of Grade</th>
+            <th style="text-align:center">Year</th>
             <th style="text-align:center">Grade</th>
           </tr>
         </thead>
@@ -1267,7 +1267,7 @@ function printDocument(type) {
           <th style="${TDH}width:40%">Course Title</th>
           <th style="${TDH}width:8%;text-align:center">Credits</th>
           <th style="${TDH}width:12%;text-align:center">Type of<br>Completion</th>
-          <th style="${TDH}width:14%;text-align:center">Date of<br>Insertion of Grade</th>
+          <th style="${TDH}width:14%;text-align:center">Year</th>
 	 <th style="${TDH}width:14%;text-align:center">Grade</th>
         </tr></thead>
         <tbody>${rows}</tbody>
