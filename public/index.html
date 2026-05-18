@@ -697,14 +697,14 @@ table.gt * {
 <!-- ═══════════════════ DASHBOARD ═══════════════════ -->
 
 <!-- Print overlay elements: watermark + footer, at body level -->
-<div class="print-watermark" aria-hidden="true">UM2IUC</div>
+<div class="print-watermark" aria-hidden="true">UM2</div>
 <div class="print-footer" style="display:none">
-  <span id="printFooterLeft">UM2&nbsp;·&nbsp; Student ID: <span class="print-footer-sid" id="printFooterSID">—</span></span>
+  <span id="printFooterLeft">University of Medicine (2) &nbsp;·&nbsp; Student ID: <span class="print-footer-sid" id="printFooterSID">—</span></span>
   <span class="print-footer-center" id="printFooterCenter"></span>
   <span class="print-footer-page" id="printFooterRight"></span>
 </div>
 <div class="print-page-header" style="display:none" id="printPageHeader">
-  <span id="printPageHeaderName">UM2 — Official Transcript</span>
+  <span id="printPageHeaderName">University of Medicine (2) — Official Transcript</span>
   <span id="printPageHeaderSID"></span>
 </div>
 
@@ -1526,6 +1526,25 @@ const closing = `
   <div class="wm">UM2</div>
   <table>
     <thead><tr><td style="padding-bottom:10px">
+      <div class="pg-hdr">
+        <div style="display:flex;align-items:center;gap:8px">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 120" width="22" height="26" style="flex-shrink:0">
+            <path d="M50 4 L94 22 L94 68 Q94 98 50 116 Q6 98 6 68 L6 22 Z" fill="none" stroke="#8B1A2E" stroke-width="3"/>
+            <path d="M50 12 L87 27 L87 67 Q87 93 50 109 Q13 93 13 67 L13 27 Z" fill="#8B1A2E" opacity="0.07"/>
+            <line x1="50" y1="30" x2="50" y2="90" stroke="#8B1A2E" stroke-width="2.5"/>
+            <path d="M50 34 Q38 29 36 36 Q34 43 50 44 Q66 43 64 36 Q62 29 50 34" fill="none" stroke="#8B1A2E" stroke-width="2"/>
+            <path d="M50 44 Q36 49 38 56 Q40 63 50 63" fill="none" stroke="#8B1A2E" stroke-width="2"/>
+            <path d="M50 63 Q36 63 37 71 Q38 79 50 79" fill="none" stroke="#8B1A2E" stroke-width="2"/>
+            <path d="M50 44 Q64 49 62 56 Q60 63 50 63" fill="none" stroke="#0D1B2A" stroke-width="2"/>
+            <path d="M50 63 Q64 63 63 71 Q62 79 50 79" fill="none" stroke="#0D1B2A" stroke-width="2"/>
+            <circle cx="50" cy="28" r="5" fill="none" stroke="#8B1A2E" stroke-width="2"/>
+            <circle cx="50" cy="28" r="2.5" fill="#8B1A2E"/>
+          </svg>
+          <b>University of Medicine (2)</b>
+        </div>
+        <span style="color:#8B1A2E;font-weight:600">Student ID: ${sid}</span>
+      </div>
+    </td></tr></thead>
 
     <tfoot><tr><td style="padding-top:10px">
       <div class="pg-ftr">
@@ -1538,11 +1557,37 @@ const closing = `
 
       <!-- Institution header -->
       <div class="inst-hdr">
-        <div>
-          <div class="inst-name">University of Medicine (2)</div>
-          <div class="inst-name" style="font-size:10pt;font-weight:400;font-">Interim University Council</div>
-<div>Republic of the Union of Myanmar</div>
-          <div class="inst-sub">Secretariat Office </div>
+        <div style="display:flex;align-items:center;gap:18px">
+          <!-- UM2 University Logo SVG -->
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 120" width="72" height="86" style="flex-shrink:0">
+            <!-- Outer shield shape -->
+            <path d="M50 4 L94 22 L94 68 Q94 98 50 116 Q6 98 6 68 L6 22 Z" fill="none" stroke="#8B1A2E" stroke-width="2.5"/>
+            <!-- Inner shield -->
+            <path d="M50 12 L87 27 L87 67 Q87 93 50 109 Q13 93 13 67 L13 27 Z" fill="#8B1A2E" opacity="0.06"/>
+            <!-- Caduceus staff -->
+            <line x1="50" y1="30" x2="50" y2="90" stroke="#8B1A2E" stroke-width="2"/>
+            <!-- Caduceus wings -->
+            <path d="M50 34 Q38 29 36 36 Q34 43 50 44 Q66 43 64 36 Q62 29 50 34" fill="none" stroke="#8B1A2E" stroke-width="1.5"/>
+            <!-- Snake 1 (left spiral) -->
+            <path d="M50 44 Q36 49 38 56 Q40 63 50 63" fill="none" stroke="#8B1A2E" stroke-width="1.5"/>
+            <path d="M50 63 Q36 63 37 71 Q38 79 50 79" fill="none" stroke="#8B1A2E" stroke-width="1.5"/>
+            <!-- Snake 2 (right spiral) -->
+            <path d="M50 44 Q64 49 62 56 Q60 63 50 63" fill="none" stroke="#0D1B2A" stroke-width="1.5"/>
+            <path d="M50 63 Q64 63 63 71 Q62 79 50 79" fill="none" stroke="#0D1B2A" stroke-width="1.5"/>
+            <!-- Top circle / globe symbol -->
+            <circle cx="50" cy="28" r="5" fill="none" stroke="#8B1A2E" stroke-width="1.5"/>
+            <circle cx="50" cy="28" r="2" fill="#8B1A2E"/>
+            <!-- Bottom ornament -->
+            <path d="M42 90 Q50 94 58 90" fill="none" stroke="#8B1A2E" stroke-width="1.5"/>
+            <!-- UM2 text inside shield -->
+            <text x="50" y="106" text-anchor="middle" font-family="'DM Sans',sans-serif" font-size="7" font-weight="700" fill="#8B1A2E" letter-spacing="1">UM2</text>
+          </svg>
+          <div>
+            <div class="inst-name">University of Medicine (2)</div>
+            <div class="inst-name" style="font-size:10pt;font-weight:400;">Interim University Council</div>
+            <div style="font-size:9.5pt;color:#333;font-family:'DM Sans',sans-serif;">Republic of the Union of Myanmar</div>
+            <div class="inst-sub">Secretariat Office</div>
+          </div>
         </div>
         <div>
           <div class="doc-type-badge">${type === 'transcript' ? 'Official Transcript' : 'Confirmation of Study'}</div>
