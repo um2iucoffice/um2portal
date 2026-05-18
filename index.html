@@ -290,20 +290,32 @@ table.gt tbody tr:hover { background: #F8F9FC; }
 .print-footer {
   display: none;
 }
+/* Print page header: hidden on screen */
+.print-page-header {
+  display: none;
+}
 
 @page {
-  margin: 18mm 28mm 24mm 28mm;
+  margin: 24mm 28mm 28mm 28mm;
   @bottom-left {
     content: "University of Medicine (2)  ·  " attr(data-sid);
     font-family: sans-serif;
     font-size: 7.5pt;
-    color: #888;
+    color: #555;
+    border-top: 1px solid #999;
+    padding-top: 4pt;
+  }
+  @bottom-center {
+    border-top: 1px solid #999;
+    content: "";
   }
   @bottom-right {
     content: "Page " counter(page) " of " counter(pages);
     font-family: sans-serif;
     font-size: 7.5pt;
-    color: #888;
+    color: #555;
+    border-top: 1px solid #999;
+    padding-top: 4pt;
   }
 }
 
@@ -333,18 +345,49 @@ table.gt tbody tr:hover { background: #F8F9FC; }
   .print-footer {
     display: flex !important;
     position: fixed;
-    bottom: 6mm;
-    left: 28mm;
-    right: 28mm;
-    border-top: 1px solid #ccc;
-    padding-top: 5px;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    border-top: 2px solid #0D1B2A;
+    padding: 5px 28mm;
     font-family: 'DM Sans', sans-serif;
     font-size: 8pt;
-    color: #888;
+    color: #444;
     justify-content: space-between;
     align-items: center;
     z-index: 9999;
     background: #fff;
+  }
+  .print-footer-sid {
+    font-weight: 700;
+    color: #8B1A2E;
+    margin-left: 6px;
+  }
+  .print-footer-page {
+    font-size: 7.5pt;
+    color: #666;
+    letter-spacing: .3px;
+  }
+
+  /* Print page header — repeats at top of each page */
+  .print-page-header {
+    display: flex !important;
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    border-bottom: 1.5px solid #0D1B2A;
+    padding: 5px 28mm;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 8pt;
+    color: #444;
+    justify-content: space-between;
+    align-items: center;
+    background: #fff;
+    z-index: 9999;
+  }
+  #printPageHeaderSID {
+    font-weight: 700;
+    color: #8B1A2E;
+    font-size: 8pt;
   }
 
   /* Hide everything except the active panel */
@@ -655,8 +698,12 @@ table.gt tbody tr:hover { background: #F8F9FC; }
 <!-- Print overlay elements: watermark + footer, at body level -->
 <div class="print-watermark" aria-hidden="true">UM2</div>
 <div class="print-footer" style="display:none">
-  <span id="printFooterLeft">University of Medicine (2) · Student Information System</span>
-  <span id="printFooterRight"></span>
+  <span id="printFooterLeft">University of Medicine (2) &nbsp;·&nbsp; Student ID: <span class="print-footer-sid" id="printFooterSID">—</span></span>
+  <span class="print-footer-page" id="printFooterRight">Official Document</span>
+</div>
+<div class="print-page-header" style="display:none" id="printPageHeader">
+  <span id="printPageHeaderName">University of Medicine (2) — Official Transcript</span>
+  <span id="printPageHeaderSID"></span>
 </div>
 
 <div id="dashboard">
@@ -974,8 +1021,8 @@ function populate(s, grades) {
   document.getElementById('profileGpaVal').textContent = gpa + ' / 4.00';
   // Update print footer and @page attr with student ID
   const sid = s.id || '—';
-  document.getElementById('printFooterLeft').textContent =
-    'University of Medicine (2)  ·  Student ID: ' + sid;
+  const sidSpan = document.getElementById('printFooterSID');
+  if (sidSpan) sidSpan.textContent = sid;
   // Set data-sid on <html> so @page margin boxes can read it via attr()
   document.documentElement.setAttribute('data-sid', 'Student ID: ' + sid);
   const tags = document.getElementById('profileTags');
@@ -1149,17 +1196,32 @@ function switchTab(id, btn) {
 window.addEventListener('beforeprint', function() {
   const footer = document.querySelector('.print-footer');
   const wm     = document.querySelector('.print-watermark');
+  const hdr    = document.getElementById('printPageHeader');
   if (footer) footer.style.display = 'flex';
   if (wm)     wm.style.display     = 'block';
-  // Set right label
+  if (hdr)    hdr.style.display    = 'flex';
+  // Populate Student ID from active panel
+  const sidEl = document.getElementById('infoID');
+  const sidSpan = document.getElementById('printFooterSID');
+  const sidVal = sidEl ? sidEl.textContent : '—';
+  if (sidSpan) sidSpan.textContent = sidVal;
+  // Page header: student name + Student ID
+  const nameEl = document.getElementById('profileName');
+  const phName = document.getElementById('printPageHeaderName');
+  const phSid  = document.getElementById('printPageHeaderSID');
+  if (phName && nameEl) phName.textContent = 'University of Medicine (2) — ' + (nameEl.textContent || 'Official Document');
+  if (phSid) phSid.textContent = 'Student ID: ' + sidVal;
+  // Right label
   const right = document.getElementById('printFooterRight');
   if (right) right.textContent = 'Official Document – University of Medicine (2)';
 });
 window.addEventListener('afterprint', function() {
   const footer = document.querySelector('.print-footer');
   const wm     = document.querySelector('.print-watermark');
+  const hdr    = document.getElementById('printPageHeader');
   if (footer) footer.style.display = 'none';
   if (wm)     wm.style.display     = 'none';
+  if (hdr)    hdr.style.display    = 'none';
 });
 
 
@@ -1325,23 +1387,51 @@ function printDocument(type) {
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: 'DM Sans', sans-serif; color: #0D1B2A; background: #fff; font-size: 10pt; }
     @page {
-      margin: 18mm 22mm 22mm 22mm;
+      margin: 18mm 22mm 26mm 22mm;
       @bottom-left {
         content: "University of Medicine (2)  ·  Student ID: ${sid}";
-        font-family: sans-serif; font-size: 7.5pt; color: #888;
+        font-family: sans-serif; font-size: 7.5pt; color: #555;
+        border-top: 1px solid #999;
+        padding-top: 4pt;
+      }
+      @bottom-center {
+        content: "";
+        border-top: 1px solid #999;
       }
       @bottom-right {
         content: "Page " counter(page) " of " counter(pages);
-        font-family: sans-serif; font-size: 7.5pt; color: #888;
+        font-family: sans-serif; font-size: 7.5pt; color: #555;
+        border-top: 1px solid #999;
+        padding-top: 4pt;
       }
     }
     @media print {
       * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      .doc-fixed-footer { display: flex !important; }
     }
+    .doc-fixed-footer {
+      display: none;
+      position: fixed;
+      bottom: 0; left: 0; right: 0;
+      border-top: 2px solid #0D1B2A;
+      padding: 5px 22mm;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 7.5pt;
+      color: #444;
+      justify-content: space-between;
+      align-items: center;
+      background: #fff;
+      z-index: 9999;
+    }
+    .doc-footer-sid { font-weight: 700; color: #8B1A2E; }
   </style>
 </head>
 <body>
   ${watermark}
+  <div class="doc-fixed-footer">
+    <span>University of Medicine (2) &nbsp;·&nbsp; Student ID: <span class="doc-footer-sid">${sid}</span></span>
+    <span>Official Document – University of Medicine (2)</span>
+  </div>
   <div style="position:relative;z-index:1">
     ${header}
     ${infoTable}
