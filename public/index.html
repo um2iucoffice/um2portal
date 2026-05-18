@@ -620,6 +620,165 @@ table.gt tbody tr:hover { background: #F8F9FC; }
   .icell:last-child{border-bottom:none}
   .qlinks{grid-template-columns:1fr 1fr}
 }
+
+/* ── A4 TRANSCRIPT PRINT FIX ── */
+@page {
+  size: A4 portrait;
+  margin: 12mm 14mm 14mm 14mm;
+}
+
+@media print {
+  html, body {
+    width: 210mm;
+    min-height: 297mm;
+    background: #fff !important;
+  }
+
+  body {
+    font-size: 9.5pt !important;
+    line-height: 1.28 !important;
+    padding: 0 !important;
+  }
+
+  /* Avoid the fixed repeated header pushing content down / causing blank first page */
+  .print-page-header {
+    display: none !important;
+  }
+
+  /* Keep footer compact */
+  .print-footer {
+    bottom: 0 !important;
+    left: 14mm !important;
+    right: 14mm !important;
+    padding: 3mm 0 0 !important;
+    font-size: 7.5pt !important;
+    border-top: 1.2px solid #0D1B2A !important;
+  }
+
+  .print-watermark {
+    font-size: 95pt !important;
+    opacity: .7 !important;
+  }
+
+  /* Main transcript panel uses actual A4 margins */
+  #panel-grades.active {
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  #panel-grades .ph {
+    margin: 0 0 5mm 0 !important;
+    padding: 0 !important;
+    page-break-after: avoid !important;
+    break-after: avoid !important;
+  }
+
+  #panel-grades .ph h2 {
+    font-size: 15pt !important;
+    line-height: 1.15 !important;
+    margin: 0 0 1mm 0 !important;
+  }
+
+  #panel-grades .ph p {
+    font-size: 8pt !important;
+    margin: 0 !important;
+  }
+
+  /* Summary stays compact and does not force a page break */
+  .transcript-summary {
+    margin: 0 0 5mm 0 !important;
+    padding: 3mm 4mm !important;
+    gap: 8mm !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+
+  .ts-lbl {
+    font-size: 6.5pt !important;
+    letter-spacing: .8px !important;
+  }
+
+  .ts-val {
+    font-size: 12pt !important;
+  }
+
+  .ts-divider {
+    height: 18pt !important;
+  }
+
+  /* Critical fix: do not keep the whole academic-year block on one page.
+     That was causing nearly blank pages when the table was too tall. */
+  .g-wrap {
+    page-break-inside: auto !important;
+    break-inside: auto !important;
+    margin: 0 0 6mm 0 !important;
+  }
+
+  .g-year-head {
+    page-break-after: avoid !important;
+    break-after: avoid !important;
+    padding: 2.5mm 0 1.5mm 0 !important;
+    margin: 0 !important;
+    font-size: 8.5pt !important;
+    letter-spacing: 1.4px !important;
+    border-top: 1.4px solid #0D1B2A !important;
+    border-bottom: 1.4px solid #0D1B2A !important;
+  }
+
+  table.gt {
+    width: 100% !important;
+    table-layout: fixed !important;
+    font-size: 8.2pt !important;
+    line-height: 1.22 !important;
+    page-break-inside: auto !important;
+    break-inside: auto !important;
+  }
+
+  table.gt thead {
+    display: table-header-group !important;
+  }
+
+  table.gt tr {
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+
+  table.gt th {
+    padding: 2mm 1.8mm !important;
+    font-size: 6.3pt !important;
+    line-height: 1.12 !important;
+    letter-spacing: .45px !important;
+    white-space: normal !important;
+  }
+
+  table.gt td {
+    padding: 2mm 1.8mm !important;
+    font-size: 8pt !important;
+    line-height: 1.22 !important;
+  }
+
+  table.gt th:nth-child(1), table.gt td:nth-child(1) { width: 14% !important; }
+  table.gt th:nth-child(2), table.gt td:nth-child(2) { width: 31% !important; }
+  table.gt th:nth-child(3), table.gt td:nth-child(3) { width: 10% !important; }
+  table.gt th:nth-child(4), table.gt td:nth-child(4) { width: 18% !important; }
+  table.gt th:nth-child(5), table.gt td:nth-child(5) { width: 9% !important; }
+  table.gt th:nth-child(6), table.gt td:nth-child(6) { width: 8% !important; }
+  table.gt th:nth-child(7), table.gt td:nth-child(7) { width: 10% !important; }
+
+  .gt-course {
+    font-size: 8.2pt !important;
+    line-height: 1.22 !important;
+  }
+
+  .gbadge {
+    font-size: 9pt !important;
+  }
+
+  .g-year-totals {
+    display: none !important;
+  }
+}
+
 </style>
 </head>
 <body>
@@ -710,6 +869,12 @@ table.gt tbody tr:hover { background: #F8F9FC; }
           <div class="ql-bar"></div>
           <div class="ql-t">Academic Results</div>
           <div class="ql-s">Grades &amp; grade points</div>
+        </div>
+
+        <div class="ql" onclick="switchTab('docs')">
+          <div class="ql-bar"></div>
+          <div class="ql-t">Documents</div>
+          <div class="ql-s">Generate official documents</div>
         </div>
         <div class="ql" onclick="window.open('https://um2campus.com/login/index.php','_blank')">
           <div class="ql-bar"></div>
@@ -1185,7 +1350,13 @@ window.addEventListener('afterprint', function() {
 
 // ── Document print ────────────────────────────────────────────
 function printDocument(type) {
-  const name      = document.getElementById('profileName').textContent || '—';
+  
+  if (type === 'transcript') {
+    switchTab('grades');
+    setTimeout(() => window.print(), 120);
+    return;
+  }
+const name      = document.getElementById('profileName').textContent || '—';
   const nameMM    = document.getElementById('profileNameMM').textContent || '';
   const sid       = document.getElementById('infoID').textContent || '—';
   const birth     = document.getElementById('infoBirth').textContent || '—';
