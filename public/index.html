@@ -1146,10 +1146,10 @@ function renderGrades(grades) {
       const dateStr = getCompletionYear(r);
       const typeStr = r.completionType || r.CompletionType || r.course.assessment || '—';
       html += `<tr>
-        <td style="font-size:11px;color:var(--ink3)">${escHtml(r.courseId || '—')}</td>
+        <td style="font-size:8px;color:var(--ink3)">${escHtml(r.courseId || '—')}</td>
         <td><div class="gt-course">${escHtml(r.course.name)}</div></td>
         <td style="text-align:center"><span class="gt-cr">TBD</span></td>
-        <td style="text-align:center;font-size:11px;color:var(--ink3)">${escHtml(typeStr)}</td>
+        <td style="text-align:center;font-size:8px;color:var(--ink3)">${escHtml(typeStr)}</td>
         <td style="text-align:center;font-size:12px;font-weight:500;color:var(--ink)">${escHtml(scoreStr)}</td>
         <td style="text-align:center;font-size:11px;color:var(--ink3)">${escHtml(dateStr)}</td>
         <td style="text-align:center"><span class="gbadge ${gc(r.grade)}">${escHtml(r.grade || '—')}</span></td>
