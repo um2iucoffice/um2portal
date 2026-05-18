@@ -132,23 +132,154 @@ body{font-family:'DM Sans',sans-serif;background:var(--surface);color:var(--ink)
 .ql-s{font-size:11px;color:var(--ink3)}
 
 /* ── GRADES ── */
-.g-wrap{background:var(--white);border:1px solid var(--line);border-radius:8px;overflow:hidden;margin-bottom:16px}
-.g-year-head{padding:10px 18px;background:var(--surface);border-bottom:1px solid var(--line);font-size:10px;font-weight:700;letter-spacing:1.8px;text-transform:uppercase;color:var(--ink3)}
-.g-block-head{padding:7px 18px;background:#FAFBFC;border-bottom:1px solid var(--line);font-size:11px;color:var(--ink3);font-weight:500}
-table.gt{width:100%;border-collapse:collapse;font-size:13px}
-table.gt th{padding:9px 14px;text-align:left;font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--ink3);background:var(--surface);border-bottom:1px solid var(--line)}
-table.gt th:last-child,table.gt td:last-child{text-align:right}
-table.gt td{padding:11px 14px;border-bottom:1px solid var(--line);color:var(--ink)}
-table.gt tr:last-child td{border-bottom:none}
-table.gt tbody tr:hover{background:var(--surface)}
-.gbadge{display:inline-block;min-width:32px;text-align:center;padding:2px 7px;border-radius:3px;font-size:12px;font-weight:600}
-.gAp,.gA{background:#EBF5F0;color:#1A5C3A}
-.gAm{background:#EEEAF8;color:#4A2FA0}
-.gBp,.gB{background:var(--gold-light);color:var(--gold)}
-.gX{background:var(--surface);color:var(--ink3)}
-.sbar{display:inline-block;width:48px;height:3px;background:var(--line);border-radius:99px;overflow:hidden;vertical-align:middle;margin-right:7px}
-.sbar-fill{height:100%;background:linear-gradient(90deg,var(--crimson),var(--gold));border-radius:99px;transition:width .8s ease}
-.no-g{padding:36px;text-align:center;color:var(--ink3);font-size:13px}
+.g-wrap {
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  overflow: hidden;
+  margin-bottom: 20px;
+  box-shadow: 0 1px 4px rgba(13,27,42,.04);
+}
+.g-year-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 11px 20px;
+  background: var(--ink);
+  font-family: 'Libre Baskerville', serif;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: .5px;
+  color: rgba(255,255,255,.85);
+}
+.g-year-head::before {
+  content: '';
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--crimson-mid);
+  flex-shrink: 0;
+}
+.g-block-head {
+  padding: 6px 20px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--line);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+  color: var(--ink3);
+}
+/* Year totals row */
+.g-year-totals {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 32px;
+  padding: 10px 20px;
+  background: var(--surface);
+  border-top: 1px solid var(--line);
+  font-size: 11px;
+  color: var(--ink3);
+}
+.g-year-totals strong {
+  font-weight: 600;
+  color: var(--ink);
+  margin-left: 4px;
+}
+/* Table */
+table.gt { width: 100%; border-collapse: collapse; font-size: 13px; }
+table.gt thead tr { border-bottom: 2px solid var(--line); }
+table.gt th {
+  padding: 9px 16px;
+  text-align: left;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 1.6px;
+  text-transform: uppercase;
+  color: var(--ink3);
+  background: transparent;
+  white-space: nowrap;
+}
+table.gt th:nth-child(3),
+table.gt th:nth-child(4),
+table.gt th:nth-child(5),
+table.gt th:nth-child(6) { text-align: center; }
+table.gt td {
+  padding: 11px 16px;
+  border-bottom: 1px solid var(--line);
+  color: var(--ink);
+  vertical-align: middle;
+}
+table.gt td:nth-child(3),
+table.gt td:nth-child(4),
+table.gt td:nth-child(5),
+table.gt td:nth-child(6) { text-align: center; }
+table.gt tr:last-child td { border-bottom: none; }
+table.gt tbody tr { transition: background .1s; }
+table.gt tbody tr:hover { background: #F8F9FC; }
+/* Course name */
+.gt-course { font-weight: 500; color: var(--ink); line-height: 1.3; }
+.gt-assess { font-size: 11px; color: var(--ink3); margin-top: 2px; }
+/* Credits pill */
+.gt-cr {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 99px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--ink3);
+  min-width: 28px;
+  text-align: center;
+}
+/* Score bar */
+.sbar-wrap { display: inline-flex; align-items: center; gap: 7px; }
+.sbar { display: inline-block; width: 44px; height: 3px; background: var(--line); border-radius: 99px; overflow: hidden; vertical-align: middle; }
+.sbar-fill { height: 100%; background: linear-gradient(90deg, var(--crimson), var(--gold)); border-radius: 99px; transition: width .8s ease; }
+.sbar-num { font-size: 12px; font-weight: 500; color: var(--ink); }
+/* Grade badge */
+.gbadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 36px;
+  height: 24px;
+  padding: 0 8px;
+  border-radius: 5px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: .3px;
+}
+.gAp { background: #D6F0E3; color: #0F5132; }
+.gA  { background: #E0F5EB; color: #1A5C3A; }
+.gAm { background: #EAE5F8; color: #3D2FA0; }
+.gBp { background: #FDF3D7; color: #7A5C00; }
+.gB  { background: #FEF6E0; color: #9A7B2F; }
+.gX  { background: var(--surface); color: var(--ink3); border: 1px solid var(--line); }
+/* Grade points */
+.gt-pts { font-family: 'Libre Baskerville', serif; font-size: 13px; font-weight: 700; color: var(--ink); }
+/* Empty state */
+.no-g { padding: 48px; text-align: center; color: var(--ink3); font-size: 13px; }
+/* Transcript summary card */
+.transcript-summary {
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 20px 24px;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 32px;
+  box-shadow: 0 1px 4px rgba(13,27,42,.04);
+}
+.ts-item { display: flex; flex-direction: column; gap: 3px; }
+.ts-lbl { font-size: 9px; font-weight: 700; letter-spacing: 1.6px; text-transform: uppercase; color: var(--ink3); }
+.ts-val { font-family: 'Libre Baskerville', serif; font-size: 22px; color: var(--ink); line-height: 1; }
+.ts-val.accent { color: var(--crimson); }
+.ts-divider { width: 1px; height: 36px; background: var(--line); }
 
 /* ── PRINT ── */
 /* Watermark: hidden on screen */
@@ -261,71 +392,130 @@ table.gt tbody tr:hover{background:var(--surface)}
   #panel-profile .ph h2 { font-size: 18px; }
 
   /* ── TRANSCRIPT / GRADES print ── */
-  #panel-grades.active {
-    padding: 20mm 28mm;   /* increased left/right margins */
-  }
+  #panel-grades.active { padding: 0; }
 
-  /* Hide the score bars in print */
-  .sbar { display: none !important; }
-
-  /* Print-friendly grade table */
-  .g-wrap {
+  /* Summary card in print */
+  .transcript-summary {
     border: 1px solid #ccc !important;
     box-shadow: none !important;
-    page-break-inside: avoid;
     margin-bottom: 12px !important;
+    padding: 12px 16px !important;
+    gap: 20px !important;
+    page-break-inside: avoid;
   }
-  .g-year-head {
-    background: #e8e8e8 !important;
-    font-size: 10px;
-    padding: 6px 12px;
-  }
-  .g-block-head {
-    background: #f5f5f5 !important;
-    font-size: 10px;
-    padding: 4px 12px;
+  .ts-val { font-size: 16px !important; }
+  .ts-divider { height: 28px !important; }
+
+  /* Hide score bars in print — show number only */
+  .sbar { display: none !important; }
+  .sbar-wrap { display: inline !important; }
+  .sbar-num { font-size: 11px !important; }
+
+  /* Year block */
+  .g-wrap {
+    border: 1px solid #bbb !important;
+    box-shadow: none !important;
+    border-radius: 4px !important;
+    margin-bottom: 10px !important;
+    page-break-inside: avoid;
   }
 
-  /* Proper transcript table */
+  /* Year heading — keep dark for authority */
+  .g-year-head {
+    background: #1a1a2e !important;
+    color: #fff !important;
+    font-size: 9.5pt !important;
+    padding: 5px 12px !important;
+    letter-spacing: 0.4px !important;
+  }
+  .g-year-head::before { display: none !important; }
+
+  /* Block sub-heading */
+  .g-block-head {
+    background: #f2f2f2 !important;
+    color: #444 !important;
+    font-size: 7.5pt !important;
+    padding: 3px 12px !important;
+    letter-spacing: 1.2px !important;
+  }
+
+  /* Year totals footer */
+  .g-year-totals {
+    background: #f8f8f8 !important;
+    border-top: 1px solid #ccc !important;
+    font-size: 8pt !important;
+    padding: 6px 14px !important;
+    gap: 24px !important;
+  }
+
+  /* Table */
   table.gt {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 11px;
-    margin: 0;
+    font-size: 10pt !important;
+    border-collapse: collapse !important;
   }
+  table.gt thead tr { border-bottom: 1.5px solid #999 !important; }
   table.gt th {
-    background: #f0f0f0 !important;
-    border: 1px solid #bbb;
-    padding: 5px 8px;
-    font-size: 9px;
-    font-weight: 700;
-    letter-spacing: 0.8px;
-    text-transform: uppercase;
-    color: #444;
-    text-align: left;
+    padding: 5px 10px !important;
+    font-size: 7pt !important;
+    letter-spacing: 1px !important;
+    color: #555 !important;
+    background: transparent !important;
+    border-bottom: 1px solid #bbb !important;
+    text-align: left !important;
   }
+  table.gt th:nth-child(3),
+  table.gt th:nth-child(4),
+  table.gt th:nth-child(5),
+  table.gt th:nth-child(6),
+  table.gt td:nth-child(3),
+  table.gt td:nth-child(4),
+  table.gt td:nth-child(5),
+  table.gt td:nth-child(6) { text-align: center !important; }
   table.gt td {
-    border: 1px solid #bbb;
-    padding: 5px 8px;
-    color: #111;
-    vertical-align: middle;
+    padding: 5px 10px !important;
+    border-bottom: 1px solid #e8e8e8 !important;
+    color: #111 !important;
+    vertical-align: middle !important;
   }
+  table.gt tr:last-child td { border-bottom: none !important; }
   table.gt tbody tr:nth-child(even) td { background: #fafafa !important; }
   table.gt tbody tr:hover { background: none !important; }
-  table.gt th:last-child, table.gt td:last-child { text-align: right; }
 
-  /* Grade badges become plain text in print */
-  .gbadge {
+  /* Course cell */
+  .gt-course { font-weight: 600 !important; font-size: 10pt !important; color: #0D1B2A !important; }
+  .gt-assess { font-size: 7.5pt !important; color: #666 !important; margin-top: 1px !important; }
+
+  /* Credits pill — simplify for print */
+  .gt-cr {
     background: none !important;
-    border: 1px solid #aaa;
-    padding: 1px 5px;
-    font-size: 10px;
-    font-weight: 700;
-    color: #111 !important;
+    border: 1px solid #bbb !important;
+    font-size: 9pt !important;
+    color: #333 !important;
+    padding: 1px 6px !important;
   }
 
-  /* Page title for transcript */
-  #panel-grades .ph h2 { font-size: 18px; }
+  /* Grade badge */
+  .gbadge {
+    background: none !important;
+    border: 1.5px solid #888 !important;
+    color: #111 !important;
+    font-size: 9pt !important;
+    font-weight: 700 !important;
+    min-width: 30px !important;
+    height: 20px !important;
+    padding: 0 5px !important;
+  }
+
+  /* Grade points */
+  .gt-pts {
+    font-size: 10pt !important;
+    font-weight: 700 !important;
+    color: #0D1B2A !important;
+  }
+
+  /* Page title */
+  #panel-grades .ph h2 { font-size: 16pt !important; margin-bottom: 2px !important; }
+  #panel-grades .ph p  { font-size: 9pt !important; color: #666 !important; }
 }
 
 /* ── RESPONSIVE ── */
@@ -488,7 +678,31 @@ table.gt tbody tr:hover{background:var(--surface)}
 
     <!-- GRADES -->
     <div class="panel" id="panel-grades">
-      <div class="ph"><h2>Academic Results</h2><p>Grades &amp; performance by course</p></div>
+      <div class="ph">
+        <h2>Academic Transcript</h2>
+        <p>Full record of grades, credits and grade points — Academic Year 2025–2026</p>
+      </div>
+      <div id="transcriptSummary" style="display:none" class="transcript-summary">
+        <div class="ts-item">
+          <span class="ts-lbl">Overall GPA</span>
+          <span class="ts-val accent" id="tsGpa">—</span>
+        </div>
+        <div class="ts-divider"></div>
+        <div class="ts-item">
+          <span class="ts-lbl">Total Credits</span>
+          <span class="ts-val" id="tsCredits">—</span>
+        </div>
+        <div class="ts-divider"></div>
+        <div class="ts-item">
+          <span class="ts-lbl">Courses Completed</span>
+          <span class="ts-val" id="tsCourses">—</span>
+        </div>
+        <div class="ts-divider"></div>
+        <div class="ts-item">
+          <span class="ts-lbl">Years on Record</span>
+          <span class="ts-val" id="tsYears">—</span>
+        </div>
+      </div>
       <div id="gradesContent"><div class="g-wrap"><div class="no-g">Loading results…</div></div></div>
     </div>
 
@@ -677,6 +891,8 @@ function renderGrades(grades) {
     container.innerHTML = '<div class="g-wrap"><div class="no-g">No results recorded yet.</div></div>';
     return;
   }
+
+  // Group by year
   const groups = {};
   grades.forEach(g => {
     const course = COURSES[g.courseId] || { name: g.courseId, year: 'Other', block: '—', credits: '—', assessment: '—' };
@@ -684,39 +900,96 @@ function renderGrades(grades) {
     if (!groups[ky]) groups[ky] = [];
     groups[ky].push({ ...g, course });
   });
+
+  // Summary stats
+  let totalCredits = 0, totalCourses = 0, yearsOnRecord = 0;
   const order = ['Foundation Year', 'M-1', 'M-2', 'M-3', 'M-4', 'M-5', 'Other'];
+  order.forEach(yr => {
+    if (!groups[yr]) return;
+    yearsOnRecord++;
+    groups[yr].forEach(r => {
+      totalCourses++;
+      if (r.course.credits && r.course.credits !== '—') totalCredits += Number(r.course.credits) || 0;
+    });
+  });
+  const summaryEl = document.getElementById('transcriptSummary');
+  if (summaryEl) {
+    summaryEl.style.display = 'flex';
+    const gpaEl = document.getElementById('profileGPA');
+    document.getElementById('tsGpa').textContent     = (gpaEl ? gpaEl.textContent : '—') + ' / 4.00';
+    document.getElementById('tsCredits').textContent = totalCredits || '—';
+    document.getElementById('tsCourses').textContent = totalCourses || '—';
+    document.getElementById('tsYears').textContent   = yearsOnRecord || '—';
+  }
+
   let html = '';
   order.forEach(yr => {
     if (!groups[yr]) return;
+
+    // Group by block
     const blocks = {};
     groups[yr].forEach(r => {
       const bk = r.course.block || '—';
       if (!blocks[bk]) blocks[bk] = [];
       blocks[bk].push(r);
     });
-    html += `<div class="g-wrap" style="margin-bottom:16px"><div class="g-year-head">${yr}</div>`;
+
+    // Year-level totals
+    let yrCredits = 0, yrPoints = 0, yrWeighted = 0;
+    groups[yr].forEach(r => {
+      const cr = Number(r.course.credits) || 0;
+      const gp = (r.gradePoint !== undefined && r.gradePoint !== '') ? Number(r.gradePoint) : null;
+      yrCredits += cr;
+      if (gp !== null) { yrPoints++; yrWeighted += gp * cr; }
+    });
+    const yrGpa = yrCredits > 0 && yrPoints > 0 ? (yrWeighted / yrCredits).toFixed(2) : '—';
+
+    html += `<div class="g-wrap">`;
+    html += `<div class="g-year-head">${yr}</div>`;
+
     Object.entries(blocks).forEach(([bkName, bkRows]) => {
       html += `<div class="g-block-head">${bkName}</div>`;
-      html += `<table class="gt"><thead><tr><th>Course</th><th>Assessment</th><th>Credits</th><th>Score</th><th>Grade</th><th>Points</th></tr></thead><tbody>`;
+      html += `<table class="gt">
+        <thead>
+          <tr>
+            <th style="width:38%">Course</th>
+            <th style="width:18%">Assessment</th>
+            <th>Credits</th>
+            <th>Score</th>
+            <th>Grade</th>
+            <th>Points</th>
+          </tr>
+        </thead>
+        <tbody>`;
       bkRows.forEach(r => {
         const score = (r.numericScore !== undefined && r.numericScore !== '') ? Number(r.numericScore) : null;
         const pct   = score !== null ? Math.min(score, 100) : 0;
         const scoreHtml = score !== null
-          ? `<div class="sbar"><div class="sbar-fill" data-pct="${pct}" style="width:0"></div></div>${score}`
-          : '—';
+          ? `<span class="sbar-wrap"><span class="sbar"><span class="sbar-fill" data-pct="${pct}" style="width:0"></span></span><span class="sbar-num">${score}</span></span>`
+          : '<span style="color:var(--ink3)">—</span>';
+        const gp = (r.gradePoint !== undefined && r.gradePoint !== '') ? Number(r.gradePoint).toFixed(1) : '—';
         html += `<tr>
-          <td style="font-weight:500">${r.course.name}</td>
-          <td style="color:var(--ink3);font-size:12px">${r.course.assessment}</td>
-          <td style="color:var(--ink3)">${r.course.credits}</td>
+          <td>
+            <div class="gt-course">${r.course.name}</div>
+          </td>
+          <td><span class="gt-assess">${r.course.assessment}</span></td>
+          <td><span class="gt-cr">${r.course.credits}</span></td>
           <td>${scoreHtml}</td>
           <td><span class="gbadge ${gc(r.grade)}">${r.grade || '—'}</span></td>
-          <td style="font-weight:600">${(r.gradePoint !== undefined && r.gradePoint !== '') ? Number(r.gradePoint).toFixed(1) : '—'}</td>
+          <td><span class="gt-pts">${gp}</span></td>
         </tr>`;
       });
       html += `</tbody></table>`;
     });
+
+    // Year totals footer row
+    html += `<div class="g-year-totals">
+      <span>Year Credits: <strong>${yrCredits}</strong></span>
+      <span>Year GPA: <strong>${yrGpa}</strong></span>
+    </div>`;
     html += `</div>`;
   });
+
   container.innerHTML = html;
 }
 
