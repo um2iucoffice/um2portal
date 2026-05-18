@@ -1160,7 +1160,7 @@ function renderGrades(grades) {
         <td style="font-size:10px;color:var(--ink3)">${escHtml(r.courseId || '—')}</td>
         <td><div class="gt-course">${escHtml(r.course.name)}</div></td>
         <td style="text-align:center"><span class="gt-cr">TBD</span></td>
-        <td style="text-align:center;font-size:9px;color:var(--ink3)">${escHtml(typeStr)}</td>
+        <td style="text-align:center;font-size:6px;color:var(--ink3)">${escHtml(typeStr)}</td>
         <td style="text-align:center;font-size:12px;font-weight:500;color:var(--ink)">${escHtml(scoreStr)}</td>
         <td style="text-align:center;font-size:11px;color:var(--ink3)">${escHtml(dateStr)}</td>
         <td style="text-align:center"><span class="gbadge ${gc(r.grade)}">${escHtml(r.grade || '—')}</span></td>
@@ -1273,7 +1273,7 @@ function printDocument(type) {
 
   // ── Helper: render one semester table ────────────────────────
   const TNR = "'DM Sans', sans-serif";
-  const TD  = `padding:5px 10px;border-bottom:1px solid #e8e8e8;font-size:7.5 pt;color:#0D1B2A;font-family:'DM Sans',sans-serif;`;
+  const TD  = `padding:5px 10px;border-bottom:1px solid #e8e8e8;font-size:7.5pt;color:#0D1B2A;font-family:'DM Sans',sans-serif;`;
   const TDH = `padding:6px 10px;font-size:8pt;font-weight:bold;letter-spacing:.4px;text-transform:uppercase;color:#444;border-bottom:1.5px solid #0D1B2A;text-align:left;white-space:nowrap;font-family:'DM Sans',sans-serif;`;
 
   function yearTable(group) {
@@ -1284,8 +1284,8 @@ function printDocument(type) {
         <td style="${TD}${bg}font-size:7.5pt;color:#666">${r.courseId || '—'}</td>
         <td style="${TD}${bg}font-weight:500;font-size:7pt;line-height:1.25;letter-spacing:-.05px">${r.course}</td>
         <td style="${TD}${bg}text-align:center">TBD</td>
-        <td style="${TD}${bg}text-align:center;color:#444;font-size:6.5pt">
-       <td style="${TD}${bg}text-align:center;color:#444;font-size:6.5pt">
+        <td style="${TD}${bg}text-align:center;color:#444;font-size:6.5pt">${r.assess || '—'}</td>
+        <td style="${TD}${bg}text-align:center;color:#333;font-size:7.5pt">${r.score || '—'}</td>
         <td style="${TD}${bg}text-align:center;color:#444">${r.date || '—'}</td>
         <td style="${TD}${bg}text-align:center;font-weight:bold;font-size:7.5pt">${r.grade}</td>
       </tr>`;
