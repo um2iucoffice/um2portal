@@ -1273,7 +1273,7 @@ function printDocument(type) {
 
   // ── Helper: render one semester table ────────────────────────
   const TNR = "'DM Sans', sans-serif";
-  const TD  = `padding:5px 10px;border-bottom:1px solid #e8e8e8;font-size:9pt;color:#0D1B2A;font-family:'DM Sans',sans-serif;`;
+  const TD  = `padding:5px 10px;border-bottom:1px solid #e8e8e8;font-size:5pt;color:#0D1B2A;font-family:'DM Sans',sans-serif;`;
   const TDH = `padding:6px 10px;font-size:8pt;font-weight:bold;letter-spacing:.4px;text-transform:uppercase;color:#444;border-bottom:1.5px solid #0D1B2A;text-align:left;white-space:nowrap;font-family:'DM Sans',sans-serif;`;
 
   function yearTable(group) {
@@ -1282,7 +1282,7 @@ function printDocument(type) {
       const bg = i % 2 === 1 ? 'background:#fafafa;' : '';
       rows += `<tr>
         <td style="${TD}${bg}font-size:8.5pt;color:#666">${r.courseId || '—'}</td>
-        <td style="${TD}${bg}font-weight:500;font-size:8.2pt;line-height:1.25;letter-spacing:-.05px">${r.course}</td>
+        <td style="${TD}${bg}font-weight:500;font-size:6pt;line-height:1.25;letter-spacing:-.05px">${r.course}</td>
         <td style="${TD}${bg}text-align:center">TBD</td>
         <td style="${TD}${bg}text-align:center;color:#444">${r.assess}</td>
         <td style="${TD}${bg}text-align:center;color:#333">${r.score || '—'}</td>
