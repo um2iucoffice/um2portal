@@ -150,6 +150,161 @@ table.gt tbody tr:hover{background:var(--surface)}
 .sbar-fill{height:100%;background:linear-gradient(90deg,var(--crimson),var(--gold));border-radius:99px;transition:width .8s ease}
 .no-g{padding:36px;text-align:center;color:var(--ink3);font-size:13px}
 
+/* ── PRINT ── */
+@page {
+  margin: 18mm 28mm 22mm 28mm;
+}
+
+@media print {
+  /* General print reset */
+  * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  body { background: #fff; font-size: 12px; }
+
+  /* Watermark on every page */
+  body::before {
+    content: 'UM2';
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) rotate(-35deg);
+    font-family: 'Libre Baskerville', serif;
+    font-size: 130pt;
+    font-weight: 700;
+    color: rgba(139, 26, 46, 0.055);
+    letter-spacing: 8px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* Running footer with student ID and page number */
+  .print-footer {
+    display: flex !important;
+    position: fixed;
+    bottom: 6mm;
+    left: 28mm;
+    right: 28mm;
+    border-top: 1px solid #ddd;
+    padding-top: 4px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 8pt;
+    color: #999;
+    justify-content: space-between;
+    z-index: 10;
+  }
+
+  /* CSS page number via content property on span */
+  .print-footer-page::after {
+    content: "Page " counter(page) " of " counter(pages);
+  }
+
+  /* Hide everything except the active panel */
+  #loginScreen, .header, .nav, .gpa-bar-card,
+  .ql, .qlinks, .btn-out, .btn-login { display: none !important; }
+  #dashboard { display: block !important; }
+  .main { max-width: 100%; padding: 0; margin: 0; }
+  .panel { display: none !important; }
+  .panel.active { display: block !important; }
+
+  /* ── DOCUMENTS / PROFILE print ── */
+  #panel-profile.active {
+    padding: 24mm 28mm;   /* increased left/right margins */
+  }
+
+  /* Remove the seal / avatar */
+  #panel-profile .avatar,
+  #panel-profile #avatarEl { display: none !important; }
+
+  /* Banner layout without avatar column */
+  #panel-profile .banner {
+    grid-template-columns: 1fr auto;
+    border: 1px solid #ccc;
+    box-shadow: none;
+    padding: 16px 20px;
+    page-break-inside: avoid;
+  }
+  #panel-profile .banner::after { display: none; }
+
+  /* Info card */
+  #panel-profile .icard {
+    border: 1px solid #ccc;
+    box-shadow: none;
+    page-break-inside: avoid;
+  }
+  #panel-profile .icard-head { background: #f0f0f0 !important; }
+  #panel-profile .igrid { grid-template-columns: 1fr 1fr; }
+  #panel-profile .icell { padding: 8px 14px; }
+
+  /* Page header for profile print */
+  #panel-profile .ph h2 { font-size: 18px; }
+
+  /* ── TRANSCRIPT / GRADES print ── */
+  #panel-grades.active {
+    padding: 20mm 28mm;   /* increased left/right margins */
+  }
+
+  /* Hide the score bars in print */
+  .sbar { display: none !important; }
+
+  /* Print-friendly grade table */
+  .g-wrap {
+    border: 1px solid #ccc !important;
+    box-shadow: none !important;
+    page-break-inside: avoid;
+    margin-bottom: 12px !important;
+  }
+  .g-year-head {
+    background: #e8e8e8 !important;
+    font-size: 10px;
+    padding: 6px 12px;
+  }
+  .g-block-head {
+    background: #f5f5f5 !important;
+    font-size: 10px;
+    padding: 4px 12px;
+  }
+
+  /* Proper transcript table */
+  table.gt {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 11px;
+    margin: 0;
+  }
+  table.gt th {
+    background: #f0f0f0 !important;
+    border: 1px solid #bbb;
+    padding: 5px 8px;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    color: #444;
+    text-align: left;
+  }
+  table.gt td {
+    border: 1px solid #bbb;
+    padding: 5px 8px;
+    color: #111;
+    vertical-align: middle;
+  }
+  table.gt tbody tr:nth-child(even) td { background: #fafafa !important; }
+  table.gt tbody tr:hover { background: none !important; }
+  table.gt th:last-child, table.gt td:last-child { text-align: right; }
+
+  /* Grade badges become plain text in print */
+  .gbadge {
+    background: none !important;
+    border: 1px solid #aaa;
+    padding: 1px 5px;
+    font-size: 10px;
+    font-weight: 700;
+    color: #111 !important;
+  }
+
+  /* Page title for transcript */
+  #panel-grades .ph h2 { font-size: 18px; }
+}
+
 /* ── RESPONSIVE ── */
 @media(max-width:700px){
   .login-left{display:none}
@@ -198,6 +353,12 @@ table.gt tbody tr:hover{background:var(--surface)}
 
 <!-- ═══════════════════ DASHBOARD ═══════════════════ -->
 <div id="dashboard">
+
+  <!-- Print footer: hidden on screen, fixed on every print page -->
+  <div class="print-footer" style="display:none">
+    <span id="printFooterLeft">University of Medicine (2) · Student Information System</span>
+    <span id="printFooterRight" class="print-footer-page"></span>
+  </div>
 
   <div class="header">
     <div class="header-inner">
@@ -439,6 +600,10 @@ function populate(s, grades) {
   document.getElementById('profileGPA').textContent = gpa;
   document.getElementById('homeGpaVal').textContent = gpa + ' / 4.00';
   document.getElementById('profileGpaVal').textContent = gpa + ' / 4.00';
+  // Update print footer with student ID
+  const sid = s.id || '—';
+  document.getElementById('printFooterLeft').textContent =
+    'University of Medicine (2)  ·  Student ID: ' + sid;
   const tags = document.getElementById('profileTags');
   tags.innerHTML = '';
   if (s.currentStatus)    tags.innerHTML += `<span class="tag tag-r">${s.currentStatus}</span>`;
@@ -541,6 +706,17 @@ function switchTab(id, btn) {
     document.querySelectorAll('.ntab').forEach(b => { if (b.dataset.tab === id) b.classList.add('active'); });
   }
 }
+
+// ── Print helpers ─────────────────────────────────────────────
+window.addEventListener('beforeprint', function() {
+  // Ensure footer is visible on print
+  const footer = document.querySelector('.print-footer');
+  if (footer) footer.style.display = 'flex';
+});
+window.addEventListener('afterprint', function() {
+  const footer = document.querySelector('.print-footer');
+  if (footer) footer.style.display = 'none';
+});
 
 // ── Sign out ──────────────────────────────────────────────────
 function doSignOut() {
