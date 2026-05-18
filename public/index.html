@@ -367,7 +367,7 @@ table.gt tbody tr:hover { background: #F8F9FC; }
 
   /* Hide everything except the active panel */
   #loginScreen, .header, .nav, .gpa-bar-card,
-  .ql, .qlinks, .btn-out, .btn-login { display: none !important; }
+  .ql, .qlinks, .btn-out, .btn-login, .dev-footer { display: none !important; }
   #dashboard { display: block !important; }
   .main { max-width: 100%; padding: 0; margin: 0; }
   .panel { display: none !important; }
@@ -498,14 +498,14 @@ table.gt tbody tr:hover { background: #F8F9FC; }
 
   /* Print-only: Type of Completion column — 4pt smaller than regular table text */
   table.gt td:nth-child(4) {
-    font-size: 6.5pt !important;
+    font-size: 6.5 pt !important;
   }
 
   /* Course cell */
   .gt-course {
     font-family: 'DM Sans', sans-serif !important;
     font-weight: 500 !important;
-    font-size: 7pt !important;
+    font-size: 7 pt !important;
     line-height: 1.25 !important;
     color: #0D1B2A !important;
     letter-spacing: -.05px !important;
@@ -897,6 +897,10 @@ table.gt * {
   </div>
 </div>
 
+<div class="dev-footer" style="text-align:center;padding:16px 0 20px;font-family:'DM Sans',sans-serif;font-size:11px;color:#7A8599;letter-spacing:.4px;">
+  Developed by UM2IUC Secretariat 2025
+</div>
+
 <script>
 // ── Course catalog ────────────────────────────────────────────
 const COURSES = {
@@ -1273,7 +1277,7 @@ function printDocument(type) {
 
   // ── Helper: render one semester table ────────────────────────
   const TNR = "'DM Sans', sans-serif";
-  const TD  = `padding:5px 10px;border-bottom:1px solid #e8e8e8;font-size:7.5pt;color:#0D1B2A;font-family:'DM Sans',sans-serif;`;
+  const TD  = `padding:5px 10px;border-bottom:1px solid #e8e8e8;font-size:7.5 pt;color:#0D1B2A;font-family:'DM Sans',sans-serif;`;
   const TDH = `padding:6px 10px;font-size:8pt;font-weight:bold;letter-spacing:.4px;text-transform:uppercase;color:#444;border-bottom:1.5px solid #0D1B2A;text-align:left;white-space:nowrap;font-family:'DM Sans',sans-serif;`;
 
   function yearTable(group) {
@@ -1282,10 +1286,10 @@ function printDocument(type) {
       const bg = i % 2 === 1 ? 'background:#fafafa;' : '';
       rows += `<tr>
         <td style="${TD}${bg}font-size:7.5pt;color:#666">${r.courseId || '—'}</td>
-        <td style="${TD}${bg}font-weight:500;font-size:7pt;line-height:1.25;letter-spacing:-.05px">${r.course}</td>
+        <td style="${TD}${bg}font-weight:500;font-size:7 pt;line-height:1.25;letter-spacing:-.05px">${r.course}</td>
         <td style="${TD}${bg}text-align:center">TBD</td>
-        <td style="${TD}${bg}text-align:center;color:#444;font-size:6.5pt">${r.assess || '—'}</td>
-        <td style="${TD}${bg}text-align:center;color:#333;font-size:7.5pt">${r.score || '—'}</td>
+        <td style="${TD}${bg}text-align:center;color:#444;font-size:6.5pt">
+       <td style="${TD}${bg}text-align:center;color:#444;font-size:6.5pt">
         <td style="${TD}${bg}text-align:center;color:#444">${r.date || '—'}</td>
         <td style="${TD}${bg}text-align:center;font-weight:bold;font-size:7.5pt">${r.grade}</td>
       </tr>`;
