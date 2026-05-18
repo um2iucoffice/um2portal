@@ -1028,6 +1028,25 @@ function gc(g) {
   return 'gX';
 }
 
+function escHtml(v) {
+  return String(v ?? '').replace(/[&<>'"]/g, ch => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;'
+  }[ch]));
+}
+
+function getAcademicYear(row, course) {
+  return row.academicYear || row.AcademicYear || row.academic_year ||
+         row.academic_year_name || row.AcademicYearName || row.yearLevel ||
+         row.YearLevel || row.currentAcademicYear || row.CurrentAcademicYear ||
+         row.currentYear || row.CurrentYear || row.courseYear || row.CourseYear ||
+         course.year || 'Other';
+}
+
+function getCompletionYear(row) {
+  return row.year || row.Year || row.completionYear || row.CompletionYear ||
+         row.completionDate || row.CompletionDate || '—';
+}
+
 function renderGrades(grades) {
   const container = document.getElementById('gradesContent');
   if (!grades || !grades.length) {
@@ -1035,108 +1054,73 @@ function renderGrades(grades) {
     return;
   }
 
-  // Group by year
+  // Group courses by the student's actual Academic Year from the grade row.
+  // Fallback to the course catalog year only when the sheet has no academic-year field.
   const groups = {};
   grades.forEach(g => {
-    const course = COURSES[g.courseId] || { name: g.courseId, year: 'Other', block: '—', credits: '—', assessment: '—' };
-    const ky = course.year;
-    if (!groups[ky]) groups[ky] = [];
-    groups[ky].push({ ...g, course });
+    const course = COURSES[g.courseId] || { name: g.courseId, year: 'Other', block: 'MBBS Program', credits: 'TBD', assessment: '—' };
+    const academicYear = getAcademicYear(g, course);
+    if (!groups[academicYear]) groups[academicYear] = [];
+    groups[academicYear].push({ ...g, course, academicYear });
   });
 
-  // Summary stats
-  let totalCredits = 0, totalCourses = 0, yearsOnRecord = 0;
-  const order = ['Foundation Year', 'M-1', 'M-2', 'M-3', 'M-4', 'M-5', 'Other'];
-  order.forEach(yr => {
-    if (!groups[yr]) return;
-    yearsOnRecord++;
-    groups[yr].forEach(r => {
-      totalCourses++;
-      if (r.course.credits && r.course.credits !== '—') totalCredits += Number(r.course.credits) || 0;
-    });
-  });
+  const preferredOrder = ['Foundation Year', 'M-1', 'M-2', 'M-3', 'M-4', 'M-5'];
+  const order = [
+    ...preferredOrder.filter(y => groups[y]),
+    ...Object.keys(groups).filter(y => !preferredOrder.includes(y)).sort()
+  ];
+
   const summaryEl = document.getElementById('transcriptSummary');
   if (summaryEl) {
     summaryEl.style.display = 'flex';
     const gpaEl = document.getElementById('profileGPA');
     document.getElementById('tsGpa').textContent     = (gpaEl ? gpaEl.textContent : '—') + ' / 4.00';
-    document.getElementById('tsCredits').textContent = totalCredits || '—';
-    document.getElementById('tsCourses').textContent = totalCourses || '—';
-    document.getElementById('tsYears').textContent   = yearsOnRecord || '—';
+    document.getElementById('tsCredits').textContent = 'TBD';
+    document.getElementById('tsCourses').textContent = grades.length || '—';
+    document.getElementById('tsYears').textContent   = order.length || '—';
   }
 
   let html = '';
   order.forEach(yr => {
-    if (!groups[yr]) return;
-
-    // Group by block (semester)
-    const blocks = {};
-    const blockOrder = [];
-    groups[yr].forEach(r => {
-      const bk = r.course.block || '—';
-      if (!blocks[bk]) { blocks[bk] = []; blockOrder.push(bk); }
-      blocks[bk].push(r);
-    });
-
-    // Year-level totals
-    let yrCredits = 0, yrPoints = 0, yrWeighted = 0;
-    groups[yr].forEach(r => {
-      const cr = Number(r.course.credits) || 0;
-      const gp = (r.gradePoint !== undefined && r.gradePoint !== '') ? Number(r.gradePoint) : null;
-      yrCredits += cr;
-      if (gp !== null) { yrPoints++; yrWeighted += gp * cr; }
-    });
-    const yrGpa = yrCredits > 0 && yrPoints > 0 ? (yrWeighted / yrCredits).toFixed(2) : '—';
-
+    const rows = groups[yr] || [];
     html += `<div class="g-wrap">`;
+    html += `<div class="g-year-head" data-year="${escHtml(yr)}">— &nbsp;${escHtml(yr)} &nbsp;·&nbsp; MBBS Program</div>`;
+    html += `<table class="gt">
+      <thead>
+        <tr>
+          <th style="width:12%">Course Code</th>
+          <th style="width:33%">Course Title</th>
+          <th style="text-align:center">Credits</th>
+          <th style="text-align:center">Type of<br>Completion</th>
+          <th style="text-align:center">Score</th>
+          <th style="text-align:center">Year</th>
+          <th style="text-align:center">Grade</th>
+        </tr>
+      </thead>
+      <tbody>`;
 
-    blockOrder.forEach(bkName => {
-      const bkRows = blocks[bkName];
-      // Use block name as semester label styled like "SEMESTER: SPRING 2022"
-      html += `<div class="g-year-head">— &nbsp;${yr} &nbsp;·&nbsp; ${bkName}</div>`;
-      html += `<table class="gt">
-        <thead>
-          <tr>
-            <th style="width:12%">Course Code</th>
-            <th style="width:33%">Course Title</th>
-            <th style="text-align:center">Credits</th>
-            <th style="text-align:center">Type of<br>Completion</th>
-            <th style="text-align:center">Score</th>
-            <th style="text-align:center">Year</th>
-            <th style="text-align:center">Grade</th>
-          </tr>
-        </thead>
-        <tbody>`;
-      bkRows.forEach(r => {
-        const scoreStr =
-          r.NumericScore !== undefined && r.NumericScore !== ''
-            ? r.NumericScore
-            : r.numericScore !== undefined && r.numericScore !== ''
-              ? r.numericScore
-              : r.score !== undefined && r.score !== ''
-                ? r.score
-                : '—';
-        const dateStr = r.year || r.Year || r.completionDate || '—';
-        const typeStr = r.completionType || r.course.assessment || '—';
-        html += `<tr>
-          <td style="font-size:11px;color:var(--ink3)">${r.courseId || '—'}</td>
-          <td><div class="gt-course">${r.course.name}</div></td>
-          <td style="text-align:center"><span class="gt-cr">${r.course.credits}</span></td>
-          <td style="text-align:center;font-size:11px;color:var(--ink3)">${typeStr}</td>
-          <td style="text-align:center;font-size:12px;font-weight:500;color:var(--ink)">${scoreStr}</td>
-          <td style="text-align:center;font-size:11px;color:var(--ink3)">${dateStr}</td>
-          <td style="text-align:center"><span class="gbadge ${gc(r.grade)}">${r.grade || '—'}</span></td>
-        </tr>`;
-      });
-      html += `</tbody></table>`;
+    rows.forEach(r => {
+      const scoreStr =
+        r.NumericScore !== undefined && r.NumericScore !== ''
+          ? r.NumericScore
+          : r.numericScore !== undefined && r.numericScore !== ''
+            ? r.numericScore
+            : r.score !== undefined && r.score !== ''
+              ? r.score
+              : '—';
+      const dateStr = getCompletionYear(r);
+      const typeStr = r.completionType || r.CompletionType || r.course.assessment || '—';
+      html += `<tr>
+        <td style="font-size:11px;color:var(--ink3)">${escHtml(r.courseId || '—')}</td>
+        <td><div class="gt-course">${escHtml(r.course.name)}</div></td>
+        <td style="text-align:center"><span class="gt-cr">TBD</span></td>
+        <td style="text-align:center;font-size:11px;color:var(--ink3)">${escHtml(typeStr)}</td>
+        <td style="text-align:center;font-size:12px;font-weight:500;color:var(--ink)">${escHtml(scoreStr)}</td>
+        <td style="text-align:center;font-size:11px;color:var(--ink3)">${escHtml(dateStr)}</td>
+        <td style="text-align:center"><span class="gbadge ${gc(r.grade)}">${escHtml(r.grade || '—')}</span></td>
+      </tr>`;
     });
-
-    // Year totals footer row
-    html += `<div class="g-year-totals">
-      <span>Year Credits: <strong>${yrCredits}</strong></span>
-      <span>Year GPA: <strong>${yrGpa}</strong></span>
-    </div>`;
-    html += `</div>`;
+    html += `</tbody></table></div>`;
   });
 
   container.innerHTML = html;
@@ -1216,40 +1200,28 @@ function printDocument(type) {
   const gpa       = document.getElementById('profileGPA').textContent || '—';
   const today     = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
 
-  // ── Collect grade data grouped by year then block ─────────────
-  // Structure: [ { year, blocks: [ { block, rows: [{courseId,course,grade,score,credits,pts}] } ] } ]
+  // ── Collect grade data grouped by Academic Year ─────────────
   const yearGroups = [];
   if (type === 'transcript') {
     const gradeContainer = document.getElementById('gradesContent');
     gradeContainer.querySelectorAll('.g-wrap').forEach(wrap => {
-      const yearLabel = wrap.querySelector('.g-year-head')?.textContent?.trim() || '';
-      const blocks = [];
-      let currentBlock = null;
-      wrap.querySelectorAll('.g-year-head, tbody tr').forEach(el => {
-        if (el.classList.contains('g-year-head')) {
-          // Strip any residual prefix for the block name
-          const raw = el.textContent.trim().replace(/^[—\-]\s*(Semester:\s*)?/i, '').replace(/\s*·\s*.+$/, '').trim();
-          currentBlock = { block: raw, rows: [] };
-          blocks.push(currentBlock);
-        } else {
-          const tds = el.querySelectorAll('td');
-          if (tds.length < 7) return;
-          if (!currentBlock) { currentBlock = { block: el.textContent.trim(), rows: [] }; blocks.push(currentBlock); }
-          currentBlock.rows.push({
-            courseId: tds[0].textContent.trim(),
-            course:  tds[1].querySelector('.gt-course')?.textContent?.trim() || tds[1].textContent.trim(),
-            credits: tds[2].textContent.trim(),
-            assess:  tds[3].textContent.trim(),
-            score:   tds[4].textContent.trim(),
-            date:    tds[5].textContent.trim(),
-            grade:   tds[6].textContent.trim(),
-            pts:     '—',
-          });
-        }
+      const head = wrap.querySelector('.g-year-head');
+      const year = head?.dataset?.year || (head?.textContent || '').replace(/^—\s*/, '').replace(/\s*·\s*MBBS Program\s*$/i, '').trim() || 'Academic Year';
+      const rows = [];
+      wrap.querySelectorAll('tbody tr').forEach(el => {
+        const tds = el.querySelectorAll('td');
+        if (tds.length < 7) return;
+        rows.push({
+          courseId: tds[0].textContent.trim(),
+          course:  tds[1].querySelector('.gt-course')?.textContent?.trim() || tds[1].textContent.trim(),
+          credits: 'TBD',
+          assess:  tds[3].textContent.trim(),
+          score:   tds[4].textContent.trim(),
+          date:    tds[5].textContent.trim(),
+          grade:   tds[6].textContent.trim(),
+        });
       });
-      const totalsEl = wrap.querySelector('.g-year-totals');
-      const totalsText = totalsEl ? totalsEl.textContent.trim() : '';
-      if (blocks.length) yearGroups.push({ year: yearLabel, blocks, totalsText });
+      if (rows.length) yearGroups.push({ year, rows });
     });
   }
 
@@ -1258,14 +1230,14 @@ function printDocument(type) {
   const TD  = `padding:5px 10px;border-bottom:1px solid #e8e8e8;font-size:9pt;color:#0D1B2A;font-family:'Times New Roman',Times,serif;`;
   const TDH = `padding:6px 10px;font-size:8pt;font-weight:bold;letter-spacing:.4px;text-transform:uppercase;color:#444;border-bottom:1.5px solid #0D1B2A;text-align:left;white-space:nowrap;font-family:'Times New Roman',Times,serif;`;
 
-  function blockTable(block) {
+  function yearTable(group) {
     let rows = '';
-    block.rows.forEach((r, i) => {
+    group.rows.forEach((r, i) => {
       const bg = i % 2 === 1 ? 'background:#fafafa;' : '';
       rows += `<tr>
         <td style="${TD}${bg}font-size:8.5pt;color:#666">${r.courseId || '—'}</td>
         <td style="${TD}${bg}font-weight:bold">${r.course}</td>
-        <td style="${TD}${bg}text-align:center">${r.credits}</td>
+        <td style="${TD}${bg}text-align:center">TBD</td>
         <td style="${TD}${bg}text-align:center;color:#444">${r.assess}</td>
         <td style="${TD}${bg}text-align:center;color:#333">${r.score || '—'}</td>
         <td style="${TD}${bg}text-align:center;color:#444">${r.date || '—'}</td>
@@ -1273,36 +1245,29 @@ function printDocument(type) {
       </tr>`;
     });
     return `
-      <div style="font-family:'Times New Roman',Times,serif;font-size:9pt;font-weight:bold;letter-spacing:1.5px;text-transform:uppercase;color:#0D1B2A;margin:14px 0 5px;padding-bottom:5px;border-bottom:1.5px solid #0D1B2A">— &nbsp; ${block.block}</div>
-      <table style="width:100%;border-collapse:collapse;margin-bottom:14px;font-family:'Times New Roman',Times,serif">
-        <thead><tr>
-          <th style="${TDH}width:11%">Course Code</th>
-          <th style="${TDH}width:34%">Course Title</th>
-          <th style="${TDH}width:7%;text-align:center">Credits</th>
-          <th style="${TDH}width:12%;text-align:center">Type of<br>Completion</th>
-          <th style="${TDH}width:8%;text-align:center">Score</th>
-          <th style="${TDH}width:14%;text-align:center">Year</th>
-	  <th style="${TDH}width:14%;text-align:center">Grade</th>
-        </tr></thead>
-        <tbody>${rows}</tbody>
-      </table>`;
+      <div style="margin-bottom:22px;page-break-inside:avoid">
+        <div style="font-family:'Times New Roman',Times,serif;font-size:13pt;font-weight:bold;color:#0D1B2A;margin-bottom:10px;padding-bottom:6px;border-bottom:2px solid #0D1B2A;display:flex;justify-content:space-between;align-items:baseline">
+          <span>— &nbsp;${group.year} &nbsp;·&nbsp; MBBS Program</span>
+        </div>
+        <table style="width:100%;border-collapse:collapse;margin-bottom:14px;font-family:'Times New Roman',Times,serif">
+          <thead><tr>
+            <th style="${TDH}width:11%">Course Code</th>
+            <th style="${TDH}width:34%">Course Title</th>
+            <th style="${TDH}width:7%;text-align:center">Credits</th>
+            <th style="${TDH}width:12%;text-align:center">Type of<br>Completion</th>
+            <th style="${TDH}width:8%;text-align:center">Score</th>
+            <th style="${TDH}width:14%;text-align:center">Year</th>
+            <th style="${TDH}width:14%;text-align:center">Grade</th>
+          </tr></thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </div>`;
   }
 
   // ── Build academic record HTML ────────────────────────────────
   let academicRecord = '';
   if (type === 'transcript') {
-    yearGroups.forEach(yg => {
-      let blockTables = '';
-      yg.blocks.forEach(b => { blockTables += blockTable(b); });
-      academicRecord += `
-        <div style="margin-bottom:22px;page-break-inside:avoid">
-          <div style="font-family:'Times New Roman',Times,serif;font-size:13pt;font-weight:bold;color:#0D1B2A;margin-bottom:10px;padding-bottom:6px;border-bottom:2px solid #0D1B2A;display:flex;justify-content:space-between;align-items:baseline">
-            <span>${yg.year}</span>
-            <span style="font-family:'Times New Roman',Times,serif;font-size:9pt;font-weight:normal;color:#666">${yg.totalsText}</span>
-          </div>
-          ${blockTables}
-        </div>`;
-    });
+    yearGroups.forEach(yg => { academicRecord += yearTable(yg); });
   }
 
   /// ── Confirmation body ─────────────────────────────────────────
@@ -1506,7 +1471,7 @@ const closing = `
         </div>
       </div>
 
-      ${type === 'transcript' ? `<div class="section-label">M.B.,B.S. Program</div>${academicRecord}` : ''}
+      ${type === 'transcript' ? `<div class="section-label">Academic Record</div>${academicRecord}` : ''}
       ${confirmationBody}
       ${closing}
 
