@@ -628,7 +628,7 @@ table.gt tbody tr:hover { background: #F8F9FC; }
 <div id="loginScreen">
   <div class="login-left">
     <div class="login-crest">
-      <div class="crest-ring"><img src="https://raw.githubusercontent.com/um2iucoffice/um2portal/refs/heads/main/public/UM2_Logo.svg" alt="UM2 Logo" style="width:44px;height:44px;object-fit:contain;filter:brightness(0) invert(0);"></div>
+      <div class="crest-ring"><img src="https://raw.githubusercontent.com/um2iucoffice/um2portal/refs/heads/main/public/UM2_Logo.svg" alt="UM2 Logo" style="width:44px;height:44px;object-fit:contain;"></div>
       <div class="login-institution">University of Medicine (2) — Interim University Council</div>
       <div class="login-tagline">Student<br><em>Information</em> System</div>
     </div>
@@ -1093,14 +1093,15 @@ function renderGrades(grades) {
     blockOrder.forEach(bkName => {
       const bkRows = blocks[bkName];
       // Use block name as semester label styled like "SEMESTER: SPRING 2022"
-      html += `<div class="g-year-head">— &nbsp;${bkName}</div>`;
+      html += `<div class="g-year-head">— &nbsp;${yr} &nbsp;·&nbsp; ${bkName}</div>`;
       html += `<table class="gt">
         <thead>
           <tr>
             <th style="width:12%">Course Code</th>
-            <th style="width:38%">Course Title</th>
+            <th style="width:33%">Course Title</th>
             <th style="text-align:center">Credits</th>
             <th style="text-align:center">Type of<br>Completion</th>
+            <th style="text-align:center">Score</th>
             <th style="text-align:center">Year</th>
             <th style="text-align:center">Grade</th>
           </tr>
@@ -1114,6 +1115,7 @@ function renderGrades(grades) {
           <td><div class="gt-course">${r.course.name}</div></td>
           <td style="text-align:center"><span class="gt-cr">${r.course.credits}</span></td>
           <td style="text-align:center;font-size:11px;color:var(--ink3)">${typeStr}</td>
+          <td style="text-align:center;font-size:12px;font-weight:500;color:var(--ink)">${r.score !== undefined && r.score !== '' ? r.score : '—'}</td>
           <td style="text-align:center;font-size:11px;color:var(--ink3)">${dateStr}</td>
           <td style="text-align:center"><span class="gbadge ${gc(r.grade)}">${r.grade || '—'}</span></td>
         </tr>`;
@@ -1217,21 +1219,22 @@ function printDocument(type) {
       let currentBlock = null;
       wrap.querySelectorAll('.g-year-head, tbody tr').forEach(el => {
         if (el.classList.contains('g-year-head')) {
-          // Strip the "— Semester:" prefix for the block name
-          const raw = el.textContent.trim().replace(/^[—\-]\s*Semester:\s*/i, '');
+          // Strip any residual prefix for the block name
+          const raw = el.textContent.trim().replace(/^[—\-]\s*(Semester:\s*)?/i, '').replace(/\s*·\s*.+$/, '').trim();
           currentBlock = { block: raw, rows: [] };
           blocks.push(currentBlock);
         } else {
           const tds = el.querySelectorAll('td');
-          if (tds.length < 6) return;
+          if (tds.length < 7) return;
           if (!currentBlock) { currentBlock = { block: el.textContent.trim(), rows: [] }; blocks.push(currentBlock); }
           currentBlock.rows.push({
             courseId: tds[0].textContent.trim(),
             course:  tds[1].querySelector('.gt-course')?.textContent?.trim() || tds[1].textContent.trim(),
             credits: tds[2].textContent.trim(),
             assess:  tds[3].textContent.trim(),
-            date:    tds[4].textContent.trim(),
-            grade:   tds[5].textContent.trim(),
+            score:   tds[4].textContent.trim(),
+            date:    tds[5].textContent.trim(),
+            grade:   tds[6].textContent.trim(),
             pts:     '—',
           });
         }
@@ -1256,20 +1259,22 @@ function printDocument(type) {
         <td style="${TD}${bg}font-weight:bold">${r.course}</td>
         <td style="${TD}${bg}text-align:center">${r.credits}</td>
         <td style="${TD}${bg}text-align:center;color:#444">${r.assess}</td>
+        <td style="${TD}${bg}text-align:center;color:#333">${r.score || '—'}</td>
         <td style="${TD}${bg}text-align:center;color:#444">${r.date || '—'}</td>
         <td style="${TD}${bg}text-align:center;font-weight:bold;font-size:11pt">${r.grade}</td>
       </tr>`;
     });
     return `
-      <div style="font-family:'Times New Roman',Times,serif;font-size:9pt;font-weight:bold;letter-spacing:1.5px;text-transform:uppercase;color:#0D1B2A;margin:14px 0 5px;padding-bottom:5px;border-bottom:1.5px solid #0D1B2A">— &nbsp; Semester: ${block.block}</div>
+      <div style="font-family:'Times New Roman',Times,serif;font-size:9pt;font-weight:bold;letter-spacing:1.5px;text-transform:uppercase;color:#0D1B2A;margin:14px 0 5px;padding-bottom:5px;border-bottom:1.5px solid #0D1B2A">— &nbsp; ${block.block}</div>
       <table style="width:100%;border-collapse:collapse;margin-bottom:14px;font-family:'Times New Roman',Times,serif">
         <thead><tr>
-          <th style="${TDH}width:12%">Course Code</th>
-          <th style="${TDH}width:40%">Course Title</th>
-          <th style="${TDH}width:8%;text-align:center">Credits</th>
+          <th style="${TDH}width:11%">Course Code</th>
+          <th style="${TDH}width:34%">Course Title</th>
+          <th style="${TDH}width:7%;text-align:center">Credits</th>
           <th style="${TDH}width:12%;text-align:center">Type of<br>Completion</th>
+          <th style="${TDH}width:8%;text-align:center">Score</th>
           <th style="${TDH}width:14%;text-align:center">Year</th>
-	 <th style="${TDH}width:14%;text-align:center">Grade</th>
+	  <th style="${TDH}width:14%;text-align:center">Grade</th>
         </tr></thead>
         <tbody>${rows}</tbody>
       </table>`;
@@ -1493,7 +1498,7 @@ const closing = `
         </div>
       </div>
 
-      ${type === 'transcript' ? `<div class="section-label">Academic Record</div>${academicRecord}` : ''}
+      ${type === 'transcript' ? `<div class="section-label">M.B.,B.S. Program</div>${academicRecord}` : ''}
       ${confirmationBody}
       ${closing}
 
