@@ -151,8 +151,29 @@ table.gt tbody tr:hover{background:var(--surface)}
 .no-g{padding:36px;text-align:center;color:var(--ink3);font-size:13px}
 
 /* ── PRINT ── */
+/* Watermark: hidden on screen */
+.print-watermark {
+  display: none;
+}
+/* Print footer: hidden on screen */
+.print-footer {
+  display: none;
+}
+
 @page {
-  margin: 18mm 28mm 22mm 28mm;
+  margin: 18mm 28mm 24mm 28mm;
+  @bottom-left {
+    content: "University of Medicine (2)  ·  " attr(data-sid);
+    font-family: sans-serif;
+    font-size: 7.5pt;
+    color: #888;
+  }
+  @bottom-right {
+    content: "Page " counter(page) " of " counter(pages);
+    font-family: sans-serif;
+    font-size: 7.5pt;
+    color: #888;
+  }
 }
 
 @media print {
@@ -160,41 +181,39 @@ table.gt tbody tr:hover{background:var(--surface)}
   * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
   body { background: #fff; font-size: 12px; }
 
-  /* Watermark on every page */
-  body::before {
-    content: 'UM2';
+  /* Watermark — fixed so it appears on every printed page */
+  .print-watermark {
+    display: block !important;
     position: fixed;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%) rotate(-35deg);
     font-family: 'Libre Baskerville', serif;
-    font-size: 130pt;
+    font-size: 120pt;
     font-weight: 700;
-    color: rgba(139, 26, 46, 0.055);
-    letter-spacing: 8px;
+    color: rgba(139, 26, 46, 0.07);
+    letter-spacing: 10px;
     pointer-events: none;
     z-index: 0;
+    white-space: nowrap;
   }
 
-  /* Running footer with student ID and page number */
+  /* Footer — fixed so it appears on every printed page */
   .print-footer {
     display: flex !important;
     position: fixed;
     bottom: 6mm;
     left: 28mm;
     right: 28mm;
-    border-top: 1px solid #ddd;
-    padding-top: 4px;
+    border-top: 1px solid #ccc;
+    padding-top: 5px;
     font-family: 'DM Sans', sans-serif;
     font-size: 8pt;
-    color: #999;
+    color: #888;
     justify-content: space-between;
-    z-index: 10;
-  }
-
-  /* CSS page number via content property on span */
-  .print-footer-page::after {
-    content: "Page " counter(page) " of " counter(pages);
+    align-items: center;
+    z-index: 9999;
+    background: #fff;
   }
 
   /* Hide everything except the active panel */
@@ -356,13 +375,14 @@ table.gt tbody tr:hover{background:var(--surface)}
 </div>
 
 <!-- ═══════════════════ DASHBOARD ═══════════════════ -->
-<div id="dashboard">
+<!-- Print overlay elements: watermark + footer, at body level -->
+<div class="print-watermark" aria-hidden="true">UM2</div>
+<div class="print-footer" style="display:none">
+  <span id="printFooterLeft">University of Medicine (2) · Student Information System</span>
+  <span id="printFooterRight"></span>
+</div>
 
-  <!-- Print footer: hidden on screen, fixed on every print page -->
-  <div class="print-footer" style="display:none">
-    <span id="printFooterLeft">University of Medicine (2) · Student Information System</span>
-    <span id="printFooterRight" class="print-footer-page"></span>
-  </div>
+<div id="dashboard">
 
   <div class="header">
     <div class="header-inner">
@@ -604,10 +624,12 @@ function populate(s, grades) {
   document.getElementById('profileGPA').textContent = gpa;
   document.getElementById('homeGpaVal').textContent = gpa + ' / 4.00';
   document.getElementById('profileGpaVal').textContent = gpa + ' / 4.00';
-  // Update print footer with student ID
+  // Update print footer and @page attr with student ID
   const sid = s.id || '—';
   document.getElementById('printFooterLeft').textContent =
     'University of Medicine (2)  ·  Student ID: ' + sid;
+  // Set data-sid on <html> so @page margin boxes can read it via attr()
+  document.documentElement.setAttribute('data-sid', 'Student ID: ' + sid);
   const tags = document.getElementById('profileTags');
   tags.innerHTML = '';
   if (s.currentStatus)    tags.innerHTML += `<span class="tag tag-r">${s.currentStatus}</span>`;
@@ -712,14 +734,25 @@ function switchTab(id, btn) {
 }
 
 // ── Print helpers ─────────────────────────────────────────────
+// Page numbers are injected into each page via CSS counters in @page,
+// but the footer and watermark are real DOM elements fixed to viewport —
+// they repeat on every page automatically in print mode.
+// The right-side label just shows "Official Transcript" since browsers
+// handle page X/Y natively only in @page margin boxes (not supported by all).
 window.addEventListener('beforeprint', function() {
-  // Ensure footer is visible on print
   const footer = document.querySelector('.print-footer');
+  const wm     = document.querySelector('.print-watermark');
   if (footer) footer.style.display = 'flex';
+  if (wm)     wm.style.display     = 'block';
+  // Set right label
+  const right = document.getElementById('printFooterRight');
+  if (right) right.textContent = 'Official Document – University of Medicine (2)';
 });
 window.addEventListener('afterprint', function() {
   const footer = document.querySelector('.print-footer');
+  const wm     = document.querySelector('.print-watermark');
   if (footer) footer.style.display = 'none';
+  if (wm)     wm.style.display     = 'none';
 });
 
 // ── Sign out ──────────────────────────────────────────────────
