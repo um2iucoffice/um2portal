@@ -1324,15 +1324,37 @@ function printDocument(type) {
     });
   }
 
-  // ── Confirmation body ─────────────────────────────────────────
-  const confirmationBody = type === 'confirmation' ? `
-    <div style="margin:32px 0;font-family:'Times New Roman',Times,serif;font-size:12pt;color:#0D1B2A;line-height:2">
-      <p>This is to confirm that <strong>${name}</strong> (Student ID: <strong>${sid}</strong>) is currently enrolled as a student at the <strong>University of Medicine (2), </strong> under the administration of the Interim University Council, </strong> Republic of the Union of Myanmar</strong>.</p>
-      <br>
-      <p>The student was admitted in <strong>${admission}</strong> and is currently in <strong>${status}</strong> status with an enrollment status of <strong>${enroll}</strong>.</p>
-      <br>
-      <p>This letter is issued upon the student's request for official purposes.</p>
-    </div>` : '';
+  /// ── Confirmation body ─────────────────────────────────────────
+const confirmationBody = type === 'confirmation' ? `
+  <div style="
+    margin:32px 0;
+    font-family:'Times New Roman',Times,serif;
+    font-size:12pt;
+    color:#0D1B2A;
+    line-height:2;
+    text-align:justify;
+  ">
+    <p>
+      This is to confirm that <strong>${name}</strong> (Student ID:
+      <strong>${sid}</strong>) is currently enrolled as a student at the
+      <strong>University of Medicine (2)</strong>, under the administration
+      of the Interim University Council, Republic of the Union of Myanmar.
+    </p>
+
+    <br>
+
+    <p>
+      The student was admitted in <strong>${admission}</strong> and is
+      currently in <strong>${status}</strong> status with an enrollment
+      status of <strong>${enroll}</strong>.
+    </p>
+
+    <br>
+
+    <p>
+      This letter is issued upon the student's request for official purposes.
+    </p>
+  </div>` : '';
 
   // ── Closing / signature ───────────────────────────────────────
 const closing = `
@@ -1458,7 +1480,7 @@ const closing = `
         <div>
           <div class="inst-name">University of Medicine (2)</div>
           <div class="inst-name" style="font-size:10pt;font-weight:400;font-style:italic">Interim University Council, Republic of the Union of Myanmar</div>
-          <div class="inst-sub">Office of the Registrar &nbsp;·&nbsp; Issued: ${today}</div>
+          <div class="inst-sub">Office of the Registrar </div>
         </div>
         <div>
           <div class="doc-type-badge">${type === 'transcript' ? 'Official Transcript' : 'Confirmation of Study'}</div>
