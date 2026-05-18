@@ -976,7 +976,7 @@ function populate(s, grades) {
   document.getElementById('profileNameMM').textContent = s.fullNameMM || '';
   const init = (s.fullName || '').split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2) || '?';
   document.getElementById('avatarInitials').textContent = init;
-  const gpa = s['Overall GPA'] || s.overallGPA || '—';
+  const gpa = s.overallGPA || '—';
   document.getElementById('profileGPA').textContent = gpa;
   document.getElementById('homeGpaVal').textContent = gpa + ' / 4.00';
   document.getElementById('profileGpaVal').textContent = gpa + ' / 4.00';
@@ -1060,7 +1060,7 @@ function renderGrades(grades) {
     summaryEl.style.display = 'flex';
     const gpaEl = document.getElementById('profileGPA');
     document.getElementById('tsGpa').textContent     = (gpaEl ? gpaEl.textContent : '—') + ' / 4.00';
-    document.getElementById('tsCredits').textContent = 'TBD';
+    document.getElementById('tsCredits').textContent = totalCredits || '—';
     document.getElementById('tsCourses').textContent = totalCourses || '—';
     document.getElementById('tsYears').textContent   = yearsOnRecord || '—';
   }
@@ -1086,7 +1086,7 @@ function renderGrades(grades) {
       yrCredits += cr;
       if (gp !== null) { yrPoints++; yrWeighted += gp * cr; }
     });
-    const yrGpa = s['Overall GPA'] || s.overallGPA || '—';
+    const yrGpa = yrCredits > 0 && yrPoints > 0 ? (yrWeighted / yrCredits).toFixed(2) : '—';
 
     html += `<div class="g-wrap">`;
 
@@ -1108,14 +1108,22 @@ function renderGrades(grades) {
         </thead>
         <tbody>`;
       bkRows.forEach(r => {
-        const dateStr = r.year || '—';
+        const scoreStr =
+          r.NumericScore !== undefined && r.NumericScore !== ''
+            ? r.NumericScore
+            : r.numericScore !== undefined && r.numericScore !== ''
+              ? r.numericScore
+              : r.score !== undefined && r.score !== ''
+                ? r.score
+                : '—';
+        const dateStr = r.year || r.Year || r.completionDate || '—';
         const typeStr = r.completionType || r.course.assessment || '—';
         html += `<tr>
           <td style="font-size:11px;color:var(--ink3)">${r.courseId || '—'}</td>
           <td><div class="gt-course">${r.course.name}</div></td>
-          <td style="text-align:center"><span class="gt-cr">TBD</span></td>
+          <td style="text-align:center"><span class="gt-cr">${r.course.credits}</span></td>
           <td style="text-align:center;font-size:11px;color:var(--ink3)">${typeStr}</td>
-          <td style="text-align:center;font-size:12px;font-weight:500;color:var(--ink)">${r.NumericScore !== undefined && r.NumericScore !== '' ? r.NumericScore : '—'}</td>
+          <td style="text-align:center;font-size:12px;font-weight:500;color:var(--ink)">${scoreStr}</td>
           <td style="text-align:center;font-size:11px;color:var(--ink3)">${dateStr}</td>
           <td style="text-align:center"><span class="gbadge ${gc(r.grade)}">${r.grade || '—'}</span></td>
         </tr>`;
