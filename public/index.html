@@ -463,7 +463,7 @@ table.gt tbody tr:hover { background: #F8F9FC; }
 
   /* Table */
   table.gt {
-    font-size: 9pt !important;
+    font-size: 7.5pt !important;
     border-collapse: collapse !important;
   }
   table.gt thead tr { border-bottom: 1.5px solid #0D1B2A !important; }
@@ -498,14 +498,14 @@ table.gt tbody tr:hover { background: #F8F9FC; }
 
   /* Print-only: Type of Completion column — 4pt smaller than regular table text */
   table.gt td:nth-child(4) {
-    font-size: 5pt !important;
+    font-size: 5 pt !important;
   }
 
   /* Course cell */
   .gt-course {
     font-family: 'DM Sans', sans-serif !important;
     font-weight: 500 !important;
-    font-size: 4.2pt !important;
+    font-size: 5pt !important;
     line-height: 1.25 !important;
     color: #0D1B2A !important;
     letter-spacing: -.05px !important;
@@ -1281,13 +1281,13 @@ function printDocument(type) {
     group.rows.forEach((r, i) => {
       const bg = i % 2 === 1 ? 'background:#fafafa;' : '';
       rows += `<tr>
-        <td style="${TD}${bg}font-size:8.5pt;color:#666">${r.courseId || '—'}</td>
-        <td style="${TD}${bg}font-weight:500;font-size:6pt;line-height:1.25;letter-spacing:-.05px">${r.course}</td>
+        <td style="${TD}${bg}font-size:7.5pt;color:#666">${r.courseId || '—'}</td>
+        <td style="${TD}${bg}font-weight:500;font-size:5pt;line-height:1.25;letter-spacing:-.05px">${r.course}</td>
         <td style="${TD}${bg}text-align:center">TBD</td>
         <td style="${TD}${bg}text-align:center;color:#444">${r.assess}</td>
-        <td style="${TD}${bg}text-align:center;color:#333">${r.score || '—'}</td>
+       <td style="${TD}${bg}text-align:center;color:#444;font-size:6.5pt">
         <td style="${TD}${bg}text-align:center;color:#444">${r.date || '—'}</td>
-        <td style="${TD}${bg}text-align:center;font-weight:bold;font-size:8.8pt">${r.grade}</td>
+        <td style="${TD}${bg}text-align:center;font-weight:bold;font-size:7.5pt">${r.grade}</td>
       </tr>`;
     });
     return `
