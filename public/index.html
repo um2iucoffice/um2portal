@@ -1251,7 +1251,10 @@ table.gt * {
 
   </div>
 
-  <!-- footer removed -->
+  <!-- footer -->
+  <footer style="border-top:1px solid var(--line);padding:18px 28px;text-align:center;font-size:11px;color:var(--ink3);background:rgba(255,255,255,0.7);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);">
+    &copy; <span id="footerYear"></span> UM2 Interim University Council &nbsp;·&nbsp; University of Medicine (2), Republic of the Union of Myanmar
+  </footer>
 
 </div>
 
@@ -2168,6 +2171,9 @@ const closing = `
   win.document.write(html);
   win.document.close();
 }
+
+// ── Footer year ───────────────────────────────────────────────
+(function(){ const el = document.getElementById('footerYear'); if(el) el.textContent = new Date().getFullYear(); })();
 
 // ── Sign out ──────────────────────────────────────────────────
 function doSignOut() {
