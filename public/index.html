@@ -271,6 +271,48 @@ table.gt tbody tr:hover { background: #F8F9FC; }
 .ts-val.accent { color: var(--ink); }
 .ts-divider { width: 1px; height: 32px; background: var(--line); }
 
+/* ── ID CARD ── */
+.idcard-wrap{display:flex;flex-direction:column;align-items:center;gap:28px;padding:20px 0}
+.idcard{width:340px;border-radius:16px;overflow:hidden;box-shadow:0 20px 60px rgba(13,27,42,.18),0 4px 16px rgba(13,27,42,.1);position:relative;user-select:none}
+.idcard-front{background:linear-gradient(145deg,#0D1B2A 0%,#1a2e45 60%,#0D1B2A 100%);padding:0;min-height:210px;position:relative;overflow:hidden}
+.idcard-front::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 20% 20%,rgba(139,26,46,.4) 0%,transparent 55%),radial-gradient(ellipse at 85% 80%,rgba(154,123,47,.2) 0%,transparent 45%);pointer-events:none}
+.idcard-top{padding:20px 22px 14px;display:flex;align-items:center;justify-content:space-between;position:relative;z-index:1}
+.idcard-logo-wrap{display:flex;align-items:center;gap:10px}
+.idcard-logo{width:36px;height:44px;object-fit:contain;filter:brightness(0) invert(1);opacity:.9}
+.idcard-uni{display:flex;flex-direction:column}
+.idcard-uni-name{font-family:'DM Sans',sans-serif;font-size:11px;font-weight:700;color:rgba(255,255,255,.95);letter-spacing:.5px;line-height:1.2}
+.idcard-uni-sub{font-size:9px;color:rgba(255,255,255,.45);letter-spacing:.3px;line-height:1.4}
+.idcard-type-badge{font-size:8px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,.5);border:1px solid rgba(255,255,255,.15);padding:3px 8px;border-radius:3px}
+.idcard-divider-line{height:1px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.12),transparent);margin:0 22px}
+.idcard-body{padding:16px 22px 20px;display:flex;gap:16px;align-items:flex-start;position:relative;z-index:1}
+.idcard-photo{width:72px;height:86px;border-radius:8px;background:rgba(255,255,255,.08);border:1.5px solid rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden;font-size:26px;font-weight:700;color:rgba(255,255,255,.6);font-family:'DM Sans',sans-serif;letter-spacing:-1px}
+.idcard-info{flex:1;min-width:0}
+.idcard-name{font-family:'DM Sans',sans-serif;font-size:15px;font-weight:700;color:#fff;line-height:1.2;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.idcard-name-mm{font-size:11px;color:rgba(255,255,255,.45);margin-bottom:10px;line-height:1.4}
+.idcard-fields{display:flex;flex-direction:column;gap:5px}
+.idcard-field{display:flex;flex-direction:column;gap:1px}
+.idcard-field-lbl{font-size:7.5px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:rgba(255,255,255,.35)}
+.idcard-field-val{font-size:12px;font-weight:500;color:rgba(255,255,255,.9);font-family:'DM Sans',sans-serif}
+.idcard-bottom{background:var(--crimson);padding:10px 22px;display:flex;align-items:center;justify-content:space-between;position:relative;z-index:1}
+.idcard-id-label{font-size:8px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,.6)}
+.idcard-id-value{font-family:'DM Sans',sans-serif;font-size:15px;font-weight:700;color:#fff;letter-spacing:1px}
+.idcard-validity{font-size:9px;color:rgba(255,255,255,.6);text-align:right}
+.idcard-validity strong{display:block;font-size:10px;color:rgba(255,255,255,.85)}
+.idcard-back{background:var(--white);padding:18px 22px;border-top:3px solid var(--crimson)}
+.idcard-back-header{font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--ink3);margin-bottom:12px}
+.idcard-back-fields{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+.idcard-back-field .lbl{font-size:9px;font-weight:600;letter-spacing:.8px;text-transform:uppercase;color:var(--ink3);margin-bottom:2px}
+.idcard-back-field .val{font-size:12px;color:var(--ink);font-family:'DM Sans',sans-serif}
+.idcard-barcode{height:36px;background:repeating-linear-gradient(90deg,var(--ink) 0,var(--ink) 2px,transparent 2px,transparent 4px,var(--ink) 4px,var(--ink) 5px,transparent 5px,transparent 8px,var(--ink) 8px,var(--ink) 9px,transparent 9px,transparent 12px);border-radius:2px;margin-bottom:6px;opacity:.7}
+.idcard-barcode-num{font-size:9px;color:var(--ink3);text-align:center;letter-spacing:2px;font-family:monospace}
+.idcard-notice{font-size:9px;color:var(--ink3);line-height:1.6;border-top:1px solid var(--line);padding-top:10px;margin-top:4px}
+.idcard-actions{display:flex;gap:10px}
+.btn-idcard{padding:10px 20px;border-radius:var(--r);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:8px}
+.btn-idcard-primary{background:var(--crimson);color:#fff;border:none;box-shadow:0 2px 8px rgba(139,26,46,.25)}
+.btn-idcard-primary:hover{background:var(--crimson-mid)}
+.btn-idcard-secondary{background:transparent;color:var(--crimson);border:1.5px solid var(--crimson)}
+.btn-idcard-secondary:hover{background:var(--crimson-light)}
+
 /* ── PRINT ── */
 /* Watermark: hidden on screen */
 .print-watermark {
@@ -753,6 +795,7 @@ table.gt * {
       <button class="ntab" data-tab="profile" onclick="switchTab('profile',this)">My Profile</button>
       <button class="ntab" data-tab="grades" onclick="switchTab('grades',this)">Academic Results</button>
       <button class="ntab" data-tab="docs" onclick="switchTab('docs',this)">Documents</button>
+      <button class="ntab" data-tab="idcard" onclick="switchTab('idcard',this)">ID Card</button>
       <button class="ntab ext" onclick="window.open('https://um2campus.com/login/index.php','_blank')">E-Learning</button>
       <button class="ntab ext" onclick="window.open('https://supportportal.um2campus.org','_blank')">Support</button>
     </div>
@@ -886,6 +929,94 @@ table.gt * {
           </button>
         </div>
 
+      </div>
+    </div>
+
+    <!-- ID CARD -->
+    <div class="panel" id="panel-idcard">
+      <div class="ph"><h2>Student ID Card</h2><p>Your official University of Medicine (2) student identification</p></div>
+      <div class="idcard-wrap">
+        <div class="idcard">
+          <!-- FRONT -->
+          <div class="idcard-front">
+            <div class="idcard-top">
+              <div class="idcard-logo-wrap">
+                <img src="https://raw.githubusercontent.com/um2iucoffice/um2portal/refs/heads/main/public/UM2_Logo.svg" alt="UM2" class="idcard-logo">
+                <div class="idcard-uni">
+                  <span class="idcard-uni-name">University of Medicine (2)</span>
+                  <span class="idcard-uni-sub">Interim University Council · Myanmar</span>
+                </div>
+              </div>
+              <div class="idcard-type-badge">Student</div>
+            </div>
+            <div class="idcard-divider-line"></div>
+            <div class="idcard-body">
+              <div class="idcard-photo" id="idcardPhoto">—</div>
+              <div class="idcard-info">
+                <div class="idcard-name" id="idcardName">—</div>
+                <div class="idcard-name-mm" id="idcardNameMM"></div>
+                <div class="idcard-fields">
+                  <div class="idcard-field">
+                    <span class="idcard-field-lbl">Programme</span>
+                    <span class="idcard-field-val" id="idcardStatus">—</span>
+                  </div>
+                  <div class="idcard-field">
+                    <span class="idcard-field-lbl">Admission Year</span>
+                    <span class="idcard-field-val" id="idcardAdmission">—</span>
+                  </div>
+                  <div class="idcard-field">
+                    <span class="idcard-field-lbl">Enrollment</span>
+                    <span class="idcard-field-val" id="idcardEnroll">—</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="idcard-bottom">
+              <div>
+                <div class="idcard-id-label">Student ID</div>
+                <div class="idcard-id-value" id="idcardID">—</div>
+              </div>
+              <div class="idcard-validity">
+                <span>Valid</span>
+                <strong>2026 — 2027</strong>
+              </div>
+            </div>
+          </div>
+          <!-- BACK -->
+          <div class="idcard-back">
+            <div class="idcard-back-header">Additional Information</div>
+            <div class="idcard-back-fields">
+              <div class="idcard-back-field">
+                <div class="lbl">Date of Birth</div>
+                <div class="val" id="idcardBirth">—</div>
+              </div>
+              <div class="idcard-back-field">
+                <div class="lbl">Phone</div>
+                <div class="val" id="idcardPhone">—</div>
+              </div>
+              <div class="idcard-back-field">
+                <div class="lbl">Email</div>
+                <div class="val" id="idcardEmail" style="font-size:11px;word-break:break-all">—</div>
+              </div>
+              <div class="idcard-back-field">
+                <div class="lbl">Overall GPA</div>
+                <div class="val" id="idcardGPA">—</div>
+              </div>
+            </div>
+            <div class="idcard-barcode" id="idcardBarcode"></div>
+            <div class="idcard-barcode-num" id="idcardBarcodeNum">—</div>
+            <div class="idcard-notice">
+              This card is the property of University of Medicine (2). If found, please return to the Secretariat Office. Misuse of this card is subject to disciplinary action.
+            </div>
+          </div>
+        </div>
+        <div class="idcard-actions">
+          <button class="btn-idcard btn-idcard-primary" onclick="printIDCard()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6,9 6,2 18,2 18,9"/><path d="M6,18H4a2,2,0,0,1-2-2V11a2,2,0,0,1,2-2H20a2,2,0,0,1,2,2v5a2,2,0,0,1-2,2H18"/><rect x="6" y="14" width="12" height="8"/></svg>
+            Print ID Card
+          </button>
+        </div>
+        <p style="font-size:11px;color:var(--ink3);text-align:center;max-width:340px">This is your digital student ID. Print it and keep it with you at all times on campus.</p>
       </div>
     </div>
 
@@ -1074,6 +1205,122 @@ function populate(s, grades) {
   document.getElementById('infoEnroll').textContent    = s.enrollmentStatus || '—';
   document.getElementById('infoGrad').textContent      = s.graduationStatus || '—';
   renderGrades(grades);
+  populateIDCard(s);
+}
+
+function populateIDCard(s) {
+  const init = (s.fullName || '').split(' ').map(w => w[0]).join('').toUpperCase().slice(0,2) || '?';
+  document.getElementById('idcardPhoto').textContent    = init;
+  document.getElementById('idcardName').textContent     = s.fullName      || '—';
+  document.getElementById('idcardNameMM').textContent   = s.fullNameMM    || '';
+  document.getElementById('idcardID').textContent       = s.id            || '—';
+  document.getElementById('idcardStatus').textContent   = s.currentStatus || '—';
+  document.getElementById('idcardAdmission').textContent= s.admissionYear || '—';
+  document.getElementById('idcardEnroll').textContent   = s.enrollmentStatus || '—';
+  document.getElementById('idcardBirth').textContent    = s.birthDate     || '—';
+  document.getElementById('idcardPhone').textContent    = s.phone         || '—';
+  document.getElementById('idcardEmail').textContent    = s.email         || '—';
+  document.getElementById('idcardGPA').textContent      = s.overallGPA    || '—';
+  const sid = s.id || '';
+  document.getElementById('idcardBarcodeNum').textContent = sid.toUpperCase().split('').join('  ');
+}
+
+function printIDCard() {
+  const s = {
+    name:       document.getElementById('idcardName').textContent,
+    nameMM:     document.getElementById('idcardNameMM').textContent,
+    id:         document.getElementById('idcardID').textContent,
+    status:     document.getElementById('idcardStatus').textContent,
+    admission:  document.getElementById('idcardAdmission').textContent,
+    enroll:     document.getElementById('idcardEnroll').textContent,
+    birth:      document.getElementById('idcardBirth').textContent,
+    phone:      document.getElementById('idcardPhone').textContent,
+    email:      document.getElementById('idcardEmail').textContent,
+    gpa:        document.getElementById('idcardGPA').textContent,
+    init:       document.getElementById('idcardPhoto').textContent,
+  };
+  const html = `<!DOCTYPE html><html><head><meta charset="UTF-8">
+  <title>Student ID Card — ${s.id}</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,600;9..40,700&display=swap" rel="stylesheet">
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:'DM Sans',sans-serif;background:#f0f0f0;display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px}
+    .card{width:340px;border-radius:16px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.25)}
+    .front{background:linear-gradient(145deg,#0D1B2A,#1a2e45 60%,#0D1B2A);position:relative;overflow:hidden}
+    .front::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 20% 20%,rgba(139,26,46,.4),transparent 55%),radial-gradient(ellipse at 85% 80%,rgba(154,123,47,.2),transparent 45%)}
+    .top{padding:20px 22px 14px;display:flex;align-items:center;justify-content:space-between;position:relative;z-index:1}
+    .logo-wrap{display:flex;align-items:center;gap:10px}
+    .logo{width:32px;height:39px;object-fit:contain;filter:brightness(0) invert(1);opacity:.9}
+    .uni-name{font-size:11px;font-weight:700;color:rgba(255,255,255,.95);letter-spacing:.5px;line-height:1.2}
+    .uni-sub{font-size:9px;color:rgba(255,255,255,.45);line-height:1.4}
+    .badge{font-size:8px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,.5);border:1px solid rgba(255,255,255,.15);padding:3px 8px;border-radius:3px}
+    .divider{height:1px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.12),transparent);margin:0 22px}
+    .body{padding:16px 22px 20px;display:flex;gap:16px;align-items:flex-start;position:relative;z-index:1}
+    .photo{width:72px;height:86px;border-radius:8px;background:rgba(255,255,255,.08);border:1.5px solid rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:26px;font-weight:700;color:rgba(255,255,255,.6)}
+    .info{flex:1}
+    .name{font-size:15px;font-weight:700;color:#fff;line-height:1.2;margin-bottom:2px}
+    .name-mm{font-size:11px;color:rgba(255,255,255,.45);margin-bottom:10px}
+    .field{margin-bottom:5px}
+    .field-lbl{font-size:7.5px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:rgba(255,255,255,.35)}
+    .field-val{font-size:12px;font-weight:500;color:rgba(255,255,255,.9)}
+    .bottom{background:#8B1A2E;padding:10px 22px;display:flex;align-items:center;justify-content:space-between}
+    .id-lbl{font-size:8px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,.6)}
+    .id-val{font-size:15px;font-weight:700;color:#fff;letter-spacing:1px}
+    .validity{font-size:9px;color:rgba(255,255,255,.6);text-align:right}
+    .validity strong{display:block;font-size:10px;color:rgba(255,255,255,.85)}
+    .back{background:#fff;padding:18px 22px;border-top:3px solid #8B1A2E}
+    .back-hdr{font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#7A8599;margin-bottom:12px}
+    .back-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+    .bf .lbl{font-size:9px;font-weight:600;letter-spacing:.8px;text-transform:uppercase;color:#7A8599;margin-bottom:2px}
+    .bf .val{font-size:12px;color:#0D1B2A}
+    .barcode{height:36px;background:repeating-linear-gradient(90deg,#0D1B2A 0,#0D1B2A 2px,transparent 2px,transparent 4px,#0D1B2A 4px,#0D1B2A 5px,transparent 5px,transparent 8px,#0D1B2A 8px,#0D1B2A 9px,transparent 9px,transparent 12px);border-radius:2px;margin-bottom:6px;opacity:.7}
+    .barcode-num{font-size:9px;color:#7A8599;text-align:center;letter-spacing:2px;font-family:monospace}
+    .notice{font-size:9px;color:#7A8599;line-height:1.6;border-top:1px solid #E8EBF0;padding-top:10px;margin-top:4px}
+    @media print{body{background:#fff;padding:0}@page{margin:10mm}}
+  </style></head><body>
+  <div class="card">
+    <div class="front">
+      <div class="top">
+        <div class="logo-wrap">
+          <img src="https://raw.githubusercontent.com/um2iucoffice/um2portal/refs/heads/main/public/UM2_Logo.svg" class="logo" alt="UM2">
+          <div><div class="uni-name">University of Medicine (2)</div><div class="uni-sub">Interim University Council · Myanmar</div></div>
+        </div>
+        <div class="badge">Student</div>
+      </div>
+      <div class="divider"></div>
+      <div class="body">
+        <div class="photo">${s.init}</div>
+        <div class="info">
+          <div class="name">${s.name}</div>
+          <div class="name-mm">${s.nameMM}</div>
+          <div class="field"><div class="field-lbl">Programme</div><div class="field-val">${s.status}</div></div>
+          <div class="field"><div class="field-lbl">Admission Year</div><div class="field-val">${s.admission}</div></div>
+          <div class="field"><div class="field-lbl">Enrollment</div><div class="field-val">${s.enroll}</div></div>
+        </div>
+      </div>
+      <div class="bottom">
+        <div><div class="id-lbl">Student ID</div><div class="id-val">${s.id}</div></div>
+        <div class="validity"><span>Valid</span><strong>2026 — 2027</strong></div>
+      </div>
+    </div>
+    <div class="back">
+      <div class="back-hdr">Additional Information</div>
+      <div class="back-grid">
+        <div class="bf"><div class="lbl">Date of Birth</div><div class="val">${s.birth}</div></div>
+        <div class="bf"><div class="lbl">Phone</div><div class="val">${s.phone}</div></div>
+        <div class="bf"><div class="lbl">Email</div><div class="val" style="font-size:11px;word-break:break-all">${s.email}</div></div>
+        <div class="bf"><div class="lbl">Overall GPA</div><div class="val">${s.gpa}</div></div>
+      </div>
+      <div class="barcode"></div>
+      <div class="barcode-num">${s.id.toUpperCase().split('').join('  ')}</div>
+      <div class="notice">This card is the property of University of Medicine (2). If found, please return to the Secretariat Office.</div>
+    </div>
+  </div>
+  <script>window.onload=function(){setTimeout(function(){window.print()},600)}<\/script>
+  </body></html>`;
+  const win = window.open('', '_blank', 'width=500,height=750');
+  win.document.write(html);
+  win.document.close();
 }
 
 function animGpa(gpa) {
