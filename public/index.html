@@ -1228,6 +1228,15 @@ function populateIDCard(s) {
 }
 
 function printIDCard() {
+  const esc = function(value) {
+    return String(value || '—')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
+  };
+
   const s = {
     name:       document.getElementById('idcardName').textContent,
     nameMM:     document.getElementById('idcardNameMM').textContent,
@@ -1238,114 +1247,118 @@ function printIDCard() {
     birth:      document.getElementById('idcardBirth').textContent,
     phone:      document.getElementById('idcardPhone').textContent,
     email:      document.getElementById('idcardEmail').textContent,
-
-    init:       document.getElementById('idcardPhoto').textContent,
+    init:       document.getElementById('idcardPhoto').textContent
   };
+
+  const qrData = 'UM2 Student\nID: ' + (s.id || '') + '\nName: ' + (s.name || '') + '\nStatus: ' + (s.status || '') + '\nhttps://um2campus.org';
+
   const html = `<!DOCTYPE html><html><head><meta charset="UTF-8">
-  <title>Student ID Card — ${s.id}</title>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,600;9..40,700&display=swap" rel="stylesheet">
-  <style>
-    *{box-sizing:border-box;margin:0;padding:0}
-    body{font-family:'DM Sans',sans-serif;background:#f0f0f0;display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px}
-    .card{width:340px;border-radius:16px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.25)}
-    .front{background:linear-gradient(145deg,#0D1B2A,#1a2e45 60%,#0D1B2A);position:relative;overflow:hidden}
-    .front::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 20% 20%,rgba(139,26,46,.4),transparent 55%),radial-gradient(ellipse at 85% 80%,rgba(154,123,47,.2),transparent 45%)}
-    .top{padding:20px 22px 14px;display:flex;align-items:center;justify-content:space-between;position:relative;z-index:1}
-    .logo-wrap{display:flex;align-items:center;gap:10px}
-    .logo{width:32px;height:39px;object-fit:contain;}
-    .uni-name{font-size:11px;font-weight:700;color:rgba(255,255,255,.95);letter-spacing:.5px;line-height:1.2}
-    .uni-sub{font-size:9px;color:rgba(255,255,255,.45);line-height:1.4}
-    .badge{font-size:8px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,.5);border:1px solid rgba(255,255,255,.15);padding:3px 8px;border-radius:3px}
-    .divider{height:1px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.12),transparent);margin:0 22px}
-    .body{padding:16px 22px 20px;display:flex;gap:16px;align-items:flex-start;position:relative;z-index:1}
-    .photo{width:72px;height:86px;border-radius:8px;background:rgba(255,255,255,.08);border:1.5px solid rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:26px;font-weight:700;color:rgba(255,255,255,.6)}
-    .info{flex:1}
-    .name{font-size:15px;font-weight:700;color:#fff;line-height:1.2;margin-bottom:2px}
-    .name-mm{font-size:11px;color:rgba(255,255,255,.45);margin-bottom:10px}
-    .field{margin-bottom:5px}
-    .field-lbl{font-size:7.5px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:rgba(255,255,255,.35)}
-    .field-val{font-size:12px;font-weight:500;color:rgba(255,255,255,.9)}
-    .bottom{background:#8B1A2E;padding:10px 22px;display:flex;align-items:center;justify-content:space-between}
-    .id-lbl{font-size:8px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,.6)}
-    .id-val{font-size:15px;font-weight:700;color:#fff;letter-spacing:1px}
-    .validity{font-size:9px;color:rgba(255,255,255,.6);text-align:right}
-    .validity strong{display:block;font-size:10px;color:rgba(255,255,255,.85)}
-    .back{background:#fff;padding:18px 22px;border-top:3px solid #8B1A2E}
-    .back-hdr{font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#7A8599;margin-bottom:12px}
-    .back-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
-    .bf .lbl{font-size:9px;font-weight:600;letter-spacing:.8px;text-transform:uppercase;color:#7A8599;margin-bottom:2px}
-    .bf .val{font-size:12px;color:#0D1B2A}
-    .back-bottom{display:flex;align-items:flex-start;gap:14px;margin-top:4px}
-    .qr-wrap{display:flex;flex-direction:column;align-items:center;gap:5px;flex-shrink:0}
-    .qr-wrap canvas,.qr-wrap img{border:1.5px solid #E8EBF0;border-radius:4px;display:block}
-    .qr-lbl{font-size:7px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#7A8599}
-    .back-right{flex:1}
-    .sid-block{margin-bottom:10px}
-    .sid-block .lbl{font-size:8px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#7A8599;margin-bottom:2px}
-    .sid-block .val{font-size:14px;font-weight:700;color:#0D1B2A;letter-spacing:1.5px;font-family:monospace}
-    .sig-line{border-top:1px solid #bbb;margin-top:18px;padding-top:4px;font-size:7.5px;color:#7A8599;text-align:center}
-    .notice{font-size:8.5px;color:#7A8599;line-height:1.6;border-top:1px solid #E8EBF0;padding-top:8px;margin-top:10px}
-    @media print{body{background:#fff;padding:0}@page{margin:10mm}}
-  </style>
+  <title>Student ID Card — ${esc(s.id)}</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"><\/script>
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{--ink:#0D1B2A;--ink2:#3D4A5C;--ink3:#7A8599;--line:#E8EBF0;--surface:#F2F4F8;--white:#FFFFFF;--crimson:#8B1A2E;--crimson-light:#F7EEF0;--crimson-mid:#C4273E;--gold:#9A7B2F;--gold-light:#FBF6E8;--green:#1A5C3A;--green-light:#EBF5F0;--r:6px;--shadow-sm:0 1px 3px rgba(13,27,42,.07),0 1px 2px rgba(13,27,42,.04);--shadow-md:0 4px 16px rgba(13,27,42,.08),0 1px 4px rgba(13,27,42,.04);--shadow-lg:0 8px 32px rgba(13,27,42,.10),0 2px 8px rgba(13,27,42,.05)}
+    body{font-family:'DM Sans',sans-serif;background:var(--surface);display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px;-webkit-font-smoothing:antialiased;color:var(--ink)}
+    .idcard{width:340px;border-radius:16px;overflow:hidden;box-shadow:0 20px 60px rgba(13,27,42,.18),0 4px 16px rgba(13,27,42,.1);position:relative;user-select:none}
+    .idcard-front{background:linear-gradient(145deg,#0D1B2A 0%,#1a2e45 60%,#0D1B2A 100%);padding:0;min-height:210px;position:relative;overflow:hidden}
+    .idcard-front::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 20% 20%,rgba(139,26,46,.4) 0%,transparent 55%),radial-gradient(ellipse at 85% 80%,rgba(154,123,47,.2) 0%,transparent 45%);pointer-events:none}
+    .idcard-top{padding:20px 22px 14px;display:flex;align-items:center;justify-content:space-between;position:relative;z-index:1}
+    .idcard-logo-wrap{display:flex;align-items:center;gap:10px}
+    .idcard-logo{width:36px;height:44px;object-fit:contain}
+    .idcard-uni{display:flex;flex-direction:column}
+    .idcard-uni-name{font-family:'DM Sans',sans-serif;font-size:11px;font-weight:700;color:rgba(255,255,255,.95);letter-spacing:.5px;line-height:1.2}
+    .idcard-uni-sub{font-size:9px;color:rgba(255,255,255,.45);letter-spacing:.3px;line-height:1.4}
+    .idcard-type-badge{font-size:8px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,.5);border:1px solid rgba(255,255,255,.15);padding:3px 8px;border-radius:3px}
+    .idcard-divider-line{height:1px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.12),transparent);margin:0 22px}
+    .idcard-body{padding:16px 22px 20px;display:flex;gap:16px;align-items:flex-start;position:relative;z-index:1}
+    .idcard-photo{width:72px;height:86px;border-radius:8px;background:rgba(255,255,255,.08);border:1.5px solid rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden;font-size:26px;font-weight:700;color:rgba(255,255,255,.6);font-family:'DM Sans',sans-serif;letter-spacing:-1px}
+    .idcard-info{flex:1;min-width:0}
+    .idcard-name{font-family:'DM Sans',sans-serif;font-size:15px;font-weight:700;color:#fff;line-height:1.2;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .idcard-name-mm{font-size:11px;color:rgba(255,255,255,.45);margin-bottom:10px;line-height:1.4}
+    .idcard-fields{display:flex;flex-direction:column;gap:5px}
+    .idcard-field{display:flex;flex-direction:column;gap:1px}
+    .idcard-field-lbl{font-size:7.5px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:rgba(255,255,255,.35)}
+    .idcard-field-val{font-size:12px;font-weight:500;color:rgba(255,255,255,.9);font-family:'DM Sans',sans-serif}
+    .idcard-bottom{background:var(--crimson);padding:10px 22px;display:flex;align-items:center;justify-content:space-between;position:relative;z-index:1}
+    .idcard-id-label{font-size:8px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,.6)}
+    .idcard-id-value{font-family:'DM Sans',sans-serif;font-size:15px;font-weight:700;color:#fff;letter-spacing:1px}
+    .idcard-validity{font-size:9px;color:rgba(255,255,255,.6);text-align:right}
+    .idcard-validity strong{display:block;font-size:10px;color:rgba(255,255,255,.85)}
+    .idcard-back{background:var(--white);padding:18px 22px;border-top:3px solid var(--crimson)}
+    .idcard-back-header{font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--ink3);margin-bottom:12px}
+    .idcard-back-fields{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+    .idcard-back-field .lbl{font-size:9px;font-weight:600;letter-spacing:.8px;text-transform:uppercase;color:var(--ink3);margin-bottom:2px}
+    .idcard-back-field .val{font-size:12px;color:var(--ink);font-family:'DM Sans',sans-serif}
+    .idcard-back-bottom{display:flex;align-items:flex-start;gap:14px;margin-top:2px}
+    .idcard-qr-wrap{display:flex;flex-direction:column;align-items:center;gap:5px;flex-shrink:0}
+    .idcard-qr-wrap canvas,.idcard-qr-wrap img{border:1.5px solid var(--line);border-radius:4px;display:block}
+    .idcard-qr-lbl{font-size:7px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--ink3)}
+    .idcard-back-right{flex:1;display:flex;flex-direction:column;gap:0}
+    .idcard-sid-block{margin-bottom:10px}
+    .idcard-sid-block .lbl{font-size:8px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--ink3);margin-bottom:2px}
+    .idcard-sid-block .val{font-size:14px;font-weight:700;color:var(--ink);letter-spacing:1.5px;font-family:monospace}
+    .idcard-sig-area{border-top:1px solid #bbb;margin-top:16px;padding-top:4px;font-size:7.5px;color:var(--ink3);text-align:center;letter-spacing:.3px}
+    .idcard-notice{font-size:8.5px;color:var(--ink3);line-height:1.6;border-top:1px solid var(--line);padding-top:8px;margin-top:10px}
+    @media print{*{-webkit-print-color-adjust:exact;print-color-adjust:exact}body{background:#fff;padding:0;min-height:auto}.idcard{box-shadow:0 20px 60px rgba(13,27,42,.18),0 4px 16px rgba(13,27,42,.1)}@page{margin:10mm}}
+  </style>
   </head><body>
-  <div class="card">
-    <div class="front">
-      <div class="top">
-        <div class="logo-wrap">
-          <img src="https://raw.githubusercontent.com/um2iucoffice/um2portal/cddfb252ec6cf6cecc25c53a8630d92b08c2aaa8/public/UM2_Logo.svg" class="logo" alt="UM2">
-          <div><div class="uni-name">University of Medicine (2)</div><div class="uni-sub">Interim University Council · Myanmar</div></div>
+  <div class="idcard">
+    <div class="idcard-front">
+      <div class="idcard-top">
+        <div class="idcard-logo-wrap">
+          <img src="https://raw.githubusercontent.com/um2iucoffice/um2portal/cddfb252ec6cf6cecc25c53a8630d92b08c2aaa8/public/UM2_Logo.svg" alt="UM2" class="idcard-logo">
+          <div class="idcard-uni">
+            <span class="idcard-uni-name">University of Medicine (2)</span>
+            <span class="idcard-uni-sub">Interim University Council · Myanmar</span>
+          </div>
         </div>
-        <div class="badge">Student</div>
+        <div class="idcard-type-badge">Student</div>
       </div>
-      <div class="divider"></div>
-      <div class="body">
-        <div class="photo">${s.init}</div>
-        <div class="info">
-          <div class="name">${s.name}</div>
-          <div class="name-mm">${s.nameMM}</div>
-          <div class="field"><div class="field-lbl">Programme</div><div class="field-val">${s.status}</div></div>
-          <div class="field"><div class="field-lbl">Admission Year</div><div class="field-val">${s.admission}</div></div>
-          <div class="field"><div class="field-lbl">Enrollment</div><div class="field-val">${s.enroll}</div></div>
+      <div class="idcard-divider-line"></div>
+      <div class="idcard-body">
+        <div class="idcard-photo">${esc(s.init)}</div>
+        <div class="idcard-info">
+          <div class="idcard-name">${esc(s.name)}</div>
+          <div class="idcard-name-mm">${esc(s.nameMM)}</div>
+          <div class="idcard-fields">
+            <div class="idcard-field"><span class="idcard-field-lbl">Programme</span><span class="idcard-field-val">${esc(s.status)}</span></div>
+            <div class="idcard-field"><span class="idcard-field-lbl">Admission Year</span><span class="idcard-field-val">${esc(s.admission)}</span></div>
+            <div class="idcard-field"><span class="idcard-field-lbl">Enrollment</span><span class="idcard-field-val">${esc(s.enroll)}</span></div>
+          </div>
         </div>
       </div>
-      <div class="bottom">
-        <div><div class="id-lbl">Student ID</div><div class="id-val">${s.id}</div></div>
-        <div class="validity"><span>Valid</span><strong>2026 — 2027</strong></div>
+      <div class="idcard-bottom">
+        <div><div class="idcard-id-label">Student ID</div><div class="idcard-id-value">${esc(s.id)}</div></div>
+        <div class="idcard-validity"><span>Valid</span><strong>2026 — 2027</strong></div>
       </div>
     </div>
-    <div class="back">
-      <div class="back-hdr">Additional Information</div>
-      <div class="back-grid">
-        <div class="bf"><div class="lbl">Date of Birth</div><div class="val">${s.birth}</div></div>
-        <div class="bf"><div class="lbl">Phone</div><div class="val">${s.phone}</div></div>
-        <div class="bf"><div class="lbl">Email</div><div class="val" style="font-size:11px;word-break:break-all">${s.email}</div></div>
-        <div class="bf"><div class="lbl">Admission Year</div><div class="val">${s.admission}</div></div>
+    <div class="idcard-back">
+      <div class="idcard-back-header">Additional Information</div>
+      <div class="idcard-back-fields">
+        <div class="idcard-back-field"><div class="lbl">Date of Birth</div><div class="val">${esc(s.birth)}</div></div>
+        <div class="idcard-back-field"><div class="lbl">Phone</div><div class="val">${esc(s.phone)}</div></div>
+        <div class="idcard-back-field"><div class="lbl">Email</div><div class="val" style="font-size:11px;word-break:break-all">${esc(s.email)}</div></div>
+        <div class="idcard-back-field"><div class="lbl">Admission Year</div><div class="val">${esc(s.admission)}</div></div>
       </div>
-      <div class="back-bottom">
-        <div class="qr-wrap">
-          <div id="printQR"></div>
-          <div class="qr-lbl">Scan to Verify</div>
-        </div>
-        <div class="back-right">
-          <div class="sid-block">
-            <div class="lbl">Student ID</div>
-            <div class="val">${s.id}</div>
-          </div>
-          <div class="Authorised by · Registrar</div>
+      <div class="idcard-back-bottom">
+        <div class="idcard-qr-wrap"><div id="printQR"></div><div class="idcard-qr-lbl">Scan to Verify</div></div>
+        <div class="idcard-back-right">
+          <div class="idcard-sid-block"><div class="lbl"></div><div class="val">${esc(String(s.id).toUpperCase())}</div></div>
+          <div class="idcard-sig-area">Authorised by · Registrar</div>
         </div>
       </div>
-      <div class="notice">This card is the property of University of Medicine (2). If found, please return to the Secretariat Office. Misuse is subject to disciplinary action.</div>
+      <div class="idcard-notice">This card is the property of University of Medicine (2). If found, please return to the Secretariat Office. Misuse is subject to disciplinary action.</div>
     </div>
   </div>
   <script>
     window.onload = function() {
-      var qrData = 'UM2 Student\\nID: ${s.id}\\nName: ${s.name}\\nStatus: ${s.status}\\nhttps://um2campus.org';
-      new QRCode(document.getElementById('printQR'), { text: qrData, width: 76, height: 76, colorDark: '#0D1B2A', colorLight: '#ffffff', correctLevel: QRCode.CorrectLevel.M });
+      new QRCode(document.getElementById('printQR'), { text: ${JSON.stringify(qrData)}, width: 76, height: 76, colorDark: '#0D1B2A', colorLight: '#ffffff', correctLevel: QRCode.CorrectLevel.M });
       setTimeout(function(){ window.print(); }, 900);
     };
   <\/script>
   </body></html>`;
+
   const win = window.open('', '_blank', 'width=500,height=750');
   win.document.write(html);
   win.document.close();
