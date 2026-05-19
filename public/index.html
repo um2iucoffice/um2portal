@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>UM2 · Student Information System</title>
 <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -306,6 +307,14 @@ table.gt tbody tr:hover { background: #F8F9FC; }
 .idcard-barcode{height:36px;background:repeating-linear-gradient(90deg,var(--ink) 0,var(--ink) 2px,transparent 2px,transparent 4px,var(--ink) 4px,var(--ink) 5px,transparent 5px,transparent 8px,var(--ink) 8px,var(--ink) 9px,transparent 9px,transparent 12px);border-radius:2px;margin-bottom:6px;opacity:.7}
 .idcard-barcode-num{font-size:9px;color:var(--ink3);text-align:center;letter-spacing:2px;font-family:monospace}
 .idcard-notice{font-size:9px;color:var(--ink3);line-height:1.6;border-top:1px solid var(--line);padding-top:10px;margin-top:4px}
+/* ── QR CODE on back ── */
+.idcard-back-bottom{display:flex;align-items:flex-start;gap:14px;margin-top:2px}
+.idcard-qr-wrap{display:flex;flex-direction:column;align-items:center;gap:4px;flex-shrink:0}
+.idcard-qr-wrap canvas,.idcard-qr-wrap img{border:2px solid var(--line);border-radius:4px;display:block}
+.idcard-qr-lbl{font-size:7.5px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--ink3)}
+.idcard-notice-wrap{flex:1;display:flex;flex-direction:column;justify-content:space-between;gap:8px}
+.idcard-notice{font-size:9px;color:var(--ink3);line-height:1.6;border-top:1px solid var(--line);padding-top:8px;margin-top:0}
+.idcard-sig-line{border-top:1px solid var(--ink3);margin-top:20px;padding-top:4px;font-size:8px;color:var(--ink3);text-align:center}
 .idcard-actions{display:flex;gap:10px}
 .btn-idcard{padding:10px 20px;border-radius:var(--r);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:8px}
 .btn-idcard-primary{background:var(--crimson);color:#fff;border:none;box-shadow:0 2px 8px rgba(139,26,46,.25)}
@@ -1003,10 +1012,21 @@ table.gt * {
                 <div class="val" id="idcardGPA">—</div>
               </div>
             </div>
-            <div class="idcard-barcode" id="idcardBarcode"></div>
-            <div class="idcard-barcode-num" id="idcardBarcodeNum">—</div>
-            <div class="idcard-notice">
-              This card is the property of University of Medicine (2). If found, please return to the Secretariat Office. Misuse of this card is subject to disciplinary action.
+            <div class="idcard-back-bottom">
+              <div class="idcard-qr-wrap">
+                <div id="idcardQR"></div>
+                <div class="idcard-qr-lbl">Scan to Verify</div>
+              </div>
+              <div class="idcard-notice-wrap">
+                <div>
+                  <div style="font-size:9px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:var(--ink3);margin-bottom:2px">Student ID</div>
+                  <div style="font-size:13px;font-weight:700;color:var(--ink);letter-spacing:1px;font-family:monospace" id="idcardBarcodeNum">—</div>
+                </div>
+                <div class="idcard-sig-line">Authorised Signature / Registrar</div>
+                <div class="idcard-notice">
+                  This card is the property of University of Medicine (2). If found, please return to the Secretariat Office. Misuse of this card is subject to disciplinary action.
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -1222,7 +1242,26 @@ function populateIDCard(s) {
   document.getElementById('idcardEmail').textContent    = s.email         || '—';
   document.getElementById('idcardGPA').textContent      = s.overallGPA    || '—';
   const sid = s.id || '';
-  document.getElementById('idcardBarcodeNum').textContent = sid.toUpperCase().split('').join('  ');
+  document.getElementById('idcardBarcodeNum').textContent = sid.toUpperCase();
+  // Generate QR code
+  const qrEl = document.getElementById('idcardQR');
+  qrEl.innerHTML = '';
+  const qrData = [
+    'University of Medicine (2)',
+    'Student ID: ' + (s.id || ''),
+    'Name: ' + (s.fullName || ''),
+    'Status: ' + (s.currentStatus || ''),
+    'Admission: ' + (s.admissionYear || ''),
+    'https://um2campus.org'
+  ].join('\n');
+  new QRCode(qrEl, {
+    text: qrData,
+    width: 80,
+    height: 80,
+    colorDark: '#0D1B2A',
+    colorLight: '#ffffff',
+    correctLevel: QRCode.CorrectLevel.M
+  });
 }
 
 function printIDCard() {
@@ -1273,10 +1312,16 @@ function printIDCard() {
     .back-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
     .bf .lbl{font-size:9px;font-weight:600;letter-spacing:.8px;text-transform:uppercase;color:#7A8599;margin-bottom:2px}
     .bf .val{font-size:12px;color:#0D1B2A}
-    .barcode{height:36px;background:repeating-linear-gradient(90deg,#0D1B2A 0,#0D1B2A 2px,transparent 2px,transparent 4px,#0D1B2A 4px,#0D1B2A 5px,transparent 5px,transparent 8px,#0D1B2A 8px,#0D1B2A 9px,transparent 9px,transparent 12px);border-radius:2px;margin-bottom:6px;opacity:.7}
-    .barcode-num{font-size:9px;color:#7A8599;text-align:center;letter-spacing:2px;font-family:monospace}
-    .notice{font-size:9px;color:#7A8599;line-height:1.6;border-top:1px solid #E8EBF0;padding-top:10px;margin-top:4px}
+    .back-bottom{display:flex;align-items:flex-start;gap:14px}
+    .qr-wrap{display:flex;flex-direction:column;align-items:center;gap:4px;flex-shrink:0}
+    .qr-wrap canvas,.qr-wrap img{border:2px solid #E8EBF0;border-radius:4px;display:block}
+    .qr-lbl{font-size:7.5px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#7A8599}
+    .back-right{flex:1;display:flex;flex-direction:column;gap:8px}
+    .sig-line{border-top:1px solid #999;margin-top:18px;padding-top:4px;font-size:8px;color:#7A8599;text-align:center}
+    .notice{font-size:9px;color:#7A8599;line-height:1.6;border-top:1px solid #E8EBF0;padding-top:8px}
     @media print{body{background:#fff;padding:0}@page{margin:10mm}}
+  </style>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"><\/script>
   </style></head><body>
   <div class="card">
     <div class="front">
@@ -1311,12 +1356,40 @@ function printIDCard() {
         <div class="bf"><div class="lbl">Email</div><div class="val" style="font-size:11px;word-break:break-all">${s.email}</div></div>
         <div class="bf"><div class="lbl">Overall GPA</div><div class="val">${s.gpa}</div></div>
       </div>
-      <div class="barcode"></div>
-      <div class="barcode-num">${s.id.toUpperCase().split('').join('  ')}</div>
-      <div class="notice">This card is the property of University of Medicine (2). If found, please return to the Secretariat Office.</div>
+      <div class="back-bottom">
+        <div class="qr-wrap">
+          <div id="printQR"></div>
+          <div class="qr-lbl">Scan to Verify</div>
+        </div>
+        <div class="back-right">
+          <div class="bf" style="margin-bottom:8px"><div class="lbl">Student ID</div><div class="val" style="font-size:14px;font-weight:700;letter-spacing:1px;font-family:monospace">${s.id}</div></div>
+          <div class="sig-line">Authorised Signature / Registrar</div>
+          <div class="notice">This card is the property of University of Medicine (2). If found, please return to the Secretariat Office. Misuse of this card is subject to disciplinary action.</div>
+        </div>
+      </div>
     </div>
   </div>
-  <script>window.onload=function(){setTimeout(function(){window.print()},600)}<\/script>
+  <script>
+    window.onload = function() {
+      var qrData = [
+        'University of Medicine (2)',
+        'Student ID: ${s.id}',
+        'Name: ${s.name}',
+        'Status: ${s.status}',
+        'Admission: ${s.admission}',
+        'https://um2campus.org'
+      ].join('\\n');
+      new QRCode(document.getElementById('printQR'), {
+        text: qrData,
+        width: 80,
+        height: 80,
+        colorDark: '#0D1B2A',
+        colorLight: '#ffffff',
+        correctLevel: QRCode.CorrectLevel.M
+      });
+      setTimeout(function(){ window.print(); }, 900);
+    };
+  <\/script>
   </body></html>`;
   const win = window.open('', '_blank', 'width=500,height=750');
   win.document.write(html);
