@@ -125,17 +125,7 @@ body{
 .tag-r{background:var(--crimson-light);color:var(--crimson);border:1px solid rgba(139,26,46,.12)}
 .tag-g{background:var(--gold-light);color:var(--gold);border:1px solid rgba(154,123,47,.15)}
 .tag-n{background:var(--surface);color:var(--ink3);border:1px solid var(--line)}
-.gpa-block{text-align:right}
-.gpa-block .lbl{font-size:10px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:var(--ink3);display:block;margin-bottom:2px}
-.gpa-big{font-family:'DM Sans',sans-serif;font-size:42px;color:var(--crimson);line-height:1;display:block}
-.gpa-den{font-size:12px;color:var(--ink3);display:block;margin-top:1px}
 
-/* ── GPA BAR ── */
-.gpa-bar-card{background:var(--white);border:1px solid var(--line);border-radius:10px;padding:16px 20px;margin-bottom:16px;display:flex;align-items:center;gap:16px;box-shadow:var(--shadow-sm)}
-.gba-lbl{font-size:12px;color:var(--ink3);white-space:nowrap}
-.gba-track{flex:1;height:5px;background:var(--surface);border-radius:99px;overflow:hidden;border:1px solid var(--line)}
-.gba-fill{height:100%;background:linear-gradient(90deg,var(--crimson),var(--gold));border-radius:99px;width:0;transition:width 1.2s cubic-bezier(.4,0,.2,1)}
-.gba-val{font-size:13px;font-weight:600;color:var(--ink);white-space:nowrap}
 
 /* ── INFO CARD ── */
 .icard{background:var(--white);border:1px solid var(--line);border-radius:10px;overflow:hidden;margin-bottom:16px;box-shadow:var(--shadow-sm)}
@@ -304,17 +294,16 @@ table.gt tbody tr:hover { background: #F8F9FC; }
 .idcard-back-fields{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
 .idcard-back-field .lbl{font-size:9px;font-weight:600;letter-spacing:.8px;text-transform:uppercase;color:var(--ink3);margin-bottom:2px}
 .idcard-back-field .val{font-size:12px;color:var(--ink);font-family:'DM Sans',sans-serif}
-.idcard-barcode{height:36px;background:repeating-linear-gradient(90deg,var(--ink) 0,var(--ink) 2px,transparent 2px,transparent 4px,var(--ink) 4px,var(--ink) 5px,transparent 5px,transparent 8px,var(--ink) 8px,var(--ink) 9px,transparent 9px,transparent 12px);border-radius:2px;margin-bottom:6px;opacity:.7}
-.idcard-barcode-num{font-size:9px;color:var(--ink3);text-align:center;letter-spacing:2px;font-family:monospace}
-.idcard-notice{font-size:9px;color:var(--ink3);line-height:1.6;border-top:1px solid var(--line);padding-top:10px;margin-top:4px}
-/* ── QR CODE on back ── */
 .idcard-back-bottom{display:flex;align-items:flex-start;gap:14px;margin-top:2px}
-.idcard-qr-wrap{display:flex;flex-direction:column;align-items:center;gap:4px;flex-shrink:0}
-.idcard-qr-wrap canvas,.idcard-qr-wrap img{border:2px solid var(--line);border-radius:4px;display:block}
-.idcard-qr-lbl{font-size:7.5px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--ink3)}
-.idcard-notice-wrap{flex:1;display:flex;flex-direction:column;justify-content:space-between;gap:8px}
-.idcard-notice{font-size:9px;color:var(--ink3);line-height:1.6;border-top:1px solid var(--line);padding-top:8px;margin-top:0}
-.idcard-sig-line{border-top:1px solid var(--ink3);margin-top:20px;padding-top:4px;font-size:8px;color:var(--ink3);text-align:center}
+.idcard-qr-wrap{display:flex;flex-direction:column;align-items:center;gap:5px;flex-shrink:0}
+.idcard-qr-wrap canvas,.idcard-qr-wrap img{border:1.5px solid var(--line);border-radius:4px;display:block}
+.idcard-qr-lbl{font-size:7px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--ink3)}
+.idcard-back-right{flex:1;display:flex;flex-direction:column;gap:0}
+.idcard-sid-block{margin-bottom:10px}
+.idcard-sid-block .lbl{font-size:8px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--ink3);margin-bottom:2px}
+.idcard-sid-block .val{font-size:14px;font-weight:700;color:var(--ink);letter-spacing:1.5px;font-family:monospace}
+.idcard-sig-area{border-top:1px solid #bbb;margin-top:16px;padding-top:4px;font-size:7.5px;color:var(--ink3);text-align:center;letter-spacing:.3px}
+.idcard-notice{font-size:8.5px;color:var(--ink3);line-height:1.6;border-top:1px solid var(--line);padding-top:8px;margin-top:10px}
 .idcard-actions{display:flex;gap:10px}
 .btn-idcard{padding:10px 20px;border-radius:var(--r);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:8px}
 .btn-idcard-primary{background:var(--crimson);color:#fff;border:none;box-shadow:0 2px 8px rgba(139,26,46,.25)}
@@ -441,7 +430,7 @@ table.gt tbody tr:hover { background: #F8F9FC; }
   }
 
   /* Hide everything except the active panel */
-  #loginScreen, .header, .nav, .gpa-bar-card,
+  #loginScreen, .header, .nav,
   .ql, .qlinks, .btn-out, .btn-login { display: none !important; }
   #dashboard { display: block !important; }
   .main { max-width: 100%; padding: 0; margin: 0; }
@@ -729,7 +718,6 @@ table.gt * {
   .login-right{padding:32px 24px}
   .header-inner,.nav-inner,.main{padding-left:16px;padding-right:16px}
   .banner{grid-template-columns:1fr;gap:12px}
-  .gpa-block{text-align:left}
   .igrid{grid-template-columns:1fr}
   .icell:nth-child(odd){border-right:none}
   .icell:nth-last-child(-n+2){border-bottom:1px solid var(--line)}
@@ -850,11 +838,7 @@ table.gt * {
           <div class="ql-s">Coming soon</div>
         </div>
       </div>
-      <div class="gpa-bar-card">
-        <span class="gba-lbl">Overall Academic Performance</span>
-        <div class="gba-track"><div class="gba-fill" id="homeGpaFill"></div></div>
-        <span class="gba-val" id="homeGpaVal">— / 4.00</span>
-      </div>
+
     </div>
 
     <!-- PROFILE -->
@@ -867,17 +851,9 @@ table.gt * {
           <div class="mm" id="profileNameMM"></div>
           <div class="tags" id="profileTags"></div>
         </div>
-        <div class="gpa-block">
-          <span class="lbl">Overall GPA</span>
-          <span class="gpa-big" id="profileGPA">—</span>
-          <span class="gpa-den">/ 4.00</span>
-        </div>
+
       </div>
-      <div class="gpa-bar-card">
-        <span class="gba-lbl">Academic Performance</span>
-        <div class="gba-track"><div class="gba-fill" id="profileGpaFill"></div></div>
-        <span class="gba-val" id="profileGpaVal">— / 4.00</span>
-      </div>
+
       <div class="icard">
         <div class="icard-head">Personal &amp; Enrollment Details</div>
         <div class="igrid">
@@ -927,7 +903,7 @@ table.gt * {
             <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10,9 9,9 8,9"/></svg>
           </div>
           <div class="doc-title">Academic Transcript</div>
-          <div class="doc-desc">Complete record of your academic performance including all course grades, scores, and overall GPA.</div>
+          <div class="doc-desc">Complete record of your academic performance including all course grades and scores.</div>
           <div class="doc-tags">
             <span class="doc-tag">Official Document</span>
             <span class="doc-tag">Instant</span>
@@ -1008,8 +984,8 @@ table.gt * {
                 <div class="val" id="idcardEmail" style="font-size:11px;word-break:break-all">—</div>
               </div>
               <div class="idcard-back-field">
-                <div class="lbl">Overall GPA</div>
-                <div class="val" id="idcardGPA">—</div>
+                <div class="lbl">Admission Year</div>
+                <div class="val" id="idcardAdmissionBack">—</div>
               </div>
             </div>
             <div class="idcard-back-bottom">
@@ -1017,16 +993,16 @@ table.gt * {
                 <div id="idcardQR"></div>
                 <div class="idcard-qr-lbl">Scan to Verify</div>
               </div>
-              <div class="idcard-notice-wrap">
-                <div>
-                  <div style="font-size:9px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:var(--ink3);margin-bottom:2px">Student ID</div>
-                  <div style="font-size:13px;font-weight:700;color:var(--ink);letter-spacing:1px;font-family:monospace" id="idcardBarcodeNum">—</div>
+              <div class="idcard-back-right">
+                <div class="idcard-sid-block">
+                  <div class="lbl">Student ID</div>
+                  <div class="val" id="idcardBarcodeNum">—</div>
                 </div>
-                <div class="idcard-sig-line">Authorised Signature / Registrar</div>
-                <div class="idcard-notice">
-                  This card is the property of University of Medicine (2). If found, please return to the Secretariat Office. Misuse of this card is subject to disciplinary action.
-                </div>
+                <div class="idcard-sig-area">Authorised Signature · Registrar</div>
               </div>
+            </div>
+            <div class="idcard-notice">
+              This card is the property of University of Medicine (2). If found, please return to the Secretariat Office. Misuse is subject to disciplinary action.
             </div>
           </div>
         </div>
@@ -1047,11 +1023,6 @@ table.gt * {
         <p>Full record of grades, credits and grade points — Academic Year 2026-2027</p>
       </div>
       <div id="transcriptSummary" style="display:none" class="transcript-summary">
-        <div class="ts-item">
-          <span class="ts-lbl">Overall GPA</span>
-          <span class="ts-val accent" id="tsGpa">—</span>
-        </div>
-        <div class="ts-divider"></div>
         <div class="ts-item">
           <span class="ts-lbl">Total Credits</span>
           <span class="ts-val" id="tsCredits">—</span>
@@ -1176,7 +1147,7 @@ function handleAuth(r) {
   document.getElementById('loginScreen').classList.add('hidden');
   setTimeout(() => {
     document.getElementById('dashboard').classList.add('show');
-    animGpa(parseFloat(r.student.overallGPA) || 0);
+
   }, 100);
 }
 
@@ -1198,10 +1169,7 @@ function populate(s, grades) {
   document.getElementById('profileNameMM').textContent = s.fullNameMM || '';
   const init = (s.fullName || '').split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2) || '?';
   document.getElementById('avatarInitials').textContent = init;
-  const gpa = s.overallGPA || '—';
-  document.getElementById('profileGPA').textContent = gpa;
-  document.getElementById('homeGpaVal').textContent = gpa + ' / 4.00';
-  document.getElementById('profileGpaVal').textContent = gpa + ' / 4.00';
+
   // Update print footer and @page attr with student ID
   const sid = s.id || '—';
   const sidSpan = document.getElementById('printFooterSID');
@@ -1240,28 +1208,9 @@ function populateIDCard(s) {
   document.getElementById('idcardBirth').textContent    = s.birthDate     || '—';
   document.getElementById('idcardPhone').textContent    = s.phone         || '—';
   document.getElementById('idcardEmail').textContent    = s.email         || '—';
-  document.getElementById('idcardGPA').textContent      = s.overallGPA    || '—';
+
   const sid = s.id || '';
-  document.getElementById('idcardBarcodeNum').textContent = sid.toUpperCase();
-  // Generate QR code
-  const qrEl = document.getElementById('idcardQR');
-  qrEl.innerHTML = '';
-  const qrData = [
-    'University of Medicine (2)',
-    'Student ID: ' + (s.id || ''),
-    'Name: ' + (s.fullName || ''),
-    'Status: ' + (s.currentStatus || ''),
-    'Admission: ' + (s.admissionYear || ''),
-    'https://um2campus.org'
-  ].join('\n');
-  new QRCode(qrEl, {
-    text: qrData,
-    width: 80,
-    height: 80,
-    colorDark: '#0D1B2A',
-    colorLight: '#ffffff',
-    correctLevel: QRCode.CorrectLevel.M
-  });
+  document.getElementById('idcardBarcodeNum').textContent = sid.toUpperCase().split('').join('  ');
 }
 
 function printIDCard() {
@@ -1275,7 +1224,7 @@ function printIDCard() {
     birth:      document.getElementById('idcardBirth').textContent,
     phone:      document.getElementById('idcardPhone').textContent,
     email:      document.getElementById('idcardEmail').textContent,
-    gpa:        document.getElementById('idcardGPA').textContent,
+
     init:       document.getElementById('idcardPhoto').textContent,
   };
   const html = `<!DOCTYPE html><html><head><meta charset="UTF-8">
@@ -1312,17 +1261,20 @@ function printIDCard() {
     .back-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
     .bf .lbl{font-size:9px;font-weight:600;letter-spacing:.8px;text-transform:uppercase;color:#7A8599;margin-bottom:2px}
     .bf .val{font-size:12px;color:#0D1B2A}
-    .back-bottom{display:flex;align-items:flex-start;gap:14px}
-    .qr-wrap{display:flex;flex-direction:column;align-items:center;gap:4px;flex-shrink:0}
-    .qr-wrap canvas,.qr-wrap img{border:2px solid #E8EBF0;border-radius:4px;display:block}
-    .qr-lbl{font-size:7.5px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#7A8599}
-    .back-right{flex:1;display:flex;flex-direction:column;gap:8px}
-    .sig-line{border-top:1px solid #999;margin-top:18px;padding-top:4px;font-size:8px;color:#7A8599;text-align:center}
-    .notice{font-size:9px;color:#7A8599;line-height:1.6;border-top:1px solid #E8EBF0;padding-top:8px}
+    .back-bottom{display:flex;align-items:flex-start;gap:14px;margin-top:4px}
+    .qr-wrap{display:flex;flex-direction:column;align-items:center;gap:5px;flex-shrink:0}
+    .qr-wrap canvas,.qr-wrap img{border:1.5px solid #E8EBF0;border-radius:4px;display:block}
+    .qr-lbl{font-size:7px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#7A8599}
+    .back-right{flex:1}
+    .sid-block{margin-bottom:10px}
+    .sid-block .lbl{font-size:8px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#7A8599;margin-bottom:2px}
+    .sid-block .val{font-size:14px;font-weight:700;color:#0D1B2A;letter-spacing:1.5px;font-family:monospace}
+    .sig-line{border-top:1px solid #bbb;margin-top:18px;padding-top:4px;font-size:7.5px;color:#7A8599;text-align:center}
+    .notice{font-size:8.5px;color:#7A8599;line-height:1.6;border-top:1px solid #E8EBF0;padding-top:8px;margin-top:10px}
     @media print{body{background:#fff;padding:0}@page{margin:10mm}}
   </style>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"><\/script>
-  </style></head><body>
+  </head><body>
   <div class="card">
     <div class="front">
       <div class="top">
@@ -1354,7 +1306,7 @@ function printIDCard() {
         <div class="bf"><div class="lbl">Date of Birth</div><div class="val">${s.birth}</div></div>
         <div class="bf"><div class="lbl">Phone</div><div class="val">${s.phone}</div></div>
         <div class="bf"><div class="lbl">Email</div><div class="val" style="font-size:11px;word-break:break-all">${s.email}</div></div>
-        <div class="bf"><div class="lbl">Overall GPA</div><div class="val">${s.gpa}</div></div>
+        <div class="bf"><div class="lbl">Admission Year</div><div class="val">${s.admission}</div></div>
       </div>
       <div class="back-bottom">
         <div class="qr-wrap">
@@ -1362,31 +1314,20 @@ function printIDCard() {
           <div class="qr-lbl">Scan to Verify</div>
         </div>
         <div class="back-right">
-          <div class="bf" style="margin-bottom:8px"><div class="lbl">Student ID</div><div class="val" style="font-size:14px;font-weight:700;letter-spacing:1px;font-family:monospace">${s.id}</div></div>
-          <div class="sig-line">Authorised Signature / Registrar</div>
-          <div class="notice">This card is the property of University of Medicine (2). If found, please return to the Secretariat Office. Misuse of this card is subject to disciplinary action.</div>
+          <div class="sid-block">
+            <div class="lbl">Student ID</div>
+            <div class="val">${s.id}</div>
+          </div>
+          <div class="sig-line">Authorised Signature · Registrar</div>
         </div>
       </div>
+      <div class="notice">This card is the property of University of Medicine (2). If found, please return to the Secretariat Office. Misuse is subject to disciplinary action.</div>
     </div>
   </div>
   <script>
     window.onload = function() {
-      var qrData = [
-        'University of Medicine (2)',
-        'Student ID: ${s.id}',
-        'Name: ${s.name}',
-        'Status: ${s.status}',
-        'Admission: ${s.admission}',
-        'https://um2campus.org'
-      ].join('\\n');
-      new QRCode(document.getElementById('printQR'), {
-        text: qrData,
-        width: 80,
-        height: 80,
-        colorDark: '#0D1B2A',
-        colorLight: '#ffffff',
-        correctLevel: QRCode.CorrectLevel.M
-      });
+      var qrData = 'UM2 Student\\nID: ${s.id}\\nName: ${s.name}\\nStatus: ${s.status}\\nhttps://um2campus.org';
+      new QRCode(document.getElementById('printQR'), { text: qrData, width: 76, height: 76, colorDark: '#0D1B2A', colorLight: '#ffffff', correctLevel: QRCode.CorrectLevel.M });
       setTimeout(function(){ window.print(); }, 900);
     };
   <\/script>
@@ -1396,16 +1337,6 @@ function printIDCard() {
   win.document.close();
 }
 
-function animGpa(gpa) {
-  const pct = Math.min((gpa / 4) * 100, 100) + '%';
-  document.getElementById('homeGpaFill').style.width    = pct;
-  document.getElementById('profileGpaFill').style.width = pct;
-  setTimeout(() => {
-    document.querySelectorAll('.sbar-fill[data-pct]').forEach(el => {
-      el.style.width = el.dataset.pct + '%';
-    });
-  }, 300);
-}
 
 // ── Grades ───────────────────────────────────────────────────
 function gc(g) {
@@ -1464,8 +1395,7 @@ function renderGrades(grades) {
   const summaryEl = document.getElementById('transcriptSummary');
   if (summaryEl) {
     summaryEl.style.display = 'flex';
-    const gpaEl = document.getElementById('profileGPA');
-    document.getElementById('tsGpa').textContent     = (gpaEl ? gpaEl.textContent : '—') + ' / 4.00';
+
     document.getElementById('tsCredits').textContent = 'TBD';
     document.getElementById('tsCourses').textContent = grades.length || '—';
     document.getElementById('tsYears').textContent   = order.length || '—';
@@ -1588,7 +1518,7 @@ function printDocument(type) {
   const status    = document.getElementById('infoStatus').textContent || '—';
   const enroll    = document.getElementById('infoEnroll').textContent || '—';
   const grad      = document.getElementById('infoGrad').textContent || '—';
-  const gpa       = document.getElementById('profileGPA').textContent || '—';
+
   const today     = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
 
   // ── Collect grade data grouped by Academic Year ─────────────
@@ -1819,7 +1749,6 @@ const closing = `
     .stu-bar-item { display: flex; flex-direction: column; gap: 2px; }
     .stu-bar-lbl { font-size: 7.5pt; font-weight: bold; letter-spacing: .5px; text-transform: uppercase; color: #666; }
     .stu-bar-val { font-size: 9.5pt; color: #0D1B2A; font-weight: bold; }
-    .stu-bar-gpa { font-family: 'DM Sans', sans-serif; font-size: 15pt; font-weight: bold; color: #0D1B2A; }
 
     .transcript-student-section {
       border: 1px solid #bbb;
@@ -1935,8 +1864,7 @@ function doSignOut() {
   document.getElementById('accessLoading').classList.remove('show');
   document.getElementById('loginEmail').value = '';
   document.getElementById('loginPassword').value = '';
-  document.getElementById('homeGpaFill').style.width    = '0';
-  document.getElementById('profileGpaFill').style.width = '0';
+
   switchTab('home');
 }
 </script>
