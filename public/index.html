@@ -1204,13 +1204,27 @@ function populateIDCard(s) {
   document.getElementById('idcardID').textContent       = s.id            || '—';
   document.getElementById('idcardStatus').textContent   = s.currentStatus || '—';
   document.getElementById('idcardAdmission').textContent= s.admissionYear || '—';
+  document.getElementById('idcardAdmissionBack').textContent = s.admissionYear || '—';
   document.getElementById('idcardEnroll').textContent   = s.enrollmentStatus || '—';
   document.getElementById('idcardBirth').textContent    = s.birthDate     || '—';
   document.getElementById('idcardPhone').textContent    = s.phone         || '—';
   document.getElementById('idcardEmail').textContent    = s.email         || '—';
 
   const sid = s.id || '';
-  document.getElementById('idcardBarcodeNum').textContent = sid.toUpperCase().split('').join('  ');
+  document.getElementById('idcardBarcodeNum').textContent = sid.toUpperCase();
+
+  // Generate QR code on the back
+  const qrEl = document.getElementById('idcardQR');
+  qrEl.innerHTML = '';
+  const qrData = 'UM2 Student\nID: ' + (s.id || '') + '\nName: ' + (s.fullName || '') + '\nStatus: ' + (s.currentStatus || '') + '\nhttps://um2campus.org';
+  new QRCode(qrEl, {
+    text: qrData,
+    width: 76,
+    height: 76,
+    colorDark: '#0D1B2A',
+    colorLight: '#ffffff',
+    correctLevel: QRCode.CorrectLevel.M
+  });
 }
 
 function printIDCard() {
