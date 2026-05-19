@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>UM2 · Student Information System</title>
 <link rel="icon" type="image/png" sizes="32x32"
-href="https://raw.githubusercontent.com/um2iucoffice/um2portal/c304607db24b220dd33b1ee4830014c2d3b0c838/public/favicon.png?v=2">
+href="https://raw.githubusercontent.com/um2iucoffice/um2portal/3890864b9ebf4452402080f8356786aa8767dc2b/public/favicon.png?v=2">
 <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <style>
@@ -1471,7 +1471,7 @@ function populateIDCard(s) {
   // Generate QR code on the back
   const qrEl = document.getElementById('idcardQR');
   qrEl.innerHTML = '';
-  const qrData = 'UM2 Student\nID: ' + (s.id || '') + '\nName: ' + (s.fullName || '') + '\nStatus: ' + (s.currentStatus || '') + '\nhttps://um2campus.org';
+  const qrData = window.location.origin + '/verify?id=' + encodeURIComponent(s.id || '');
   new QRCode(qrEl, {
     text: qrData,
     width: 76,
@@ -1505,7 +1505,7 @@ function printIDCard() {
     init:       document.getElementById('idcardPhoto').textContent
   };
 
-  const qrData = 'UM2 Student\nID: ' + (s.id || '') + '\nName: ' + (s.name || '') + '\nStatus: ' + (s.status || '') + '\nhttps://um2campus.org';
+  const qrData = window.location.origin + '/verify?id=' + encodeURIComponent(s.id || '');
 
   const html = `<!DOCTYPE html><html><head><meta charset="UTF-8">
   <title>Student ID Card — ${esc(s.id)}</title>
