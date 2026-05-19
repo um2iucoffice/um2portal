@@ -728,7 +728,6 @@ table.gt * {
   .qlinks{grid-template-columns:1fr 1fr}
 }
 </style>
-<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
 </head>
 <body>
 
@@ -986,28 +985,26 @@ table.gt * {
           <!-- BACK -->
           <div class="idcard-back">
             <div class="idcard-back-header">Additional Information</div>
-            <div style="display:flex;gap:14px;align-items:flex-start;margin-bottom:14px">
-              <div style="flex:1">
-                <div class="idcard-back-fields" style="margin-bottom:0">
-                  <div class="idcard-back-field">
-                    <div class="lbl">Date of Birth</div>
-                    <div class="val" id="idcardBirth">—</div>
-                  </div>
-                  <div class="idcard-back-field">
-                    <div class="lbl">Phone</div>
-                    <div class="val" id="idcardPhone">—</div>
-                  </div>
-                  <div class="idcard-back-field" style="grid-column:1/-1">
-                    <div class="lbl">Email</div>
-                    <div class="val" id="idcardEmail" style="font-size:11px;word-break:break-all">—</div>
-                  </div>
-                </div>
+            <div class="idcard-back-fields">
+              <div class="idcard-back-field">
+                <div class="lbl">Date of Birth</div>
+                <div class="val" id="idcardBirth">—</div>
               </div>
-              <div style="flex-shrink:0;display:flex;flex-direction:column;align-items:center;gap:4px">
-                <div id="idcardQR" style="width:80px;height:80px;background:var(--surface);border:1px solid var(--line);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:9px;color:var(--ink3)">QR</div>
-                <div style="font-size:8px;color:var(--ink3);letter-spacing:.5px;text-transform:uppercase">Scan to verify</div>
+              <div class="idcard-back-field">
+                <div class="lbl">Phone</div>
+                <div class="val" id="idcardPhone">—</div>
+              </div>
+              <div class="idcard-back-field">
+                <div class="lbl">Email</div>
+                <div class="val" id="idcardEmail" style="font-size:11px;word-break:break-all">—</div>
+              </div>
+              <div class="idcard-back-field">
+                <div class="lbl">Overall GPA</div>
+                <div class="val" id="idcardGPA">—</div>
               </div>
             </div>
+            <div class="idcard-barcode" id="idcardBarcode"></div>
+            <div class="idcard-barcode-num" id="idcardBarcodeNum">—</div>
             <div class="idcard-notice">
               This card is the property of University of Medicine (2). If found, please return to the Secretariat Office. Misuse of this card is subject to disciplinary action.
             </div>
@@ -1223,25 +1220,9 @@ function populateIDCard(s) {
   document.getElementById('idcardBirth').textContent    = s.birthDate     || '—';
   document.getElementById('idcardPhone').textContent    = s.phone         || '—';
   document.getElementById('idcardEmail').textContent    = s.email         || '—';
-  
-  // Generate QR code
-  const qrData = JSON.stringify({
-    id:   s.id,
-    name: s.fullName,
-    year: s.admissionYear,
-    status: s.currentStatus,
-    university: 'UM2IUC'
-  });
-  const qrEl = document.getElementById('idcardQR');
-  qrEl.innerHTML = '';
-  const canvas = document.createElement('canvas');
-  qrEl.appendChild(canvas);
-  QRCode.toCanvas(canvas, qrData, {
-    width: 80, margin: 1,
-    color: { dark: '#0D1B2A', light: '#ffffff' }
-  }, function(err) {
-    if (err) { qrEl.textContent = 'QR'; console.error(err); }
-  });
+  document.getElementById('idcardGPA').textContent      = s.overallGPA    || '—';
+  const sid = s.id || '';
+  document.getElementById('idcardBarcodeNum').textContent = sid.toUpperCase().split('').join('  ');
 }
 
 function printIDCard() {
@@ -1330,22 +1311,12 @@ function printIDCard() {
         <div class="bf"><div class="lbl">Email</div><div class="val" style="font-size:11px;word-break:break-all">${s.email}</div></div>
         <div class="bf"><div class="lbl">Overall GPA</div><div class="val">${s.gpa}</div></div>
       </div>
-      <div style="display:flex;justify-content:center;margin:8px 0 4px">
-        <canvas id="printQR"></canvas>
-      </div>
-      <div style="font-size:8px;color:#7A8599;text-align:center;letter-spacing:.5px;text-transform:uppercase;margin-bottom:4px">Scan to verify</div>
+      <div class="barcode"></div>
+      <div class="barcode-num">${s.id.toUpperCase().split('').join('  ')}</div>
       <div class="notice">This card is the property of University of Medicine (2). If found, please return to the Secretariat Office.</div>
     </div>
   </div>
-  <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"><\/script>
-  <script>
-    window.onload = function() {
-      var qrData = JSON.stringify({id:'${s.id}',name:'${s.name}',year:'${s.admission}',university:'UM2IUC'});
-      QRCode.toCanvas(document.getElementById('printQR'), qrData, {width:80,margin:1,color:{dark:'#0D1B2A',light:'#ffffff'}}, function() {
-        setTimeout(function(){ window.print(); }, 600);
-      });
-    };
-  <\/script>
+  <script>window.onload=function(){setTimeout(function(){window.print()},600)}<\/script>
   </body></html>`;
   const win = window.open('', '_blank', 'width=500,height=750');
   win.document.write(html);
