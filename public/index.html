@@ -1119,7 +1119,13 @@ document.addEventListener('keydown', function(e) {
   if (e.key === 'Enter' && !document.getElementById('loginScreen').classList.contains('hidden')) doLogin();
 });
 
-function doLogin() {
+// ── CONFIG ── update these to match your project ─────────────
+var SUPABASE_URL   = 'https://nbjbievinjirlbyjodcm.supabase.co';
+var SUPABASE_ANON  = 'YOUR_ANON_KEY_HERE';
+var API_URL        = 'https://nbjbievinjirlbyjodcm.supabase.co/functions/v1/swift-endpoint';
+// ─────────────────────────────────────────────────────────────
+
+async function doLogin() {
   const email    = (document.getElementById('loginEmail').value || '').trim();
   const password = (document.getElementById('loginPassword').value || '').trim();
   const errEl    = document.getElementById('accessError');
@@ -1133,14 +1139,35 @@ function doLogin() {
   btn.disabled = true;
   btn.textContent = 'Signing in…';
   document.getElementById('accessLoading').classList.add('show');
-  fetch('/.netlify/functions/login', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email, password })
-  })
-    .then(res => res.json())
-    .then(handleAuth)
-    .catch(handleAuthErr);
+
+  try {
+    // Step 1: Authenticate with Supabase Auth
+    const authRes = await fetch(SUPABASE_URL + '/auth/v1/token?grant_type=password', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_ANON },
+      body: JSON.stringify({ email, password })
+    });
+    const authData = await authRes.json();
+    if (!authRes.ok || authData.error) {
+      handleAuthErr(authData.error_description || authData.msg || 'Invalid credentials.');
+      return;
+    }
+
+    // Step 2: Get student profile from Edge Function
+    const profileRes = await fetch(API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'getStudentProfile', email: email })
+    });
+    const profileData = await profileRes.json();
+    if (!profileData.success) {
+      handleAuthErr(profileData.error || 'Failed to load profile.');
+      return;
+    }
+    handleAuth({ success: true, student: profileData.student, grades: profileData.grades || [] });
+  } catch(e) {
+    handleAuthErr('Connection error. Please try again.');
+  }
 }
 
 function handleAuth(r) {
@@ -1164,13 +1191,13 @@ function handleAuth(r) {
   }, 100);
 }
 
-function handleAuthErr() {
+function handleAuthErr(msg) {
   const btn = document.getElementById('signinBtn');
   btn.disabled = false;
   btn.textContent = 'Sign in';
   document.getElementById('accessLoading').classList.remove('show');
   const errEl = document.getElementById('accessError');
-  errEl.textContent = 'Connection error. Please try again.';
+  errEl.textContent = msg || 'Connection error. Please try again.';
   errEl.classList.add('show');
 }
 
