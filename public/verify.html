@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>UM2 · Student Verification</title>
+<link rel="icon" type="image/png" sizes="32x32" href="https://raw.githubusercontent.com/um2iucoffice/um2portal/3890864b9ebf4452402080f8356786aa8767dc2b/public/favicon.png?v=2">
+<link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --ink:#0D1B2A;
+  --ink2:#3D4A5C;
+  --ink3:#7A8599;
+  --line:#E8EBF0;
+  --surface:#F2F4F8;
+  --white:#FFFFFF;
+  --crimson:#8B1A2E;
+  --crimson-light:#F7EEF0;
+  --crimson-mid:#C4273E;
+  --gold:#9A7B2F;
+  --gold-light:#FBF6E8;
+  --green:#1A5C3A;
+  --green-light:#EBF5F0;
+  --r:8px;
+  --shadow-sm:0 1px 3px rgba(13,27,42,.07),0 1px 2px rgba(13,27,42,.04);
+  --shadow-md:0 4px 16px rgba(13,27,42,.08),0 1px 4px rgba(13,27,42,.04);
+  --shadow-lg:0 8px 40px rgba(13,27,42,.12),0 2px 8px rgba(13,27,42,.06);
+}
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background-color: var(--surface);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='900' height='900' viewBox='0 0 900 900'%3E%3Cg stroke='%238B1A2E' stroke-width='1' fill='none' opacity='0.04'%3E%3Ccircle cx='80' cy='80' r='18'/%3E%3Ccircle cx='80' cy='80' r='10'/%3E%3Cpath d='M80 62 Q80 30 110 30 Q140 30 140 60 L140 110 Q140 150 110 165 Q80 180 70 210'/%3E%3Cpolyline points='200,120 230,120 245,90 255,150 270,80 285,160 300,120 340,120'/%3E%3Cpolygon points='560,50 520,70 560,90 600,70'/%3E%3Cline x1='560' y1='90' x2='560' y2='120'/%3E%3Cpath d='M540 105 Q540 130 560 135 Q580 130 580 105'/%3E%3Crect x='438' y='310' width='8' height='40' rx='2'/%3E%3Crect x='422' y='326' width='40' height='8' rx='2'/%3E%3Cpolyline points='700,320 730,320 745,290 755,350 770,270 785,360 800,320 840,320'/%3E%3Ccircle cx='820' cy='700' r='40'/%3E%3Ccircle cx='820' cy='700' r='28'/%3E%3Ccircle cx='820' cy='700' r='14'/%3E%3C/g%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-size: 900px 900px;
+  color: var(--ink);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── HEADER ── */
+.v-header {
+  background: rgba(255,255,255,0.92);
+  border-bottom: 1px solid var(--line);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: 0 1px 0 var(--line), 0 2px 8px rgba(13,27,42,.04);
+  padding: 0 28px;
+  height: 58px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.v-header-logo {
+  width: 28px;
+  height: 34px;
+  object-fit: contain;
+}
+.v-header-brand {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+}
+.v-header-brand-name {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--ink);
+  letter-spacing: .3px;
+}
+.v-header-brand-sub {
+  font-size: 10px;
+  color: var(--ink3);
+}
+.v-header-divider { width:1px; height:20px; background:var(--line); margin: 0 6px; }
+.v-header-badge {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  color: var(--crimson);
+  background: var(--crimson-light);
+  border: 1px solid rgba(139,26,46,.15);
+  padding: 3px 10px;
+  border-radius: 3px;
+}
+.v-header-spacer { flex: 1; }
+.v-header-back {
+  font-size: 12px;
+  color: var(--ink3);
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 12px;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  transition: all .15s;
+}
+.v-header-back:hover { border-color: var(--crimson); color: var(--crimson); background: var(--crimson-light); }
+
+/* ── MAIN ── */
+.v-main {
+  flex: 1;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 48px 20px 80px;
+}
+.v-wrap { width: 100%; max-width: 560px; }
+
+/* ── STATES ── */
+.v-state {
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 52px 40px;
+  text-align: center;
+  box-shadow: var(--shadow-md);
+}
+.v-state-icon {
+  width: 56px; height: 56px;
+  border-radius: 14px;
+  display: flex; align-items: center; justify-content: center;
+  margin: 0 auto 20px;
+  font-size: 26px;
+}
+.v-state-icon.loading { background: var(--surface); animation: pulse 1.4s ease-in-out infinite; }
+.v-state-icon.error   { background: #FEF2F4; }
+.v-state-icon.nodata  { background: var(--gold-light); }
+@keyframes pulse { 0%,100%{opacity:.6} 50%{opacity:1} }
+.v-state h2 { font-family:'Libre Baskerville',serif; font-size:20px; color:var(--ink); margin-bottom:8px; }
+.v-state p  { font-size:13px; color:var(--ink3); line-height:1.6; }
+
+/* ── CARD ── */
+.v-card {
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: var(--shadow-lg);
+  animation: fadeUp .35s ease;
+}
+@keyframes fadeUp { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
+
+/* Hero banner */
+.v-hero {
+  background: linear-gradient(140deg, var(--ink) 0%, #1a2e45 60%, var(--ink) 100%);
+  padding: 28px 32px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  position: relative;
+  overflow: hidden;
+}
+.v-hero::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: radial-gradient(ellipse at 20% 30%, rgba(139,26,46,.4) 0%, transparent 55%),
+              radial-gradient(ellipse at 90% 80%, rgba(154,123,47,.18) 0%, transparent 45%);
+  pointer-events: none;
+}
+.v-avatar {
+  width: 60px; height: 60px;
+  border-radius: 10px;
+  background: rgba(255,255,255,.1);
+  border: 1.5px solid rgba(255,255,255,.18);
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Libre Baskerville', serif;
+  font-size: 22px; color: rgba(255,255,255,.9);
+  flex-shrink: 0; position: relative; z-index: 1;
+  backdrop-filter: blur(4px);
+}
+.v-hero-text { flex: 1; position: relative; z-index: 1; min-width: 0; }
+.v-hero-name {
+  font-family: 'Libre Baskerville', serif;
+  font-size: 20px; color: #fff;
+  margin-bottom: 2px; line-height: 1.2;
+}
+.v-hero-name-mm { font-size: 12px; color: rgba(255,255,255,.45); margin-bottom: 10px; }
+.v-hero-id {
+  font-family: monospace;
+  font-size: 11px; color: rgba(255,255,255,.5);
+  letter-spacing: .06em;
+}
+.v-verified-badge {
+  position: relative; z-index: 1; flex-shrink: 0;
+  display: flex; flex-direction: column; align-items: center; gap: 5px;
+}
+.v-verified-icon {
+  width: 42px; height: 42px;
+  background: rgba(26,92,58,.6);
+  border: 1.5px solid rgba(107,198,143,.35);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+}
+.v-verified-label {
+  font-size: 8px; font-weight: 700; letter-spacing: 1.2px;
+  text-transform: uppercase; color: rgba(107,198,143,.8);
+}
+
+/* Invalid badge */
+.v-invalid-badge {
+  position: relative; z-index: 1; flex-shrink: 0;
+  display: flex; flex-direction: column; align-items: center; gap: 5px;
+}
+.v-invalid-icon {
+  width: 42px; height: 42px;
+  background: rgba(139,26,46,.5);
+  border: 1.5px solid rgba(255,150,150,.3);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+}
+.v-invalid-label {
+  font-size: 8px; font-weight: 700; letter-spacing: 1.2px;
+  text-transform: uppercase; color: rgba(255,150,150,.8);
+}
+
+/* Status strip */
+.v-status-strip {
+  padding: 10px 32px;
+  display: flex; align-items: center; gap: 8px;
+  font-size: 11px; font-weight: 600; letter-spacing: .5px;
+}
+.v-status-strip.active {
+  background: var(--green-light);
+  border-bottom: 1px solid rgba(26,92,58,.12);
+  color: var(--green);
+}
+.v-status-strip.inactive {
+  background: #FEF2F4;
+  border-bottom: 1px solid rgba(139,26,46,.12);
+  color: var(--crimson);
+}
+.v-status-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.active .v-status-dot  { background: var(--green); }
+.inactive .v-status-dot{ background: var(--crimson); }
+
+/* Fields grid */
+.v-fields {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0;
+}
+.v-field {
+  padding: 16px 24px;
+  border-bottom: 1px solid var(--line);
+}
+.v-field:nth-child(odd) { border-right: 1px solid var(--line); }
+.v-field:nth-last-child(-n+2) { border-bottom: none; }
+.v-field-lbl {
+  font-size: 9px; font-weight: 700; letter-spacing: 1px;
+  text-transform: uppercase; color: var(--ink3); margin-bottom: 3px;
+}
+.v-field-val {
+  font-size: 13px; color: var(--ink); font-weight: 500;
+}
+
+/* Tags row */
+.v-tags {
+  padding: 14px 24px;
+  border-top: 1px solid var(--line);
+  display: flex; flex-wrap: wrap; gap: 6px;
+  background: var(--surface);
+}
+.tag { font-size: 10px; font-weight: 600; letter-spacing: .6px; text-transform: uppercase; padding: 3px 8px; border-radius: 3px; }
+.tag-r { background: var(--crimson-light); color: var(--crimson); border: 1px solid rgba(139,26,46,.12); }
+.tag-g { background: var(--gold-light); color: var(--gold); border: 1px solid rgba(154,123,47,.15); }
+.tag-n { background: var(--surface); color: var(--ink3); border: 1px solid var(--line); }
+
+/* Footer notice */
+.v-notice {
+  padding: 16px 24px;
+  background: var(--surface);
+  border-top: 1px solid var(--line);
+  font-size: 10.5px; color: var(--ink3); line-height: 1.6;
+  display: flex; align-items: flex-start; gap: 10px;
+}
+.v-notice-icon { flex-shrink: 0; margin-top: 1px; opacity: .5; }
+.v-ts {
+  text-align: center;
+  font-size: 10px; color: var(--ink3);
+  margin-top: 14px;
+  letter-spacing: .3px;
+}
+
+/* ── FOOTER ── */
+footer {
+  border-top: 1px solid var(--line);
+  padding: 16px 28px;
+  text-align: center;
+  font-size: 11px;
+  color: var(--ink3);
+  background: rgba(255,255,255,.7);
+  backdrop-filter: blur(8px);
+}
+</style>
+</head>
+<body>
+
+<header class="v-header">
+  <img src="https://raw.githubusercontent.com/um2iucoffice/um2portal/cddfb252ec6cf6cecc25c53a8630d92b08c2aaa8/public/UM2_Logo.svg" alt="UM2" class="v-header-logo">
+  <div class="v-header-brand">
+    <span class="v-header-brand-name">University of Medicine (2)</span>
+    <span class="v-header-brand-sub">Interim University Council · Myanmar</span>
+  </div>
+  <div class="v-header-divider"></div>
+  <span class="v-header-badge">ID Verification</span>
+  <div class="v-header-spacer"></div>
+  <a href="/" class="v-header-back">
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15,18 9,12 15,6"/></svg>
+    Portal
+  </a>
+</header>
+
+<main class="v-main">
+  <div class="v-wrap">
+    <!-- Loading state -->
+    <div class="v-state" id="stateLoading">
+      <div class="v-state-icon loading">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#7A8599" stroke-width="1.5"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
+      </div>
+      <h2>Verifying Identity</h2>
+      <p>Fetching student record from the registry…</p>
+    </div>
+
+    <!-- Error state -->
+    <div class="v-state" id="stateError" style="display:none">
+      <div class="v-state-icon error">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#8B1A2E" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      </div>
+      <h2>Verification Failed</h2>
+      <p id="errorMsg">Unable to verify this student ID. The record may not exist or the link is invalid.</p>
+    </div>
+
+    <!-- No ID state -->
+    <div class="v-state" id="stateNoId" style="display:none">
+      <div class="v-state-icon nodata">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#9A7B2F" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M9 9h6M9 12h6M9 15h4"/></svg>
+      </div>
+      <h2>No Student ID</h2>
+      <p>This verification link is missing a student ID. Please scan a valid UM2 student ID card QR code.</p>
+    </div>
+
+    <!-- Result card -->
+    <div id="resultCard" style="display:none">
+      <div class="v-card">
+        <!-- Hero -->
+        <div class="v-hero">
+          <div class="v-avatar" id="resAvatar">—</div>
+          <div class="v-hero-text">
+            <div class="v-hero-name" id="resName">—</div>
+            <div class="v-hero-name-mm" id="resNameMM"></div>
+            <div class="v-hero-id">Student ID: <span id="resId">—</span> &nbsp;·&nbsp; UM2IUC</div>
+          </div>
+          <div id="resBadgeWrap"></div>
+        </div>
+
+        <!-- Enrollment status strip -->
+        <div class="v-status-strip" id="resStatusStrip">
+          <div class="v-status-dot"></div>
+          <span id="resEnrollText">—</span>
+        </div>
+
+        <!-- Fields -->
+        <div class="v-fields">
+          <div class="v-field">
+            <div class="v-field-lbl">Programme</div>
+            <div class="v-field-val" id="resStatus">—</div>
+          </div>
+          <div class="v-field">
+            <div class="v-field-lbl">Admission Year</div>
+            <div class="v-field-val" id="resAdmission">—</div>
+          </div>
+          <div class="v-field">
+            <div class="v-field-lbl">Date of Birth</div>
+            <div class="v-field-val" id="resBirth">—</div>
+          </div>
+          <div class="v-field">
+            <div class="v-field-lbl">Father's Name</div>
+            <div class="v-field-val" id="resFather">—</div>
+          </div>
+        </div>
+
+        <!-- Tags -->
+        <div class="v-tags" id="resTags"></div>
+
+        <!-- Notice -->
+        <div class="v-notice">
+          <svg class="v-notice-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          <span>This verification is provided by UM2 Interim University Council. Data is fetched live from the official student registry. For enquiries contact the Secretariat Office.</span>
+        </div>
+      </div>
+      <div class="v-ts" id="resTimestamp"></div>
+    </div>
+
+  </div>
+</main>
+
+<footer>
+  &copy; <span id="footerYear"></span> UM2 Interim University Council &nbsp;·&nbsp; University of Medicine (2), Republic of the Union of Myanmar
+</footer>
+
+<script>
+document.getElementById('footerYear').textContent = new Date().getFullYear();
+
+function show(id) {
+  ['stateLoading','stateError','stateNoId','resultCard'].forEach(s => {
+    document.getElementById(s).style.display = s === id ? '' : 'none';
+  });
+}
+
+function initials(name) {
+  return (name || '').split(' ').map(w => w[0]).join('').toUpperCase().slice(0,2) || '?';
+}
+
+async function verify() {
+  const params = new URLSearchParams(window.location.search);
+  const studentId = params.get('id');
+
+  if (!studentId) { show('stateNoId'); return; }
+
+  try {
+    const res = await fetch('/.netlify/functions/verify', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id: studentId })
+    });
+
+    const data = await res.json();
+
+    if (!res.ok || !data.success) {
+      document.getElementById('errorMsg').textContent =
+        data.message || 'No record found for this student ID.';
+      show('stateError');
+      return;
+    }
+
+    const s = data.student;
+    renderResult(s);
+
+  } catch (err) {
+    document.getElementById('errorMsg').textContent = 'Connection error. Please try again.';
+    show('stateError');
+  }
+}
+
+function renderResult(s) {
+  document.getElementById('resAvatar').textContent    = initials(s.fullName);
+  document.getElementById('resName').textContent      = s.fullName       || '—';
+  document.getElementById('resNameMM').textContent    = s.fullNameMM     || '';
+  document.getElementById('resId').textContent        = s.id             || '—';
+  document.getElementById('resStatus').textContent    = s.currentStatus  || '—';
+  document.getElementById('resAdmission').textContent = s.admissionYear  || '—';
+  document.getElementById('resBirth').textContent     = s.birthDate      || '—';
+  document.getElementById('resFather').textContent    = s.fatherName     || '—';
+
+  // Enrollment status strip
+  const isActive = /^active$/i.test((s.enrollmentStatus || '').trim());
+  const strip = document.getElementById('resStatusStrip');
+  strip.className = 'v-status-strip ' + (isActive ? 'active' : 'inactive');
+  document.getElementById('resEnrollText').textContent =
+    'Enrollment: ' + (s.enrollmentStatus || '—');
+
+  // Verified / Invalid badge
+  const badgeWrap = document.getElementById('resBadgeWrap');
+  if (isActive) {
+    badgeWrap.innerHTML = `
+      <div class="v-verified-badge">
+        <div class="v-verified-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="rgba(107,198,143,.9)" stroke-width="2.5"><polyline points="20,6 9,17 4,12"/></svg>
+        </div>
+        <span class="v-verified-label">Verified</span>
+      </div>`;
+  } else {
+    badgeWrap.innerHTML = `
+      <div class="v-invalid-badge">
+        <div class="v-invalid-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="rgba(255,150,150,.9)" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </div>
+        <span class="v-invalid-label">Inactive</span>
+      </div>`;
+  }
+
+  // Tags
+  const tags = document.getElementById('resTags');
+  tags.innerHTML = '';
+  if (s.currentStatus)    tags.innerHTML += `<span class="tag tag-r">${esc(s.currentStatus)}</span>`;
+  if (s.enrollmentStatus) tags.innerHTML += `<span class="tag tag-g">${esc(s.enrollmentStatus)}</span>`;
+  if (s.graduationStatus) tags.innerHTML += `<span class="tag tag-n">${esc(s.graduationStatus)}</span>`;
+
+  // Timestamp
+  const now = new Date();
+  document.getElementById('resTimestamp').textContent =
+    'Verified at ' + now.toLocaleTimeString() + ' · ' + now.toLocaleDateString('en-GB', {day:'numeric',month:'long',year:'numeric'});
+
+  show('resultCard');
+}
+
+function esc(v) {
+  return String(v || '').replace(/[&<>'"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
+}
+
+verify();
+</script>
+</body>
+</html>
