@@ -1390,7 +1390,7 @@ function populate(s, grades) {
     document.getElementById('gradesAvatar').textContent  = init;
     document.getElementById('gradesStudentName').textContent = s.fullName || '—';
     document.getElementById('gradesStudentId').textContent   = s.id || '—';
-    // GPA will be updated by renderGrades after computing
+    // GPA is displayed only from the sheet/data source
   }
 
   document.getElementById('topbarEmail').textContent = s.email || '—';
@@ -1419,7 +1419,7 @@ function populate(s, grades) {
   document.getElementById('infoStatus').textContent    = s.currentStatus    || '—';
   document.getElementById('infoEnroll').textContent    = s.enrollmentStatus || '—';
   document.getElementById('infoGrad').textContent      = s.graduationStatus || '—';
-  renderGrades(grades);
+  renderGrades(grades, s);
   populateIDCard(s);
 }
 
@@ -1438,7 +1438,7 @@ function populateIDCard(s) {
   const ACADEMIC_YEAR = '2026–2027'; // update each academic year
   const yearMatch = ACADEMIC_YEAR.match(/\d{4}.*?(\d{4})/);
   const validYear = yearMatch ? yearMatch[1] : '';
-  const isActive = /active/i.test(s.enrollmentStatus || '');
+  const isActive = /^active$/i.test((s.enrollmentStatus || '').trim());
   const validityBlock = document.getElementById('idcardValidityBlock');
   const validityLabel = document.getElementById('idcardValidityLabel');
   const validityYear  = document.getElementById('idcardValidityYear');
@@ -1580,7 +1580,7 @@ function printIDCard() {
       </div>
         <div class="idcard-bottom">
         <div><div class="idcard-id-label">Student ID</div><div class="idcard-id-value">${esc(s.id)}</div></div>
-        ${/active/i.test(s.enroll || '')
+        ${/^active$/i.test((s.enroll || '').trim())
           ? `<div class="idcard-validity"><span>Valid until</span><strong>${((() => { const m = '2026–2027'.match(/\d{4}.*?(\d{4})/); return m ? m[1] : ''; })())}</strong></div>`
           : `<div class="idcard-validity" style="text-align:right"><span style="font-size:8px;color:rgba(255,180,180,.9);font-weight:600">This card is invalid</span></div>`
         }
@@ -1649,7 +1649,15 @@ function getCompletionYear(row) {
          row.completionDate || row.CompletionDate || '—';
 }
 
-function renderGrades(grades) {
+function getSheetOverallGpa(student) {
+  if (!student) return '—';
+  const raw = student['Overall GPA'] ?? student.OverallGPA ?? student.overallGPA ??
+              student.overall_gpa ?? student.gpa ?? student.GPA ?? '';
+  if (raw === null || raw === undefined || String(raw).trim() === '') return '—';
+  return String(raw).trim();
+}
+
+function renderGrades(grades, student) {
   const container = document.getElementById('gradesContent');
   if (!grades || !grades.length) {
     container.innerHTML = '<div class="g-wrap"><div class="no-g">No results recorded yet.</div></div>';
@@ -1673,11 +1681,10 @@ function renderGrades(grades) {
     ...Object.keys(groups).filter(y => !preferredOrder.includes(y)).sort()
   ];
 
-  // Compute summary stats
+  // Summary stats: GPA is not calculated here.
+  // It only reflects the value supplied by the sheet/data source.
   let totalCourses = grades.length;
-  // Compute simple GPA average from grade points if available
-  const gpaVals = grades.map(g => parseFloat(g.gradePoint || g.GradePoint || 0)).filter(v => v > 0);
-  const gpa = gpaVals.length ? (gpaVals.reduce((a,b) => a+b, 0) / gpaVals.length).toFixed(2) : '—';
+  const overallGpa = getSheetOverallGpa(student);
 
   // Update summary bar
   const summaryEl = document.getElementById('transcriptSummary');
@@ -1687,12 +1694,12 @@ function renderGrades(grades) {
     document.getElementById('tsCourses').textContent = totalCourses;
     document.getElementById('tsYears').textContent   = order.length;
     const tsGpa = document.getElementById('tsGpa');
-    if (tsGpa) tsGpa.textContent = gpa;
+    if (tsGpa) tsGpa.textContent = overallGpa;
   }
 
   // Update grades banner GPA
   const gradesGpaEl = document.getElementById('gradesGpa');
-  if (gradesGpaEl) gradesGpaEl.textContent = gpa;
+  if (gradesGpaEl) gradesGpaEl.textContent = overallGpa;
 
   let html = '';
   order.forEach(yr => {
@@ -1746,7 +1753,7 @@ function renderGrades(grades) {
     // Year totals row
     html += `<div class="g-year-totals">
       <span>Courses: <strong>${allRowsInYear.length}</strong></span>
-      <span>Year GPA: <strong>${gpa !== '—' ? gpa : 'TBD'}</strong></span>
+      <span>Overall GPA: <strong>${overallGpa !== '—' ? escHtml(overallGpa) : 'TBD'}</strong></span>
     </div>`;
     html += `</div>`;
   });
