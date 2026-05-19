@@ -1169,8 +1169,8 @@ table.gt * {
                 <div class="val" id="idcardPhone">—</div>
               </div>
               <div class="idcard-back-field">
-                <div class="lbl">Email</div>
-                <div class="val" id="idcardEmail" style="font-size:11px;word-break:break-all">—</div>
+                <div class="lbl">Father's Name</div>
+                <div class="val" id="idcardFather">—</div>
               </div>
               <div class="idcard-back-field">
                 <div class="lbl">Admission Year</div>
@@ -1463,7 +1463,7 @@ function populateIDCard(s) {
 
   document.getElementById('idcardBirth').textContent    = s.birthDate     || '—';
   document.getElementById('idcardPhone').textContent    = s.phone         || '—';
-  document.getElementById('idcardEmail').textContent    = s.email         || '—';
+  document.getElementById('idcardFather').textContent   = s.fatherName    || '—';
 
   const sid = s.id || '';
   document.getElementById('idcardBarcodeNum').textContent = sid.toUpperCase();
@@ -1501,7 +1501,7 @@ function printIDCard() {
     enroll:     document.getElementById('idcardEnroll').textContent,
     birth:      document.getElementById('idcardBirth').textContent,
     phone:      document.getElementById('idcardPhone').textContent,
-    email:      document.getElementById('idcardEmail').textContent,
+    father:     document.getElementById('idcardFather').textContent,
     init:       document.getElementById('idcardPhoto').textContent
   };
 
@@ -1596,7 +1596,7 @@ function printIDCard() {
       <div class="idcard-back-fields">
         <div class="idcard-back-field"><div class="lbl">Date of Birth</div><div class="val">${esc(s.birth)}</div></div>
         <div class="idcard-back-field"><div class="lbl">Phone</div><div class="val">${esc(s.phone)}</div></div>
-        <div class="idcard-back-field"><div class="lbl">Email</div><div class="val" style="font-size:11px;word-break:break-all">${esc(s.email)}</div></div>
+        <div class="idcard-back-field"><div class="lbl">Father's Name</div><div class="val">${esc(s.father)}</div></div>
         <div class="idcard-back-field"><div class="lbl">Admission Year</div><div class="val">${esc(s.admission)}</div></div>
       </div>
       <div class="idcard-back-bottom">
