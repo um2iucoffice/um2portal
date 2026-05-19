@@ -1148,9 +1148,9 @@ table.gt * {
                 <div class="idcard-id-label">Student ID</div>
                 <div class="idcard-id-value" id="idcardID">—</div>
               </div>
-              <div class="idcard-validity">
-                <span>Valid</span>
-                <strong>2026 — 2027</strong>
+              <div class="idcard-validity" id="idcardValidityBlock">
+                <span id="idcardValidityLabel">Valid</span>
+                <strong id="idcardValidityYear" style="display:block;font-size:10px;color:rgba(255,255,255,.85)">—</strong>
               </div>
             </div>
           </div>
@@ -1433,6 +1433,29 @@ function populateIDCard(s) {
   document.getElementById('idcardAdmission').textContent= s.admissionYear || '—';
   document.getElementById('idcardAdmissionBack').textContent = s.admissionYear || '—';
   document.getElementById('idcardEnroll').textContent   = s.enrollmentStatus || '—';
+
+  // ── Validity: second year of academic year range, active enrolment only ──
+  const ACADEMIC_YEAR = '2026–2027'; // update each academic year
+  const yearMatch = ACADEMIC_YEAR.match(/\d{4}.*?(\d{4})/);
+  const validYear = yearMatch ? yearMatch[1] : '';
+  const isActive = /active/i.test(s.enrollmentStatus || '');
+  const validityBlock = document.getElementById('idcardValidityBlock');
+  const validityLabel = document.getElementById('idcardValidityLabel');
+  const validityYear  = document.getElementById('idcardValidityYear');
+  if (isActive) {
+    validityLabel.textContent = 'Valid until';
+    validityYear.textContent  = validYear;
+    validityYear.style.fontSize = '10px';
+    validityYear.style.color    = 'rgba(255,255,255,.85)';
+    validityYear.style.fontWeight = '700';
+  } else {
+    validityLabel.textContent = '';
+    validityYear.textContent  = 'This card is invalid';
+    validityYear.style.fontSize = '8px';
+    validityYear.style.color    = 'rgba(255,180,180,.9)';
+    validityYear.style.fontWeight = '600';
+  }
+
   document.getElementById('idcardBirth').textContent    = s.birthDate     || '—';
   document.getElementById('idcardPhone').textContent    = s.phone         || '—';
   document.getElementById('idcardEmail').textContent    = s.email         || '—';
@@ -1555,9 +1578,12 @@ function printIDCard() {
           </div>
         </div>
       </div>
-      <div class="idcard-bottom">
+        <div class="idcard-bottom">
         <div><div class="idcard-id-label">Student ID</div><div class="idcard-id-value">${esc(s.id)}</div></div>
-        <div class="idcard-validity"><span>Valid</span><strong>2026 — 2027</strong></div>
+        ${/active/i.test(s.enroll || '')
+          ? `<div class="idcard-validity"><span>Valid until</span><strong>${((() => { const m = '2026–2027'.match(/\d{4}.*?(\d{4})/); return m ? m[1] : ''; })())}</strong></div>`
+          : `<div class="idcard-validity" style="text-align:right"><span style="font-size:8px;color:rgba(255,180,180,.9);font-weight:600">This card is invalid</span></div>`
+        }
       </div>
     </div>
     <div class="idcard-back">
