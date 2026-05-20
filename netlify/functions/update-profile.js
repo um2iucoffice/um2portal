@@ -149,7 +149,7 @@ export const handler = async (event) => {
     // 3. Update students table
     await supabaseRest(
       `students?id=eq.${encodeURIComponent(studentId)}`,
-      { method: 'PATCH', headers: { 'Prefer': 'return=minimal' }, body: JSON.stringify({ photo: storagePath }) },
+      { method: 'PATCH', headers: { 'Prefer': 'return=minimal' }, body: JSON.stringify({ photo: `${SUPABASE_URL}/storage/v1/object/public/${BUCKET}/${storagePath}` }) },
       true
     );
 
