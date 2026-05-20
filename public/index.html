@@ -977,7 +977,7 @@ table.gt * {
         <div class="home-hero-text">
           <div class="home-hero-greeting">Welcome back</div>
           <div class="home-hero-name" id="welcomeName">—</div>
-          <div class="home-hero-sub">Academic Year 2026–2027 &nbsp;·&nbsp;</div>
+          <div class="home-hero-sub">Academic Year 2026–2027 &nbsp;·&nbsp; <span id="homeProgramName"></span></div>
         </div>
         <div class="home-hero-badge">
           <div class="home-hero-badge-label" id="homeIdLabel">Student ID</div>
@@ -1059,6 +1059,7 @@ table.gt * {
           <div class="icell"><div class="ic-lbl">Admission Year</div><div class="ic-val" id="infoAdmission">—</div></div>
           <div class="icell"><div class="ic-lbl">Current Year</div><div class="ic-val" id="infoStatus">—</div></div>
           <div class="icell"><div class="ic-lbl">Enrollment Status</div><div class="ic-val" id="infoEnroll">—</div></div>
+          <div class="icell"><div class="ic-lbl">Degree Program</div><div class="ic-val" id="infoProgram">—</div></div>
           <div class="icell"><div class="ic-lbl">Completion Status</div><div class="ic-val" id="infoGrad">—</div></div>
           <div class="icell" id="cellGradID" style="display:none"><div class="ic-lbl">Graduation ID</div><div class="ic-val" id="infoGradID">—</div></div>
           <div class="icell" id="cellGradDate" style="display:none"><div class="ic-lbl">Date of Graduation</div><div class="ic-val" id="infoGradDate">—</div></div>
@@ -1139,6 +1140,10 @@ table.gt * {
                   <div class="idcard-field">
                     <span class="idcard-field-lbl">Year</span>
                     <span class="idcard-field-val" id="idcardStatus">—</span>
+                  </div>
+                  <div class="idcard-field">
+                    <span class="idcard-field-lbl">Program</span>
+                    <span class="idcard-field-val" id="idcardProgram">—</span>
                   </div>
                   <div class="idcard-field">
                     <span class="idcard-field-lbl">Admission Year</span>
@@ -1591,6 +1596,13 @@ function populate(s, grades) {
   document.getElementById('infoEnroll').textContent    = s.enrollmentStatus || '—';
   document.getElementById('infoGrad').textContent      = s.graduationStatus || '—';
 
+  // Degree Program
+  const programVal = s.program || '—';
+  const infoProgramEl = document.getElementById('infoProgram');
+  if (infoProgramEl) infoProgramEl.textContent = programVal;
+  const homeProgramEl = document.getElementById('homeProgramName');
+  if (homeProgramEl) homeProgramEl.textContent = s.program || '';
+
   // Show/hide graduation fields
   const cellGradID   = document.getElementById('cellGradID');
   const cellGradDate = document.getElementById('cellGradDate');
@@ -1642,7 +1654,11 @@ function populate(s, grades) {
 
 function populateIDCard(s, isGraduated, gradID, gradDate) {
   const init = (s.fullName || '').split(' ').map(w => w[0]).join('').toUpperCase().slice(0,2) || '?';
-  document.getElementById('idcardPhoto').textContent    = init;
+  const idcardPhotoEl = document.getElementById('idcardPhoto');
+  // Only set initials if there's no photo already loaded
+  if (idcardPhotoEl && !idcardPhotoEl.querySelector('img')) {
+    idcardPhotoEl.textContent = init;
+  }
   document.getElementById('idcardName').textContent     = s.fullName      || '—';
   document.getElementById('idcardNameMM').textContent   = s.fullNameMM    || '';
   document.getElementById('idcardID').textContent       = s.id            || '—';
@@ -1650,6 +1666,8 @@ function populateIDCard(s, isGraduated, gradID, gradDate) {
   document.getElementById('idcardAdmission').textContent= s.admissionYear || '—';
   document.getElementById('idcardAdmissionBack').textContent = s.admissionYear || '—';
   document.getElementById('idcardEnroll').textContent   = s.enrollmentStatus || '—';
+  const idcardProgramEl = document.getElementById('idcardProgram');
+  if (idcardProgramEl) idcardProgramEl.textContent = s.program || '—';
 
   // ── Alumni vs Student labels on card ─────────────────────────
   const typeBadge = document.getElementById('idcardTypeBadge');
@@ -1732,10 +1750,12 @@ function printIDCard() {
     status:     document.getElementById('idcardStatus').textContent,
     admission:  document.getElementById('idcardAdmission').textContent,
     enroll:     document.getElementById('idcardEnroll').textContent,
+    program:    document.getElementById('idcardProgram')?.textContent || '',
     birth:      document.getElementById('idcardBirth').textContent,
     phone:      document.getElementById('idcardPhone').textContent,
     father:     document.getElementById('idcardFather').textContent,
-    init:       document.getElementById('idcardPhoto').textContent,
+    init:       (document.getElementById('idcardPhoto').querySelector('img')?.src) || document.getElementById('idcardPhoto').textContent,
+    hasPhoto:   !!document.getElementById('idcardPhoto').querySelector('img'),
     isGrad,
     gradID:     _gradID,
     gradDate:   _gradDate,
@@ -1809,12 +1829,13 @@ function printIDCard() {
       </div>
       <div class="idcard-divider-line"></div>
       <div class="idcard-body">
-        <div class="idcard-photo">${esc(s.init)}</div>
+        <div class="idcard-photo">${s.hasPhoto ? `<img src="${esc(s.init)}" style="width:100%;height:100%;object-fit:cover">` : esc(s.init)}</div>
         <div class="idcard-info">
           <div class="idcard-name">${esc(s.name)}</div>
           <div class="idcard-name-mm">${esc(s.nameMM)}</div>
           <div class="idcard-fields">
             <div class="idcard-field"><span class="idcard-field-lbl">Year</span><span class="idcard-field-val">${esc(s.status)}</span></div>
+            <div class="idcard-field"><span class="idcard-field-lbl">Program</span><span class="idcard-field-val">${esc(s.program)}</span></div>
             <div class="idcard-field"><span class="idcard-field-lbl">Admission Year</span><span class="idcard-field-val">${esc(s.admission)}</span></div>
             <div class="idcard-field"><span class="idcard-field-lbl">Enrollment Status</span><span class="idcard-field-val">${esc(s.enroll)}</span></div>
           </div>
@@ -2085,6 +2106,7 @@ function printDocument(type) {
   const admission = document.getElementById('infoAdmission').textContent || '—';
   const status    = document.getElementById('infoStatus').textContent || '—';
   const enroll    = document.getElementById('infoEnroll').textContent || '—';
+  const program   = document.getElementById('infoProgram')?.textContent || '';
   const grad      = document.getElementById('infoGrad').textContent || '—';
   const gradID    = document.getElementById('infoGradID')?.textContent || '';
   const gradDate  = document.getElementById('infoGradDate')?.textContent || '';
@@ -2202,7 +2224,7 @@ const confirmationBody = type === 'confirmation' ? `
     <p style="text-align:justify;">
       The student was admitted in <strong>${admission}</strong> and is
       currently in <strong>${status}</strong> status with an enrollment
-      status of <strong>${enroll}</strong>.
+      status of <strong>${enroll}</strong>${program && program !== '—' ? ', enrolled in the <strong>' + program + '</strong> program' : ''}.
     </p>
     `}
     <br>
@@ -2414,7 +2436,7 @@ const closing = `
 
       ${type === 'transcript' ? `
       <div class="section-label">Student Details</div>
-      <div class="transcript-student-section" style="grid-template-columns:1.2fr 1.2fr .8fr ${isGraduated && gradID ? '.8fr' : ''}">
+      <div class="transcript-student-section" style="grid-template-columns:1.2fr 1.2fr .8fr ${program && program !== '—' ? '.8fr' : ''} ${isGraduated && gradID ? '.8fr' : ''}">
         <div class="transcript-student-item">
           <div class="transcript-student-label">Name</div>
           <div class="transcript-student-value">${name}</div>
@@ -2427,6 +2449,7 @@ const closing = `
           <div class="transcript-student-label">Date of Birth</div>
           <div class="transcript-student-value">${birth}</div>
         </div>
+        ${program && program !== '—' ? `<div class="transcript-student-item"><div class="transcript-student-label">Degree Program</div><div class="transcript-student-value">${program}</div></div>` : ''}
         ${isGraduated && gradID ? `<div class="transcript-student-item"><div class="transcript-student-label">Graduation ID</div><div class="transcript-student-value">${gradID}</div></div>` : ''}
       </div>
       ${isGraduated ? `<div class="section-label">Graduation Information</div>
