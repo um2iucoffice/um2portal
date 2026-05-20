@@ -1059,7 +1059,7 @@ table.gt * {
           <div class="icell"><div class="ic-lbl">Admission Year</div><div class="ic-val" id="infoAdmission">—</div></div>
           <div class="icell"><div class="ic-lbl">Current Year</div><div class="ic-val" id="infoStatus">—</div></div>
           <div class="icell"><div class="ic-lbl">Enrollment Status</div><div class="ic-val" id="infoEnroll">—</div></div>
-          <div class="icell"><div class="ic-lbl">Graduation Status</div><div class="ic-val" id="infoGrad">—</div></div>
+          <div class="icell"><div class="ic-lbl">Completion Status</div><div class="ic-val" id="infoGrad">—</div></div>
           <div class="icell" id="cellGradID" style="display:none"><div class="ic-lbl">Graduation ID</div><div class="ic-val" id="infoGradID">—</div></div>
           <div class="icell" id="cellGradDate" style="display:none"><div class="ic-lbl">Date of Graduation</div><div class="ic-val" id="infoGradDate">—</div></div>
         </div>
@@ -2187,7 +2187,7 @@ const confirmationBody = type === 'confirmation' ? `
     <br>
     <p style="text-align:justify;">
       The above-named graduate was admitted in <strong>${admission}</strong>
-      and has been conferred the degree with a graduation status of
+      and has been conferred the degree with a status of
       <strong>${grad}</strong>${gradDate ? ', effective <strong>' + gradDate + '</strong>' : ''}.
       ${gradID ? 'Graduation Reference: <strong>' + gradID + '</strong>.' : ''}
     </p>
@@ -2405,7 +2405,7 @@ const closing = `
           <div class="doc-type-badge">${type === 'transcript' ? 'Official Transcript' : (isGraduated ? 'Confirmation of Graduation' : 'Confirmation of Study')}</div>
           <div class="doc-meta">
             ${idLabel}: <strong style="color:#8B1A2E">${sid}</strong><br>
-            ${isGraduated ? 'Graduation Status: ' + grad : 'Enrollment: ' + enroll}
+            ${isGraduated ? ' Status: ' + grad : 'Enrollment: ' + enroll}
             ${isGraduated && gradDate ? '<br>Date of Graduation: ' + gradDate : ''}
             ${isGraduated && gradID ? '<br>Graduation ID: ' + gradID : ''}
           </div>
@@ -2432,7 +2432,7 @@ const closing = `
       ${isGraduated ? `<div class="section-label">Graduation Information</div>
       <div class="transcript-student-section" style="grid-template-columns:1fr 1fr">
         <div class="transcript-student-item">
-          <div class="transcript-student-label">Graduation Status</div>
+          <div class="transcript-student-label"> Status</div>
           <div class="transcript-student-value">${grad}</div>
         </div>
         ${gradDate ? `<div class="transcript-student-item"><div class="transcript-student-label">Date of Graduation</div><div class="transcript-student-value">${gradDate}</div></div>` : ''}
