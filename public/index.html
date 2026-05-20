@@ -1485,7 +1485,8 @@ function normaliseStudent(raw) {
     admissionYear: firstValue(s, ['admission', 'admissionYear', 'admission_year']),
     currentStatus: firstValue(s, ['year', 'currentStatus', 'current_status', 'academic_year']),
     enrollmentStatus: firstValue(s, ['status', 'enrollmentStatus', 'enrollment_status']),
-    program: firstValue(s, ['program', 'Program']),
+    program:     firstValue(s, ['program', 'Program']),
+    programName: firstValue(s, ['programName', 'program_name', 'program', 'Program']),
     graduationStatus: firstValue(s, ['grad_status', 'graduationStatus', 'graduation_status']),
     graduationId: firstValue(s, ['graduation_id', 'graduationId']),
     graduationDate: firstValue(s, ['graduation_date', 'graduationDate']),
@@ -1597,11 +1598,11 @@ function populate(s, grades) {
   document.getElementById('infoGrad').textContent      = s.graduationStatus || '—';
 
   // Degree Program
-  const programVal = s.program || '—';
+  const programVal = s.programName || s.program || '—';
   const infoProgramEl = document.getElementById('infoProgram');
   if (infoProgramEl) infoProgramEl.textContent = programVal;
   const homeProgramEl = document.getElementById('homeProgramName');
-  if (homeProgramEl) homeProgramEl.textContent = s.program || '';
+  if (homeProgramEl) homeProgramEl.textContent = s.programName || s.program || '';
 
   // Show/hide graduation fields
   const cellGradID   = document.getElementById('cellGradID');
@@ -1640,6 +1641,7 @@ function populate(s, grades) {
   window._studentGradID    = gradID;
   window._studentGradDate  = gradDate;
   window._studentIdLabel   = idLabel;
+  window._studentProgram   = s.programName || s.program || '';
 
 
   // Show photo if available
@@ -1667,7 +1669,7 @@ function populateIDCard(s, isGraduated, gradID, gradDate) {
   document.getElementById('idcardAdmissionBack').textContent = s.admissionYear || '—';
   document.getElementById('idcardEnroll').textContent   = s.enrollmentStatus || '—';
   const idcardProgramEl = document.getElementById('idcardProgram');
-  if (idcardProgramEl) idcardProgramEl.textContent = s.program || '—';
+  if (idcardProgramEl) idcardProgramEl.textContent = s.programName || s.program || '—';
 
   // ── Alumni vs Student labels on card ─────────────────────────
   const typeBadge = document.getElementById('idcardTypeBadge');
