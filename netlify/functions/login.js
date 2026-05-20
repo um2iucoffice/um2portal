@@ -44,7 +44,7 @@ function mapStudent(row) {
     currentStatus:    row.year            || '',   // "Foundation Year", "M-1", etc.
     enrollmentStatus: row.status          || '',   // "Active", etc.
     overallGPA:       row.gpa != null ? String(row.gpa) : '—',
-    completionStatus: row.grad_status     || '',   // "In Progress", "Graduated", etc.
+    graduationStatus: row.grad_status     || '',   // "In Progress", "Graduated", etc.
     graduationId:     row.graduation_id   || '',
     graduationDate:   row.graduation_date || '',
     photo:            row.photo           || '',
