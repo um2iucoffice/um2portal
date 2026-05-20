@@ -30,7 +30,7 @@ async function supabase(path, options = {}) {
 }
 
 // ── Map student row to safe object (never expose master_password) ──
-function mapStudent(row) {
+function mapStudent(row, programName) {
   return {
     id:               row.id              || '',
     fullName:         row.name_en         || '',
@@ -48,6 +48,8 @@ function mapStudent(row) {
     graduationId:     row.graduation_id   || '',
     graduationDate:   row.graduation_date || '',
     photo:            row.photo           || '',
+    program:          row.program         || '',   // raw id, e.g. "MBBS"
+    programName:      programName         || row.program || '', // full name, e.g. "Bachelor of Medicine, Bachelor of Surgery"
     // master_password is intentionally excluded
   };
 }
@@ -122,10 +124,26 @@ export const handler = async (event) => {
       };
     }
 
-    // ── 3. Map student (strips master_password) ──────────────
-    const student = mapStudent(raw);
+    // ── 3. Fetch degree program full name ───────────────────
+    let programName = raw.program || '';
+    if (raw.program) {
+      try {
+        const programs = await supabase(
+          `degree_programs?id=eq.${encodeURIComponent(raw.program)}&select=id,name&limit=1`
+        );
+        if (programs && programs.length > 0 && programs[0].name) {
+          programName = programs[0].name;
+        }
+      } catch (e) {
+        console.warn('Could not fetch degree program name:', e.message);
+        // non-fatal: falls back to raw program id
+      }
+    }
 
-    // ── 4. Fetch grades for this student ─────────────────────
+    // ── 4. Map student (strips master_password) ──────────────
+    const student = mapStudent(raw, programName);
+
+    // ── 5. Fetch grades for this student ─────────────────────
     const gradeRows = await supabase(
       `grades?StudentID=eq.${encodeURIComponent(raw.id)}&select=*&order=course_id.asc`
     );
