@@ -1447,7 +1447,7 @@ function handleAuth(r) {
     return;
   }
   try {
-    populate(r.student, r.grades || []);
+    populate(r.student, r.grades || [], r.courses || {});
   } catch(e) {
     const errEl = document.getElementById('accessError');
     errEl.textContent = 'Login succeeded but failed to load profile. Please try again.';
@@ -1462,6 +1462,7 @@ function handleAuth(r) {
       password   : window._sessionPassword,
       studentData: r.student,
       grades     : r.grades || [],
+      courses    : r.courses || {},
       savedAt    : Date.now()
     }));
   } catch(e) {}
@@ -1541,7 +1542,11 @@ function normaliseGradeRow(raw) {
 }
 
 // ── Populate dashboard ────────────────────────────────────────
-function populate(s, grades) {
+function populate(s, grades, courses) {
+  // Store courses globally so renderGrades can use them
+  if (courses && Object.keys(courses).length > 0) {
+    window._COURSES = courses;
+  }
   // ── Normalise raw SQL / Google Sheet column names → app field names ──
   s = normaliseStudent(s);
   grades = (grades || []).map(normaliseGradeRow);
@@ -1975,7 +1980,7 @@ function renderGrades(grades, student) {
   // Group by academic year
   const groups = {};
   grades.forEach(g => {
-    const course = COURSES[g.courseId] || { name: g.courseId, year: 'Other', block: 'MBBS Program', credits: 'TBD', assessment: '—' };
+    const course = (window._COURSES && window._COURSES[g.courseId]) || COURSES[g.courseId] || { name: g.courseId, year: 'Other', block: 'MBBS Program', credits: null, assessment: '—' };
     const academicYear = getAcademicYear(g, course);
     if (!groups[academicYear]) groups[academicYear] = {};
     const block = course.block || 'General';
@@ -1994,11 +1999,20 @@ function renderGrades(grades, student) {
   let totalCourses = grades.length;
   const overallGpa = getSheetOverallGpa(student);
 
+  // Calculate total credits from course data
+  let totalCredits = 0;
+  let creditsKnown = true;
+  grades.forEach(g => {
+    const c = (window._COURSES && window._COURSES[g.courseId]) || COURSES[g.courseId];
+    if (c && c.credits != null) totalCredits += Number(c.credits);
+    else creditsKnown = false;
+  });
+
   // Update summary bar
   const summaryEl = document.getElementById('transcriptSummary');
   if (summaryEl) {
     summaryEl.style.display = 'flex';
-    document.getElementById('tsCredits').textContent = 'TBD';
+    document.getElementById('tsCredits').textContent = creditsKnown ? totalCredits : (totalCredits > 0 ? totalCredits + '+' : 'TBD');
     document.getElementById('tsCourses').textContent = totalCourses;
     document.getElementById('tsYears').textContent   = order.length;
     const tsGpa = document.getElementById('tsGpa');
@@ -2048,7 +2062,7 @@ function renderGrades(grades, student) {
             <div class="gt-course">${escHtml(r.course.name)}</div>
             <div class="gt-assess">${escHtml(typeStr)}</div>
           </td>
-          <td style="text-align:center"><span class="gt-cr">TBD</span></td>
+          <td style="text-align:center"><span class="gt-cr">${r.course.credits != null ? r.course.credits : '—'}</span></td>
           <td style="text-align:center;font-size:11px;color:var(--ink3)">${escHtml(typeStr)}</td>
           <td style="text-align:center">
             <span class="sbar-num">${escHtml(scoreStr)}</span>
@@ -2167,7 +2181,7 @@ function printDocument(type) {
         rows.push({
           courseId: tds[0].textContent.trim(),
           course:  tds[1].querySelector('.gt-course')?.textContent?.trim() || tds[1].textContent.trim(),
-          credits: 'TBD',
+          credits: tds[2].textContent.trim(),
           assess:  tds[3].textContent.trim(),
           score:   tds[4].textContent.trim(),
           date:    tds[5].textContent.trim(),
@@ -2191,7 +2205,7 @@ function printDocument(type) {
       rows += `<tr>
         <td style="${TD}${bg}font-size:7.5pt;color:#666">${r.courseId || '—'}</td>
         <td style="${TD}${bg}font-weight:500;font-size:7pt;line-height:1.25;letter-spacing:-.05px">${r.course}</td>
-        <td style="${TD}${bg}text-align:center">TBD</td>
+        <td style="${TD}${bg}text-align:center">${r.credits || '—'}</td>
         <td style="${TD}${bg}text-align:center;color:#444;font-size:6.5pt">${r.assess || '—'}</td>
         <td style="${TD}${bg}text-align:center;color:#333;font-size:7.5pt">${r.score || '—'}</td>
         <td style="${TD}${bg}text-align:center;color:#444">${r.date || '—'}</td>
@@ -2870,7 +2884,7 @@ function doSignOut() {
 
   window._sessionPassword = saved.password;
   try {
-    populate(saved.studentData, saved.grades || []);
+    populate(saved.studentData, saved.grades || [], saved.courses || {});
   } catch(e) { return; }
 
   document.getElementById('loginScreen').classList.add('hidden');
