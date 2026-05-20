@@ -1380,8 +1380,13 @@ function handleAuth(r) {
     document.getElementById('loginPassword').focus();
     return;
   }
-  window._sessionPassword = password; populate(r.student, r.grades || []);
+ populate(r.student, r.grades || []);
   document.getElementById('loginScreen').classList.add('hidden');
+  const dash = document.getElementById('dashboard');
+dash.style.display = '';       // ← clear the inline style set by doSignOut
+setTimeout(() => {
+  dash.classList.add('show');
+}, 100);
   setTimeout(() => {
     document.getElementById('dashboard').classList.add('show');
 
