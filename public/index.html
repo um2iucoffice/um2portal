@@ -1131,9 +1131,9 @@ table.gt * {
             </div>
             <div class="idcard-divider-line"></div>
             <div class="idcard-body">
-              <div class="idcard-photo" id="idcardPhoto">Student's ID Photo</div>
+              <div class="idcard-photo" id="idcardPhoto"></div>
               <div class="idcard-info">
-                <div class="idcard-name" id="idcardName">ကျောင်းသား၏ဓာတ်ပုံ</div>
+                <div class="idcard-name" id="idcardName"></div>
                 <div class="idcard-name-mm" id="idcardNameMM"></div>
                 <div class="idcard-fields">
                   <div class="idcard-field">
@@ -1289,8 +1289,8 @@ table.gt * {
           <div class="icard-head">Upload New Photo</div>
           <div style="padding:24px">
             <p style="font-size:13px;color:var(--ink3);margin-bottom:20px;line-height:1.6">
-              Please upload a clear, passport-style photo with a plain background.<br>
-              ဤနေရာတွင် ပတ် စ်ပို့ ပုံစံ ဓာတ်ပုံကို တင်ပေးပါ။ နောက်ခံအရောင် အလွတ် ဖြစ်ရပါမည်။<br>
+              Please upload a clear, passport-style photo with a plain background.
+              ဤနေရာတွင် (ပတ်စပို့) ပုံစံ ဓာတ်ပုံကို တင်ပေးပါ။ နောက်ခံအရောင် အလွတ် ဖြစ်ရပါမည်။<br>
               Accepted formats: <strong>JPEG, PNG, WebP</strong> &nbsp;·&nbsp; Max size: <strong>5 MB</strong>
             </p>
 
@@ -1659,7 +1659,7 @@ function populateIDCard(s, isGraduated, gradID, gradDate) {
   if (idcardPhotoEl && !idcardPhotoEl.querySelector('img')) {
     idcardPhotoEl.textContent = init;
   }
-  document.getElementById('idcardName').textContent     = s.fullName      || '—';
+  document.getElementById('idcardName').textContent     = s.fullName      || '';
   document.getElementById('idcardNameMM').textContent   = s.fullNameMM    || '';
   document.getElementById('idcardID').textContent       = s.id            || '—';
   document.getElementById('idcardStatus').textContent   = s.currentStatus || '—';
@@ -2480,6 +2480,50 @@ const closing = `
 
 
 // ── Photo preview & upload ────────────────────────────────────
+// ── Watermark helper ─────────────────────────────────────────
+// Returns a Promise<Blob> of the image with a tiled "UM2" watermark
+function applyWatermark(sourceDataUrl) {
+  return new Promise(function(resolve) {
+    const img = new Image();
+    img.onload = function() {
+      const canvas = document.createElement('canvas');
+      canvas.width  = img.naturalWidth;
+      canvas.height = img.naturalHeight;
+      const ctx = canvas.getContext('2d');
+
+      // Draw original image
+      ctx.drawImage(img, 0, 0);
+
+      // Watermark style
+      const text     = 'UM2';
+      const fontSize = Math.max(12, Math.round(canvas.width * 0.055));
+      ctx.font        = 'bold ' + fontSize + 'px DM Sans, Arial, sans-serif';
+      ctx.fillStyle   = 'rgba(255, 255, 255, 0.28)';
+      ctx.textBaseline = 'middle';
+
+      // Tile across the whole image at a diagonal
+      const stepX = fontSize * 4.2;
+      const stepY = fontSize * 2.6;
+      const angle = -22 * Math.PI / 180;
+
+      ctx.save();
+      // Extend tiling beyond canvas edges to cover rotated corners
+      const diag = Math.sqrt(canvas.width * canvas.width + canvas.height * canvas.height);
+      ctx.translate(canvas.width / 2, canvas.height / 2);
+      ctx.rotate(angle);
+      for (let y = -diag; y < diag; y += stepY) {
+        for (let x = -diag; x < diag; x += stepX) {
+          ctx.fillText(text, x, y);
+        }
+      }
+      ctx.restore();
+
+      canvas.toBlob(function(blob) { resolve(blob); }, 'image/jpeg', 0.92);
+    };
+    img.src = sourceDataUrl;
+  });
+}
+
 function previewPhoto(input) {
   const file = input.files[0];
   if (!file) return;
@@ -2492,19 +2536,27 @@ function previewPhoto(input) {
   statusEl.textContent = '';
   const reader = new FileReader();
   reader.onload = function(e) {
-    // Update current photo preview card
-    const preview = document.getElementById('profilePhotoPreview');
-    if (preview) preview.innerHTML = '<img src="' + e.target.result + '" style="width:100%;height:100%;object-fit:cover;border-radius:8px">';
-    // Show selected-file info row
-    const wrap  = document.getElementById('photoSelectedWrap');
-    const thumb = document.getElementById('photoSelectedThumb');
-    const name  = document.getElementById('photoSelectedName');
-    const size  = document.getElementById('photoSelectedSize');
-    if (thumb) thumb.src = e.target.result;
-    if (name)  name.textContent = file.name;
-    if (size)  size.textContent = (file.size / 1024).toFixed(0) + ' KB · ' + file.type.replace('image/', '').toUpperCase();
-    if (wrap)  wrap.style.display = 'flex';
-    document.getElementById('uploadPhotoBtn').style.display = 'inline-block';
+    // Apply watermark and show watermarked preview
+    applyWatermark(e.target.result).then(function(wmBlob) {
+      const wmUrl = URL.createObjectURL(wmBlob);
+
+      // Store watermarked blob on the input element for upload
+      input._watermarkedBlob = wmBlob;
+
+      // Update current photo preview card
+      const preview = document.getElementById('profilePhotoPreview');
+      if (preview) preview.innerHTML = '<img src="' + wmUrl + '" style="width:100%;height:100%;object-fit:cover;border-radius:8px">';
+      // Show selected-file info row
+      const wrap  = document.getElementById('photoSelectedWrap');
+      const thumb = document.getElementById('photoSelectedThumb');
+      const name  = document.getElementById('photoSelectedName');
+      const size  = document.getElementById('photoSelectedSize');
+      if (thumb) thumb.src = wmUrl;
+      if (name)  name.textContent = file.name;
+      if (size)  size.textContent = (file.size / 1024).toFixed(0) + ' KB · ' + file.type.replace('image/', '').toUpperCase() + ' · Watermarked';
+      if (wrap)  wrap.style.display = 'flex';
+      document.getElementById('uploadPhotoBtn').style.display = 'inline-block';
+    });
   };
   reader.readAsDataURL(file);
 }
@@ -2552,7 +2604,8 @@ function clearPhotoSelection() {
 })();
 
 async function uploadPhoto() {
-  const file = document.getElementById('photoFileInput').files[0];
+  const input = document.getElementById('photoFileInput');
+  const file  = input.files[0];
   if (!file) return;
   const statusEl = document.getElementById('photoUploadStatus');
   const btn = document.getElementById('uploadPhotoBtn');
@@ -2563,10 +2616,15 @@ async function uploadPhoto() {
   const sid      = document.getElementById('infoID').textContent.trim();
   const password = window._sessionPassword || '';
 
+  // Use the already-watermarked blob if available, otherwise watermark now
+  const photoBlob = input._watermarkedBlob || await applyWatermark(
+    await new Promise(res => { const r = new FileReader(); r.onload = e => res(e.target.result); r.readAsDataURL(file); })
+  );
+
   const formData = new FormData();
   formData.append('studentId', sid);
   formData.append('password',  password);
-  formData.append('photo',     file);
+  formData.append('photo',     photoBlob, file.name.replace(/\.[^.]+$/, '') + '_wm.jpg');
 
   try {
     const res  = await fetch('/.netlify/functions/update-profile', { method: 'POST', body: formData });
