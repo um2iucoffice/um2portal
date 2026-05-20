@@ -1273,10 +1273,10 @@ table.gt * {
         <div class="icard" style="margin-bottom:16px">
           <div class="icard-head">Current Photo</div>
           <div style="padding:28px 24px;display:flex;align-items:center;gap:28px;flex-wrap:wrap">
-            <div id="profilePhotoPreview" style="width:100px;height:120px;border-radius:10px;background:var(--surface);border:1.5px solid var(--line);overflow:hidden;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:36px;color:var(--ink3)">📷</div>
+            <div id="profilePhotoPreview" style="width:100px;height:120px;border-radius:10px;background:var(--surface);border:1.5px solid var(--line);overflow:hidden;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:36px;color:var(--ink3)"></div>
             <div>
-              <div style="font-size:14px;font-weight:600;color:var(--ink);margin-bottom:4px" id="photoPreviewName">—</div>
-              <div style="font-size:12px;color:var(--ink3)" id="photoPreviewId">—</div>
+              <div style="font-size:14px;font-weight:600;color:var(--ink);margin-bottom:4px" id="photoPreviewName">ကျောင်းသားဓာတ်ပုံ</div>
+              <div style="font-size:12px;color:var(--ink3)" id="photoPreviewId">Student's ID Photo</div>
               <div style="margin-top:12px;font-size:12px;color:var(--ink3);line-height:1.6">
                 Your photo appears on your Student ID card<br>and throughout the portal.
               </div>
@@ -1290,7 +1290,7 @@ table.gt * {
           <div style="padding:24px">
             <p style="font-size:13px;color:var(--ink3);margin-bottom:20px;line-height:1.6">
               Please upload a clear, passport-style photo with a plain background.
-              ဤနေရာတွင် (ပတ်စပို့) ပုံစံ ဓာတ်ပုံကို တင်ပေးပါ။ နောက်ခံအရောင် အလွတ် ဖြစ်ရပါမည်။<br>
+              ဤနေရာတွင် (ပတ်စ်ပို့) ပုံစံ ဓာတ်ပုံကို တင်ပေးပါ။ နောက်ခံအရောင် အလွတ် ဖြစ်ရပါမည်။<br>
               Accepted formats: <strong>JPEG, PNG, WebP</strong> &nbsp;·&nbsp; Max size: <strong>5 MB</strong>
             </p>
 
@@ -1439,6 +1439,17 @@ function handleAuth(r) {
     console.error('populate() error:', e);
     return;
   }
+  // ── Persist session for refresh recovery (3 min TTL) ──
+  try {
+    sessionStorage.setItem('iris_session', JSON.stringify({
+      studentId  : (document.getElementById('loginStudentId').value || '').trim().toLowerCase(),
+      password   : window._sessionPassword,
+      studentData: r.student,
+      grades     : r.grades || [],
+      savedAt    : Date.now()
+    }));
+  } catch(e) {}
+
   document.getElementById('loginScreen').classList.add('hidden');
   const dash = document.getElementById('dashboard');
   dash.style.display = '';
@@ -2668,6 +2679,8 @@ function updatePhotoInUI(photoUrl) {
 
 // ── Sign out ──────────────────────────────────────────────────
 function doSignOut() {
+  try { sessionStorage.removeItem('iris_session'); } catch(e) {}
+  window._sessionPassword = '';
   document.getElementById('dashboard').classList.remove('show');
   document.getElementById('dashboard').style.display = 'none';
   document.getElementById('loginScreen').classList.remove('hidden');
@@ -2678,6 +2691,25 @@ function doSignOut() {
 
   switchTab('home');
 }
+
+// ── Auto-restore session on page load (3-minute TTL) ─────────
+(function restoreSession() {
+  const SESSION_TTL = 3 * 60 * 1000; // 3 minutes
+  let saved;
+  try { saved = JSON.parse(sessionStorage.getItem('iris_session')); } catch(e) {}
+  if (!saved || !saved.savedAt || (Date.now() - saved.savedAt) > SESSION_TTL) return;
+  if (!saved.studentData || !saved.password) return;
+
+  window._sessionPassword = saved.password;
+  try {
+    populate(saved.studentData, saved.grades || []);
+  } catch(e) { return; }
+
+  document.getElementById('loginScreen').classList.add('hidden');
+  const dash = document.getElementById('dashboard');
+  dash.style.display = '';
+  setTimeout(() => { dash.classList.add('show'); }, 100);
+})();
 </script>
 </body>
 </html>
