@@ -184,6 +184,59 @@ body{
 }
 .ql:hover .ql-arrow{color:var(--crimson);transform:translate(2px,-2px)}
 
+/* ── DEGREE LEVEL TOKENS ── */
+:root {
+  --bach:#1E3A6E; --bach-light:#EBF0F8;
+  --mast:#4A2080; --mast-light:#F0EBF8;
+  --phd:#8B1A2E;  --phd-light:#F7EEF0;
+}
+
+/* ── ACADEMIC JOURNEY (home panel) ── */
+.journey-card{background:var(--white);border:1px solid var(--line);border-radius:10px;overflow:hidden;margin-bottom:24px;box-shadow:var(--shadow-sm)}
+.journey-card-head{padding:11px 18px;background:var(--surface);border-bottom:1px solid var(--line);font-size:10px;font-weight:700;letter-spacing:1.8px;text-transform:uppercase;color:var(--ink3)}
+.degree-row{display:flex;align-items:center;gap:14px;padding:14px 18px;border-bottom:1px solid var(--line);transition:background .12s;cursor:default;position:relative}
+.degree-row:last-child{border-bottom:none}
+.degree-lvl-pip{width:4px;position:absolute;left:0;top:0;bottom:0;border-radius:0}
+.degree-lvl-pip.bach{background:var(--bach)}
+.degree-lvl-pip.mast{background:var(--mast)}
+.degree-lvl-pip.phd {background:var(--phd)}
+.degree-row-icon{width:38px;height:38px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.degree-row-icon.bach{background:var(--bach-light)}
+.degree-row-icon.mast{background:var(--mast-light)}
+.degree-row-icon.phd {background:var(--phd-light)}
+.degree-row-info{flex:1;min-width:0}
+.degree-row-name{font-size:13px;font-weight:600;color:var(--ink);margin-bottom:2px}
+.degree-row-meta{font-size:11px;color:var(--ink3)}
+.degree-row-lvl{font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:3px}
+.degree-row-lvl.bach{color:var(--bach)}
+.degree-row-lvl.mast{color:var(--mast)}
+.degree-row-lvl.phd {color:var(--phd)}
+.degree-row-gpa{text-align:right;flex-shrink:0}
+.degree-row-gpa-val{font-family:'Libre Baskerville',serif;font-size:20px;color:var(--ink);line-height:1}
+.degree-row-gpa-den{font-size:10px;color:var(--ink3)}
+.degree-row-badge{margin-left:10px;flex-shrink:0}
+.dbadge{display:inline-block;padding:2px 8px;border-radius:3px;font-size:9px;font-weight:700;letter-spacing:.4px;text-transform:uppercase}
+.dbadge-green{background:var(--green-light);color:var(--green)}
+.dbadge-gold{background:var(--gold-light);color:var(--gold)}
+.dbadge-muted{background:var(--surface);color:var(--ink3);border:1px solid var(--line)}
+.dbadge-red{background:var(--crimson-light);color:var(--crimson)}
+
+/* ── GRADES DEGREE TABS ── */
+.degree-tabs{display:flex;gap:2px;border-bottom:2px solid var(--line);margin-bottom:0;overflow-x:auto;scrollbar-width:none}
+.degree-tabs::-webkit-scrollbar{display:none}
+.degree-tab{padding:10px 18px;font-size:13px;color:var(--ink3);border-bottom:2px solid transparent;margin-bottom:-2px;cursor:pointer;white-space:nowrap;transition:color .15s,border-color .15s;background:none;border-top:none;border-left:none;border-right:none;font-family:'DM Sans',sans-serif}
+.degree-tab:hover{color:var(--ink)}
+.degree-tab.active{color:var(--crimson);border-bottom-color:var(--crimson);font-weight:500}
+.degree-panel{display:none}
+.degree-panel.active{display:block;animation:fadeUp .2s ease}
+
+/* ── DOCUMENT DEGREE PICKER ── */
+.doc-degree-picker{display:none;margin-bottom:12px;padding:12px 16px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r)}
+.doc-degree-picker label{display:block;font-size:10px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:var(--ink3);margin-bottom:7px}
+.doc-degree-picker select{width:100%;padding:9px 12px;border:1.5px solid var(--line);border-radius:var(--r);font-family:'DM Sans',sans-serif;font-size:13px;color:var(--ink);background:var(--white);outline:none;transition:border-color .15s}
+.doc-degree-picker select:focus{border-color:var(--crimson)}
+.doc-degree-picker.show{display:block}
+
 /* ── HOME welcome banner ── */
 .home-hero{
   background:linear-gradient(130deg,var(--ink) 0%,#1e3050 100%);
@@ -993,6 +1046,12 @@ canvas.photo-canvas, #idcardPhoto canvas, #homeAvatar canvas, #gradesAvatar canv
         </div>
       </div>
 
+      <!-- Academic Journey — shown only when student has 2+ degree enrollments -->
+      <div class="journey-card" id="journeyCard" style="display:none">
+        <div class="journey-card-head">Academic Journey</div>
+        <div id="journeyRows"><!-- populated by renderJourney() --></div>
+      </div>
+
       <div class="home-section-label">Quick Access</div>
       <div class="qlinks">
         <div class="ql" onclick="switchTab('profile')">
@@ -1081,6 +1140,13 @@ canvas.photo-canvas, #idcardPhoto canvas, #homeAvatar canvas, #gradesAvatar canv
         <h2>Document Office</h2>
         <p>Generate &amp; print official university documents.</p>
       </div>
+
+      <!-- Degree picker — shown when student has 2+ enrollments -->
+      <div class="doc-degree-picker" id="docDegreePicker">
+        <label>Select Degree Program to generate document for:</label>
+        <select id="docDegreeSelect" onchange="onDocDegreeChange()"><!-- populated dynamically --></select>
+      </div>
+
       <div class="doc-grid">
 
         <!-- Confirmation of Study -->
@@ -1263,6 +1329,13 @@ canvas.photo-canvas, #idcardPhoto canvas, #homeAvatar canvas, #gradesAvatar canv
         <div class="ts-item">
           <span class="ts-lbl">Overall GPA</span>
           <span class="ts-val accent" id="tsGpa">—</span>
+        </div>
+      </div>
+
+      <!-- Degree tabs — shown only when student has 2+ enrollments -->
+      <div id="gradeDegreeTabs" style="display:none">
+        <div class="icard" style="margin-bottom:16px;overflow:hidden">
+          <div class="degree-tabs" id="degreeTabsBar"><!-- populated by renderDegreeTabs() --></div>
         </div>
       </div>
 
@@ -1470,7 +1543,7 @@ function handleAuth(r) {
     return;
   }
   try {
-    populate(r.student, r.grades || [], r.courses || {}, r.program_meta || null);
+    populate(r.student, r.grades || [], r.courses || {}, r.program_meta || null, r.enrollments || []);
   } catch(e) {
     const errEl = document.getElementById('accessError');
     errEl.textContent = 'Login succeeded but failed to load profile. Please try again.';
@@ -1487,6 +1560,7 @@ function handleAuth(r) {
       grades      : r.grades || [],
       courses     : r.courses || {},
       program_meta: r.program_meta || null,
+      enrollments : r.enrollments || [],
       savedAt     : Date.now()
     }));
   } catch(e) {}
@@ -1566,7 +1640,7 @@ function normaliseGradeRow(raw) {
 }
 
 // ── Populate dashboard ────────────────────────────────────────
-function populate(s, grades, courses, program_meta) {
+function populate(s, grades, courses, program_meta, enrollments) {
   // ── Activate the right course catalog for this student's program ──
   // The server can send `courses` (course catalog) and `program_meta`
   // ({ label, yearOrder }) to fully describe any degree program.
@@ -1716,7 +1790,39 @@ function populate(s, grades, courses, program_meta) {
   window._studentProgram   = s.programName || s.program || '';
 
 
-  // Show photo if available
+  // ── Store enrollments globally ───────────────────────────────
+  window._enrollments = (enrollments || []);
+  // If no enrollments returned from server, synthesise one from students row
+  if (!window._enrollments.length) {
+    window._enrollments = [{
+      id: '',
+      degreeProgramId: s.program || '',
+      programName:     s.programName || s.program || '',
+      degreeLevel:     s.degreeLevel || 'bachelor',
+      currentYear:     s.currentStatus || '',
+      enrollmentStatus: s.enrollmentStatus || '',
+      gpa:             s.overallGPA || '',
+      admissionDate:   '',
+      graduationStatus: s.graduationStatus || '',
+      graduationId:    s.graduationId || '',
+      graduationDate:  s.graduationDate || '',
+      thesisTitle:     '',
+      supervisor:      '',
+    }];
+  }
+  window._activeEnrollmentIndex = 0;
+
+  // ── Academic Journey (home panel) ───────────────────────────
+  renderJourney(window._enrollments);
+
+  // ── Grades degree tabs ───────────────────────────────────────
+  renderDegreeTabs(window._enrollments, grades, courses);
+
+  // ── Document office degree picker ────────────────────────────
+  renderDocDegreePicker(window._enrollments);
+
+  // ── Render grades for the active (first) enrollment ─────────
+  renderGrades(grades, courses);
   if (s.photo) {
     updatePhotoInUI(s.photo);
     const preview = document.getElementById('profilePhotoPreview');
@@ -1724,7 +1830,6 @@ function populate(s, grades, courses, program_meta) {
     const removeBtn = document.getElementById('removePhotoBtn');
     if (removeBtn) removeBtn.style.display = 'inline-block';
   }
-  renderGrades(grades, s);
   populateIDCard(s, isGraduated, gradID, gradDate);
 }
 
@@ -2190,6 +2295,11 @@ window.addEventListener('afterprint', function() {
 
 // ── Document print ────────────────────────────────────────────
 function printDocument(type) {
+  // ── Multi-degree: pick the enrollment the user selected ──────
+  const enrollments = window._enrollments || [];
+  const eIdx = window._docEnrollmentIndex || 0;
+  const chosenE = enrollments[eIdx] || null;
+
   const name      = document.getElementById('profileName').textContent || '—';
   const nameMM    = document.getElementById('profileNameMM').textContent || '';
   const sid       = document.getElementById('infoID').textContent || '—';
@@ -2199,13 +2309,14 @@ function printDocument(type) {
   const phone     = document.getElementById('infoPhone').textContent || '—';
   const email     = document.getElementById('infoEmail').textContent || '—';
   const admission = document.getElementById('infoAdmission').textContent || '—';
-  const status    = document.getElementById('infoStatus').textContent || '—';
-  const enroll    = document.getElementById('infoEnroll').textContent || '—';
-  const program   = document.getElementById('infoProgram')?.textContent || '';
-  const grad      = document.getElementById('infoGrad').textContent || '—';
-  const gradID    = document.getElementById('infoGradID')?.textContent || '';
-  const gradDate  = document.getElementById('infoGradDate')?.textContent || '';
-  const isGraduated = /^graduated$/i.test(grad.trim());
+  const status    = chosenE ? (chosenE.currentYear || document.getElementById('infoStatus').textContent || '—') : (document.getElementById('infoStatus').textContent || '—');
+  const enroll    = chosenE ? (chosenE.enrollmentStatus || document.getElementById('infoEnroll').textContent || '—') : (document.getElementById('infoEnroll').textContent || '—');
+  const program   = chosenE ? (chosenE.programName || chosenE.degreeProgramId || document.getElementById('infoProgram')?.textContent || '') : (document.getElementById('infoProgram')?.textContent || '');
+  const rawGrad   = chosenE ? (chosenE.graduationStatus || '') : (document.getElementById('infoGrad').textContent || '—');
+  const grad      = rawGrad || '—';
+  const gradID    = chosenE ? (chosenE.graduationId || '') : (document.getElementById('infoGradID')?.textContent || '');
+  const gradDate  = chosenE ? (chosenE.graduationDate || '') : (document.getElementById('infoGradDate')?.textContent || '');
+  const isGraduated = /^graduated$/i.test((rawGrad || grad).trim());
   const idLabel   = isGraduated ? 'Alumni ID' : 'Student ID';
 
   const today     = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
@@ -2898,10 +3009,146 @@ document.addEventListener('mousedown', function(e) {
   }
 });
 
+// ══════════════════════════════════════════
+// MULTI-DEGREE HELPERS
+// ══════════════════════════════════════════
+
+const LEVEL_ICON  = { bachelor:'🎓', master:'📖', phd:'⚗️' };
+const LEVEL_LABEL = { bachelor:'Bachelor', master:'Master', phd:'PhD / Doctoral' };
+const LEVEL_CSS   = { bachelor:'bach', master:'mast', phd:'phd' };
+
+function levelCss(lvl) { return LEVEL_CSS[lvl] || 'bach'; }
+function levelLabel(lvl) { return LEVEL_LABEL[lvl] || 'Bachelor'; }
+function levelIcon(lvl)  { return LEVEL_ICON[lvl]  || '🎓'; }
+
+function enrollmentBadge(e) {
+  const g = (e.graduationStatus || '').toLowerCase();
+  if (/graduated|completed/.test(g)) return '<span class="dbadge dbadge-green">Graduated</span>';
+  const st = (e.enrollmentStatus || '').toLowerCase();
+  if (st === 'active')    return '<span class="dbadge dbadge-gold">Active</span>';
+  if (st === 'deferred')  return '<span class="dbadge dbadge-muted">Deferred</span>';
+  if (st === 'withdrawn') return '<span class="dbadge dbadge-red">Withdrawn</span>';
+  return '<span class="dbadge dbadge-muted">' + (e.enrollmentStatus || '—') + '</span>';
+}
+
+// ── Academic Journey (home panel) ──────────────────────────────
+function renderJourney(enrollments) {
+  const card = document.getElementById('journeyCard');
+  const rows  = document.getElementById('journeyRows');
+  if (!card || !rows) return;
+  // Only show if more than one enrollment exists
+  if (!enrollments || enrollments.length < 2) { card.style.display = 'none'; return; }
+  card.style.display = '';
+  rows.innerHTML = enrollments.map((e, i) => {
+    const lvl = levelCss(e.degreeLevel);
+    const gpaStr = e.gpa ? e.gpa : '—';
+    const isGrad = /graduated|completed/i.test(e.graduationStatus || '');
+    let meta = e.currentYear || '';
+    if (e.admissionDate) meta += (meta ? ' · ' : '') + 'Admitted ' + e.admissionDate;
+    if (isGrad && e.graduationDate) meta += ' · Graduated ' + e.graduationDate;
+    if (e.thesisTitle) meta += '<br><em style="color:var(--ink3);font-size:11px">"' + e.thesisTitle + '"</em>';
+    if (e.supervisor)  meta += '<br><span style="font-size:11px;color:var(--ink3)">Supervisor: ' + e.supervisor + '</span>';
+    return `<div class="degree-row">
+      <div class="degree-lvl-pip ${lvl}"></div>
+      <div class="degree-row-icon ${lvl}">${levelIcon(e.degreeLevel)}</div>
+      <div class="degree-row-info">
+        <div class="degree-row-lvl ${lvl}">${levelLabel(e.degreeLevel)}</div>
+        <div class="degree-row-name">${e.programName || e.degreeProgramId || '—'}</div>
+        <div class="degree-row-meta">${meta}</div>
+      </div>
+      <div class="degree-row-badge">${enrollmentBadge(e)}</div>
+      <div class="degree-row-gpa">
+        <div class="degree-row-gpa-val" style="color:var(--${lvl})">${gpaStr}</div>
+        <div class="degree-row-gpa-den">/ 4.00</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ── Grades degree tabs ───────────────────────────────────────
+function renderDegreeTabs(enrollments, grades, courses) {
+  const tabsWrap = document.getElementById('gradeDegreeTabs');
+  const tabsBar  = document.getElementById('degreeTabsBar');
+  if (!tabsWrap || !tabsBar) return;
+  if (!enrollments || enrollments.length < 2) {
+    tabsWrap.style.display = 'none';
+    // Just render grades normally (all grades, no filter)
+    renderGrades(grades, courses);
+    return;
+  }
+  tabsWrap.style.display = '';
+  // Store grades + courses globally for tab switching
+  window._allGrades  = grades;
+  window._allCourses = courses;
+
+  tabsBar.innerHTML = enrollments.map((e, i) => {
+    const lvl = levelCss(e.degreeLevel);
+    return `<button class="degree-tab${i===0?' active':''}" onclick="switchDegreeTab(${i})" id="dtab-${i}">
+      ${levelIcon(e.degreeLevel)} ${e.programName || e.degreeProgramId || 'Degree ' + (i+1)}
+    </button>`;
+  }).join('');
+
+  // Render grades for the first tab
+  renderGradesForEnrollment(0, enrollments, grades, courses);
+}
+
+function switchDegreeTab(idx) {
+  document.querySelectorAll('.degree-tab').forEach((t, i) => {
+    t.classList.toggle('active', i === idx);
+  });
+  window._activeEnrollmentIndex = idx;
+  renderGradesForEnrollment(idx, window._enrollments, window._allGrades, window._allCourses);
+}
+
+function renderGradesForEnrollment(idx, enrollments, grades, courses) {
+  const e = enrollments[idx];
+  if (!e) { renderGrades(grades, courses); return; }
+  // Filter grades by enrollment_id if available, else show all for single-degree
+  let filtered = grades;
+  if (e.id && grades.some(g => g.enrollmentId)) {
+    filtered = grades.filter(g => !g.enrollmentId || g.enrollmentId === e.id);
+  }
+  renderGrades(filtered, courses);
+}
+
+// ── Document degree picker ───────────────────────────────────
+function renderDocDegreePicker(enrollments) {
+  const picker = document.getElementById('docDegreePicker');
+  const sel    = document.getElementById('docDegreeSelect');
+  if (!picker || !sel) return;
+  if (!enrollments || enrollments.length < 2) {
+    picker.classList.remove('show');
+    window._docEnrollmentIndex = 0;
+    return;
+  }
+  picker.classList.add('show');
+  sel.innerHTML = enrollments.map((e, i) => {
+    const lvl = levelLabel(e.degreeLevel);
+    const status = /graduated|completed/i.test(e.graduationStatus || '') ? ' (Graduated)' : ' (Active)';
+    return `<option value="${i}">${levelIcon(e.degreeLevel)} ${lvl} — ${e.programName || e.degreeProgramId}${status}</option>`;
+  }).join('');
+  window._docEnrollmentIndex = 0;
+}
+
+function onDocDegreeChange() {
+  const sel = document.getElementById('docDegreeSelect');
+  if (sel) window._docEnrollmentIndex = parseInt(sel.value, 10) || 0;
+}
+
+// ── Override printDocument to use selected enrollment ────────
+// Wrap the original printDocument so it picks the right enrollment data.
+// We store the original and delegate to it after swapping student globals.
+const _origPrintDocument = typeof printDocument === 'function' ? printDocument : null;
+
 // ── Sign out ──────────────────────────────────────────────────
 function doSignOut() {
   try { sessionStorage.removeItem('iris_session'); } catch(e) {}
   window._sessionPassword = '';
+  window._enrollments = [];
+  window._activeEnrollmentIndex = 0;
+  window._docEnrollmentIndex = 0;
+  window._allGrades = [];
+  window._allCourses = {};
   // Clear photo slots so they never bleed into the next login
   const idPhoto = document.getElementById('idcardPhoto');
   if (idPhoto) idPhoto.innerHTML = '';
@@ -2940,7 +3187,7 @@ function doSignOut() {
 
   window._sessionPassword = saved.password;
   try {
-    populate(saved.studentData, saved.grades || [], saved.courses || {}, saved.program_meta || null);
+    populate(saved.studentData, saved.grades || [], saved.courses || {}, saved.program_meta || null, saved.enrollments || []);
   } catch(e) { return; }
 
   document.getElementById('loginScreen').classList.add('hidden');
