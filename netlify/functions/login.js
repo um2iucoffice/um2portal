@@ -57,13 +57,13 @@ function mapStudent(row) {
 // ── Map grade row ────────────────────────────────────────────
 function mapGrade(row) {
   return {
-    gradeId:      String(row.id          || ''),
-    courseId:     String(row.course_id   || '').trim().toUpperCase(),
-    grade:        row.grade              || '',
-    numericScore: row.numeric_score      ?? '',
-    gradePoint:   row.grade_point        ?? '',
-    year:         row.year               || '',
-    updatedAt:    row.updated_at         || ''
+    gradeId:      String(row.id           || ''),
+    courseId:     String(row.course_id    || row.CourseID || '').trim().toUpperCase(),
+    grade:        row.letter              || '',
+    numericScore: row.NumericScore        ?? '',
+    gradePoint:   row.gp                  ?? '',
+    year:         row.year                || '',
+    updatedAt:    row.updated_at          || ''
   };
 }
 
@@ -129,7 +129,7 @@ export const handler = async (event) => {
 
     // ── 4. Fetch grades for this student ─────────────────────
     const gradeRows = await supabase(
-      `grades?student_id=eq.${encodeURIComponent(raw.id)}&select=*&order=course_id.asc`
+      `grades?StudentID=eq.${encodeURIComponent(raw.id)}&select=*&order=course_id.asc`
     );
     const grades = (gradeRows || []).map(mapGrade);
 
