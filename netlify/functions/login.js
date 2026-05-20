@@ -37,6 +37,7 @@ function mapStudent(row, programName) {
     fullNameMM:       row.name_my         || '',
     fatherName:       row.father          || '',
     fatherNameMM:     row.father_my       || '',
+    dob:              row.dob             || '',   // date of birth
     email:            row.email           || '',
     phone:            row.phone           || '',
     address:          row.address         || '',
@@ -57,13 +58,16 @@ function mapStudent(row, programName) {
 // ── Map grade row ────────────────────────────────────────────
 function mapGrade(row) {
   return {
-    gradeId:      String(row.id           || ''),
-    courseId:     String(row.course_id    || row.CourseID || '').trim().toUpperCase(),
-    grade:        row.letter              || '',
-    numericScore: row.NumericScore        ?? '',
-    gradePoint:   row.gp                  ?? '',
-    year:         row.year                || '',
-    updatedAt:    row.updated_at          || ''
+    gradeId:        String(row.id                          || ''),
+    courseId:       String(row.CourseID || row.course_id   || '').trim().toUpperCase(),
+    course:         row.course                             || '',   // course full name
+    grade:          row.letter                             || '',
+    numericScore:   row.NumericScore                       ?? '',
+    gradePoint:     row.gp                                 ?? '',
+    year:           row.year                               || '',
+    attempt:        row.attempt                            || '',
+    notes:          row.notes                              || '',
+    updatedAt:      row.updated_at                         || ''
   };
 }
 
@@ -145,7 +149,7 @@ export const handler = async (event) => {
 
     // ── 5. Fetch grades for this student ─────────────────────
     const gradeRows = await supabase(
-      `grades?StudentID=eq.${encodeURIComponent(raw.id)}&select=*&order=course_id.asc`
+      `grades?StudentID=eq.${encodeURIComponent(raw.id)}&select=*&order=CourseID.asc`
     );
     const grades = (gradeRows || []).map(mapGrade);
 
