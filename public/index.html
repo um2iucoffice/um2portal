@@ -1467,7 +1467,15 @@ function populate(s, grades) {
   // 'status' column holds enrollment status (e.g. "Active", "Inactive")
   s.enrollmentStatus = s.status          || s.enrollmentStatus || '';
   s.program          = s.program         || '';
-  s.graduationStatus = s.grad_status     || s.graduationStatus || '';
+  // 'grad_status' = 'Graduated' for alumni; derive 'In Progress' for active students
+  const _rawGrad = s.grad_status || s.graduationStatus || '';
+  if (/^graduated$/i.test(_rawGrad.trim())) {
+    s.graduationStatus = 'Graduated';
+  } else if (/^active$/i.test((s.status || s.enrollmentStatus || '').trim())) {
+    s.graduationStatus = 'In Progress';
+  } else {
+    s.graduationStatus = _rawGrad || '—';
+  }
   s.graduationId     = s.graduation_id   || s.graduationId     || '';
   s.graduationDate   = s.graduation_date || s.graduationDate   || '';
   s.id               = s.id              || '';
