@@ -157,18 +157,37 @@ export const handler = async (event) => {
     const gradeRows = await supabase(
       `grades?StudentID=eq.${encodeURIComponent(raw.id)}&select=*&order=CourseID.asc`,
       {},
-      true  // useServiceKey — bypasses RLS safely after auth
+      true
     );
     const grades = (gradeRows || []).map(mapGrade);
 
-    // ── 6. Build photo URL if needed ─────────────────────────
+    // ── 6. Fetch all courses (public) — fresh every login ────
+    let courses = {};
+    try {
+      const courseRows = await supabase(
+        `courses?select=id,name,year,block_module,credits,assessment_type&order=id.asc`
+      );
+      for (const c of (courseRows || [])) {
+        courses[c.id] = {
+          name:       c.name            || '',
+          year:       c.year            || '',
+          block:      c.block_module    || '',
+          credits:    c.credits         != null ? c.credits : null,
+          assessment: c.assessment_type || ''
+        };
+      }
+    } catch (e) {
+      console.warn('Could not fetch courses:', e.message);
+    }
+
+    // ── 7. Build photo URL if needed ─────────────────────────
     if (student.photo && !student.photo.startsWith('http')) {
       student.photo = `${SUPABASE_URL}/storage/v1/object/public/student-photos/${student.photo}`;
     }
 
     return {
       statusCode: 200, headers,
-      body: JSON.stringify({ success: true, student, grades })
+      body: JSON.stringify({ success: true, student, grades, courses })
     };
 
   } catch (err) {
