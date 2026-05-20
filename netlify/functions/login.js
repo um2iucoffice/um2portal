@@ -1420,23 +1420,25 @@ function handleAuth(r) {
   document.getElementById('accessLoading').classList.remove('show');
   if (!r || !r.success) {
     const errEl = document.getElementById('accessError');
-    errEl.textContent = r ? r.message : 'Invalid credentials.';
+    errEl.textContent = (r && r.message) ? r.message : 'Invalid Student ID or password.';
     errEl.classList.add('show');
     document.getElementById('loginPassword').value = '';
     document.getElementById('loginPassword').focus();
     return;
   }
- populate(r.student, r.grades || []);
+  try {
+    populate(r.student, r.grades || []);
+  } catch(e) {
+    const errEl = document.getElementById('accessError');
+    errEl.textContent = 'Login succeeded but failed to load profile. Please try again.';
+    errEl.classList.add('show');
+    console.error('populate() error:', e);
+    return;
+  }
   document.getElementById('loginScreen').classList.add('hidden');
   const dash = document.getElementById('dashboard');
-dash.style.display = '';       // ← clear the inline style set by doSignOut
-setTimeout(() => {
-  dash.classList.add('show');
-}, 100);
-  setTimeout(() => {
-    document.getElementById('dashboard').classList.add('show');
-
-  }, 100);
+  dash.style.display = '';
+  setTimeout(() => { dash.classList.add('show'); }, 100);
 }
 
 function handleAuthErr() {
