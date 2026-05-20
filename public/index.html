@@ -2236,10 +2236,10 @@ const confirmationBody = type === 'confirmation' ? `
     </p>
     <br>
     <p style="text-align:justify;">
-      The student was admitted in <strong>${admission}</strong> and is
-      currently in <strong>${status}</strong> </strong>${program && program !== '—' ? ', enrolled in the <strong>' + program + '</strong> program'   with the
-      status - <strong>${enroll}: ''}.
-    </p>
+  The student was admitted in <strong>${admission}</strong> and is currently in 
+  <strong>${status}</strong>${program && program !== '—' ? ', <strong>' + program + '</strong>' : ''} 
+  with the enrollment status - <strong>${enroll}</strong>.
+</p>
     `}
     <br>
     <p>
