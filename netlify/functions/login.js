@@ -32,6 +32,7 @@ async function supabase(path, options = {}) {
 }
 
 // ── Map student row to safe object (never expose master_password) ──
+// ── CORRECT (fixed) ──
 function mapStudent(row) {
   return {
     id:               row.id              || '',
@@ -43,14 +44,15 @@ function mapStudent(row) {
     phone:            row.phone           || '',
     address:          row.address         || '',
     admissionYear:    row.admission       || '',
-    currentStatus:    row.status          || '',
-    enrollmentStatus: row.year            || '',
+    currentStatus:    row.year            || '',  // ✅ year = "Foundation Year"
+    enrollmentStatus: row.status          || '',  // ✅ status = "Active"
     overallGPA:       row.gpa != null ? String(row.gpa) : '—',
-    graduationStatus: row.program         || '',
+    graduationStatus: row.grad_status     || '',  // ✅ grad_status = "In Progress"
     graduationId:     row.graduation_id   || '',
-    graduationDate:   row.date            || '',
+    graduationDate:   row.graduation_date || '',  // ✅ correct column name
     photo:            row.photo           || '',
-    // master_password is intentionally excluded
+  };
+}
   };
 }
 
