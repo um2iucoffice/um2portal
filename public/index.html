@@ -1462,11 +1462,11 @@ function populate(s, grades) {
   s.email            = s.email           || '';
   s.address          = s.address         || '';
   s.admissionYear    = s.admission       || s.admissionYear    || '';
- // 'year' column → Current Year (Profile) and Year (ID Card)
+ // 'year' column → Current Year (Profile & ID Card)
 s.currentStatus = s.year || s.currentStatus || '';
 
-// 'year' column → Enrollment Status
-s.enrollmentStatus = s.year || s.enrollmentStatus || '';
+// 'status' column → Enrollment Status
+s.enrollmentStatus = s.status || s.enrollmentStatus || '';
 
 // program
 s.program = s.program || '';
