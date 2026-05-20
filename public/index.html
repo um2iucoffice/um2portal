@@ -1512,12 +1512,15 @@ function normaliseGradeRow(raw) {
   return {
     ...g,
     courseId,
-    numericScore: firstValue(g, ['numericScore', 'NumericScore', 'numeric_score', 'score', 'Score']),
-    grade: firstValue(g, ['grade', 'Grade', 'letter_grade', 'LetterGrade']),
+    course:        firstValue(g, ['course', 'Course', 'course_name', 'CourseName', 'courseName', 'subject', 'Subject']),
+    numericScore:  firstValue(g, ['numericScore', 'NumericScore', 'numeric_score', 'score', 'Score']),
+    grade:         firstValue(g, ['grade', 'Grade', 'letter', 'letter_grade', 'LetterGrade']),
+    gradePoint:    firstValue(g, ['gradePoint', 'grade_point', 'gp', 'GP', 'GradePoint', 'gradepoint']),
+    attempt:       firstValue(g, ['attempt', 'Attempt', 'attemptNo', 'attempt_no']),
     completionType: firstValue(g, ['completionType', 'CompletionType', 'completion_type', 'type_of_completion', 'assessment']),
     completionYear: firstValue(g, ['completionYear', 'CompletionYear', 'completion_year', 'year', 'Year']),
-    academicYear: firstValue(g, ['academicYear', 'AcademicYear', 'academic_year', 'yearLevel', 'YearLevel', 'course_year']),
-    note: firstValue(g, ['note', 'Note', 'notes', 'Notes', 'comment', 'Comment', 'remarks', 'Remarks'])
+    academicYear:  firstValue(g, ['academicYear', 'AcademicYear', 'academic_year', 'yearLevel', 'YearLevel', 'course_year']),
+    note:          firstValue(g, ['note', 'Note', 'notes', 'Notes', 'comment', 'Comment', 'remarks', 'Remarks'])
   };
 }
 
@@ -2635,7 +2638,7 @@ async function uploadPhoto() {
   const formData = new FormData();
   formData.append('studentId', sid);
   formData.append('password',  password);
-  formData.append('photo',     photoBlob, file.name.replace(/\.[^.]+$/, '') + '_wm.jpg');
+  formData.append('photo',     photoBlob, sid + '.jpg');   // always named by student ID
 
   try {
     const res  = await fetch('/.netlify/functions/update-profile', { method: 'POST', body: formData });
