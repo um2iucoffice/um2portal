@@ -335,6 +335,7 @@ table.gt th:nth-child(4),
 table.gt th:nth-child(5),
 table.gt th:nth-child(6),
 table.gt th:nth-child(7) { text-align: center; }
+table.gt th:nth-child(8) { text-align: left; }
 table.gt td {
   padding: 10px 14px;
   border-bottom: 1px solid var(--line);
@@ -346,6 +347,7 @@ table.gt td:nth-child(4),
 table.gt td:nth-child(5),
 table.gt td:nth-child(6),
 table.gt td:nth-child(7) { text-align: center; }
+table.gt td:nth-child(8) { font-size: 11px; color: var(--ink3); font-style: italic; }
 table.gt tr:last-child td { border-bottom: none; }
 table.gt tbody tr { transition: background .1s; }
 table.gt tbody tr:hover { background: #F8F9FC; }
@@ -957,7 +959,7 @@ table.gt * {
       <button class="ntab" data-tab="profile" onclick="switchTab('profile',this)">My Profile</button>
       <button class="ntab" data-tab="grades" onclick="switchTab('grades',this)">Academic Results</button>
       <button class="ntab" data-tab="docs" onclick="switchTab('docs',this)">Documents</button>
-      <button class="ntab" data-tab="idcard" onclick="switchTab('idcard',this)">ID Card</button>
+      <button class="ntab" data-tab="idcard" id="navIdCard" onclick="switchTab('idcard',this)">ID Card</button>
       <button class="ntab ext" onclick="window.open('https://um2campus.com/login/index.php','_blank')">E-Learning</button>
       <button class="ntab ext" onclick="window.open('https://supportportal.um2campus.org','_blank')">Support</button>
     </div>
@@ -977,7 +979,7 @@ table.gt * {
           <div class="home-hero-sub">Academic Year 2026–2027 &nbsp;·&nbsp; UM2 Student Information System</div>
         </div>
         <div class="home-hero-badge">
-          <div class="home-hero-badge-label">Student ID</div>
+          <div class="home-hero-badge-label" id="homeIdLabel">Student ID</div>
           <div class="home-hero-badge-val" id="homeStudentId" style="font-family:monospace;font-size:16px;letter-spacing:.06em">—</div>
           <div class="home-hero-badge-sub">University of Medicine (2)</div>
         </div>
@@ -1046,7 +1048,7 @@ table.gt * {
       <div class="icard">
         <div class="icard-head">Personal &amp; Enrollment Details</div>
         <div class="igrid">
-          <div class="icell"><div class="ic-lbl">Student ID</div><div class="ic-val" id="infoID">—</div></div>
+          <div class="icell"><div class="ic-lbl" id="lblStudentID">Student ID</div><div class="ic-val" id="infoID">—</div></div>
           <div class="icell"><div class="ic-lbl">Date of Birth</div><div class="ic-val" id="infoBirth">—</div></div>
           <div class="icell"><div class="ic-lbl">Father's Name</div><div class="ic-val" id="infoFather">—</div></div>
           <div class="icell"><div class="ic-lbl">Father's Name (Myanmar)</div><div class="ic-val" id="infoFatherMM">—</div></div>
@@ -1055,7 +1057,9 @@ table.gt * {
           <div class="icell"><div class="ic-lbl">Admission Year</div><div class="ic-val" id="infoAdmission">—</div></div>
           <div class="icell"><div class="ic-lbl">Current Status</div><div class="ic-val" id="infoStatus">—</div></div>
           <div class="icell"><div class="ic-lbl">Enrollment</div><div class="ic-val" id="infoEnroll">—</div></div>
-          <div class="icell"><div class="ic-lbl">Graduation</div><div class="ic-val" id="infoGrad">—</div></div>
+          <div class="icell"><div class="ic-lbl">Graduation Status</div><div class="ic-val" id="infoGrad">—</div></div>
+          <div class="icell" id="cellGradID" style="display:none"><div class="ic-lbl">Graduation ID</div><div class="ic-val" id="infoGradID">—</div></div>
+          <div class="icell" id="cellGradDate" style="display:none"><div class="ic-lbl">Date of Graduation</div><div class="ic-val" id="infoGradDate">—</div></div>
         </div>
       </div>
     </div>
@@ -1074,8 +1078,8 @@ table.gt * {
           <div class="doc-icon">
             <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10,9 9,9 8,9"/></svg>
           </div>
-          <div class="doc-title">Confirmation of Study</div>
-          <div class="doc-desc">Official letter confirming your current enrollment status at the University of Medicine (2).</div>
+          <div class="doc-title" id="docConfirmTitle">Confirmation of Study</div>
+          <div class="doc-desc" id="docConfirmDesc">Official letter confirming your current enrollment status at the University of Medicine (2).</div>
           <div class="doc-tags">
             <span class="doc-tag">Official Document</span>
             <span class="doc-tag">Instant</span>
@@ -1108,7 +1112,7 @@ table.gt * {
 
     <!-- ID CARD -->
     <div class="panel" id="panel-idcard">
-      <div class="ph"><h2>Student ID Card</h2><p>Your official University of Medicine (2) student identification</p></div>
+      <div class="ph"><h2 id="idCardPageTitle">Student ID Card</h2><p id="idCardPageSub">Your official University of Medicine (2) student identification</p></div>
       <div class="idcard-wrap">
         <div class="idcard">
           <!-- FRONT -->
@@ -1121,7 +1125,7 @@ table.gt * {
                   <span class="idcard-uni-sub">Interim University Council · Myanmar</span>
                 </div>
               </div>
-              <div class="idcard-type-badge">Student</div>
+              <div class="idcard-type-badge" id="idcardTypeBadge">Student</div>
             </div>
             <div class="idcard-divider-line"></div>
             <div class="idcard-body">
@@ -1147,7 +1151,7 @@ table.gt * {
             </div>
             <div class="idcard-bottom">
               <div>
-                <div class="idcard-id-label">Student ID</div>
+                <div class="idcard-id-label" id="idcardIDLabel">Student ID</div>
                 <div class="idcard-id-value" id="idcardID">—</div>
               </div>
               <div class="idcard-validity" id="idcardValidityBlock">
@@ -1217,7 +1221,7 @@ table.gt * {
         <div class="grades-hdr-avatar" id="gradesAvatar">—</div>
         <div class="grades-hdr-info">
           <div class="grades-hdr-name" id="gradesStudentName">—</div>
-          <div class="grades-hdr-id">Student ID: <span id="gradesStudentId">—</span> &nbsp;·&nbsp; University of Medicine (2)</div>
+          <div class="grades-hdr-id"><span id="gradesIdLabel">Student ID</span>: <span id="gradesStudentId">—</span> &nbsp;·&nbsp; University of Medicine (2)</div>
         </div>
         <div class="grades-hdr-gpa">
           <div class="grades-hdr-gpa-label">Cumulative GPA</div>
@@ -1385,6 +1389,8 @@ function populate(s, grades) {
   // Home hero
   document.getElementById('welcomeName').textContent = s.fullName || firstName;
   document.getElementById('homeStudentId').textContent = s.id || '—';
+  const _homeIdLbl = document.getElementById('homeIdLabel');
+  if (_homeIdLbl) _homeIdLbl.textContent = /^graduated$/i.test((s.graduationStatus||'').trim()) ? 'Alumni ID' : 'Student ID';
   const homeAvatar = document.getElementById('homeAvatar');
   if (homeAvatar) homeAvatar.textContent = init;
 
@@ -1414,6 +1420,18 @@ function populate(s, grades) {
   if (s.currentStatus)    tags.innerHTML += `<span class="tag tag-r">${s.currentStatus}</span>`;
   if (s.enrollmentStatus) tags.innerHTML += `<span class="tag tag-g">${s.enrollmentStatus}</span>`;
   if (s.graduationStatus) tags.innerHTML += `<span class="tag tag-n">${s.graduationStatus}</span>`;
+  // ── Graduation status logic ──────────────────────────────────
+  const isGraduated = /^graduated$/i.test((s.graduationStatus || '').trim());
+  const idLabel     = isGraduated ? 'Alumni ID' : 'Student ID';
+
+  // Fetch graduation fields from sheet
+  const gradID   = s.graduationId   || s.GraduationId   || s.graduation_id   || s.graduationID   || s.AlumniID || s.alumniId || '';
+  const gradDate = s.graduationDate || s.GraduationDate  || s.graduation_date || s.dateOfGraduation || s.DateOfGraduation || '';
+
+  // ── Profile card ─────────────────────────────────────────────
+  const lblSID = document.getElementById('lblStudentID');
+  if (lblSID) lblSID.textContent = idLabel;
+
   document.getElementById('infoID').textContent        = s.id               || '—';
   document.getElementById('infoBirth').textContent     = s.birthDate        || '—';
   document.getElementById('infoFather').textContent    = s.fatherName       || '—';
@@ -1424,11 +1442,50 @@ function populate(s, grades) {
   document.getElementById('infoStatus').textContent    = s.currentStatus    || '—';
   document.getElementById('infoEnroll').textContent    = s.enrollmentStatus || '—';
   document.getElementById('infoGrad').textContent      = s.graduationStatus || '—';
+
+  // Show/hide graduation fields
+  const cellGradID   = document.getElementById('cellGradID');
+  const cellGradDate = document.getElementById('cellGradDate');
+  if (cellGradID)   cellGradID.style.display   = isGraduated ? '' : 'none';
+  if (cellGradDate) cellGradDate.style.display  = isGraduated ? '' : 'none';
+  const infoGradID   = document.getElementById('infoGradID');
+  const infoGradDate = document.getElementById('infoGradDate');
+  if (infoGradID)   infoGradID.textContent   = gradID   || '—';
+  if (infoGradDate) infoGradDate.textContent  = gradDate || '—';
+
+  // ── ID Card tab label ─────────────────────────────────────────
+  const navIdCard = document.getElementById('navIdCard');
+  if (navIdCard) navIdCard.textContent = isGraduated ? 'Alumni ID Card' : 'ID Card';
+  const idCardTitle = document.getElementById('idCardPageTitle');
+  const idCardSub   = document.getElementById('idCardPageSub');
+  if (idCardTitle) idCardTitle.textContent = isGraduated ? 'Alumni ID Card' : 'Student ID Card';
+  if (idCardSub)   idCardSub.textContent   = isGraduated
+    ? 'Your official University of Medicine (2) alumni identification'
+    : 'Your official University of Medicine (2) student identification';
+
+  // ── Documents panel label ────────────────────────────────────
+  const docConfirmTitle = document.getElementById('docConfirmTitle');
+  const docConfirmDesc  = document.getElementById('docConfirmDesc');
+  if (docConfirmTitle) docConfirmTitle.textContent = isGraduated ? 'Confirmation of Graduation' : 'Confirmation of Study';
+  if (docConfirmDesc)  docConfirmDesc.textContent  = isGraduated
+    ? 'Official letter confirming your graduation from the University of Medicine (2).'
+    : 'Official letter confirming your current enrollment status at the University of Medicine (2).';
+
+  // ── Grades header label ──────────────────────────────────────
+  const gradesIdLbl = document.getElementById('gradesIdLabel');
+  if (gradesIdLbl) gradesIdLbl.textContent = idLabel;
+
+  // Store graduation data on window for use in print
+  window._studentGraduated = isGraduated;
+  window._studentGradID    = gradID;
+  window._studentGradDate  = gradDate;
+  window._studentIdLabel   = idLabel;
+
   renderGrades(grades, s);
-  populateIDCard(s);
+  populateIDCard(s, isGraduated, gradID, gradDate);
 }
 
-function populateIDCard(s) {
+function populateIDCard(s, isGraduated, gradID, gradDate) {
   const init = (s.fullName || '').split(' ').map(w => w[0]).join('').toUpperCase().slice(0,2) || '?';
   document.getElementById('idcardPhoto').textContent    = init;
   document.getElementById('idcardName').textContent     = s.fullName      || '—';
@@ -1439,26 +1496,43 @@ function populateIDCard(s) {
   document.getElementById('idcardAdmissionBack').textContent = s.admissionYear || '—';
   document.getElementById('idcardEnroll').textContent   = s.enrollmentStatus || '—';
 
-  // ── Validity: second year of academic year range, active enrolment only ──
-  const ACADEMIC_YEAR = '2026–2027'; // update each academic year
+  // ── Alumni vs Student labels on card ─────────────────────────
+  const typeBadge = document.getElementById('idcardTypeBadge');
+  const idLabel   = document.getElementById('idcardIDLabel');
+  if (typeBadge) typeBadge.textContent = isGraduated ? 'Alumni' : 'Student';
+  if (idLabel)   idLabel.textContent   = isGraduated ? 'Alumni ID' : 'Student ID';
+
+  // ── Validity / graduation date ────────────────────────────────
+  const ACADEMIC_YEAR = '2026–2027';
   const yearMatch = ACADEMIC_YEAR.match(/\d{4}.*?(\d{4})/);
   const validYear = yearMatch ? yearMatch[1] : '';
   const isActive = /^active$/i.test((s.enrollmentStatus || '').trim());
-  const validityBlock = document.getElementById('idcardValidityBlock');
   const validityLabel = document.getElementById('idcardValidityLabel');
   const validityYear  = document.getElementById('idcardValidityYear');
-  if (isActive) {
-    validityLabel.textContent = 'Valid until';
-    validityYear.textContent  = validYear;
-    validityYear.style.fontSize = '10px';
-    validityYear.style.color    = 'rgba(255,255,255,.85)';
-    validityYear.style.fontWeight = '700';
+  if (isGraduated) {
+    if (validityLabel) validityLabel.textContent = 'Graduated';
+    if (validityYear)  {
+      validityYear.textContent   = gradDate || gradID || '';
+      validityYear.style.fontSize   = '9px';
+      validityYear.style.color      = 'rgba(255,255,255,.85)';
+      validityYear.style.fontWeight = '600';
+    }
+  } else if (isActive) {
+    if (validityLabel) validityLabel.textContent = 'Valid until';
+    if (validityYear)  {
+      validityYear.textContent   = validYear;
+      validityYear.style.fontSize   = '10px';
+      validityYear.style.color      = 'rgba(255,255,255,.85)';
+      validityYear.style.fontWeight = '700';
+    }
   } else {
-    validityLabel.textContent = '';
-    validityYear.textContent  = 'This card is invalid';
-    validityYear.style.fontSize = '8px';
-    validityYear.style.color    = 'rgba(255,180,180,.9)';
-    validityYear.style.fontWeight = '600';
+    if (validityLabel) validityLabel.textContent = '';
+    if (validityYear)  {
+      validityYear.textContent   = 'This card is invalid';
+      validityYear.style.fontSize   = '8px';
+      validityYear.style.color      = 'rgba(255,180,180,.9)';
+      validityYear.style.fontWeight = '600';
+    }
   }
 
   document.getElementById('idcardBirth').textContent    = s.birthDate     || '—';
@@ -1492,6 +1566,10 @@ function printIDCard() {
       .replace(/'/g, '&#039;');
   };
 
+  const isGrad = window._studentGraduated || false;
+  const _gradID   = window._studentGradID   || '';
+  const _gradDate = window._studentGradDate || '';
+  const _idLabel  = window._studentIdLabel  || 'Student ID';
   const s = {
     name:       document.getElementById('idcardName').textContent,
     nameMM:     document.getElementById('idcardNameMM').textContent,
@@ -1502,13 +1580,17 @@ function printIDCard() {
     birth:      document.getElementById('idcardBirth').textContent,
     phone:      document.getElementById('idcardPhone').textContent,
     father:     document.getElementById('idcardFather').textContent,
-    init:       document.getElementById('idcardPhoto').textContent
+    init:       document.getElementById('idcardPhoto').textContent,
+    isGrad,
+    gradID:     _gradID,
+    gradDate:   _gradDate,
+    idLabel:    _idLabel
   };
 
   const qrData = window.location.origin + '/verify?id=' + encodeURIComponent(s.id || '');
 
   const html = `<!DOCTYPE html><html><head><meta charset="UTF-8">
-  <title>Student ID Card — ${esc(s.id)}</title>
+  <title>${esc(s.isGrad ? 'Alumni ID Card' : 'Student ID Card')} — ${esc(s.id)}</title>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"><\/script>
   <style>
@@ -1568,7 +1650,7 @@ function printIDCard() {
             <span class="idcard-uni-sub">Interim University Council · Myanmar</span>
           </div>
         </div>
-        <div class="idcard-type-badge">Student</div>
+        <div class="idcard-type-badge">${esc(s.isGrad ? "Alumni" : "Student")}</div>
       </div>
       <div class="idcard-divider-line"></div>
       <div class="idcard-body">
@@ -1584,10 +1666,12 @@ function printIDCard() {
         </div>
       </div>
         <div class="idcard-bottom">
-        <div><div class="idcard-id-label">Student ID</div><div class="idcard-id-value">${esc(s.id)}</div></div>
-        ${/^active$/i.test((s.enroll || '').trim())
-          ? `<div class="idcard-validity"><span>Valid until</span><strong>${((() => { const m = '2026–2027'.match(/\d{4}.*?(\d{4})/); return m ? m[1] : ''; })())}</strong></div>`
-          : `<div class="idcard-validity" style="text-align:right"><span style="font-size:8px;color:rgba(255,180,180,.9);font-weight:600">This card is invalid</span></div>`
+        <div><div class="idcard-id-label">${esc(s.idLabel)}</div><div class="idcard-id-value">${esc(s.id)}</div></div>
+        ${s.isGrad
+          ? `<div class="idcard-validity"><span>Graduated</span><strong>${esc(s.gradDate || s.gradID || '')}</strong></div>`
+          : /^active$/i.test((s.enroll || '').trim())
+            ? `<div class="idcard-validity"><span>Valid until</span><strong>${((() => { const m = '2026–2027'.match(/\d{4}.*?(\d{4})/); return m ? m[1] : ''; })())}</strong></div>`
+            : `<div class="idcard-validity" style="text-align:right"><span style="font-size:8px;color:rgba(255,180,180,.9);font-weight:600">This card is invalid</span></div>`
         }
       </div>
     </div>
@@ -1652,6 +1736,11 @@ function getAcademicYear(row, course) {
 function getCompletionYear(row) {
   return row.year || row.Year || row.completionYear || row.CompletionYear ||
          row.completionDate || row.CompletionDate || '—';
+}
+
+function getNote(row) {
+  return row.note || row.Note || row.notes || row.Notes ||
+         row.comment || row.Comment || row.remarks || row.Remarks || '';
 }
 
 function getSheetOverallGpa(student) {
@@ -1726,6 +1815,7 @@ function renderGrades(grades, student) {
             <th style="text-align:center;width:10%">Score</th>
             <th style="text-align:center;width:8%">Year</th>
             <th style="text-align:center;width:9%">Grade</th>
+            <th style="width:14%">Note</th>
           </tr>
         </thead>
         <tbody>`;
@@ -1750,6 +1840,7 @@ function renderGrades(grades, student) {
           </td>
           <td style="text-align:center;font-size:11px;color:var(--ink3)">${escHtml(dateStr)}</td>
           <td style="text-align:center"><span class="gbadge ${gc(r.grade)}">${escHtml(r.grade || '—')}</span></td>
+          <td style="font-size:11px;color:var(--ink3);font-style:italic;max-width:140px">${escHtml(getNote(r))}</td>
         </tr>`;
       });
       html += `</tbody></table>`;
@@ -1805,7 +1896,10 @@ window.addEventListener('beforeprint', function() {
   const phName = document.getElementById('printPageHeaderName');
   const phSid  = document.getElementById('printPageHeaderSID');
   if (phName) phName.textContent = 'University of Medicine (2) — ' + (nameVal || 'Official Document');
-  if (phSid)  phSid.textContent  = 'Student ID: ' + sidVal;
+  const _lbl = (window._studentIdLabel || 'Student ID');
+  if (phSid)  phSid.textContent  = _lbl + ': ' + sidVal;
+  const ftLeft = document.getElementById('printFooterLeft');
+  if (ftLeft) ftLeft.innerHTML = 'University of Medicine (2) &nbsp;&middot;&nbsp; ' + _lbl + ': <span class="print-footer-sid">' + sidVal + '</span>';
   // Right label on fixed footer — note: page number via @page is more reliable
   const right = document.getElementById('printFooterRight');
   if (right) right.textContent = ''; // page number rendered via CSS counter ::before
@@ -1836,6 +1930,10 @@ function printDocument(type) {
   const status    = document.getElementById('infoStatus').textContent || '—';
   const enroll    = document.getElementById('infoEnroll').textContent || '—';
   const grad      = document.getElementById('infoGrad').textContent || '—';
+  const gradID    = document.getElementById('infoGradID')?.textContent || '';
+  const gradDate  = document.getElementById('infoGradDate')?.textContent || '';
+  const isGraduated = /^graduated$/i.test(grad.trim());
+  const idLabel   = isGraduated ? 'Alumni ID' : 'Student ID';
 
   const today     = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
 
@@ -1858,6 +1956,7 @@ function printDocument(type) {
           score:   tds[4].textContent.trim(),
           date:    tds[5].textContent.trim(),
           grade:   tds[6].textContent.trim(),
+          note:    tds[7]?.textContent?.trim() || '',
         });
       });
       if (rows.length) yearGroups.push({ year, rows });
@@ -1881,6 +1980,7 @@ function printDocument(type) {
         <td style="${TD}${bg}text-align:center;color:#333;font-size:7.5pt">${r.score || '—'}</td>
         <td style="${TD}${bg}text-align:center;color:#444">${r.date || '—'}</td>
         <td style="${TD}${bg}text-align:center;font-weight:bold;font-size:7.5pt">${r.grade}</td>
+        <td style="${TD}${bg}font-size:6.5pt;color:#555;font-style:italic">${r.note || ''}</td>
       </tr>`;
     });
     return `
@@ -1897,6 +1997,7 @@ function printDocument(type) {
             <th style="${TDH}width:8%;text-align:center">Score</th>
             <th style="${TDH}width:14%;text-align:center">Year</th>
             <th style="${TDH}width:14%;text-align:center">Grade</th>
+            <th style="${TDH}width:14%">Note</th>
           </tr></thead>
           <tbody>${rows}</tbody>
         </table>
@@ -1919,22 +2020,36 @@ const confirmationBody = type === 'confirmation' ? `
     line-height:2;
     text-align:justify;
   ">
+    ${isGraduated ? `
+    <p>
+      This is to confirm that <strong>${name}</strong> (${idLabel}:
+      <strong>${sid}</strong>) has successfully completed the requirements
+      for the degree of <strong>Bachelor of Medicine, Bachelor of Surgery (MBBS)</strong>
+      at the <strong>University of Medicine (2)</strong>, under the administration
+      of the Interim University Council, Republic of the Union of Myanmar.
+    </p>
+    <br>
+    <p style="text-align:justify;">
+      The above-named graduate was admitted in <strong>${admission}</strong>
+      and has been conferred the degree with a graduation status of
+      <strong>${grad}</strong>${gradDate ? ', effective <strong>' + gradDate + '</strong>' : ''}.
+      ${gradID ? 'Graduation Reference: <strong>' + gradID + '</strong>.' : ''}
+    </p>
+    ` : `
     <p>
       This is to confirm that <strong>${name}</strong> (Student ID:
       <strong>${sid}</strong>) is currently enrolled as a student at the
       <strong>University of Medicine (2)</strong>, under the administration
       of the Interim University Council, Republic of the Union of Myanmar.
     </p>
-
     <br>
-
-   <p style="text-align:justify;">
-  The student was admitted in <strong>${admission}</strong> and is
-  currently in <strong>${status}</strong> status with an enrollment
-  status of <strong>${enroll}</strong>.
-</p>
+    <p style="text-align:justify;">
+      The student was admitted in <strong>${admission}</strong> and is
+      currently in <strong>${status}</strong> status with an enrollment
+      status of <strong>${enroll}</strong>.
+    </p>
+    `}
     <br>
-
     <p>
       This letter is issued digitally for official purposes.
     </p>
@@ -1980,7 +2095,7 @@ const closing = `
 </style>
 <head>
   <meta charset="UTF-8">
-  <title>${type === 'transcript' ? 'Academic Transcript' : 'Confirmation of Study'} — ${name}</title>
+  <title>${type === 'transcript' ? 'Academic Transcript' : (isGraduated ? 'Confirmation of Graduation' : 'Confirmation of Study')} — ${name}</title>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -2112,7 +2227,7 @@ const closing = `
 
     <tfoot><tr><td style="padding-top:10px">
       <div class="pg-ftr">
-        <span>University of Medicine (2) &nbsp;·&nbsp; Student ID: <b>${sid}</b> &nbsp;·&nbsp; ${name}</span>
+        <span>University of Medicine (2) &nbsp;·&nbsp; ${idLabel}: <b>${sid}</b> &nbsp;·&nbsp; ${name}</span>
         <span class="pg-ftr-page"></span>
       </div>
     </td></tr></tfoot>
@@ -2131,17 +2246,19 @@ const closing = `
           </div>
         </div>
         <div>
-          <div class="doc-type-badge">${type === 'transcript' ? 'Official Transcript' : 'Confirmation of Study'}</div>
+          <div class="doc-type-badge">${type === 'transcript' ? 'Official Transcript' : (isGraduated ? 'Confirmation of Graduation' : 'Confirmation of Study')}</div>
           <div class="doc-meta">
-            Student ID: <strong style="color:#8B1A2E">${sid}</strong><br>
-            ${grad ? 'Degree Awarded: ' + grad : ''}
+            ${idLabel}: <strong style="color:#8B1A2E">${sid}</strong><br>
+            ${isGraduated ? 'Graduation Status: ' + grad : 'Enrollment: ' + enroll}
+            ${isGraduated && gradDate ? '<br>Date of Graduation: ' + gradDate : ''}
+            ${isGraduated && gradID ? '<br>Graduation ID: ' + gradID : ''}
           </div>
         </div>
       </div>
 
       ${type === 'transcript' ? `
       <div class="section-label">Student Details</div>
-      <div class="transcript-student-section">
+      <div class="transcript-student-section" style="grid-template-columns:1.2fr 1.2fr .8fr ${isGraduated && gradID ? '.8fr' : ''}">
         <div class="transcript-student-item">
           <div class="transcript-student-label">Name</div>
           <div class="transcript-student-value">${name}</div>
@@ -2154,7 +2271,16 @@ const closing = `
           <div class="transcript-student-label">Date of Birth</div>
           <div class="transcript-student-value">${birth}</div>
         </div>
+        ${isGraduated && gradID ? `<div class="transcript-student-item"><div class="transcript-student-label">Graduation ID</div><div class="transcript-student-value">${gradID}</div></div>` : ''}
       </div>
+      ${isGraduated ? `<div class="section-label">Graduation Information</div>
+      <div class="transcript-student-section" style="grid-template-columns:1fr 1fr">
+        <div class="transcript-student-item">
+          <div class="transcript-student-label">Graduation Status</div>
+          <div class="transcript-student-value">${grad}</div>
+        </div>
+        ${gradDate ? `<div class="transcript-student-item"><div class="transcript-student-label">Date of Graduation</div><div class="transcript-student-value">${gradDate}</div></div>` : ''}
+      </div>` : ''}
       <div class="section-label">Academic Record</div>${academicRecord}` : ''}
       ${confirmationBody}
       ${closing}
