@@ -1273,6 +1273,7 @@ table.gt * {
         <div class="icard" style="margin-bottom:16px">
           <div class="icard-head">Current Photo</div>
           <div style="padding:28px 24px;display:flex;align-items:center;gap:28px;flex-wrap:wrap">
+            <div id="profilePhotoPreview" style="width:100px;height:120px;border-radius:10px;background:var(--surface);border:1.5px solid var(--line);overflow:hidden;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:36px;color:var(--ink3)">📷</div>
             <div>
               <div style="font-size:14px;font-weight:600;color:var(--ink);margin-bottom:4px" id="photoPreviewName">—</div>
               <div style="font-size:12px;color:var(--ink3)" id="photoPreviewId">—</div>
@@ -2479,36 +2480,6 @@ const closing = `
 
 
 // ── Photo preview & upload ────────────────────────────────────
-function applyWatermark(dataUrl, callback) {
-  const img = new Image();
-  img.onload = function() {
-    const canvas = document.createElement('canvas');
-    canvas.width  = img.width;
-    canvas.height = img.height;
-    const ctx = canvas.getContext('2d');
-    ctx.drawImage(img, 0, 0);
-    const wmText  = 'UM2UM2UM2UM2U2MU2M2U2MUM2';
-    const fontSize = Math.max(12, Math.round(img.width * 0.045));
-    ctx.save();
-    ctx.globalAlpha  = 0.5;
-    ctx.fillStyle    = '#FFFFFF';
-    ctx.font         = 'bold ' + fontSize + 'px DM Sans, sans-serif';
-    ctx.textAlign    = 'center';
-    ctx.textBaseline = 'middle';
-    const step = fontSize * 4;
-    ctx.translate(canvas.width / 2, canvas.height / 2);
-    ctx.rotate(-Math.PI / 6);
-    for (let y = -canvas.height * 1.5; y < canvas.height * 1.5; y += step) {
-      for (let x = -canvas.width * 1.5; x < canvas.width * 1.5; x += step) {
-        ctx.fillText(wmText, x, y);
-      }
-    }
-    ctx.restore();
-    callback(canvas.toDataURL('image/jpeg', 0.92));
-  };
-  img.src = dataUrl;
-}
-
 function previewPhoto(input) {
   const file = input.files[0];
   if (!file) return;
@@ -2521,20 +2492,19 @@ function previewPhoto(input) {
   statusEl.textContent = '';
   const reader = new FileReader();
   reader.onload = function(e) {
-    applyWatermark(e.target.result, function(watermarkedUrl) {
-      // Show selected-file info row
-      const wrap  = document.getElementById('photoSelectedWrap');
-      const thumb = document.getElementById('photoSelectedThumb');
-      const name  = document.getElementById('photoSelectedName');
-      const size  = document.getElementById('photoSelectedSize');
-      if (thumb) thumb.src = watermarkedUrl;
-      if (name)  name.textContent = file.name;
-      if (size)  size.textContent = (file.size / 1024).toFixed(0) + ' KB · ' + file.type.replace('image/', '').toUpperCase();
-      if (wrap)  wrap.style.display = 'flex';
-      document.getElementById('uploadPhotoBtn').style.display = 'inline-block';
-      // Store watermarked URL for upload
-      input._watermarkedUrl = watermarkedUrl;
-    });
+    // Update current photo preview card
+    const preview = document.getElementById('profilePhotoPreview');
+    if (preview) preview.innerHTML = '<img src="' + e.target.result + '" style="width:100%;height:100%;object-fit:cover;border-radius:8px">';
+    // Show selected-file info row
+    const wrap  = document.getElementById('photoSelectedWrap');
+    const thumb = document.getElementById('photoSelectedThumb');
+    const name  = document.getElementById('photoSelectedName');
+    const size  = document.getElementById('photoSelectedSize');
+    if (thumb) thumb.src = e.target.result;
+    if (name)  name.textContent = file.name;
+    if (size)  size.textContent = (file.size / 1024).toFixed(0) + ' KB · ' + file.type.replace('image/', '').toUpperCase();
+    if (wrap)  wrap.style.display = 'flex';
+    document.getElementById('uploadPhotoBtn').style.display = 'inline-block';
   };
   reader.readAsDataURL(file);
 }
@@ -2619,22 +2589,20 @@ async function uploadPhoto() {
 }
 
 function updatePhotoInUI(photoUrl) {
-  applyWatermark(photoUrl, function(watermarkedUrl) {
-    // Update banner avatar
-    const img = document.getElementById('avatarPhoto');
-    const initials = document.getElementById('avatarInitials');
-    if (img) { img.src = watermarkedUrl; img.style.display = 'block'; }
-    if (initials) initials.style.display = 'none';
-    // Update ID card photo
-    const idPhoto = document.getElementById('idcardPhoto');
-    if (idPhoto) { idPhoto.innerHTML = '<img src="' + watermarkedUrl + '" style="width:100%;height:100%;object-fit:cover">'; }
-    // Update home hero avatar
-    const homeAv = document.getElementById('homeAvatar');
-    if (homeAv) { homeAv.innerHTML = '<img src="' + watermarkedUrl + '" style="width:100%;height:100%;object-fit:cover;border-radius:10px">'; }
-    // Update grades avatar
-    const gradesAv = document.getElementById('gradesAvatar');
-    if (gradesAv) { gradesAv.innerHTML = '<img src="' + watermarkedUrl + '" style="width:100%;height:100%;object-fit:cover;border-radius:8px">'; }
-  });
+  // Update banner avatar
+  const img = document.getElementById('avatarPhoto');
+  const initials = document.getElementById('avatarInitials');
+  if (img) { img.src = photoUrl; img.style.display = 'block'; }
+  if (initials) initials.style.display = 'none';
+  // Update ID card photo
+  const idPhoto = document.getElementById('idcardPhoto');
+  if (idPhoto) { idPhoto.innerHTML = '<img src="' + photoUrl + '" style="width:100%;height:100%;object-fit:cover">'; }
+  // Update home hero avatar
+  const homeAv = document.getElementById('homeAvatar');
+  if (homeAv) { homeAv.innerHTML = '<img src="' + photoUrl + '" style="width:100%;height:100%;object-fit:cover;border-radius:10px">'; }
+  // Update grades avatar
+  const gradesAv = document.getElementById('gradesAvatar');
+  if (gradesAv) { gradesAv.innerHTML = '<img src="' + photoUrl + '" style="width:100%;height:100%;object-fit:cover;border-radius:8px">'; }
 }
 
 // ── Footer year ───────────────────────────────────────────────
