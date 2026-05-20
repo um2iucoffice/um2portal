@@ -1449,37 +1449,88 @@ function handleAuthErr() {
   errEl.classList.add('show');
 }
 
+// ── Data normalisation helpers ───────────────────────────────
+function firstValue(obj, keys, fallback = '') {
+  if (!obj) return fallback;
+  for (const key of keys) {
+    if (Object.prototype.hasOwnProperty.call(obj, key)) {
+      const val = obj[key];
+      if (val !== undefined && val !== null && String(val).trim() !== '') return val;
+    }
+  }
+  return fallback;
+}
+
+function normaliseStudent(raw) {
+  const s = raw || {};
+  return {
+    ...s,
+    id: firstValue(s, ['id', 'student_id', 'studentId', 'Student ID', 'StudentID']),
+    fullName: firstValue(s, ['name_en', 'fullName', 'full_name', 'Name', 'name']),
+    fullNameMM: firstValue(s, ['name_my', 'fullNameMM', 'full_name_mm', 'Name Myanmar', 'name_mm']),
+    fatherName: firstValue(s, ['father', 'fatherName', 'father_name']),
+    fatherNameMM: firstValue(s, ['father_my', 'fatherNameMM', 'father_name_mm']),
+    birthDate: firstValue(s, ['dob', 'birthDate', 'birth_date', 'date_of_birth']),
+    phone: firstValue(s, ['phone', 'Phone']),
+    email: firstValue(s, ['email', 'Email']),
+    address: firstValue(s, ['address', 'Address']),
+    admissionYear: firstValue(s, ['admission', 'admissionYear', 'admission_year']),
+    currentStatus: firstValue(s, ['year', 'currentStatus', 'current_status', 'academic_year']),
+    enrollmentStatus: firstValue(s, ['status', 'enrollmentStatus', 'enrollment_status']),
+    program: firstValue(s, ['program', 'Program']),
+    graduationStatus: firstValue(s, ['grad_status', 'graduationStatus', 'graduation_status']),
+    graduationId: firstValue(s, ['graduation_id', 'graduationId']),
+    graduationDate: firstValue(s, ['graduation_date', 'graduationDate']),
+    gpa: firstValue(s, ['Overall GPA', 'overall_gpa', 'OverallGPA', 'overallGPA', 'gpa', 'GPA'])
+  };
+}
+
+function normaliseGradeRow(raw) {
+  const g = raw || {};
+  const courseId = String(firstValue(g, [
+    'courseId', 'course_id', 'Course ID', 'CourseID', 'course_code', 'Course Code', 'code'
+  ], '')).trim();
+
+  return {
+    ...g,
+    courseId,
+    numericScore: firstValue(g, ['numericScore', 'NumericScore', 'numeric_score', 'score', 'Score']),
+    grade: firstValue(g, ['grade', 'Grade', 'letter_grade', 'LetterGrade']),
+    completionType: firstValue(g, ['completionType', 'CompletionType', 'completion_type', 'type_of_completion', 'assessment']),
+    completionYear: firstValue(g, ['completionYear', 'CompletionYear', 'completion_year', 'year', 'Year']),
+    academicYear: firstValue(g, ['academicYear', 'AcademicYear', 'academic_year', 'yearLevel', 'YearLevel', 'course_year']),
+    note: firstValue(g, ['note', 'Note', 'notes', 'Notes', 'comment', 'Comment', 'remarks', 'Remarks'])
+  };
+}
+
 // ── Populate dashboard ────────────────────────────────────────
 function populate(s, grades) {
-  // ── Normalise raw SQL column names → camelCase ─────────────
-  // Maps exact DB column names from the students table
-  s.fullName         = s.name_en         || s.fullName         || '';
-  s.fullNameMM       = s.name_my         || s.fullNameMM       || '';
-  s.fatherName       = s.father          || s.fatherName       || '';
-  s.fatherNameMM     = s.father_my       || s.fatherNameMM     || '';
-  s.birthDate        = s.dob             || s.birthDate        || '';
-  s.phone            = s.phone           || '';
-  s.email            = s.email           || '';
-  s.address          = s.address         || '';
-  s.admissionYear    = s.admission       || s.admissionYear    || '';
- // 'year' column → Current Year (Profile & ID Card)
+  // ── Normalise raw SQL / Google Sheet column names → app field names ──
+  s = normaliseStudent(s);
+  grades = (grades || []).map(normaliseGradeRow);
+
+ // 'year' column holds academic year level (e.g. "M-1", "M-2")
 s.currentStatus = s.year || s.currentStatus || '';
 
-// 'status' column → Enrollment Status
+// 'status' column holds enrollment status (e.g. "Active", "Inactive")
 s.enrollmentStatus = s.status || s.enrollmentStatus || '';
 
 // program
 s.program = s.program || '';
 
-// graduation status — always from grad_status column directly
-s.gradStatus = s.grad_status || '';
-  const _rawGrad = s.grad_status || '';
+// graduation status
+// If grad_status exists, use it.
+// Otherwise, if student is Active, show "In Progress".
+s.gradStatus =
+  s.grad_status ||
+  (s.enrollmentStatus === 'Active' ? 'In Progress' : '');
+  const _rawGrad = s.grad_status || s.graduationStatus || '';
   if (/^graduated$/i.test(_rawGrad.trim())) {
     s.graduationStatus = 'Graduated';
-  } else if (_rawGrad) {
-    s.graduationStatus = _rawGrad;
+  } else if (/^active$/i.test((s.year || s.enrollmentStatus || '').trim())) {
+    s.graduationStatus = 'In Progress';
   } else {
-    s.graduationStatus = '—';
+    s.graduationStatus = _rawGrad || '—';
   }
   s.graduationId     = s.graduation_id   || s.graduationId     || '';
   s.graduationDate   = s.graduation_date || s.graduationDate   || '';
@@ -1845,8 +1896,8 @@ function getAcademicYear(row, course) {
 }
 
 function getCompletionYear(row) {
-  return row.year || row.Year || row.completionYear || row.CompletionYear ||
-         row.completionDate || row.CompletionDate || '—';
+  return row.completionYear || row.CompletionYear || row.completion_year ||
+         row.year || row.Year || row.completionDate || row.CompletionDate || '—';
 }
 
 function getNote(row) {
@@ -1933,8 +1984,9 @@ function renderGrades(grades, student) {
 
       rows.forEach(r => {
         const scoreStr =
-          r.NumericScore !== undefined && r.NumericScore !== '' ? r.NumericScore :
           r.numericScore !== undefined && r.numericScore !== '' ? r.numericScore :
+          r.NumericScore !== undefined && r.NumericScore !== '' ? r.NumericScore :
+          r.numeric_score !== undefined && r.numeric_score !== '' ? r.numeric_score :
           r.score !== undefined && r.score !== '' ? r.score : '—';
         const dateStr = getCompletionYear(r);
         const typeStr = r.completionType || r.CompletionType || r.course.assessment || '—';
