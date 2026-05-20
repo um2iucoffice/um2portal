@@ -1348,7 +1348,19 @@ canvas.photo-canvas, #idcardPhoto canvas, #homeAvatar canvas, #gradesAvatar canv
 
 <script>
 // ── Course catalog ────────────────────────────────────────────
-const COURSES = {
+// This is the built-in fallback catalog for the MBBS program.
+// To support additional degree programs, your backend's login response
+// can include a `courses` object and an optional `program_meta` object:
+//
+//   r.courses      → { [courseId]: { name, year, block, credits, assessment } }
+//   r.program_meta → {
+//                      label: 'MSc Nursing',          // shown in grade headers
+//                      yearOrder: ['Year 1','Year 2']  // preferred sort order
+//                    }
+//
+// When present, these override the built-in MBBS data below entirely.
+// No changes to this file are needed to add new programs.
+const COURSES_MBBS = {
   CRS001: { name: 'Myanmar Language',                              year: 'Foundation Year', block: 'Block 1 — Foundation for Science',            credits: 5,  assessment: 'Written Exam' },
   CRS002: { name: 'English Language',                              year: 'Foundation Year', block: 'Block 1 — Foundation for Science',            credits: 5,  assessment: 'Written Exam' },
   CRS003: { name: 'Mathematics',                                   year: 'Foundation Year', block: 'Block 1 — Foundation for Science',            credits: 5,  assessment: 'Written Exam' },
@@ -1403,6 +1415,17 @@ const COURSES = {
   CRS052: { name: 'SSC — Clinical Special Interest Attachment',    year: 'M-5',             block: 'Senior Clerkship',                            credits: 5,  assessment: 'Portfolio / log' },
 };
 
+// ── Program metadata defaults (MBBS) ─────────────────────────
+// Overridden at runtime by r.program_meta from the login response.
+const PROGRAM_META_MBBS = {
+  label:     'MBBS Program',
+  yearOrder: ['Foundation Year', 'M-1', 'M-2', 'M-3', 'M-4', 'M-5']
+};
+
+// Active catalog and program — set by populate(), used by renderGrades()
+let COURSES       = COURSES_MBBS;
+let PROGRAM_META  = PROGRAM_META_MBBS;
+
 // ── Auth ─────────────────────────────────────────────────────
 document.addEventListener('keydown', function(e) {
   if (e.key === 'Enter' && !document.getElementById('loginScreen').classList.contains('hidden')) doLogin();
@@ -1447,7 +1470,7 @@ function handleAuth(r) {
     return;
   }
   try {
-    populate(r.student, r.grades || [], r.courses || {});
+    populate(r.student, r.grades || [], r.courses || {}, r.program_meta || null);
   } catch(e) {
     const errEl = document.getElementById('accessError');
     errEl.textContent = 'Login succeeded but failed to load profile. Please try again.';
@@ -1458,12 +1481,13 @@ function handleAuth(r) {
   // ── Persist session for refresh recovery (3 min TTL) ──
   try {
     sessionStorage.setItem('iris_session', JSON.stringify({
-      studentId  : (document.getElementById('loginStudentId').value || '').trim().toLowerCase(),
-      password   : window._sessionPassword,
-      studentData: r.student,
-      grades     : r.grades || [],
-      courses    : r.courses || {},
-      savedAt    : Date.now()
+      studentId   : (document.getElementById('loginStudentId').value || '').trim().toLowerCase(),
+      password    : window._sessionPassword,
+      studentData : r.student,
+      grades      : r.grades || [],
+      courses     : r.courses || {},
+      program_meta: r.program_meta || null,
+      savedAt     : Date.now()
     }));
   } catch(e) {}
 
@@ -1542,10 +1566,25 @@ function normaliseGradeRow(raw) {
 }
 
 // ── Populate dashboard ────────────────────────────────────────
-function populate(s, grades, courses) {
-  // Store courses globally so renderGrades can use them
+function populate(s, grades, courses, program_meta) {
+  // ── Activate the right course catalog for this student's program ──
+  // The server can send `courses` (course catalog) and `program_meta`
+  // ({ label, yearOrder }) to fully describe any degree program.
+  // If neither is provided, the built-in MBBS defaults are used.
   if (courses && Object.keys(courses).length > 0) {
-    window._COURSES = courses;
+    COURSES      = courses;          // replace active catalog
+    window._COURSES = courses;       // legacy compat for renderGrades
+  } else {
+    COURSES      = COURSES_MBBS;
+    window._COURSES = null;
+  }
+  if (program_meta && program_meta.label) {
+    PROGRAM_META = {
+      label:     program_meta.label,
+      yearOrder: Array.isArray(program_meta.yearOrder) ? program_meta.yearOrder : []
+    };
+  } else {
+    PROGRAM_META = PROGRAM_META_MBBS;
   }
   // ── Normalise raw SQL / Google Sheet column names → app field names ──
   s = normaliseStudent(s);
@@ -1693,6 +1732,8 @@ function populateIDCard(s, isGraduated, gradID, gradDate) {
   const init = (s.fullName || '').split(' ').map(w => w[0]).join('').toUpperCase().slice(0,2) || '?';
   const idcardPhotoEl = document.getElementById('idcardPhoto');
   // Always reset — never carry over a previous student's photo
+  // Store photo data on window so printIDCard() can embed it directly
+  window._idcardPhotoData = s.photo || null;
   if (idcardPhotoEl) {
     if (s.photo) {
       idcardPhotoEl.innerHTML = '';
@@ -1797,8 +1838,9 @@ function printIDCard() {
     birth:      document.getElementById('idcardBirth').textContent,
     phone:      document.getElementById('idcardPhone').textContent,
     father:     document.getElementById('idcardFather').textContent,
-    init:       (document.getElementById('idcardPhoto').querySelector('img')?.src) || document.getElementById('idcardPhoto').textContent,
-    hasPhoto:   !!document.getElementById('idcardPhoto').querySelector('img'),
+    init:       document.getElementById('idcardPhoto').textContent,
+    hasPhoto:   !!window._idcardPhotoData,
+    photoSrc:   window._idcardPhotoData || '',
     isGrad,
     gradID:     _gradID,
     gradDate:   _gradDate,
@@ -1872,7 +1914,7 @@ function printIDCard() {
       </div>
       <div class="idcard-divider-line"></div>
       <div class="idcard-body">
-        <div class="idcard-photo">${s.hasPhoto ? `<img src="${esc(s.init)}" style="width:100%;height:100%;object-fit:cover">` : esc(s.init)}</div>
+        <div class="idcard-photo">${s.hasPhoto ? `<img src="${s.photoSrc}" style="width:100%;height:100%;object-fit:cover">` : esc(s.init)}</div>
         <div class="idcard-info">
           <div class="idcard-name">${esc(s.name)}</div>
           <div class="idcard-name-mm">${esc(s.nameMM)}</div>
@@ -1980,7 +2022,7 @@ function renderGrades(grades, student) {
   // Group by academic year
   const groups = {};
   grades.forEach(g => {
-    const course = (window._COURSES && window._COURSES[g.courseId]) || COURSES[g.courseId] || { name: g.courseId, year: 'Other', block: 'MBBS Program', credits: null, assessment: '—' };
+    const course = COURSES[g.courseId] || { name: g.course || g.courseId || '—', year: 'Other', block: g.block || 'General', credits: g.credits ?? null, assessment: g.assessment || '—' };
     const academicYear = getAcademicYear(g, course);
     if (!groups[academicYear]) groups[academicYear] = {};
     const block = course.block || 'General';
@@ -1988,7 +2030,8 @@ function renderGrades(grades, student) {
     groups[academicYear][block].push({ ...g, course, academicYear });
   });
 
-  const preferredOrder = ['Foundation Year', 'M-1', 'M-2', 'M-3', 'M-4', 'M-5'];
+  // Use program-aware year ordering from PROGRAM_META (set by populate())
+  const preferredOrder = PROGRAM_META.yearOrder;
   const order = [
     ...preferredOrder.filter(y => groups[y]),
     ...Object.keys(groups).filter(y => !preferredOrder.includes(y)).sort()
@@ -2003,7 +2046,7 @@ function renderGrades(grades, student) {
   let totalCredits = 0;
   let creditsKnown = true;
   grades.forEach(g => {
-    const c = (window._COURSES && window._COURSES[g.courseId]) || COURSES[g.courseId];
+    const c = COURSES[g.courseId];
     if (c && c.credits != null) totalCredits += Number(c.credits);
     else creditsKnown = false;
   });
@@ -2028,7 +2071,7 @@ function renderGrades(grades, student) {
     const blockMap = groups[yr] || {};
     const allRowsInYear = Object.values(blockMap).flat();
     html += `<div class="g-wrap">`;
-    html += `<div class="g-year-head">${escHtml(yr)} &nbsp;·&nbsp; MBBS Program</div>`;
+    html += `<div class="g-year-head">${escHtml(yr)} &nbsp;·&nbsp; ${escHtml(PROGRAM_META.label)}</div>`;
 
     // Render by block
     Object.entries(blockMap).forEach(([blockName, rows]) => {
@@ -2884,7 +2927,7 @@ function doSignOut() {
 
   window._sessionPassword = saved.password;
   try {
-    populate(saved.studentData, saved.grades || [], saved.courses || {});
+    populate(saved.studentData, saved.grades || [], saved.courses || {}, saved.program_meta || null);
   } catch(e) { return; }
 
   document.getElementById('loginScreen').classList.add('hidden');
