@@ -1,8 +1,6 @@
 // ============================================================
 //  netlify/functions/login.js
-//  Replaces: Google Sheets JWT auth + DataLayer.gs + StudentDomain.gs
-//
-//  Reads from Supabase PostgreSQL (students, grades, courses tables)
+//  Reads from Supabase PostgreSQL (students, grades tables)
 //
 //  Environment variables required (set in Netlify dashboard):
 //    SUPABASE_URL          e.g. https://xxxx.supabase.co
@@ -32,7 +30,6 @@ async function supabase(path, options = {}) {
 }
 
 // ── Map student row to safe object (never expose master_password) ──
-// ── CORRECT (fixed) ──
 function mapStudent(row) {
   return {
     id:               row.id              || '',
@@ -44,15 +41,14 @@ function mapStudent(row) {
     phone:            row.phone           || '',
     address:          row.address         || '',
     admissionYear:    row.admission       || '',
-    currentStatus:    row.year            || '',  // ✅ year = "Foundation Year"
-    enrollmentStatus: row.status          || '',  // ✅ status = "Active"
+    currentStatus:    row.year            || '',   // "Foundation Year", "M-1", etc.
+    enrollmentStatus: row.status          || '',   // "Active", etc.
     overallGPA:       row.gpa != null ? String(row.gpa) : '—',
-    graduationStatus: row.grad_status     || '',  // ✅ grad_status = "In Progress"
+    graduationStatus: row.grad_status     || '',   // "In Progress", "Graduated", etc.
     graduationId:     row.graduation_id   || '',
-    graduationDate:   row.graduation_date || '',  // ✅ correct column name
+    graduationDate:   row.graduation_date || '',
     photo:            row.photo           || '',
-  };
-}
+    // master_password is intentionally excluded
   };
 }
 
@@ -103,7 +99,7 @@ export const handler = async (event) => {
   }
 
   try {
-    // ── 1. Fetch student by ID (include master_password for auth check only) ──
+    // ── 1. Fetch student by ID ───────────────────────────────
     const students = await supabase(
       `students?id=eq.${encodeURIComponent(normId)}&select=*&limit=1`
     );
@@ -135,9 +131,8 @@ export const handler = async (event) => {
     );
     const grades = (gradeRows || []).map(mapGrade);
 
-    // ── 5. Generate photo URL if photo path stored ────────────
+    // ── 5. Build photo URL if needed ─────────────────────────
     if (student.photo) {
-      // If photo is already a full URL, use it; otherwise build Supabase Storage URL
       if (!student.photo.startsWith('http')) {
         student.photo = `${SUPABASE_URL}/storage/v1/object/public/student-photos/${student.photo}`;
       }
