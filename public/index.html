@@ -1452,23 +1452,26 @@ function handleAuthErr() {
 // ── Populate dashboard ────────────────────────────────────────
 function populate(s, grades) {
   // ── Normalise raw SQL column names → camelCase ─────────────
-  // Supports both snake_case (DB) and camelCase (legacy) field names
-  s.fullName        = s.fullName        || s.name_en        || s.nameEn        || '';
-  s.fullNameMM      = s.fullNameMM      || s.name_my        || s.nameMy        || '';
-  s.fatherName      = s.fatherName      || s.father         || '';
-  s.fatherNameMM    = s.fatherNameMM    || s.father_my      || s.fatherMy      || '';
-  s.birthDate       = s.birthDate       || s.dob            || '';
-  s.phone           = s.phone           || '';
-  s.email           = s.email           || '';
-  s.admissionYear   = s.admissionYear   || s.admission      || '';
-  // currentStatus maps to the 'year' column (e.g. "Year 1", "Year 2" …)
-  s.currentStatus   = s.currentStatus   || s.year           || '';
-  s.enrollmentStatus= s.enrollmentStatus|| s.status         || '';
-  s.graduationStatus= s.graduationStatus|| s.grad_status    || s.gradStatus    || '';
-  s.graduationId    = s.graduationId    || s.graduation_id  || s.graduationID  || '';
-  s.graduationDate  = s.graduationDate  || s.graduation_date|| s.graduationdate|| '';
-  s.id              = s.id              || '';
-  s.gpa             = s.gpa             || s.GPA            || '';
+  // Maps exact DB column names from the students table
+  s.fullName         = s.name_en         || s.fullName         || '';
+  s.fullNameMM       = s.name_my         || s.fullNameMM       || '';
+  s.fatherName       = s.father          || s.fatherName       || '';
+  s.fatherNameMM     = s.father_my       || s.fatherNameMM     || '';
+  s.birthDate        = s.dob             || s.birthDate        || '';
+  s.phone            = s.phone           || '';
+  s.email            = s.email           || '';
+  s.address          = s.address         || '';
+  s.admissionYear    = s.admission       || s.admissionYear    || '';
+  // 'year' column holds academic year level (e.g. "M-1", "M-2" …)
+  s.currentStatus    = s.year            || s.currentStatus    || '';
+  // 'status' column holds enrollment status (e.g. "Active", "Inactive")
+  s.enrollmentStatus = s.status          || s.enrollmentStatus || '';
+  s.program          = s.program         || '';
+  s.graduationStatus = s.grad_status     || s.graduationStatus || '';
+  s.graduationId     = s.graduation_id   || s.graduationId     || '';
+  s.graduationDate   = s.graduation_date || s.graduationDate   || '';
+  s.id               = s.id              || '';
+  s.gpa              = s.gpa             || '';
   // ── End normalisation ──────────────────────────────────────
 
   const firstName = (s.fullName || '').split(' ')[0] || '—';
@@ -1513,8 +1516,8 @@ function populate(s, grades) {
   const idLabel     = isGraduated ? 'Alumni ID' : 'Student ID';
 
   // Fetch graduation fields from sheet
-  const gradID   = s.graduationId   || s.GraduationId   || s.graduation_id   || s.graduationID   || s.AlumniID || s.alumniId || '';
-  const gradDate = s.graduationDate || s.GraduationDate  || s.graduation_date || s.dateOfGraduation || s.DateOfGraduation || '';
+  const gradID   = s.graduationId   || s.graduation_id   || '';
+  const gradDate = s.graduationDate || s.graduation_date || '';
 
   // ── Profile card ─────────────────────────────────────────────
   const lblSID = document.getElementById('lblStudentID');
