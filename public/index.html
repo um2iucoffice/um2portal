@@ -960,6 +960,7 @@ table.gt * {
       <button class="ntab" data-tab="grades" onclick="switchTab('grades',this)">Academic Results</button>
       <button class="ntab" data-tab="docs" onclick="switchTab('docs',this)">Documents</button>
       <button class="ntab" data-tab="idcard" id="navIdCard" onclick="switchTab('idcard',this)">ID Card</button>
+      <button class="ntab" data-tab="photo" onclick="switchTab('photo',this)">Photo</button>
       <button class="ntab ext" onclick="window.open('https://um2campus.com/login/index.php','_blank')">E-Learning</button>
       <button class="ntab ext" onclick="window.open('https://supportportal.um2campus.org','_blank')">Support</button>
     </div>
@@ -1046,21 +1047,6 @@ table.gt * {
       </div>
 
 
-      <div class="icard" style="margin-bottom:16px">
-        <div class="icard-head">Profile Photo</div>
-        <div style="padding:20px 18px;display:flex;align-items:center;gap:20px;flex-wrap:wrap">
-          <div id="profilePhotoPreview" style="width:80px;height:96px;border-radius:8px;background:var(--surface);border:1.5px solid var(--line);overflow:hidden;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:28px;color:var(--ink3)" id="profilePhotoPreview">📷</div>
-          <div style="flex:1;min-width:200px">
-            <p style="font-size:13px;color:var(--ink3);margin-bottom:12px;line-height:1.5">Upload a clear passport-style photo. Accepted formats: JPEG, PNG, WebP. Max size: 5MB.</p>
-            <label style="display:inline-block;padding:9px 18px;background:var(--crimson);color:#fff;border-radius:var(--r);font-size:13px;font-weight:600;cursor:pointer;transition:background .15s">
-              Choose Photo
-              <input type="file" id="photoFileInput" accept="image/jpeg,image/png,image/webp" style="display:none" onchange="previewPhoto(this)">
-            </label>
-            <button id="uploadPhotoBtn" onclick="uploadPhoto()" style="margin-left:10px;padding:9px 18px;background:var(--green);color:#fff;border:none;border-radius:var(--r);font-size:13px;font-weight:600;cursor:pointer;display:none">Upload</button>
-            <span id="photoUploadStatus" style="margin-left:10px;font-size:13px;color:var(--ink3)"></span>
-          </div>
-        </div>
-      </div>
       <div class="icard">
         <div class="icard-head">Personal &amp; Enrollment Details</div>
         <div class="igrid">
@@ -1269,6 +1255,66 @@ table.gt * {
       </div>
 
       <div id="gradesContent"><div class="g-wrap"><div class="no-g">Loading results…</div></div></div>
+    </div>
+
+    <!-- PHOTO UPLOAD -->
+    <div class="panel" id="panel-photo">
+      <div class="ph">
+        <h2>Profile Photo</h2>
+        <p>Upload your official passport-style photo</p>
+      </div>
+
+      <div style="max-width:560px">
+        <!-- Current photo preview card -->
+        <div class="icard" style="margin-bottom:16px">
+          <div class="icard-head">Current Photo</div>
+          <div style="padding:28px 24px;display:flex;align-items:center;gap:28px;flex-wrap:wrap">
+            <div id="profilePhotoPreview" style="width:100px;height:120px;border-radius:10px;background:var(--surface);border:1.5px solid var(--line);overflow:hidden;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:36px;color:var(--ink3)">📷</div>
+            <div>
+              <div style="font-size:14px;font-weight:600;color:var(--ink);margin-bottom:4px" id="photoPreviewName">—</div>
+              <div style="font-size:12px;color:var(--ink3)" id="photoPreviewId">—</div>
+              <div style="margin-top:12px;font-size:12px;color:var(--ink3);line-height:1.6">
+                Your photo appears on your Student ID card<br>and throughout the portal.
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Upload card -->
+        <div class="icard">
+          <div class="icard-head">Upload New Photo</div>
+          <div style="padding:24px">
+            <p style="font-size:13px;color:var(--ink3);margin-bottom:20px;line-height:1.6">
+              Please upload a clear, passport-style photo with a plain background.<br>
+              Accepted formats: <strong>JPEG, PNG, WebP</strong> &nbsp;·&nbsp; Max size: <strong>5 MB</strong>
+            </p>
+
+            <!-- Drop zone -->
+            <div id="photoDropZone" onclick="document.getElementById('photoFileInput').click()"
+              style="border:2px dashed var(--line);border-radius:10px;padding:36px 24px;text-align:center;cursor:pointer;transition:border-color .2s,background .2s;background:var(--surface);margin-bottom:20px">
+              <div style="font-size:32px;margin-bottom:10px">🖼️</div>
+              <div style="font-size:14px;font-weight:600;color:var(--ink);margin-bottom:4px">Click to choose a photo</div>
+              <div style="font-size:12px;color:var(--ink3)">or drag &amp; drop here</div>
+              <input type="file" id="photoFileInput" accept="image/jpeg,image/png,image/webp" style="display:none" onchange="previewPhoto(this)">
+            </div>
+
+            <!-- Preview of selected file -->
+            <div id="photoSelectedWrap" style="display:none;margin-bottom:20px;padding:16px;background:var(--surface);border-radius:8px;border:1px solid var(--line);display:none;align-items:center;gap:16px">
+              <img id="photoSelectedThumb" src="" alt="Preview" style="width:64px;height:76px;object-fit:cover;border-radius:6px;border:1px solid var(--line);flex-shrink:0">
+              <div style="flex:1;min-width:0">
+                <div id="photoSelectedName" style="font-size:13px;font-weight:600;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">—</div>
+                <div id="photoSelectedSize" style="font-size:12px;color:var(--ink3);margin-top:2px">—</div>
+              </div>
+              <button onclick="clearPhotoSelection()" style="background:none;border:1px solid var(--line);border-radius:4px;padding:4px 10px;font-size:12px;color:var(--ink3);cursor:pointer">Remove</button>
+            </div>
+
+            <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+              <button id="uploadPhotoBtn" onclick="uploadPhoto()" style="padding:11px 28px;background:var(--crimson);color:#fff;border:none;border-radius:var(--r);font-size:13px;font-weight:600;cursor:pointer;display:none;transition:background .15s;box-shadow:0 2px 8px rgba(139,26,46,.22)">Upload Photo</button>
+              <span id="photoUploadStatus" style="font-size:13px;color:var(--ink3)"></span>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
 
   </div>
@@ -2353,20 +2399,73 @@ const closing = `
 function previewPhoto(input) {
   const file = input.files[0];
   if (!file) return;
+  const statusEl = document.getElementById('photoUploadStatus');
   if (file.size > 5 * 1024 * 1024) {
-    document.getElementById('photoUploadStatus').textContent = 'File too large. Max 5MB.';
-    document.getElementById('photoUploadStatus').style.color = 'var(--crimson)';
+    statusEl.textContent = 'File too large. Max 5MB.';
+    statusEl.style.color = 'var(--crimson)';
     return;
   }
+  statusEl.textContent = '';
   const reader = new FileReader();
   reader.onload = function(e) {
+    // Update current photo preview card
     const preview = document.getElementById('profilePhotoPreview');
-    preview.innerHTML = '<img src="' + e.target.result + '" style="width:100%;height:100%;object-fit:cover;border-radius:8px">';
+    if (preview) preview.innerHTML = '<img src="' + e.target.result + '" style="width:100%;height:100%;object-fit:cover;border-radius:8px">';
+    // Show selected-file info row
+    const wrap  = document.getElementById('photoSelectedWrap');
+    const thumb = document.getElementById('photoSelectedThumb');
+    const name  = document.getElementById('photoSelectedName');
+    const size  = document.getElementById('photoSelectedSize');
+    if (thumb) thumb.src = e.target.result;
+    if (name)  name.textContent = file.name;
+    if (size)  size.textContent = (file.size / 1024).toFixed(0) + ' KB · ' + file.type.replace('image/', '').toUpperCase();
+    if (wrap)  wrap.style.display = 'flex';
     document.getElementById('uploadPhotoBtn').style.display = 'inline-block';
-    document.getElementById('photoUploadStatus').textContent = '';
   };
   reader.readAsDataURL(file);
 }
+
+function clearPhotoSelection() {
+  const input = document.getElementById('photoFileInput');
+  if (input) input.value = '';
+  const wrap = document.getElementById('photoSelectedWrap');
+  if (wrap) wrap.style.display = 'none';
+  const btn = document.getElementById('uploadPhotoBtn');
+  if (btn) btn.style.display = 'none';
+  document.getElementById('photoUploadStatus').textContent = '';
+}
+
+// Drag-and-drop for drop zone
+(function initDropZone() {
+  function ready() {
+    const zone = document.getElementById('photoDropZone');
+    if (!zone) return;
+    zone.addEventListener('dragover', function(e) {
+      e.preventDefault();
+      zone.style.borderColor = 'var(--crimson)';
+      zone.style.background  = 'var(--crimson-light)';
+    });
+    zone.addEventListener('dragleave', function() {
+      zone.style.borderColor = 'var(--line)';
+      zone.style.background  = 'var(--surface)';
+    });
+    zone.addEventListener('drop', function(e) {
+      e.preventDefault();
+      zone.style.borderColor = 'var(--line)';
+      zone.style.background  = 'var(--surface)';
+      const input = document.getElementById('photoFileInput');
+      if (e.dataTransfer.files.length) {
+        // Assign dropped file to the input and trigger preview
+        const dt = new DataTransfer();
+        dt.items.add(e.dataTransfer.files[0]);
+        input.files = dt.files;
+        previewPhoto(input);
+      }
+    });
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', ready);
+  else ready();
+})();
 
 async function uploadPhoto() {
   const file = document.getElementById('photoFileInput').files[0];
