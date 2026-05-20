@@ -5,19 +5,26 @@
 //  Environment variables required (set in Netlify dashboard):
 //    SUPABASE_URL          e.g. https://xxxx.supabase.co
 //    SUPABASE_ANON_KEY     your anon/public key
+//    SUPABASE_SERVICE_KEY  service_role key (used only server-side
+//                          after password is verified — never sent
+//                          to the browser)
 // ============================================================
 
-const SUPABASE_URL      = process.env.SUPABASE_URL;
-const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY;
+const SUPABASE_URL         = process.env.SUPABASE_URL;
+const SUPABASE_ANON_KEY    = process.env.SUPABASE_ANON_KEY;
+const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY;
 
 // ── Supabase REST helper ─────────────────────────────────────
-async function supabase(path, options = {}) {
-  const url = `${SUPABASE_URL}/rest/v1/${path}`;
-  const res = await fetch(url, {
+// useServiceKey = true bypasses RLS — only used after the student's
+// password has already been verified in this same request.
+async function supabase(path, options = {}, useServiceKey = false) {
+  const key = useServiceKey ? SUPABASE_SERVICE_KEY : SUPABASE_ANON_KEY;
+  const url  = `${SUPABASE_URL}/rest/v1/${path}`;
+  const res  = await fetch(url, {
     ...options,
     headers: {
-      'apikey':        SUPABASE_ANON_KEY,
-      'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+      'apikey':        key,
+      'Authorization': `Bearer ${key}`,
       'Content-Type':  'application/json',
       ...(options.headers || {})
     }
@@ -37,20 +44,20 @@ function mapStudent(row, programName) {
     fullNameMM:       row.name_my         || '',
     fatherName:       row.father          || '',
     fatherNameMM:     row.father_my       || '',
-    dob:              row.dob             || '',   // date of birth
+    dob:              row.dob             || '',
     email:            row.email           || '',
     phone:            row.phone           || '',
     address:          row.address         || '',
     admissionYear:    row.admission       || '',
-    currentStatus:    row.year            || '',   // "Foundation Year", "M-1", etc.
-    enrollmentStatus: row.status          || '',   // "Active", etc.
+    currentStatus:    row.year            || '',
+    enrollmentStatus: row.status          || '',
     overallGPA:       row.gpa != null ? String(row.gpa) : '—',
-    graduationStatus: row.grad_status     || '',   // "In Progress", "Graduated", etc.
+    graduationStatus: row.grad_status     || '',
     graduationId:     row.graduation_id   || '',
     graduationDate:   row.graduation_date || '',
     photo:            row.photo           || '',
-    program:          row.program         || '',   // raw id, e.g. "MBBS"
-    programName:      programName         || row.program || '', // full name, e.g. "Bachelor of Medicine, Bachelor of Surgery"
+    program:          row.program         || '',
+    programName:      programName         || row.program || '',
     // master_password is intentionally excluded
   };
 }
@@ -58,16 +65,16 @@ function mapStudent(row, programName) {
 // ── Map grade row ────────────────────────────────────────────
 function mapGrade(row) {
   return {
-    gradeId:        String(row.id                          || ''),
-    courseId:       String(row.CourseID || row.course_id   || '').trim().toUpperCase(),
-    course:         row.course                             || '',   // course full name
-    grade:          row.letter                             || '',
-    numericScore:   row.NumericScore                       ?? '',
-    gradePoint:     row.gp                                 ?? '',
-    year:           row.year                               || '',
-    attempt:        row.attempt                            || '',
-    notes:          row.notes                              || '',
-    updatedAt:      row.updated_at                         || ''
+    gradeId:      String(row.id                        || ''),
+    courseId:     String(row.CourseID || row.course_id || '').trim().toUpperCase(),
+    course:       row.course                           || '',
+    grade:        row.letter                           || '',
+    numericScore: row.NumericScore                     ?? '',
+    gradePoint:   row.gp                               ?? '',
+    year:         row.year                             || '',
+    attempt:      row.attempt                          || '',
+    notes:        row.notes                            || '',
+    updatedAt:    row.updated_at                       || ''
   };
 }
 
@@ -82,7 +89,6 @@ export const handler = async (event) => {
     'Content-Type': 'application/json'
   };
 
-  // Handle CORS preflight
   if (event.httpMethod === 'OPTIONS') {
     return { statusCode: 204, headers };
   }
@@ -105,7 +111,7 @@ export const handler = async (event) => {
   }
 
   try {
-    // ── 1. Fetch student by ID ───────────────────────────────
+    // ── 1. Fetch student by ID (anon key — public read is fine) ─
     const students = await supabase(
       `students?id=eq.${encodeURIComponent(normId)}&select=*&limit=1`
     );
@@ -119,7 +125,7 @@ export const handler = async (event) => {
 
     const raw = students[0];
 
-    // ── 2. Verify master_password ────────────────────────────
+    // ── 2. Verify master_password BEFORE using service key ───
     const storedPassword = String(raw.master_password || '').trim();
     if (storedPassword !== normPass) {
       return {
@@ -128,7 +134,7 @@ export const handler = async (event) => {
       };
     }
 
-    // ── 3. Fetch degree program full name ───────────────────
+    // ── 3. Fetch degree program name ─────────────────────────
     let programName = raw.program || '';
     if (raw.program) {
       try {
@@ -140,24 +146,24 @@ export const handler = async (event) => {
         }
       } catch (e) {
         console.warn('Could not fetch degree program name:', e.message);
-        // non-fatal: falls back to raw program id
       }
     }
 
     // ── 4. Map student (strips master_password) ──────────────
     const student = mapStudent(raw, programName);
 
-    // ── 5. Fetch grades for this student ─────────────────────
+    // ── 5. Fetch grades — service key used here, password already
+    //       verified above. RLS stays ON, no public policy needed.
     const gradeRows = await supabase(
-      `grades?StudentID=eq.${encodeURIComponent(raw.id)}&select=*&order=CourseID.asc`
+      `grades?StudentID=eq.${encodeURIComponent(raw.id)}&select=*&order=CourseID.asc`,
+      {},
+      true  // useServiceKey — bypasses RLS safely after auth
     );
     const grades = (gradeRows || []).map(mapGrade);
 
-    // ── 5. Build photo URL if needed ─────────────────────────
-    if (student.photo) {
-      if (!student.photo.startsWith('http')) {
-        student.photo = `${SUPABASE_URL}/storage/v1/object/public/student-photos/${student.photo}`;
-      }
+    // ── 6. Build photo URL if needed ─────────────────────────
+    if (student.photo && !student.photo.startsWith('http')) {
+      student.photo = `${SUPABASE_URL}/storage/v1/object/public/student-photos/${student.photo}`;
     }
 
     return {
