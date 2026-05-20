@@ -1462,28 +1462,24 @@ function populate(s, grades) {
   s.email            = s.email           || '';
   s.address          = s.address         || '';
   s.admissionYear    = s.admission       || s.admissionYear    || '';
- // 'year' column holds academic year level (e.g. "M-1", "M-2")
+ // 'year' column → Current Year (Profile) and Year (ID Card)
 s.currentStatus = s.year || s.currentStatus || '';
 
-// 'status' column holds enrollment status (e.g. "Active", "Inactive")
-s.enrollmentStatus = s.status || s.enrollmentStatus || '';
+// 'year' column → Enrollment Status
+s.enrollmentStatus = s.year || s.enrollmentStatus || '';
 
 // program
 s.program = s.program || '';
 
-// graduation status
-// If grad_status exists, use it.
-// Otherwise, if student is Active, show "In Progress".
-s.gradStatus =
-  s.grad_status ||
-  (s.enrollmentStatus === 'Active' ? 'In Progress' : '');
-  const _rawGrad = s.grad_status || s.graduationStatus || '';
+// graduation status — always from grad_status column directly
+s.gradStatus = s.grad_status || '';
+  const _rawGrad = s.grad_status || '';
   if (/^graduated$/i.test(_rawGrad.trim())) {
     s.graduationStatus = 'Graduated';
-  } else if (/^active$/i.test((s.year || s.enrollmentStatus || '').trim())) {
-    s.graduationStatus = 'In Progress';
+  } else if (_rawGrad) {
+    s.graduationStatus = _rawGrad;
   } else {
-    s.graduationStatus = _rawGrad || '—';
+    s.graduationStatus = '—';
   }
   s.graduationId     = s.graduation_id   || s.graduationId     || '';
   s.graduationDate   = s.graduation_date || s.graduationDate   || '';
