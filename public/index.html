@@ -1463,9 +1463,9 @@ function populate(s, grades) {
   s.address          = s.address         || '';
   s.admissionYear    = s.admission       || s.admissionYear    || '';
   // 'year' column holds academic year level (e.g. "M-1", "M-2" …)
-  s.currentStatus    = s.status          || s.currentStatus    || '';
+  s.currentStatus    = s.year          || s.year    || '';
   // 'status' column holds enrollment status (e.g. "Active", "Inactive")
-  s.enrollmentStatus = s.year            || s.enrollmentStatus || '';
+  s.enrollmentStatus = s.status            || s.enrollmentStatus || '';
   s.program          = s.program         || '';
   // 'grad_status' = 'Graduated' for alumni; derive 'In Progress' for active students
   const _rawGrad = s.grad_status || s.graduationStatus || '';
