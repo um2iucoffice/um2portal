@@ -1462,16 +1462,16 @@ function populate(s, grades) {
   s.email            = s.email           || '';
   s.address          = s.address         || '';
   s.admissionYear    = s.admission       || s.admissionYear    || '';
-  // 'year' column holds academic year level (e.g. "M-1", "M-2" …)
-  s.currentStatus    = s.year            || s.currentStatus    || '';
-  // 'status' column holds enrollment status (e.g. "Active", "Inactive")
-  s.enrollmentStatus = s.status          || s.enrollmentStatus || '';
+  // 'status' column holds academic year level (e.g. "Foundation Year", "M-1", "M-2" …)
+  s.currentStatus    = s.status          || s.currentStatus    || '';
+  // 'year' column holds enrollment status (e.g. "Active", "Inactive")
+  s.enrollmentStatus = s.year            || s.enrollmentStatus || '';
   s.program          = s.program         || '';
   // 'grad_status' = 'Graduated' for alumni; derive 'In Progress' for active students
   const _rawGrad = s.grad_status || s.graduationStatus || '';
   if (/^graduated$/i.test(_rawGrad.trim())) {
     s.graduationStatus = 'Graduated';
-  } else if (/^active$/i.test((s.status || s.enrollmentStatus || '').trim())) {
+  } else if (/^active$/i.test((s.year || s.enrollmentStatus || '').trim())) {
     s.graduationStatus = 'In Progress';
   } else {
     s.graduationStatus = _rawGrad || '—';
