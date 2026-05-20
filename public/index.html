@@ -1273,10 +1273,10 @@ table.gt * {
         <div class="icard" style="margin-bottom:16px">
           <div class="icard-head">Current Photo</div>
           <div style="padding:28px 24px;display:flex;align-items:center;gap:28px;flex-wrap:wrap">
-            <div id="profilePhotoPreview" style="width:100px;height:120px;border-radius:10px;background:var(--surface);border:1.5px solid var(--line);overflow:hidden;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:36px;color:var(--ink3)">📷</div>
+            <div id="profilePhotoPreview" style="width:100px;height:120px;border-radius:10px;background:var(--surface);border:1.5px solid var(--line);overflow:hidden;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:36px;color:var(--ink3)"></div>
             <div>
-              <div style="font-size:14px;font-weight:600;color:var(--ink);margin-bottom:4px" id="photoPreviewName">—</div>
-              <div style="font-size:12px;color:var(--ink3)" id="photoPreviewId">—</div>
+              <div style="font-size:14px;font-weight:600;color:var(--ink);margin-bottom:4px" id="photoPreviewName">ကျောင်းသားဓာတ်ပုံ</div>
+              <div style="font-size:12px;color:var(--ink3)" id="photoPreviewId">Student's ID Photo</div>
               <div style="margin-top:12px;font-size:12px;color:var(--ink3);line-height:1.6">
                 Your photo appears on your Student ID card<br>and throughout the portal.
               </div>
@@ -1289,8 +1289,8 @@ table.gt * {
           <div class="icard-head">Upload New Photo</div>
           <div style="padding:24px">
             <p style="font-size:13px;color:var(--ink3);margin-bottom:20px;line-height:1.6">
-              Please upload a clear, passport-style photo with a plain background.
-              ဤနေရာတွင် (ပတ်စပို့) ပုံစံ ဓာတ်ပုံကို တင်ပေးပါ။ နောက်ခံအရောင် အလွတ် ဖြစ်ရပါမည်။<br>
+              Please upload a clear, passport-style photo with a plain background.<br>
+              ဤနေရာတွင် (ပတ်စ်ပို့) ပုံစံ ဓာတ်ပုံကို တင်ပေးပါ။ နောက်ခံအရောင် အဖြူ ဖြစ်ရပါမည်။<br>
               Accepted formats: <strong>JPEG, PNG, WebP</strong> &nbsp;·&nbsp; Max size: <strong>5 MB</strong>
             </p>
 
@@ -2498,61 +2498,38 @@ function applyWatermark(sourceDataUrl) {
     const img = new Image();
     img.onload = function() {
       const canvas = document.createElement('canvas');
-      // Cap size to avoid memory issues on huge photos
-      const MAX = 1600;
-      const scale = Math.min(1, MAX / Math.max(img.naturalWidth, img.naturalHeight));
-      canvas.width  = Math.round(img.naturalWidth  * scale);
-      canvas.height = Math.round(img.naturalHeight * scale);
+      canvas.width  = img.naturalWidth;
+      canvas.height = img.naturalHeight;
       const ctx = canvas.getContext('2d');
 
       // Draw original image
-      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+      ctx.drawImage(img, 0, 0);
 
-      // ── Watermark tile ──
-      const fontSize = Math.max(10, Math.round(canvas.width * 0.045));
-      ctx.font        = 'bold ' + fontSize + 'px Arial, sans-serif';
-      ctx.fillStyle   = 'rgba(255,255,255,0.32)';
+      // Watermark style
+      const text     = 'UM2';
+      const fontSize = Math.max(12, Math.round(canvas.width * 0.055));
+      ctx.font        = 'bold ' + fontSize + 'px DM Sans, Arial, sans-serif';
+      ctx.fillStyle   = 'rgba(255, 255, 255, 0.28)';
       ctx.textBaseline = 'middle';
-      ctx.textAlign    = 'left';
 
-      const text  = 'UM2 ';
-      const stepX = ctx.measureText(text).width + fontSize * 0.5;
-      const stepY = fontSize * 2.2;
-      const angle = -25 * Math.PI / 180;
+      // Tile across the whole image at a diagonal
+      const stepX = fontSize * 4.2;
+      const stepY = fontSize * 2.6;
+      const angle = -22 * Math.PI / 180;
 
       ctx.save();
-      const diag = Math.ceil(Math.sqrt(canvas.width * canvas.width + canvas.height * canvas.height));
+      // Extend tiling beyond canvas edges to cover rotated corners
+      const diag = Math.sqrt(canvas.width * canvas.width + canvas.height * canvas.height);
       ctx.translate(canvas.width / 2, canvas.height / 2);
       ctx.rotate(angle);
-      for (let row = -diag; row < diag; row += stepY) {
-        // Offset every other row for a brick-like pattern
-        const offsetX = (Math.round(row / stepY) % 2 === 0) ? 0 : stepX / 2;
-        for (let col = -diag + offsetX; col < diag; col += stepX) {
-          ctx.fillText(text, col, row);
+      for (let y = -diag; y < diag; y += stepY) {
+        for (let x = -diag; x < diag; x += stepX) {
+          ctx.fillText(text, x, y);
         }
       }
       ctx.restore();
 
-      canvas.toBlob(function(blob) {
-        if (blob) { resolve(blob); }
-        else {
-          // Fallback: convert dataURL manually
-          const b64 = canvas.toDataURL('image/jpeg', 0.92).split(',')[1];
-          const bin = atob(b64);
-          const arr = new Uint8Array(bin.length);
-          for (let i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i);
-          resolve(new Blob([arr], { type: 'image/jpeg' }));
-        }
-      }, 'image/jpeg', 0.92);
-    };
-    img.onerror = function() {
-      // If image fails to load, fetch as blob and retry
-      fetch(sourceDataUrl).then(r => r.blob()).then(b => {
-        const url = URL.createObjectURL(b);
-        const img2 = new Image();
-        img2.onload = function() { resolve(img2); URL.revokeObjectURL(url); };
-        img2.src = url;
-      }).catch(() => resolve(null));
+      canvas.toBlob(function(blob) { resolve(blob); }, 'image/jpeg', 0.92);
     };
     img.src = sourceDataUrl;
   });
@@ -2572,12 +2549,10 @@ function previewPhoto(input) {
   reader.onload = function(e) {
     // Apply watermark and show watermarked preview
     applyWatermark(e.target.result).then(function(wmBlob) {
-      if (!wmBlob) { console.error('Watermark failed: null blob'); return; }
-
       const wmUrl = URL.createObjectURL(wmBlob);
+
       // Store watermarked blob on the input element for upload
       input._watermarkedBlob = wmBlob;
-      input._watermarkedUrl  = wmUrl;
 
       // Update current photo preview card
       const preview = document.getElementById('profilePhotoPreview');
@@ -2589,11 +2564,9 @@ function previewPhoto(input) {
       const size  = document.getElementById('photoSelectedSize');
       if (thumb) thumb.src = wmUrl;
       if (name)  name.textContent = file.name;
-      if (size)  size.textContent = (file.size / 1024).toFixed(0) + ' KB · ' + file.type.replace('image/', '').toUpperCase() + ' · Watermarked ✓';
+      if (size)  size.textContent = (file.size / 1024).toFixed(0) + ' KB · ' + file.type.replace('image/', '').toUpperCase() + ' · Watermarked';
       if (wrap)  wrap.style.display = 'flex';
       document.getElementById('uploadPhotoBtn').style.display = 'inline-block';
-    }).catch(function(err) {
-      console.error('Watermark error:', err);
     });
   };
   reader.readAsDataURL(file);
