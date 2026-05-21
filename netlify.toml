@@ -1,14 +1,11 @@
 [build]
+  command = "npm install"
   publish = "public"
-  functions = "netlify/functions"
 
 [functions]
-  # Use ES module format (the login function uses `export const handler`)
-  node_bundler = "esbuild"
+  directory = "netlify/functions"
+  node_bundler = "nft"
 
-[[headers]]
-  for = "/*"
-  [headers.values]
-    X-Frame-Options = "SAMEORIGIN"
-    X-Content-Type-Options = "nosniff"
-    Referrer-Policy = "strict-origin-when-cross-origin"
+[build.environment]
+  NODE_VERSION = "18"
+  PYTHON = "python3"
