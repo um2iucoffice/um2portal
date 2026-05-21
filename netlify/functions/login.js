@@ -64,16 +64,16 @@ function mapStudent(row, programName) {
 // ── Map grade row ────────────────────────────────────────────
 function mapGrade(row) {
   return {
-    gradeId:      String(row.id                        || ''),
-    courseId:     String(row.CourseID || row.course_id || '').trim().toUpperCase(),
-    course:       row.course                           || '',
-    grade:        row.letter                           || '',
-    numericScore: row.NumericScore                     ?? '',
-    gradePoint:   row.gp                               ?? '',
-    year:         row.year                             || '',
-    attempt:      row.attempt                          || '',
-    notes:        row.notes                            || '',
-    updatedAt:    row.updated_at                       || ''
+    gradeId:      String(row.id          || ''),
+    courseId:     String(row.course_id   || '').trim().toUpperCase(),  // ← was: row.CourseID || row.course_id
+    course:       row.course             || '',
+    grade:        row.letter             || '',
+    numericScore: row.score              ?? '',                         // ← was: row.NumericScore
+    gradePoint:   row.gp                 ?? '',
+    year:         row.year               || '',
+    attempt:      row.attempt            || '',
+    notes:        row.notes              || '',
+    updatedAt:    row.updated_at         || ''
   };
 }
 
@@ -172,7 +172,7 @@ export const handler = async (event) => {
 
     // ── 5. Fetch grades ──────────────────────────────────────
     const gradeRows = await supabase(
-      `grades?StudentID=eq.${encodeURIComponent(raw.id)}&select=*&order=CourseID.asc`,
+      `grades?student_id=eq.${encodeURIComponent(raw.id)}&select=*&order=course_id.asc`,  // ← fixed
       {},
       true
     );
@@ -198,9 +198,6 @@ export const handler = async (event) => {
     }
 
     // ── 7. Fetch enrollments ─────────────────────────────────
-    // If you have an enrollments table, this fetches all enrollments
-    // for this student. Falls back to synthesising one from the
-    // students row if the table doesn't exist or returns nothing.
     let enrollments = [];
     try {
       const enrollmentRows = await supabase(
@@ -210,7 +207,6 @@ export const handler = async (event) => {
       );
 
       if (enrollmentRows && enrollmentRows.length > 0) {
-        // Fetch program names for each enrollment
         const programIds = [...new Set(
           enrollmentRows
             .map(e => e.degree_program_id || e.program_id)
@@ -241,9 +237,6 @@ export const handler = async (event) => {
     }
 
     // ── 8. Fallback: synthesise enrollment from students row ─
-    // If no enrollments table exists yet, build one entry from
-    // the students row so the frontend multi-enrollment logic
-    // has something to work with.
     if (enrollments.length === 0) {
       enrollments = [{
         id:               '',
