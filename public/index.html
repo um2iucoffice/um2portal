@@ -2576,6 +2576,11 @@ body.theme-light .mob-more-item.danger svg { color: var(--crimson); }
         <span class="sbnav-label">Profile Photo</span>
       </button>
 
+      <button class="sbnav-item" data-section="editinfo" onclick="switchSection('editinfo',this)" id="navEditInfo">
+        <svg class="sbnav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+        <span class="sbnav-label">Edit My Info <span id="editInfoBadge" style="display:none;background:var(--crimson);color:#fff;font-size:9px;font-weight:700;padding:1px 6px;border-radius:99px;margin-left:4px">Pending</span></span>
+      </button>
+
       <div class="sb-section-lbl" style="margin-top:8px">External</div>
 
       <a class="sbnav-item ext-link" href="https://um2campus.com/login/index.php" target="_blank" rel="noopener">
@@ -2708,6 +2713,8 @@ body.theme-light .mob-more-item.danger svg { color: var(--crimson); }
           <div class="icell"><div class="ic-lbl">Date of Birth</div><div class="ic-val" id="infoBirth">—</div></div>
           <div class="icell"><div class="ic-lbl">Father's Name</div><div class="ic-val" id="infoFather">—</div></div>
           <div class="icell"><div class="ic-lbl">Father's Name (Myanmar)</div><div class="ic-val" id="infoFatherMM">—</div></div>
+          <div class="icell"><div class="ic-lbl">Mother's Name</div><div class="ic-val" id="infoMother">—</div></div>
+          <div class="icell"><div class="ic-lbl">Mother's Name (Myanmar)</div><div class="ic-val" id="infoMotherMM">—</div></div>
           <div class="icell"><div class="ic-lbl">Phone</div><div class="ic-val" id="infoPhone">—</div></div>
           <div class="icell"><div class="ic-lbl">Email</div><div class="ic-val" id="infoEmail">—</div></div>
           <div class="icell"><div class="ic-lbl">Admission Year</div><div class="ic-val" id="infoAdmission">—</div></div>
@@ -2715,8 +2722,10 @@ body.theme-light .mob-more-item.danger svg { color: var(--crimson); }
           <div class="icell"><div class="ic-lbl">Enrollment Status</div><div class="ic-val" id="infoEnroll">—</div></div>
           <div class="icell"><div class="ic-lbl">Degree Program</div><div class="ic-val" id="infoProgram">—</div></div>
           <div class="icell"><div class="ic-lbl">Completion Status</div><div class="ic-val" id="infoGrad">—</div></div>
-          <div class="icell" id="cellGradID" style="display:none"><div class="ic-lbl">Graduation ID</div><div class="ic-val" id="infoGradID">—</div></div>
+          <div class="icell" id="cellGradID" style="display:none"><div class="ic-lbl">ဘွဲ့ရမှတ်ပုံတင် အမှတ် · Graduation ID</div><div class="ic-val" id="infoGradID">—</div></div>
+          <div class="icell" id="cellGradIDMY" style="display:none"><div class="ic-lbl">ဘွဲ့ရမှတ်ပုံတင် (Myanmar)</div><div class="ic-val" id="infoGradIDMY" style="font-family:'Noto Sans Myanmar','Myanmar Text','Pyidaungsu',sans-serif">—</div></div>
           <div class="icell" id="cellGradDate" style="display:none"><div class="ic-lbl">Date of Graduation</div><div class="ic-val" id="infoGradDate">—</div></div>
+          <div class="icell" id="cellGradDateMY" style="display:none"><div class="ic-lbl">ရက်စွဲ (ဘွဲ့) · Graduation Date (Myanmar)</div><div class="ic-val" id="infoGradDateMY" style="font-family:'Noto Sans Myanmar','Myanmar Text','Pyidaungsu',sans-serif">—</div></div>
         </div>
       </div>
     </div>
@@ -2863,11 +2872,7 @@ body.theme-light .mob-more-item.danger svg { color: var(--crimson); }
           <div class="grades-hdr-name" id="gradesStudentName">—</div>
           <div class="grades-hdr-id"><span id="gradesIdLabel">Student ID</span>: <span id="gradesStudentId">—</span> &nbsp;·&nbsp; University of Medicine (2)</div>
         </div>
-        <div class="grades-hdr-gpa">
-          <div class="grades-hdr-gpa-label">Cumulative GPA</div>
-          <div class="grades-hdr-gpa-val" id="gradesGpa">—</div>
-          <div class="grades-hdr-gpa-den">/ 4.00</div>
-        </div>
+        
       </div>
 
       <div id="transcriptSummary" style="display:none" class="transcript-summary">
@@ -2900,6 +2905,89 @@ body.theme-light .mob-more-item.danger svg { color: var(--crimson); }
       </div>
 
       <div id="gradesContent"><div class="g-wrap"><div class="no-g">Loading results…</div></div></div>
+    </div>
+
+    <!-- EDIT MY INFO -->
+    <div class="section" id="panel-editinfo">
+      <div class="sec-head">
+        <h2>Edit My Information</h2>
+        <p>Submit a request to update your personal details. Changes require Registrar approval.</p>
+      </div>
+      <div style="max-width:640px">
+
+        <!-- Pending request notice -->
+        <div id="editInfoPendingNotice" style="display:none;margin-bottom:20px;padding:14px 18px;border-radius:10px;border:1px solid rgba(154,123,47,0.35);background:rgba(154,123,47,0.1)">
+          <div style="font-size:13px;font-weight:700;color:var(--gold);margin-bottom:4px">⏳ Pending Approval</div>
+          <div id="editInfoPendingText" style="font-size:12px;color:var(--ink3);line-height:1.6"></div>
+        </div>
+
+        <!-- Approved notice -->
+        <div id="editInfoApprovedNotice" style="display:none;margin-bottom:20px;padding:14px 18px;border-radius:10px;border:1px solid rgba(26,92,58,0.3);background:rgba(26,92,58,0.08)">
+          <div style="font-size:13px;font-weight:700;color:var(--green);margin-bottom:4px">✓ Last Request Approved</div>
+          <div id="editInfoApprovedText" style="font-size:12px;color:var(--ink3);line-height:1.6"></div>
+        </div>
+
+        <div class="icard">
+          <div class="icard-head">Request Information Change</div>
+          <div style="padding:24px">
+            <p style="font-size:13px;color:var(--ink3);margin-bottom:24px;line-height:1.6">
+              You can request changes to your Father's Name and Mother's Name (in both English and Myanmar). Other fields like your name, date of birth, and enrollment data must be updated by the Registrar directly.
+            </p>
+
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px">
+              <div>
+                <div style="font-size:11px;font-weight:600;letter-spacing:.8px;text-transform:uppercase;color:var(--ink3);margin-bottom:6px">Father's Name (English)</div>
+                <input id="editFatherEN" type="text" placeholder="U / Ko …"
+                  style="width:100%;padding:10px 12px;border:1.5px solid var(--line);border-radius:var(--r);font-family:'DM Sans',sans-serif;font-size:13px;color:var(--ink);background:var(--white);outline:none;transition:border-color .2s,box-shadow .2s"
+                  onfocus="this.style.borderColor='var(--crimson)';this.style.boxShadow='0 0 0 3px rgba(139,26,46,0.08)'"
+                  onblur="this.style.borderColor='var(--line)';this.style.boxShadow='none'">
+              </div>
+              <div>
+                <div style="font-size:11px;font-weight:600;letter-spacing:.8px;text-transform:uppercase;color:var(--ink3);margin-bottom:6px">Father's Name (Myanmar)</div>
+                <input id="editFatherMY" type="text" placeholder="ဦး / ကို …"
+                  style="width:100%;padding:10px 12px;border:1.5px solid var(--line);border-radius:var(--r);font-family:'Noto Sans Myanmar','Myanmar Text','Pyidaungsu','DM Sans',sans-serif;font-size:13px;color:var(--ink);background:var(--white);outline:none;transition:border-color .2s,box-shadow .2s"
+                  onfocus="this.style.borderColor='var(--crimson)';this.style.boxShadow='0 0 0 3px rgba(139,26,46,0.08)'"
+                  onblur="this.style.borderColor='var(--line)';this.style.boxShadow='none'">
+              </div>
+              <div>
+                <div style="font-size:11px;font-weight:600;letter-spacing:.8px;text-transform:uppercase;color:var(--ink3);margin-bottom:6px">Mother's Name (English)</div>
+                <input id="editMotherEN" type="text" placeholder="Daw / Ma …"
+                  style="width:100%;padding:10px 12px;border:1.5px solid var(--line);border-radius:var(--r);font-family:'DM Sans',sans-serif;font-size:13px;color:var(--ink);background:var(--white);outline:none;transition:border-color .2s,box-shadow .2s"
+                  onfocus="this.style.borderColor='var(--crimson)';this.style.boxShadow='0 0 0 3px rgba(139,26,46,0.08)'"
+                  onblur="this.style.borderColor='var(--line)';this.style.boxShadow='none'">
+              </div>
+              <div>
+                <div style="font-size:11px;font-weight:600;letter-spacing:.8px;text-transform:uppercase;color:var(--ink3);margin-bottom:6px">Mother's Name (Myanmar)</div>
+                <input id="editMotherMY" type="text" placeholder="ဒေါ် / မ …"
+                  style="width:100%;padding:10px 12px;border:1.5px solid var(--line);border-radius:var(--r);font-family:'Noto Sans Myanmar','Myanmar Text','Pyidaungsu','DM Sans',sans-serif;font-size:13px;color:var(--ink);background:var(--white);outline:none;transition:border-color .2s,box-shadow .2s"
+                  onfocus="this.style.borderColor='var(--crimson)';this.style.boxShadow='0 0 0 3px rgba(139,26,46,0.08)'"
+                  onblur="this.style.borderColor='var(--line)';this.style.boxShadow='none'">
+              </div>
+            </div>
+
+            <div style="margin-bottom:20px">
+              <div style="font-size:11px;font-weight:600;letter-spacing:.8px;text-transform:uppercase;color:var(--ink3);margin-bottom:6px">Reason for Change</div>
+              <textarea id="editInfoReason" rows="3" placeholder="Briefly explain why this information needs to be updated (e.g. spelling correction, legal name change)…"
+                style="width:100%;padding:10px 12px;border:1.5px solid var(--line);border-radius:var(--r);font-family:'DM Sans',sans-serif;font-size:13px;color:var(--ink);background:var(--white);outline:none;resize:vertical;transition:border-color .2s,box-shadow .2s"
+                onfocus="this.style.borderColor='var(--crimson)';this.style.boxShadow='0 0 0 3px rgba(139,26,46,0.08)'"
+                onblur="this.style.borderColor='var(--line)';this.style.boxShadow='none'"></textarea>
+            </div>
+
+            <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+              <button id="submitEditInfoBtn" onclick="submitInfoEditRequest()"
+                style="padding:11px 28px;background:var(--crimson);color:#fff;border:none;border-radius:var(--r);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:background .15s;box-shadow:0 2px 8px rgba(139,26,46,.22)">
+                Submit Request
+              </button>
+              <span id="editInfoStatus" style="font-size:13px;color:var(--ink3)"></span>
+            </div>
+          </div>
+        </div>
+
+        <div class="icard" style="margin-top:16px">
+          <div class="icard-head">Request History</div>
+          <div id="editInfoHistory" style="padding:16px 20px;font-size:13px;color:var(--ink3)">No requests submitted yet.</div>
+        </div>
+      </div>
     </div>
 
     <!-- PHOTO UPLOAD -->
@@ -3175,6 +3263,8 @@ function normaliseStudent(raw) {
     fullNameMM: firstValue(s, ['name_my', 'fullNameMM', 'full_name_mm', 'Name Myanmar', 'name_mm']),
     fatherName: firstValue(s, ['father', 'fatherName', 'father_name']),
     fatherNameMM: firstValue(s, ['father_my', 'fatherNameMM', 'father_name_mm']),
+    motherName: firstValue(s, ['mother', 'motherName', 'mother_name']),
+    motherNameMM: firstValue(s, ['mother_my', 'motherNameMM', 'mother_name_mm']),
     birthDate: firstValue(s, ['dob', 'birthDate', 'birth_date', 'date_of_birth']),
     phone: firstValue(s, ['phone', 'Phone']),
     email: firstValue(s, ['email', 'Email']),
@@ -3187,6 +3277,8 @@ function normaliseStudent(raw) {
     graduationStatus: firstValue(s, ['grad_status', 'graduationStatus', 'graduation_status']),
     graduationId: firstValue(s, ['graduation_id', 'graduationId']),
     graduationDate: firstValue(s, ['graduation_date', 'graduationDate']),
+    graduationIdMY: firstValue(s, ['graduation_id_my', 'graduationIdMY']),
+    graduationDateMY: firstValue(s, ['graduation_date_my', 'graduationDateMY']),
     gpa: firstValue(s, ['Overall GPA', 'overall_gpa', 'OverallGPA', 'overallGPA', 'gpa', 'GPA'])
   };
 }
@@ -3324,6 +3416,8 @@ function populate(s, grades, courses, program_meta, enrollments) {
   document.getElementById('infoBirth').textContent     = s.birthDate        || '—';
   document.getElementById('infoFather').textContent    = s.fatherName       || '—';
   document.getElementById('infoFatherMM').textContent  = s.fatherNameMM     || '—';
+  document.getElementById('infoMother').textContent    = s.motherName       || '—';
+  document.getElementById('infoMotherMM').textContent  = s.motherNameMM     || '—';
   document.getElementById('infoPhone').textContent     = s.phone            || '—';
   document.getElementById('infoEmail').textContent     = s.email            || '—';
   document.getElementById('infoAdmission').textContent = s.admissionYear    || '—';
@@ -3340,13 +3434,21 @@ function populate(s, grades, courses, program_meta, enrollments) {
 
   // Show/hide graduation fields
   const cellGradID   = document.getElementById('cellGradID');
+  const cellGradIDMY = document.getElementById('cellGradIDMY');
   const cellGradDate = document.getElementById('cellGradDate');
-  if (cellGradID)   cellGradID.style.display   = isGraduated ? '' : 'none';
-  if (cellGradDate) cellGradDate.style.display  = isGraduated ? '' : 'none';
+  const cellGradDateMY = document.getElementById('cellGradDateMY');
+  if (cellGradID)     cellGradID.style.display     = isGraduated ? '' : 'none';
+  if (cellGradIDMY)   cellGradIDMY.style.display   = isGraduated ? '' : 'none';
+  if (cellGradDate)   cellGradDate.style.display   = isGraduated ? '' : 'none';
+  if (cellGradDateMY) cellGradDateMY.style.display = isGraduated ? '' : 'none';
   const infoGradID   = document.getElementById('infoGradID');
+  const infoGradIDMY = document.getElementById('infoGradIDMY');
   const infoGradDate = document.getElementById('infoGradDate');
-  if (infoGradID)   infoGradID.textContent   = gradID   || '—';
-  if (infoGradDate) infoGradDate.textContent  = gradDate || '—';
+  const infoGradDateMY = document.getElementById('infoGradDateMY');
+  if (infoGradID)     infoGradID.textContent     = gradID   || '—';
+  if (infoGradIDMY)   infoGradIDMY.textContent   = s.graduationIdMY || s.graduation_id_my || '—';
+  if (infoGradDate)   infoGradDate.textContent   = gradDate || '—';
+  if (infoGradDateMY) infoGradDateMY.textContent = s.graduationDateMY || s.graduation_date_my || '—';
 
   // ── ID Card tab label ─────────────────────────────────────────
   const navIdCard = document.getElementById('navIdCard');
@@ -3380,6 +3482,8 @@ function populate(s, grades, courses, program_meta, enrollments) {
 
   // ── Store enrollments globally ───────────────────────────────
   window._enrollments = (enrollments || []);
+  // Store current student for Edit My Info
+  window._currentStudent = s;
   // If no enrollments returned from server, synthesise one from students row
   if (!window._enrollments.length) {
     window._enrollments = [{
@@ -4010,12 +4114,13 @@ function renderGrades(grades, student) {
 
 // ── Section / sidebar switching ───────────────────────────────
 const SECTION_TITLES = {
-  home:    'Home',
-  profile: 'My Personal Page',
-  grades:  'Academic Record',
-  docs:    'Document Office',
-  idcard:  'Student ID Card',
-  photo:   'Profile Photo'
+  home:     'Home',
+  profile:  'My Personal Page',
+  grades:   'Academic Record',
+  docs:     'Document Office',
+  idcard:   'Student ID Card',
+  photo:    'Profile Photo',
+  editinfo: 'Edit My Information'
 };
 
 function switchSection(id, btn) {
@@ -4042,6 +4147,9 @@ function switchSection(id, btn) {
   // Update topbar title
   const titleEl = document.getElementById('topbarTitle');
   if (titleEl) titleEl.textContent = SECTION_TITLES[id] || id;
+
+  // Load edit info data when navigating to that section
+  if (id === 'editinfo') { try { onSwitchToEditInfo(); } catch(e) {} }
 
   // Close sidebar on mobile
   closeSidebar();
@@ -4769,11 +4877,167 @@ function toggleTheme() {
 })();
 
 // ── Sign out ──────────────────────────────────────────────────
+// ── Edit My Info (student personal data change requests) ─────
+// Requires Netlify function: netlify/functions/edit-request.js
+// Table: student_edit_requests (see Setup Guide in registrar portal)
+
+async function loadEditInfoSection() {
+  const sid = (document.getElementById('loginStudentId').value || '').trim().toLowerCase();
+  const pwd = window._sessionPassword || '';
+  if (!sid) return;
+
+  try {
+    const res = await fetch('/.netlify/functions/get-edit-requests', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ studentId: sid, password: pwd })
+    });
+    if (!res.ok) return;
+    const data = await res.json();
+    const rows = data.requests || [];
+
+    // Pre-fill form with current values
+    const saved = window._currentStudent;
+    if (saved) {
+      document.getElementById('editFatherEN').value = saved.fatherName   || '';
+      document.getElementById('editFatherMY').value = saved.fatherNameMM || '';
+      document.getElementById('editMotherEN').value = saved.motherName   || '';
+      document.getElementById('editMotherMY').value = saved.motherNameMM || '';
+    }
+
+    // Check pending
+    const pending = rows.find(r => r.status === 'pending');
+    const lastApproved = rows.find(r => r.status === 'approved');
+    const pendingNotice  = document.getElementById('editInfoPendingNotice');
+    const approvedNotice = document.getElementById('editInfoApprovedNotice');
+
+    if (pending) {
+      pendingNotice.style.display = '';
+      document.getElementById('editInfoPendingText').textContent =
+        'Your request submitted on ' + (pending.submitted_at ? pending.submitted_at.slice(0,10) : '') + ' is awaiting Registrar review.';
+      document.getElementById('submitEditInfoBtn').disabled = true;
+      document.getElementById('submitEditInfoBtn').style.opacity = '0.5';
+      document.getElementById('editInfoBadge').style.display = '';
+    } else {
+      pendingNotice.style.display = 'none';
+      document.getElementById('submitEditInfoBtn').disabled = false;
+      document.getElementById('submitEditInfoBtn').style.opacity = '';
+      document.getElementById('editInfoBadge').style.display = 'none';
+    }
+
+    if (lastApproved && !pending) {
+      approvedNotice.style.display = '';
+      document.getElementById('editInfoApprovedText').textContent =
+        'Your request from ' + (lastApproved.submitted_at ? lastApproved.submitted_at.slice(0,10) : '') +
+        ' was approved on ' + (lastApproved.reviewed_at ? lastApproved.reviewed_at.slice(0,10) : '—') + '.';
+    } else {
+      approvedNotice.style.display = 'none';
+    }
+
+    // Render history
+    const histEl = document.getElementById('editInfoHistory');
+    if (!rows || !rows.length) {
+      histEl.innerHTML = '<div style="color:var(--ink3);font-size:13px">No requests submitted yet.</div>';
+      return;
+    }
+
+    const FIELD_LABELS = {
+      father:    "Father's Name (English)",
+      father_my: "Father's Name (Myanmar)",
+      mother:    "Mother's Name (English)",
+      mother_my: "Mother's Name (Myanmar)"
+    };
+
+    let html = '<div style="display:flex;flex-direction:column;gap:10px">';
+    rows.forEach(r => {
+      const sc = r.status === 'approved' ? 'var(--green)' : r.status === 'rejected' ? 'var(--crimson)' : 'var(--gold)';
+      const sl = r.status === 'approved' ? '✓ Approved' : r.status === 'rejected' ? '✗ Rejected' : '⏳ Pending';
+      const fl = FIELD_LABELS[r.field_name] || r.field_name;
+      html += `<div style="padding:12px 16px;border-radius:8px;border:1px solid var(--line);background:var(--surface)">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+          <span style="font-size:12px;font-weight:700;color:var(--ink)">${fl}</span>
+          <span style="font-size:11px;font-weight:700;color:${sc}">${sl}</span>
+        </div>
+        <div style="font-size:12px;color:var(--ink3)">
+          <span style="color:var(--ink2)">Old:</span> ${r.old_value || '—'} &nbsp;→&nbsp;
+          <span style="color:var(--ink2)">New:</span> ${r.new_value || '—'}
+        </div>
+        ${r.reason ? `<div style="font-size:11px;color:var(--ink3);margin-top:4px;font-style:italic">${r.reason}</div>` : ''}
+        <div style="font-size:11px;color:var(--ink3);margin-top:4px">${r.submitted_at ? r.submitted_at.slice(0,10) : ''}</div>
+        ${r.note ? `<div style="font-size:11px;color:var(--crimson);margin-top:4px">Registrar note: ${r.note}</div>` : ''}
+      </div>`;
+    });
+    html += '</div>';
+    histEl.innerHTML = html;
+  } catch(e) {
+    console.warn('loadEditInfoSection error:', e);
+  }
+}
+
+async function submitInfoEditRequest() {
+  const sid = (document.getElementById('loginStudentId').value || '').trim().toLowerCase();
+  const pwd = window._sessionPassword || '';
+  if (!sid) { alert('Session expired. Please log in again.'); return; }
+
+  const saved = window._currentStudent || {};
+  const newFatherEN = document.getElementById('editFatherEN').value.trim();
+  const newFatherMY = document.getElementById('editFatherMY').value.trim();
+  const newMotherEN = document.getElementById('editMotherEN').value.trim();
+  const newMotherMY = document.getElementById('editMotherMY').value.trim();
+  const reason      = document.getElementById('editInfoReason').value.trim();
+
+  const changes = [];
+  if (newFatherEN !== (saved.fatherName   || '')) changes.push({ field: 'father',    old: saved.fatherName   || '', new: newFatherEN });
+  if (newFatherMY !== (saved.fatherNameMM || '')) changes.push({ field: 'father_my', old: saved.fatherNameMM || '', new: newFatherMY });
+  if (newMotherEN !== (saved.motherName   || '')) changes.push({ field: 'mother',    old: saved.motherName   || '', new: newMotherEN });
+  if (newMotherMY !== (saved.motherNameMM || '')) changes.push({ field: 'mother_my', old: saved.motherNameMM || '', new: newMotherMY });
+
+  if (!changes.length) {
+    document.getElementById('editInfoStatus').textContent = 'No changes detected. Update the fields you want to change.';
+    return;
+  }
+  if (!reason) {
+    document.getElementById('editInfoStatus').textContent = 'Please enter a reason for this request.';
+    return;
+  }
+
+  const btn = document.getElementById('submitEditInfoBtn');
+  btn.disabled = true;
+  btn.textContent = 'Submitting…';
+  document.getElementById('editInfoStatus').textContent = '';
+
+  try {
+    const res = await fetch('/.netlify/functions/edit-request', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ studentId: sid, password: pwd, changes, reason })
+    });
+    const data = await res.json();
+
+    if (!data.success) throw new Error(data.message || 'Submission failed.');
+
+    document.getElementById('editInfoStatus').textContent = '✓ Request submitted successfully! Awaiting Registrar approval.';
+    document.getElementById('editInfoBadge').style.display = '';
+    document.getElementById('editInfoReason').value = '';
+    await loadEditInfoSection();
+  } catch(e) {
+    document.getElementById('editInfoStatus').textContent = 'Error: ' + e.message;
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Submit Request';
+  }
+}
+
+// Hook into switchSection to load edit info data on demand
+function onSwitchToEditInfo() {
+  loadEditInfoSection();
+}
+
 function doSignOut() {
   try { sessionStorage.removeItem('iris_session'); } catch(e) {}
   window._sessionPassword = '';
   window._enrollments = [];
-  window._activeEnrollmentIndex = 0;
+  window._currentStudent = null;
   window._docEnrollmentIndex = 0;
   window._allGrades = [];
   window._allCourses = {};
