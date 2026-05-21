@@ -1,5 +1,5 @@
-// netlify/functions/edit-request.js
-// Handles student info change requests → inserts into student_edit_requests table
+// netlify/functions/get-edit-requests.js
+// Returns a student's own edit requests from student_edit_requests table
 
 const SUPABASE_URL         = process.env.SUPABASE_URL;
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY;
@@ -12,13 +12,12 @@ async function supabaseReq(path, options = {}) {
       'apikey':        SUPABASE_SERVICE_KEY,
       'Authorization': `Bearer ${SUPABASE_SERVICE_KEY}`,
       'Content-Type':  'application/json',
-      'Prefer':        'return=representation',
       ...(options.headers || {})
     }
   });
   const text = await res.text();
   if (!res.ok) throw new Error(text);
-  return text ? JSON.parse(text) : null;
+  return text ? JSON.parse(text) : [];
 }
 
 export const handler = async (event) => {
@@ -27,27 +26,25 @@ export const handler = async (event) => {
     'Content-Type': 'application/json'
   };
 
-  if (event.httpMethod === 'OPTIONS') {
-    return { statusCode: 204, headers };
-  }
+  if (event.httpMethod === 'OPTIONS') return { statusCode: 204, headers };
   if (event.httpMethod !== 'POST') {
     return { statusCode: 405, headers, body: JSON.stringify({ error: 'Method not allowed' }) };
   }
 
-  let studentId, password, changes, reason;
+  let studentId, password;
   try {
-    ({ studentId, password, changes, reason } = JSON.parse(event.body || '{}'));
+    ({ studentId, password } = JSON.parse(event.body || '{}'));
   } catch {
     return { statusCode: 400, headers, body: JSON.stringify({ success: false, message: 'Invalid request body.' }) };
   }
 
   const normId = String(studentId || '').trim().toLowerCase();
-  if (!normId || !password || !changes?.length || !reason) {
-    return { statusCode: 200, headers, body: JSON.stringify({ success: false, message: 'Missing required fields.' }) };
+  if (!normId || !password) {
+    return { statusCode: 200, headers, body: JSON.stringify({ success: false, message: 'Missing fields.' }) };
   }
 
   try {
-    // 1. Verify student + password
+    // Verify student + password
     const students = await supabaseReq(
       `students?id=eq.${encodeURIComponent(normId)}&select=id,master_password&limit=1`
     );
@@ -58,26 +55,21 @@ export const handler = async (event) => {
       return { statusCode: 200, headers, body: JSON.stringify({ success: false, message: 'Unauthorized.' }) };
     }
 
-    // 2. Insert one row per changed field
-    const rows = changes.map(c => ({
-      student_id:  normId,
-      field_name:  c.field,
-      old_value:   c.old  || null,
-      new_value:   c.new  || null,
-      reason:      reason,
-      status:      'pending',
-      submitted_at: new Date().toISOString()
-    }));
+    // Fetch this student's requests, newest first
+    const requests = await supabaseReq(
+      `student_edit_requests?student_id=eq.${encodeURIComponent(normId)}&order=submitted_at.desc`
+    );
 
-    await supabaseReq('student_edit_requests', {
-      method: 'POST',
-      body: JSON.stringify(rows)
-    });
-
-    return { statusCode: 200, headers, body: JSON.stringify({ success: true }) };
+    return {
+      statusCode: 200, headers,
+      body: JSON.stringify({ success: true, requests: requests || [] })
+    };
 
   } catch (err) {
-    console.error('edit-request error:', err);
-    return { statusCode: 200, headers, body: JSON.stringify({ success: false, message: err.message }) };
+    console.error('get-edit-requests error:', err);
+    return {
+      statusCode: 200, headers,
+      body: JSON.stringify({ success: false, message: err.message })
+    };
   }
 };
