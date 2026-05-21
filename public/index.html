@@ -1514,13 +1514,24 @@ function handleAuth(r) {
     document.getElementById('loginPassword').focus();
     return;
   }
+  if (!r.student) {
+    const errEl = document.getElementById('accessError');
+    errEl.textContent = 'Login succeeded but no student data was returned. Please try again or contact support.';
+    errEl.classList.add('show');
+    console.error('handleAuth: r.student is missing. Full response:', r);
+    btn.disabled = false;
+    btn.textContent = 'Sign in';
+    return;
+  }
   try {
     populate(r.student, r.grades || [], r.courses || {}, r.program_meta || null, r.enrollments || []);
   } catch(e) {
     const errEl = document.getElementById('accessError');
-    errEl.textContent = 'Login succeeded but failed to load profile. Please try again.';
+    errEl.textContent = 'Login succeeded but failed to load profile: ' + e.message + '. Please try again.';
     errEl.classList.add('show');
     console.error('populate() error:', e);
+    btn.disabled = false;
+    btn.textContent = 'Sign in';
     return;
   }
   // ── Persist session for refresh recovery (3 min TTL) ──
@@ -1613,6 +1624,7 @@ function normaliseGradeRow(raw) {
 
 // ── Populate dashboard ────────────────────────────────────────
 function populate(s, grades, courses, program_meta, enrollments) {
+  if (!s) throw new Error('Student data is null or undefined — the server may have returned an empty profile.');
   // ── Activate the right course catalog for this student's program ──
   // The server can send `courses` (course catalog) and `program_meta`
   // ({ label, yearOrder }) to fully describe any degree program.
