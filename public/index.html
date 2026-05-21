@@ -3655,11 +3655,18 @@ async function uploadPhoto() {
   const btn    = document.getElementById('uploadPhotoBtn');
   if (!file) { if (status) status.textContent = 'No file selected.'; return; }
 
-  const studentId = (document.getElementById('loginStudentId').value || '').trim().toLowerCase();
+  // Sanitize studentId — Supabase Storage rejects paths with spaces or special chars
+  const rawId     = (document.getElementById('loginStudentId').value || '').trim().toLowerCase();
+  const studentId = rawId.replace(/[^a-z0-9_\-]/g, '_');
   if (!studentId) { if (status) status.textContent = 'Session expired — please log in again.'; return; }
 
+  // Use a safe timestamp-based filename so the Storage path is always valid
+  const mimeToExt  = { 'image/jpeg': 'jpg', 'image/png': 'png', 'image/webp': 'webp' };
+  const safeExt    = mimeToExt[file.type] || 'jpg';
+  const safeFilename = `photo_${Date.now()}.${safeExt}`;
+
   if (btn) { btn.disabled = true; btn.textContent = 'Uploading…'; }
-  if (status) status.textContent = 'Uploading…';
+  if (status) { status.style.color = 'var(--ink3)'; status.textContent = 'Uploading…'; }
 
   try {
     const reader = new FileReader();
@@ -3674,6 +3681,7 @@ async function uploadPhoto() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         studentId,
+        safeFilename,          // backend uses this for the Storage path
         password:  window._sessionPassword || '',
         imageBase64: base64,
         mimeType:    file.type
