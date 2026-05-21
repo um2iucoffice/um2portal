@@ -80,6 +80,16 @@ export const handler = async (event) => {
       return { statusCode: 200, headers: CORS_HEADERS, body: JSON.stringify({ success: false, message: 'Incorrect password.' }) };
     }
 
+    // Handle photo removal
+    const { studentId, password, imageBase64, mimeType, removePhoto } = JSON.parse(event.body || '{}');
+if (removePhoto === true) {
+  await supabaseRest(
+    `students?id=eq.${encodeURIComponent(studentId)}`,
+    { method: 'PATCH', headers: { 'Prefer': 'return=minimal' }, body: JSON.stringify({ photo: null }) }
+  );
+  return { statusCode: 200, headers: CORS_HEADERS, body: JSON.stringify({ success: true }) };
+}
+
     const currentPhoto = students[0].photo || null;
 
 // Handle photo removal
