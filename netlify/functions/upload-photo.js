@@ -1,13 +1,5 @@
 // ============================================================
 //  netlify/functions/upload-photo.js
-//  Photo upload → pending approval flow.
-//  Uploads to pending-photos/<studentId>.jpg, then inserts a
-//  row into student_edit_requests (field_name='photo', status='pending').
-//  Does NOT touch the students table — Registrar must approve first.
-//
-//  Environment variables required:
-//    SUPABASE_URL
-//    SUPABASE_SERVICE_KEY  (service_role key)
 // ============================================================
 
 const SUPABASE_URL         = process.env.SUPABASE_URL;
@@ -20,7 +12,6 @@ const CORS_HEADERS = {
   'Content-Type': 'application/json'
 };
 
-// ── Supabase REST helper ──────────────────────────────────────
 async function supabaseRest(path, options = {}) {
   const res = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, {
     ...options,
@@ -36,12 +27,12 @@ async function supabaseRest(path, options = {}) {
   return text ? JSON.parse(text) : null;
 }
 
-// ── Supabase Storage upload ───────────────────────────────────
 async function uploadToStorage(filePath, buffer, contentType) {
+  // Use PUT with x-upsert so re-uploads always succeed (no "already exists" error)
   const res = await fetch(
     `${SUPABASE_URL}/storage/v1/object/${BUCKET}/${filePath}`,
     {
-      method: 'POST',
+      method: 'PUT',
       headers: {
         'apikey':        SUPABASE_SERVICE_KEY,
         'Authorization': `Bearer ${SUPABASE_SERVICE_KEY}`,
@@ -51,22 +42,28 @@ async function uploadToStorage(filePath, buffer, contentType) {
       body: buffer
     }
   );
-  if (!res.ok) throw new Error(`Storage upload failed: ${await res.text()}`);
+  if (!res.ok) {
+    const errText = await res.text();
+    throw new Error(`Storage upload failed: ${errText}`);
+  }
 }
 
-// ── Main handler ─────────────────────────────────────────────
 export const handler = async (event) => {
   if (event.httpMethod === 'OPTIONS') return { statusCode: 204, headers: CORS_HEADERS };
   if (event.httpMethod !== 'POST')    return { statusCode: 405, headers: CORS_HEADERS, body: JSON.stringify({ error: 'Method not allowed' }) };
 
   try {
-    const { studentId, password, imageBase64, mimeType, removePhoto } = JSON.parse(event.body || '{}');
+    const {
+      studentId,
+      password,
+      imageBase64,
+      mimeType,
+      safeFilename,   // sent by frontend: e.g. "photo_1716300000000.jpg"
+      removePhoto
+    } = JSON.parse(event.body || '{}');
 
     if (!studentId || !password) {
       return { statusCode: 200, headers: CORS_HEADERS, body: JSON.stringify({ success: false, message: 'Missing studentId or password.' }) };
-    }
-    if (!imageBase64) {
-      return { statusCode: 200, headers: CORS_HEADERS, body: JSON.stringify({ success: false, message: 'No image data received.' }) };
     }
 
     // 1. Verify credentials
@@ -82,25 +79,65 @@ export const handler = async (event) => {
 
     const currentPhoto = students[0].photo || null;
 
-// Handle photo removal
-if (removePhoto === true) {
-  await supabaseRest(
-    `students?id=eq.${encodeURIComponent(studentId)}`,
-    { method: 'PATCH', headers: { 'Prefer': 'return=minimal' }, body: JSON.stringify({ photo: null }) }
-  );
-  return { statusCode: 200, headers: CORS_HEADERS, body: JSON.stringify({ success: true }) };
-}
+    // ── REMOVE PHOTO PATH ─────────────────────────────────────
+    if (removePhoto === true) {
+      await supabaseRest(
+        `students?id=eq.${encodeURIComponent(studentId)}`,
+        {
+          method: 'PATCH',
+          headers: { 'Prefer': 'return=minimal' },
+          body: JSON.stringify({ photo: null })
+        }
+      );
+      // Also cancel any pending photo requests for this student
+      await supabaseRest(
+        `student_edit_requests?student_id=eq.${encodeURIComponent(studentId)}&field_name=eq.photo&status=eq.pending`,
+        {
+          method: 'PATCH',
+          headers: { 'Prefer': 'return=minimal' },
+          body: JSON.stringify({ status: 'cancelled' })
+        }
+      );
+      return {
+        statusCode: 200,
+        headers: CORS_HEADERS,
+        body: JSON.stringify({ success: true })
+      };
+    }
 
-    // 2. Upload to pending-photos/<studentId>.jpg (NOT the permanent path)
-    const pendingPath   = `pending-photos/${studentId}.jpg`;
-    const contentType   = mimeType || 'image/jpeg';
-    const imageBuffer   = Buffer.from(imageBase64, 'base64');
+    // ── UPLOAD PATH ───────────────────────────────────────────
+    if (!imageBase64) {
+      return { statusCode: 200, headers: CORS_HEADERS, body: JSON.stringify({ success: false, message: 'No image data received.' }) };
+    }
+
+    // Build a safe storage path.
+    // safeFilename comes from the frontend (e.g. "photo_1716300000000.jpg").
+    // Sanitize studentId to strip any chars Supabase Storage won't accept.
+    const safeStudentId = studentId.replace(/[^a-z0-9_\-]/g, '_');
+    const filename      = safeFilename
+      ? safeFilename.replace(/[^a-z0-9_\-\.]/gi, '_')   // extra safety
+      : `photo_${Date.now()}.jpg`;
+
+    const pendingPath = `pending-photos/${safeStudentId}/${filename}`;
+    const contentType = mimeType || 'image/jpeg';
+    const imageBuffer = Buffer.from(imageBase64, 'base64');
 
     await uploadToStorage(pendingPath, imageBuffer, contentType);
 
     const pendingUrl = `${SUPABASE_URL}/storage/v1/object/public/${BUCKET}/${pendingPath}`;
 
-    // 3. Insert a pending edit request — do NOT touch students table
+    // Cancel any existing pending photo request for this student
+    // (prevents duplicate rows piling up each time they re-upload)
+    await supabaseRest(
+      `student_edit_requests?student_id=eq.${encodeURIComponent(studentId)}&field_name=eq.photo&status=eq.pending`,
+      {
+        method: 'PATCH',
+        headers: { 'Prefer': 'return=minimal' },
+        body: JSON.stringify({ status: 'superseded' })
+      }
+    );
+
+    // Insert fresh pending edit request
     await supabaseRest('student_edit_requests', {
       method: 'POST',
       headers: { 'Prefer': 'return=minimal' },
@@ -108,7 +145,7 @@ if (removePhoto === true) {
         student_id: studentId,
         field_name: 'photo',
         old_value:  currentPhoto || null,
-        new_value:  null,           // not applicable for photos
+        new_value:  null,
         photo_url:  pendingUrl,
         reason:     'Student photo update request',
         status:     'pending'
@@ -119,14 +156,19 @@ if (removePhoto === true) {
       statusCode: 200,
       headers: CORS_HEADERS,
       body: JSON.stringify({
-        success: true,
-        pending: true,
-        message: 'Photo submitted for Registrar approval.'
+        success:    true,
+        pending:    true,
+        pendingUrl: pendingUrl,   // returned so frontend overlay can show it
+        message:    'Photo submitted for Registrar approval.'
       })
     };
 
   } catch (err) {
     console.error('upload-photo error:', err);
-    return { statusCode: 200, headers: CORS_HEADERS, body: JSON.stringify({ success: false, message: 'Server error: ' + err.message }) };
+    return {
+      statusCode: 200,
+      headers: CORS_HEADERS,
+      body: JSON.stringify({ success: false, message: 'Server error: ' + err.message })
+    };
   }
 };
