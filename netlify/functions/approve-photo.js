@@ -41,7 +41,7 @@ async function uploadToStorage(filePath, buffer, contentType) {
   if (!res.ok) throw new Error(`Storage upload failed: ${await res.text()}`);
 }
 
-exports.handler = async (event) => {
+export const handler = async (event) => {
   if (event.httpMethod === 'OPTIONS') return { statusCode: 204, headers: CORS_HEADERS };
   if (event.httpMethod !== 'POST')    return { statusCode: 405, headers: CORS_HEADERS, body: JSON.stringify({ error: 'Method not allowed' }) };
 
