@@ -1669,14 +1669,32 @@ function populate(s, grades, courses, program_meta, enrollments) {
   //   status         → enrollmentStatus
   //   grad_status    → graduationStatus
   // No further overwriting needed here.
-  const _rawGrad = s.graduationStatus || '';
-  if (/^graduated$/i.test(_rawGrad.trim())) {
-    s.graduationStatus = 'Graduated';
-  } else if (/^active$/i.test((s.enrollmentStatus || '').trim())) {
-    s.graduationStatus = 'In Progress';
-  } else {
-    s.graduationStatus = _rawGrad || '—';
-  }
+  // ── Multi-degree: derive display status from the ACTIVE enrollment ──
+// If there's an active non-bachelor enrollment, the student is a
+// current student again — not an alumni.
+const activeEnrollment = (enrollments || []).find(e =>
+  /^active$/i.test(e.enrollmentStatus || '')
+);
+const latestEnrollment = (enrollments || []).slice(-1)[0];
+
+const _rawGrad = s.graduationStatus || '';
+
+if (activeEnrollment && activeEnrollment.degreeLevel !== 'bachelor') {
+  // Currently active in a Master or PhD — treat as active student
+  s.graduationStatus  = 'In Progress';
+  s.enrollmentStatus  = 'Active';
+  s.currentStatus     = activeEnrollment.currentYear || s.currentStatus;
+  s.programName       = activeEnrollment.programName || s.programName;
+  s.program           = activeEnrollment.degreeProgramId || s.program;
+  s.degreeLevel       = activeEnrollment.degreeLevel;
+} else if (/^graduated$/i.test(_rawGrad.trim()) && !activeEnrollment) {
+  // Truly graduated with no active enrollment → Alumni
+  s.graduationStatus = 'Graduated';
+} else if (/^active$/i.test((s.enrollmentStatus || '').trim())) {
+  s.graduationStatus = 'In Progress';
+} else {
+  s.graduationStatus = _rawGrad || '—';
+}
   s.graduationId     = s.graduation_id   || s.graduationId     || '';
   s.graduationDate   = s.graduation_date || s.graduationDate   || '';
   s.id               = s.id              || '';
