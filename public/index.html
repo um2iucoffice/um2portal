@@ -3639,7 +3639,15 @@ async function uploadPhoto() {
     });
     const data = await resp.json();
 
-    if (data.success && data.photoUrl) {
+    if (data.success && data.pending) {
+      // Photo is pending Registrar approval — do NOT update the live photo in the UI
+      if (status) {
+        status.style.color = 'var(--gold, #9A7B2F)';
+        status.textContent = '⏳ Photo submitted for Registrar approval. Your ID photo will update once approved.';
+      }
+      clearPhotoSelection();
+    } else if (data.success && data.photoUrl) {
+      // Legacy direct-upload path (kept for safety)
       updatePhotoInUI(data.photoUrl);
       const preview = document.getElementById('profilePhotoPreview');
       if (preview) preview.innerHTML = '<img src="' + data.photoUrl + '" style="width:100%;height:100%;object-fit:cover;border-radius:8px">';
