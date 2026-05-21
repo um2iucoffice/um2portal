@@ -16,7 +16,7 @@
 //   SUPABASE_SERVICE_KEY  — service_role key (NOT the anon key — needs storage write access)
 
 const { createClient } = require('@supabase/supabase-js');
-const { createCanvas, loadImage } = require('canvas');
+const { createCanvas, loadImage } = require('@napi-rs/canvas');
 
 // ── Config ─────────────────────────────────────────────────────────────────
 const SUPABASE_URL         = process.env.SUPABASE_URL;
