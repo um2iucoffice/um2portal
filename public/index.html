@@ -8,6 +8,16 @@
 <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <style>
+  img,
+.idcard-photo img,
+#profilePhotoPreview img {
+  -webkit-touch-callout: none;
+  -webkit-user-drag: none;
+  -webkit-user-select: none;
+
+  user-select: none;
+  pointer-events: none;
+}
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
   --ink:#0D1B2A;
@@ -3529,17 +3539,32 @@ function populate(s, grades, courses, program_meta, enrollments) {
   }
   populateIDCard(s, isGraduated, gradID, gradDate);
 }
-
 // ── Photo utility: create a protected (no right-click) img ───
-function makeProtectedPhoto(src, styleStr) {
+function makeProtectedPhoto(src, styleStr = '') {
   const img = document.createElement('img');
+
   img.src = src;
-  if (styleStr) img.style.cssText = styleStr;
+
+  if (styleStr) {
+    img.style.cssText = styleStr;
+  }
+
   img.draggable = false;
-  img.oncontextmenu = function(e) { e.preventDefault(); return false; };
+  img.setAttribute('draggable', 'false');
+
+  img.oncontextmenu = function(e) {
+    e.preventDefault();
+    return false;
+  };
+
+  img.style.webkitTouchCallout = 'none';
+  img.style.userSelect = 'none';
+  img.style.webkitUserSelect = 'none';
+  img.style.webkitUserDrag = 'none';
+  img.style.pointerEvents = 'none';
+
   return img;
 }
-
 // ── Photo panel: preview selected file before upload ─────────
 function previewPhoto(input) {
   const file = input.files && input.files[0];
