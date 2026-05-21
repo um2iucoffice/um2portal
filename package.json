@@ -1,8 +1,0 @@
-{
-  "name": "iris-portal",
-  "version": "1.0.0",
-  "type": "module",
-  "dependencies": {
-    "sharp": "^0.33.4"
-  }
-}
