@@ -3967,7 +3967,7 @@ function printIDCard() {
       <div class="idcard-notice">This card is the property of University of Medicine (2) - IUC. Misuse is subject to disciplinary action.</div>
     </div>
   </div>
-  <script>
+  <scr' + 'ipt>
     window.onload = function() {
       new QRCode(document.getElementById('printQR'), { text: ${JSON.stringify(qrData)}, width: 76, height: 76, colorDark: '#0D1B2A', colorLight: '#ffffff', correctLevel: QRCode.CorrectLevel.M });
       setTimeout(function(){ window.print(); }, 900);
@@ -4844,7 +4844,7 @@ function printDegreeCertificate(enrollIdx) {
   </div><!-- /.cert-inner -->
 </div><!-- /.cert-page -->
 
-<script>
+<scr' + 'ipt>
   // Generate QR
   window.addEventListener('load', function() {
     try {
@@ -4998,7 +4998,7 @@ function printConfirmation(enrollIdx) {
       ${closing}
     </td></tr></tbody>
   </table>
-  <script>
+  <scr' + 'ipt>
     window.onload = function() { setTimeout(function() { window.print(); }, 600); };
   <\/script>
 </body>
@@ -5278,7 +5278,7 @@ function printDocument(type) {
 
     </td></tr></tbody>
   </table>
-  <script>
+  <scr' + 'ipt>
     window.onload = function() { setTimeout(function() { window.print(); }, 600); };
   <\/script>
 </body>
