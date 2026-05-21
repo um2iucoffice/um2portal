@@ -2983,6 +2983,13 @@ body.theme-light .mob-more-item.danger svg { color: var(--crimson); }
           </div>
         </div>
 
+        <div class="icard" style="margin-top:16px">
+          <div class="icard-head">Request History</div>
+          <div id="editInfoHistory" style="padding:16px 20px;font-size:13px;color:var(--ink3)">No requests submitted yet.</div>
+        </div>
+      </div>
+    </div>
+
     <!-- PHOTO UPLOAD -->
     <div class="section" id="panel-photo">
       <div class="sec-head">
@@ -3007,6 +3014,9 @@ body.theme-light .mob-more-item.danger svg { color: var(--crimson); }
               <div style="margin-top:12px;font-size:12px;color:var(--ink3);line-height:1.6">
                 Your photo appears on your Student ID card<br>and throughout the portal.
               </div>
+              <button id="removePhotoBtn" onclick="removePhoto()" style="display:none;margin-top:14px;padding:7px 16px;background:none;border:1px solid #FACDD3;border-radius:var(--r);font-size:12px;font-weight:600;color:var(--crimson);cursor:pointer;transition:background .15s,border-color .15s">
+                Remove Photo
+              </button>
             </div>
           </div>
         </div>
