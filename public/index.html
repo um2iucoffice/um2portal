@@ -1787,11 +1787,16 @@ function populate(s, grades, courses, program_meta, enrollments) {
   // ── Academic Journey (home panel) ───────────────────────────
   renderJourney(window._enrollments);
 
+  // ── Store grades/courses for tab switching ───────────────────
+  window._allGrades  = grades;
+  window._allCourses = courses;
+
   // ── Grades degree tabs ───────────────────────────────────────
   renderDegreeTabs(window._enrollments, grades, courses);
 
   // ── Document office cards ────────────────────────────────────
   renderDocCards(window._enrollments);
+  renderCertCards(window._enrollments);
 
   // ── Render grades for the active (first) enrollment ─────────
   renderGrades(grades, courses);
@@ -2280,6 +2285,104 @@ window.addEventListener('afterprint', function() {
 });
 
 
+
+// ── Academic Journey (home panel, 2+ enrollments only) ───────
+function renderJourney(enrollments) {
+  const card = document.getElementById('journeyCard');
+  const rows = document.getElementById('journeyRows');
+  if (!card || !rows) return;
+  if (!enrollments || enrollments.length < 2) {
+    card.style.display = 'none';
+    return;
+  }
+  card.style.display = '';
+  rows.innerHTML = enrollments.map((e, i) => {
+    const label    = e.programName || e.degreeProgramId || 'Degree Program';
+    const lvl      = { bachelor: 'Bachelor', master: 'Master', phd: 'PhD / Doctoral' }[e.degreeLevel] || 'Bachelor';
+    const grad     = /graduated|completed/i.test(e.graduationStatus || '');
+    const badge    = grad
+      ? '<span style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;background:var(--green-light,#e6f4ec);color:var(--green,#1a5c3a);padding:2px 8px;border-radius:3px;margin-left:8px">Graduated</span>'
+      : '<span style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;background:var(--gold-light,#fdf6e3);color:var(--gold,#9a7b2f);padding:2px 8px;border-radius:3px;margin-left:8px">Active</span>';
+    return `<div style="display:flex;align-items:center;gap:10px;padding:10px 0;${i < enrollments.length - 1 ? 'border-bottom:1px solid var(--border,#e8e8e8)' : ''}">
+      <div style="width:28px;height:28px;border-radius:50%;background:var(--crimson,#8B1A2E);color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0">${i + 1}</div>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:13px;font-weight:600;color:var(--ink,#0D1B2A)">${lvl} — ${label}</div>
+        ${e.admissionDate ? `<div style="font-size:11px;color:var(--ink3,#888);margin-top:2px">Admitted: ${e.admissionDate}</div>` : ''}
+      </div>
+      ${badge}
+    </div>`;
+  }).join('');
+}
+
+// ── Degree tabs (grades panel, 2+ enrollments only) ───────────
+function renderDegreeTabs(enrollments, grades, courses) {
+  const wrap = document.getElementById('gradeDegreeTabs');
+  const bar  = document.getElementById('degreeTabsBar');
+  if (!wrap || !bar) return;
+  if (!enrollments || enrollments.length < 2) {
+    wrap.style.display = 'none';
+    window._activeEnrollmentIndex = 0;
+    return;
+  }
+  wrap.style.display = '';
+  bar.innerHTML = enrollments.map((e, i) => {
+    const label  = e.programName || e.degreeProgramId || 'Degree Program';
+    const lvl    = { bachelor: 'Bachelor', master: 'Master', phd: 'PhD / Doctoral' }[e.degreeLevel] || 'Bachelor';
+    const active = i === (window._activeEnrollmentIndex || 0);
+    return `<button class="degree-tab${active ? ' active' : ''}" onclick="switchDegreeTab(${i})" style="cursor:pointer;padding:8px 16px;font-size:12px;font-weight:${active ? '700' : '500'};border:none;border-bottom:2px solid ${active ? 'var(--crimson,#8B1A2E)' : 'transparent'};background:none;color:${active ? 'var(--crimson,#8B1A2E)' : 'var(--ink3,#666)'};white-space:nowrap">
+      ${lvl} — ${label}
+    </button>`;
+  }).join('');
+}
+
+function switchDegreeTab(idx) {
+  window._activeEnrollmentIndex = idx;
+  const enrollments = window._enrollments || [];
+  // Re-render tabs to update active state
+  renderDegreeTabs(enrollments, window._allGrades || [], window._allCourses || {});
+  // Filter grades to selected enrollment
+  const e = enrollments[idx];
+  const filtered = e
+    ? (window._allGrades || []).filter(g => !g.enrollmentId || g.enrollmentId === e.id)
+    : (window._allGrades || []);
+  renderGrades(filtered, window._allCourses || {});
+}
+
+// ── Cert cards (degree certificate section) ───────────────────
+function renderCertCards(enrollments) {
+  const section = document.getElementById('certSection');
+  const grid    = document.getElementById('certGrid');
+  if (!section || !grid) return;
+  const graduated = (enrollments || []).filter(e =>
+    /graduated|completed/i.test(e.graduationStatus || '')
+  );
+  if (graduated.length === 0) {
+    section.style.display = 'none';
+    return;
+  }
+  section.style.display = '';
+  grid.innerHTML = graduated.map((e, i) => {
+    const program = e.programName || e.degreeProgramId || 'Degree Program';
+    const gradDate = e.graduationDate ? `<div style="font-size:11px;color:var(--ink3,#888);margin-top:2px">Conferred: ${e.graduationDate}</div>` : '';
+    const enrollIdx = (window._enrollments || []).indexOf(e);
+    return `<div class="doc-card cert-banner">
+      <div class="doc-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="8" r="6"/><path d="M8 14l-2 7 6-3 6 3-2-7"/></svg>
+      </div>
+      <div class="doc-title">Degree Certificate</div>
+      <div class="doc-desc"><strong>${program}</strong> — University of Medicine (2)</div>
+      ${gradDate}
+      <div class="doc-tags">
+        <span class="doc-tag">Official Document</span>
+        <span class="doc-tag">Graduated</span>
+      </div>
+      <button class="btn-print-doc" onclick="printConfirmation(${enrollIdx >= 0 ? enrollIdx : 0})">
+        <svg viewBox="0 0 24 24"><polyline points="6,9 6,2 18,2 18,9"/><path d="M6,18H4a2,2,0,0,1-2-2V11a2,2,0,0,1,2-2H20a2,2,0,0,1,2,2v5a2,2,0,0,1-2,2H18"/><rect x="6" y="14" width="12" height="8"/></svg>
+        Print / Save PDF
+      </button>
+    </div>`;
+  }).join('');
+}
 
 // ── Document Office: one card-pair per enrollment ────────────
 function renderDocCards(enrollments) {
