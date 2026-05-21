@@ -3547,7 +3547,12 @@ async function submitGrades() {
       created_at:  new Date().toISOString(),
     };
 
-    validRecords.push({ record, gid, score, gp, letter, sid, courseId, i });
+    const gradeRecord = {
+      id: gid, student_id: sid, course_id: courseId,
+      score, letter, gp, course: courseName,
+      attempt: uploadAttempt, uploaded_by: uploadedBy,
+    };
+    validRecords.push({ record, gradeRecord, gid, score, gp, letter, sid, courseId, i });
   }
 
 
@@ -3564,7 +3569,7 @@ async function submitGrades() {
     updateUploadOverlay(pct, `Uploading batch ${c + 1} of ${totalChunks}… (${Math.min((c + 1) * CHUNK, validRecords.length)} / ${validRecords.length} rows)`);
 
     const { error: batchErr } = await db.from('grades')
-      .upsert(chunk.map(x => x.record), { onConflict: 'id', ignoreDuplicates: false });
+      .upsert(chunk.map(x => x.record), { onConflict: 'id', ignoreDuplicates: false, defaultToNull: false });
 
     if (batchErr) {
       // If the whole batch fails, fall back to row-by-row for this chunk so partial success is preserved
@@ -3601,11 +3606,11 @@ async function submitGrades() {
       notifiedStudents.add(item.sid);
       if (!gradeData[item.sid]) gradeData[item.sid] = [];
       const existingIdx = gradeData[item.sid].findIndex(g =>
-        (g.course_id || g.CourseID || g.courseid) === (item.record[_gradesColumns.cidCol] || item.courseId) &&
+        (g.course_id || g.CourseID || g.courseid || '') === item.courseId &&
         (g.attempt || '1st Attempt') === uploadAttempt
       );
-      if (existingIdx >= 0) gradeData[item.sid][existingIdx] = item.gradeRecord;
-      else gradeData[item.sid].push(item.gradeRecord);
+      if (existingIdx >= 0) gradeData[item.sid][existingIdx] = item.gradeRecord || item.record;
+      else gradeData[item.sid].push(item.gradeRecord || item.record);
       recalcStudentGpa(item.sid);
       body += `<tr class="bulk-row-ok"><td>${item.i+1}</td><td class="text-mono">${item.sid}</td><td>${item.courseId}</td><td>${item.score}</td><td><span class="badge b-blue">${uploadAttempt}</span></td><td class="text-mono text-crimson">${item.gid}</td><td><span class="badge ${gradeBadgeClass(item.letter)}">${formatGradeLetter(item.letter)}</span></td><td><strong class="text-green">${item.gp.toFixed(1)}</strong></td><td><span class="badge b-green">✓ Saved</span></td></tr>`;
     }
