@@ -1822,7 +1822,134 @@ function populate(s, grades, courses, program_meta, enrollments) {
   populateIDCard(s, isGraduated, gradID, gradDate);
 }
 
-// ── Update all photo slots in the UI with a photo URL ────────
+// ── Photo utility: create a protected (no right-click) img ───
+function makeProtectedPhoto(src, styleStr) {
+  const img = document.createElement('img');
+  img.src = src;
+  if (styleStr) img.style.cssText = styleStr;
+  img.draggable = false;
+  img.oncontextmenu = function(e) { e.preventDefault(); return false; };
+  return img;
+}
+
+// ── Photo panel: preview selected file before upload ─────────
+function previewPhoto(input) {
+  const file = input.files && input.files[0];
+  if (!file) return;
+  if (file.size > 5 * 1024 * 1024) {
+    alert('File is too large. Maximum size is 5 MB.');
+    input.value = '';
+    return;
+  }
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const wrap  = document.getElementById('photoSelectedWrap');
+    const thumb = document.getElementById('photoSelectedThumb');
+    const name  = document.getElementById('photoSelectedName');
+    const size  = document.getElementById('photoSelectedSize');
+    const btn   = document.getElementById('uploadPhotoBtn');
+    if (thumb) thumb.src = e.target.result;
+    if (name)  name.textContent = file.name;
+    if (size)  size.textContent = (file.size / 1024).toFixed(1) + ' KB';
+    if (wrap)  wrap.style.display = 'flex';
+    if (btn)   btn.style.display = '';
+    // store for upload
+    window._pendingPhotoFile   = file;
+    window._pendingPhotoBase64 = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+// ── Photo panel: clear selected file ─────────────────────────
+function clearPhotoSelection() {
+  const wrap  = document.getElementById('photoSelectedWrap');
+  const btn   = document.getElementById('uploadPhotoBtn');
+  const input = document.getElementById('photoFileInput');
+  const status = document.getElementById('photoUploadStatus');
+  if (wrap)   wrap.style.display = 'none';
+  if (btn)    btn.style.display = 'none';
+  if (input)  input.value = '';
+  if (status) status.textContent = '';
+  window._pendingPhotoFile   = null;
+  window._pendingPhotoBase64 = null;
+}
+
+// ── Photo panel: remove current photo ────────────────────────
+function removePhoto() {
+  // Clear UI slots
+  const preview = document.getElementById('profilePhotoPreview');
+  if (preview) {
+    preview.innerHTML = '<svg id="photoPlaceholderSvg" width="56" height="64" viewBox="0 0 56 64" fill="none" xmlns="http://www.w3.org/2000/svg"><ellipse cx="28" cy="20" rx="13" ry="14" fill="#D1D5DB"/><path d="M2 58c0-13.255 11.64-24 26-24s26 10.745 26 24" fill="#D1D5DB"/></svg>';
+  }
+  const avatarPhoto    = document.getElementById('avatarPhoto');
+  const avatarInitials = document.getElementById('avatarInitials');
+  if (avatarPhoto) { avatarPhoto.src = ''; avatarPhoto.style.display = 'none'; }
+  if (avatarInitials) avatarInitials.style.display = '';
+  const removeBtn = document.getElementById('removePhotoBtn');
+  if (removeBtn) removeBtn.style.display = 'none';
+  window._idcardPhotoData = null;
+  // Restore initials in id card
+  const idcardPhotoEl = document.getElementById('idcardPhoto');
+  if (idcardPhotoEl) {
+    const name = document.getElementById('profileName');
+    const init = ((name && name.textContent) || '').split(' ').map(w => w[0]).join('').toUpperCase().slice(0,2) || '?';
+    idcardPhotoEl.innerHTML = '';
+    idcardPhotoEl.textContent = init;
+  }
+}
+
+// ── Photo panel: upload photo to Supabase storage ────────────
+async function uploadPhoto() {
+  const file   = window._pendingPhotoFile;
+  const status = document.getElementById('photoUploadStatus');
+  const btn    = document.getElementById('uploadPhotoBtn');
+  if (!file) { if (status) status.textContent = 'No file selected.'; return; }
+
+  const studentId = (document.getElementById('loginStudentId').value || '').trim().toLowerCase();
+  if (!studentId) { if (status) status.textContent = 'Session expired — please log in again.'; return; }
+
+  if (btn) { btn.disabled = true; btn.textContent = 'Uploading…'; }
+  if (status) status.textContent = 'Uploading…';
+
+  try {
+    const reader = new FileReader();
+    const base64 = await new Promise((res, rej) => {
+      reader.onload = e => res(e.target.result.split(',')[1]);
+      reader.onerror = rej;
+      reader.readAsDataURL(file);
+    });
+
+    const resp = await fetch('/.netlify/functions/upload-photo', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        studentId,
+        password:  window._sessionPassword || '',
+        imageBase64: base64,
+        mimeType:    file.type
+      })
+    });
+    const data = await resp.json();
+
+    if (data.success && data.photoUrl) {
+      updatePhotoInUI(data.photoUrl);
+      const preview = document.getElementById('profilePhotoPreview');
+      if (preview) preview.innerHTML = '<img src="' + data.photoUrl + '" style="width:100%;height:100%;object-fit:cover;border-radius:8px">';
+      const removeBtn = document.getElementById('removePhotoBtn');
+      if (removeBtn) removeBtn.style.display = 'inline-block';
+      if (status) status.textContent = 'Photo uploaded successfully!';
+      clearPhotoSelection();
+    } else {
+      if (status) status.textContent = 'Upload failed: ' + (data.message || 'Unknown error');
+    }
+  } catch(e) {
+    if (status) status.textContent = 'Upload error: ' + e.message;
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = 'Upload Photo'; }
+  }
+}
+
+
 function updatePhotoInUI(photoUrl) {
   if (!photoUrl) return;
   // Profile banner avatar (top of profile tab)
