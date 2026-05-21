@@ -3495,30 +3495,6 @@ async function submitGrades() {
     if (warn) warn.style.display = (_gradesColumns.cidCol === 'CourseID' || !_gradesColumns.extras.has('attempt')) ? '' : 'none';
   }
 
-}
-
-  // ── Build validRecords from parsed CSV rows ──
-  const validRecords = [];
-  gradeCSVRows.forEach((row, idx) => {
-    const sid = (row.StudentID || row.studentid || row.student_id || '').trim();
-    const courseId = (row.CourseID || row.courseid || row.course_id || '').trim();
-    const score = parseFloat(row.NumericScore || row.numericscore || row.numeric_score || 0);
-    const { gp, letter } = computeGradePoint(score);
-    const gid = stableGradeId(sid, courseId, uploadAttempt);
-    const studentMatch = students.find(s => s.id.toLowerCase() === sid.toLowerCase());
-    if (!studentMatch) return;
-
-    const record = { id: gid, [_gradesColumns.sidCol]: sid, [_gradesColumns.scoreCol]: score, letter, gp };
-    if (_gradesColumns.cidCol)                  record[_gradesColumns.cidCol]  = courseId;
-    if (_gradesColumns.extras.has('attempt'))   record.attempt      = uploadAttempt;
-    if (_gradesColumns.extras.has('year'))      record.year         = gradeYear;
-    if (_gradesColumns.extras.has('uploaded_by')) record.uploaded_by = uploadedBy;
-    if (_gradesColumns.extras.has('updated_at')) record.updated_at  = new Date().toISOString();
-
-    validRecords.push({ i: idx, sid, courseId, score, gp, letter, gid, record,
-      gradeRecord: { ...record, [_gradesColumns.sidCol]: sid } });
-  });
-
   // ── Batch upsert in chunks of 100 ──
   // upsert with onConflict:'id' does a true INSERT … ON CONFLICT DO UPDATE — no cascade deletes.
   const CHUNK = 100;
