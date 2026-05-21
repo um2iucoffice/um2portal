@@ -3494,7 +3494,36 @@ async function submitGrades() {
     const warn = document.getElementById('gradeSchemaWarning');
     if (warn) warn.style.display = (_gradesColumns.cidCol === 'CourseID' || !_gradesColumns.extras.has('attempt')) ? '' : 'none';
   }
+  
+  const validRecords = [];
 
+for (const row of gradeCSVRows) {
+
+  const score = parseFloat(row.NumericScore || row.score || 0);
+
+  const record = {
+    id: crypto.randomUUID(),
+
+    StudentID: row.StudentID,
+    CourseID: row.CourseID,
+
+    NumericScore: score,
+
+    created_at: new Date().toISOString(),
+
+    attempt: uploadAttempt,
+    uploaded_by: uploadedBy
+  };
+
+  validRecords.push({
+    record,
+    gid: record.id,
+    score
+  });
+}
+
+
+  
   // ── Batch upsert in chunks of 100 ──
   // upsert with onConflict:'id' does a true INSERT … ON CONFLICT DO UPDATE — no cascade deletes.
   const CHUNK = 100;
