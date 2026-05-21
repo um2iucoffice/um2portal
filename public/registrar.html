@@ -3589,14 +3589,32 @@ for (const row of gradeCSVRows) {
 
   rt.innerHTML += body + '</tbody>';
   rc.style.display = 'block';
-  document.getElementById('gradeOkCount').textContent    = okCount + ' processed';
-  document.getElementById('gradeEmailCount').textContent = notifiedStudents.size + ' emails queued';
-  document.getElementById('gradeErrCount').textContent   = errCount + ' errors';
-  hideUploadOverlay();
-  const bar = document.getElementById('gradeProgressBar');
-  bar.style.width = '0';
-  setTimeout(() => bar.style.width = (gradeCSVRows.length ? okCount / gradeCSVRows.length * 100 : 0) + '%', 100);
+ const okEl = document.getElementById('gradeOkCount');
+if (okEl) okEl.textContent = okCount + ' processed';
 
+const emailEl = document.getElementById('gradeEmailCount');
+if (emailEl) emailEl.textContent =
+  notifiedStudents.size + ' emails queued';
+
+const errEl = document.getElementById('gradeErrCount');
+if (errEl) errEl.textContent = errCount + ' errors';
+
+const bar = document.getElementById('gradeProgressBar');
+
+if (bar) {
+  bar.style.width = '0';
+
+  setTimeout(() => {
+    bar.style.width =
+      (
+        gradeCSVRows.length
+          ? (okCount / gradeCSVRows.length) * 100
+          : 0
+      ) + '%';
+  }, 100);
+}
+
+hideUploadOverlay();
   // ── Upload status banner ──
   const existingBanner = document.getElementById('gradeUploadStatusBanner');
   if (existingBanner) existingBanner.remove();
