@@ -3583,7 +3583,38 @@ function clearPhotoSelection() {
 }
 
 // ── Photo panel: remove current photo ────────────────────────
-function removePhoto() {
+async function removePhoto() {
+  const studentId = (document.getElementById('loginStudentId').value || '').trim().toLowerCase();
+  const password  = window._sessionPassword || '';
+
+  try {
+    const resp = await fetch('/.netlify/functions/upload-photo', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ studentId, password, removePhoto: true })
+    });
+  } catch(e) {}
+
+  // Clear UI regardless
+  const preview = document.getElementById('profilePhotoPreview');
+  if (preview) {
+    preview.innerHTML = '<svg id="photoPlaceholderSvg" width="56" height="64" viewBox="0 0 56 64" fill="none" xmlns="http://www.w3.org/2000/svg"><ellipse cx="28" cy="20" rx="13" ry="14" fill="#D1D5DB"/><path d="M2 58c0-13.255 11.64-24 26-24s26 10.745 26 24" fill="#D1D5DB"/></svg>';
+  }
+  const avatarPhoto    = document.getElementById('avatarPhoto');
+  const avatarInitials = document.getElementById('avatarInitials');
+  if (avatarPhoto) { avatarPhoto.src = ''; avatarPhoto.style.display = 'none'; }
+  if (avatarInitials) avatarInitials.style.display = '';
+  const removeBtn = document.getElementById('removePhotoBtn');
+  if (removeBtn) removeBtn.style.display = 'none';
+  window._idcardPhotoData = null;
+  const idcardPhotoEl = document.getElementById('idcardPhoto');
+  if (idcardPhotoEl) {
+    const name = document.getElementById('profileName');
+    const init = ((name && name.textContent) || '').split(' ').map(w => w[0]).join('').toUpperCase().slice(0,2) || '?';
+    idcardPhotoEl.innerHTML = '';
+    idcardPhotoEl.textContent = init;
+  }
+}
   // Clear UI slots
   const preview = document.getElementById('profilePhotoPreview');
   if (preview) {
