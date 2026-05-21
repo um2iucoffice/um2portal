@@ -1189,22 +1189,7 @@ alter table grades add column if not exists updated_at  timestamptz default now(
       </table></div>
     </div>
   </div>
-  <div class="card">
-    <div class="card-title">Upload Settings</div>
-    <div class="form-grid">
-      <div class="form-group"><label>Academic Year *</label><input id="grade-year" placeholder="e.g. 2026"></div>
-      <div class="form-group"><label>Uploaded By (Staff ID)</label><input id="grade-uploader" placeholder="e.g. 8802601" value="8802601" readonly></div>
-      <div class="form-group"><label>Attempt</label>
-        <select id="grade-attempt">
-          <option value="1st Attempt">1st Attempt</option>
-          <option value="2nd Attempt">2nd Attempt</option>
-          <option value="3rd Attempt">3rd Attempt</option>
-          <option value="4th Attempt">4th Attempt</option>
-          <option value="5th Attempt">5th Attempt</option>
-        </select>
-      </div>
-    </div>
-  </div>
+
   <div class="card mt-4">
     <div class="card-title">Expected CSV Format</div>
     <div class="code-block">StudentID,CourseID,NumericScore
@@ -1234,9 +1219,26 @@ iuc125066,CRS015,90.00</div>
       <div class="table-wrap" style="max-height:420px;overflow-y:auto;border:1px solid var(--line);border-radius:var(--r)">
         <table id="csvPreviewTable" style="font-size:12px"></table>
       </div>
-      <div class="form-actions" style="margin-top:14px">
-        <button class="btn btn-primary" onclick="submitGrades()">Submit &amp; Upload Grades</button>
-        <button class="btn btn-outline" onclick="document.getElementById('csvPreviewArea').style.display='none'">Cancel</button>
+      <!-- Year + Attempt inline, shown after CSV is loaded -->
+      <div style="display:flex;gap:14px;align-items:flex-end;margin-top:18px;flex-wrap:wrap;padding:16px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r)">
+        <div class="form-group" style="margin:0;flex:1;min-width:140px">
+          <label>Academic Year *</label>
+          <input id="grade-year" placeholder="e.g. 2026" style="margin-top:5px">
+        </div>
+        <div class="form-group" style="margin:0;flex:1;min-width:160px">
+          <label>Attempt</label>
+          <select id="grade-attempt" style="margin-top:5px">
+            <option value="1st Attempt">1st Attempt</option>
+            <option value="2nd Attempt">2nd Attempt</option>
+            <option value="3rd Attempt">3rd Attempt</option>
+            <option value="4th Attempt">4th Attempt</option>
+            <option value="5th Attempt">5th Attempt</option>
+          </select>
+        </div>
+        <div style="display:flex;gap:8px;flex-shrink:0">
+          <button class="btn btn-primary" onclick="submitGrades()">Submit &amp; Upload Grades</button>
+          <button class="btn btn-outline" onclick="document.getElementById('csvPreviewArea').style.display='none'">Cancel</button>
+        </div>
       </div>
     </div>
   </div>
