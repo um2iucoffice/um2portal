@@ -1460,14 +1460,14 @@ CRS022,Renal Medicine,M-2,Integrated System Modules,8,OSCE</div>
   </div>
   <div class="card">
     <div class="card-title">Required CSV Format</div>
-    <div class="code-block">year_id,year_name,sort_order
-AY001,Foundation Year,1
-AY002,M-1,2
-AY003,M-2,3
-AY004,M-3,4
-AY005,M-4,5
-AY006,M-5,6</div>
-    <p class="text-muted mt-2"><strong>year_id</strong> must be unique (e.g. AY001). Existing IDs will be <strong>updated</strong>. <strong>sort_order</strong> controls display order — lower numbers appear first.</p>
+    <div class="code-block">year_id,year_name,sort_order,program_id
+AY001,Foundation Year,1,MBBS
+AY002,M-1,2,MBBS
+AY003,M-2,3,MBBS
+AY004,M-3,4,MBBS
+AY005,M-4,5,MBBS
+AY006,M-5,6,MBBS</div>
+    <p class="text-muted mt-2"><strong>year_id</strong> must be unique (e.g. AY001). Existing IDs will be <strong>updated</strong>. <strong>sort_order</strong> controls display order — lower numbers appear first. <strong>program_id</strong> is optional — links the year to a specific degree program.</p>
     <div class="form-actions" style="margin-top:12px">
       <button class="btn btn-outline btn-sm" onclick="downloadYearTemplate()">↓ Download Template CSV</button>
     </div>
@@ -1697,10 +1697,13 @@ ALTER TABLE students ADD COLUMN IF NOT EXISTS gender text;
 -- Burmese name column for degree programs
 ALTER TABLE degree_programs ADD COLUMN IF NOT EXISTS name_my text;
 
+-- Linked program column for academic years (allows filtering years per degree)
+ALTER TABLE academic_years ADD COLUMN IF NOT EXISTS program_id text REFERENCES degree_programs(id) ON DELETE SET NULL;
+
 -- Upload-photo Netlify function: deploy netlify/functions/upload-photo.js
 -- This function handles student photo submissions and creates pending edit requests.</pre>
       <button class="btn btn-outline btn-sm" style="margin-top:8px" onclick="navigator.clipboard.writeText(document.querySelector('#migrationSQL').textContent).then(()=>toast('SQL copied.','📋'))">Copy SQL</button>
-      <div id="migrationSQL" style="display:none">ALTER TABLE student_edit_requests ADD COLUMN IF NOT EXISTS photo_url text;\nALTER TABLE students ADD COLUMN IF NOT EXISTS gender text;\nALTER TABLE degree_programs ADD COLUMN IF NOT EXISTS name_my text;</div>
+      <div id="migrationSQL" style="display:none">ALTER TABLE student_edit_requests ADD COLUMN IF NOT EXISTS photo_url text;\nALTER TABLE students ADD COLUMN IF NOT EXISTS gender text;\nALTER TABLE degree_programs ADD COLUMN IF NOT EXISTS name_my text;\nALTER TABLE academic_years ADD COLUMN IF NOT EXISTS program_id text REFERENCES degree_programs(id) ON DELETE SET NULL;</div>
     </div></div>
   </div>
   <div class="card mt-4">
@@ -1915,8 +1918,13 @@ ALTER TABLE degree_programs ADD COLUMN IF NOT EXISTS name_my text;
       <div class="form-group"><label>Year ID *</label><input id="ym-id" placeholder="e.g. AY008"></div>
       <div class="form-group"><label>Sort Order</label><input id="ym-order" type="number" placeholder="e.g. 7"></div>
       <div class="form-group full"><label>Year Name *</label><input id="ym-name" placeholder="e.g. M-6"></div>
+      <div class="form-group full"><label>Linked Degree Program <span style="font-weight:400;color:var(--ink3)">(optional)</span></label>
+        <select id="ym-program">
+          <option value="">— None / All Programs —</option>
+        </select>
+      </div>
     </div>
-    <div class="info-box" style="margin-top:12px">Academic years are the stages students progress through (Foundation Year, M-1 … M-5). Graduation status is tracked separately in Enrollment.</div>
+    <div class="info-box" style="margin-top:12px">Academic years are the stages students progress through (Foundation Year, M-1 … M-5). Linking a program helps filter years per degree. Graduation status is tracked separately in Enrollment.</div>
     <div class="form-actions">
       <button class="btn btn-primary" onclick="saveYear()">Save Year</button>
       <button class="btn btn-outline" onclick="closeModal('yearModal')">Cancel</button>
@@ -2183,8 +2191,11 @@ create table if not exists academic_years (
   id          text primary key,
   name        text not null,
   sort_order  integer default 99,
+  program_id  text references degree_programs(id) on delete set null,
   created_at  timestamptz default now()
 );
+-- Migration for existing databases (run if academic_years table already exists):
+-- alter table academic_years add column if not exists program_id text references degree_programs(id) on delete set null;
 alter table academic_years enable row level security;
 create policy "Authenticated read academic_years" on academic_years for select using (auth.role() = 'authenticated');
 create policy "Registrar write academic_years" on academic_years for all using (
@@ -4724,6 +4735,17 @@ function populateAllSelects() {
     if (savedYear && Array.from(syf.options).some(o => o.value === savedYear)) syf.value = savedYear;
   }
 
+  // Year modal program dropdown (rebuild when degrees change)
+  const ymProgSel = document.getElementById('ym-program');
+  if (ymProgSel) {
+    const savedYmProg = ymProgSel.value;
+    ymProgSel.innerHTML = '<option value="">— None / All Programs —</option>' +
+      degreePrograms.filter(p => p.status === 'Active').map(p =>
+        `<option value="${p.id}">${p.id} — ${p.name}</option>`
+      ).join('');
+    if (savedYmProg && Array.from(ymProgSel.options).some(o => o.value === savedYmProg)) ymProgSel.value = savedYmProg;
+  }
+
   // Course list year filter (has "All Years" blank option)
   setYearSelect('courseYearFilter', true);
 }
@@ -4743,18 +4765,39 @@ function updateYearsForProgram(yearSelectId, programId) {
 function renderYearsTable() {
   const tb = document.getElementById('yearsTableBody');
   if (!tb) return;
+
+  // Populate program filter dropdown
+  const pf = document.getElementById('yearProgramFilter');
+  if (pf) {
+    const savedPf = pf.value;
+    pf.innerHTML = '<option value="">All Programs</option>' +
+      degreePrograms.filter(p => p.status === 'Active').map(p =>
+        `<option value="${p.id}">${p.id} — ${p.name}</option>`
+      ).join('');
+    if (savedPf && Array.from(pf.options).some(o => o.value === savedPf)) pf.value = savedPf;
+  }
+
+  const filterProgId = pf ? pf.value : '';
+  const filteredYears = filterProgId
+    ? academicYears.filter(y => y.program_id === filterProgId)
+    : academicYears;
+
   tb.innerHTML = '';
-  if (!academicYears.length) {
-    tb.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:32px;color:var(--ink3)">No academic years defined.</td></tr>`;
+  if (!filteredYears.length) {
+    tb.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:32px;color:var(--ink3)">No academic years found${filterProgId ? ' for this program' : ''}.</td></tr>`;
     return;
   }
-  academicYears.forEach(y => {
+  filteredYears.forEach(y => {
     const enrolled = students.filter(s => s.year === y.name).length;
     const coursesInYear = courses.filter(c => c[2] === y.name).length;
+    const linkedProg = y.program_id
+      ? (degreePrograms.find(p => p.id === y.program_id)?.name || y.program_id)
+      : '<span style="color:var(--ink3);font-style:italic">—</span>';
     tb.innerHTML += `<tr>
       <td class="text-mono text-crimson">${y.id}</td>
       <td><strong>${y.name}</strong></td>
       <td>${y.sort_order}</td>
+      <td>${linkedProg}</td>
       <td>${enrolled}</td>
       <td>${coursesInYear || '—'}</td>
       <td class="flex gap-2">
@@ -4767,6 +4810,14 @@ function renderYearsTable() {
 
 function openYearModal(yid) {
   _editingYearId = yid || null;
+  // Populate program dropdown
+  const ymProg = document.getElementById('ym-program');
+  if (ymProg) {
+    ymProg.innerHTML = '<option value="">— None / All Programs —</option>' +
+      degreePrograms.filter(p => p.status === 'Active').map(p =>
+        `<option value="${p.id}">${p.id} — ${p.name}</option>`
+      ).join('');
+  }
   if (yid) {
     const y = academicYears.find(x => x.id === yid);
     if (!y) return;
@@ -4775,23 +4826,26 @@ function openYearModal(yid) {
     document.getElementById('ym-id').readOnly = true;
     document.getElementById('ym-name').value  = y.name;
     document.getElementById('ym-order').value = y.sort_order;
+    if (ymProg) ymProg.value = y.program_id || '';
   } else {
     document.getElementById('yearModalTitle').textContent = 'Add Academic Year';
     document.getElementById('ym-id').value    = '';
     document.getElementById('ym-id').readOnly = false;
     document.getElementById('ym-name').value  = '';
     document.getElementById('ym-order').value = '';
+    if (ymProg) ymProg.value = '';
   }
   document.getElementById('yearModal').classList.add('open');
 }
 
 async function saveYear() {
-  const id    = document.getElementById('ym-id').value.trim().toUpperCase();
-  const name  = document.getElementById('ym-name').value.trim();
-  const order = parseInt(document.getElementById('ym-order').value) || academicYears.length + 1;
+  const id       = document.getElementById('ym-id').value.trim().toUpperCase();
+  const name     = document.getElementById('ym-name').value.trim();
+  const order    = parseInt(document.getElementById('ym-order').value) || academicYears.length + 1;
+  const programId = (document.getElementById('ym-program')?.value || '').trim() || null;
   if (!id || !name) { toast('Year ID and Year Name are required.', 'Notice'); return; }
 
-  const record = { id, name, sort_order: order };
+  const record = { id, name, sort_order: order, program_id: programId };
 
   // Try saving to Supabase; gracefully degrade if table doesn't exist
   try {
@@ -4844,7 +4898,7 @@ let bulkYearRows = [];
 
 function downloadYearTemplate() {
   downloadCSV('academic_years_template.csv',
-    'year_id,year_name,sort_order\nAY001,Foundation Year,1\nAY002,M-1,2\nAY003,M-2,3\nAY004,M-3,4\nAY005,M-4,5\nAY006,M-5,6');
+    'year_id,year_name,sort_order,program_id\nAY001,Foundation Year,1,MBBS\nAY002,M-1,2,MBBS\nAY003,M-2,3,MBBS\nAY004,M-3,4,MBBS\nAY005,M-4,5,MBBS\nAY006,M-5,6,MBBS');
 }
 
 function handleBulkYearCSV(input) {
@@ -4857,12 +4911,13 @@ function handleBulkYearCSV(input) {
       let errors = 0;
       document.getElementById('yearPreviewCount').textContent = bulkYearRows.length;
       const pt = document.getElementById('yearPreviewTable');
-      pt.innerHTML = `<thead><tr><th>Year ID</th><th>Year Name</th><th>Sort Order</th><th>Action</th><th>Validation</th></tr></thead>`;
+      pt.innerHTML = `<thead><tr><th>Year ID</th><th>Year Name</th><th>Sort Order</th><th>Program</th><th>Action</th><th>Validation</th></tr></thead>`;
       let body = '<tbody>';
       bulkYearRows.forEach(row => {
-        const yid  = (row.year_id || '').trim().toUpperCase();
-        const name = (row.year_name || '').trim();
-        const order = row.sort_order || '';
+        const yid      = (row.year_id || '').trim().toUpperCase();
+        const name     = (row.year_name || '').trim();
+        const order    = row.sort_order || '';
+        const progId   = (row.program_id || '').trim() || '—';
         const hasRequired = yid && name;
         if (!hasRequired) errors++;
         const existing = academicYears.find(x => x.id === yid);
@@ -4872,6 +4927,7 @@ function handleBulkYearCSV(input) {
           <td class="text-mono">${yid || '<span class="text-crimson">Missing</span>'}</td>
           <td>${name || '<span class="text-crimson">Missing</span>'}</td>
           <td>${order}</td>
+          <td>${progId}</td>
           <td><span class="badge ${actionBadge}">${action}</span></td>
           <td>${hasRequired ? '<span class="badge b-green">✓ OK</span>' : '<span class="badge b-red">✗ Missing required field</span>'}</td>
         </tr>`;
@@ -4888,21 +4944,22 @@ async function submitBulkYears() {
   const rc = document.getElementById('yearResultCard');
   const rt = document.getElementById('yearResultTable');
   let inserted = 0, updated = 0, errs = 0;
-  rt.innerHTML = `<thead><tr><th>Year ID</th><th>Year Name</th><th>Sort Order</th><th>Action</th><th>DB</th></tr></thead>`;
+  rt.innerHTML = `<thead><tr><th>Year ID</th><th>Year Name</th><th>Sort Order</th><th>Program</th><th>Action</th><th>DB</th></tr></thead>`;
   let body = '<tbody>';
 
   for (const row of bulkYearRows) {
-    const yid  = (row.year_id || '').trim().toUpperCase();
-    const name = (row.year_name || '').trim();
-    const order = parseInt(row.sort_order) || academicYears.length + 1;
+    const yid    = (row.year_id || '').trim().toUpperCase();
+    const name   = (row.year_name || '').trim();
+    const order  = parseInt(row.sort_order) || academicYears.length + 1;
+    const progId = (row.program_id || '').trim() || null;
 
     if (!yid || !name) {
       errs++;
-      body += `<tr class="bulk-row-err"><td class="text-mono">${yid||'?'}</td><td>${name||'—'}</td><td>—</td><td><span class="badge b-red">✗ Skipped</span></td><td>—</td></tr>`;
+      body += `<tr class="bulk-row-err"><td class="text-mono">${yid||'?'}</td><td>${name||'—'}</td><td>—</td><td>—</td><td><span class="badge b-red">✗ Skipped</span></td><td>—</td></tr>`;
       continue;
     }
 
-    const record = { id: yid, name, sort_order: order };
+    const record = { id: yid, name, sort_order: order, program_id: progId };
     const existing = academicYears.find(x => x.id === yid);
 
     try {
@@ -4913,11 +4970,11 @@ async function submitBulkYears() {
     if (existing) {
       updated++;
       Object.assign(existing, record);
-      body += `<tr class="bulk-row-ok"><td class="text-mono text-crimson">${yid}</td><td>${name}</td><td>${order}</td><td><span class="badge b-blue">↑ Updated</span></td><td><span class="badge b-green">✓</span></td></tr>`;
+      body += `<tr class="bulk-row-ok"><td class="text-mono text-crimson">${yid}</td><td>${name}</td><td>${order}</td><td>${progId||'—'}</td><td><span class="badge b-blue">↑ Updated</span></td><td><span class="badge b-green">✓</span></td></tr>`;
     } else {
       inserted++;
       academicYears.push(record);
-      body += `<tr class="bulk-row-ok"><td class="text-mono text-crimson">${yid}</td><td>${name}</td><td>${order}</td><td><span class="badge b-green">✓ Inserted</span></td><td><span class="badge b-green">✓</span></td></tr>`;
+      body += `<tr class="bulk-row-ok"><td class="text-mono text-crimson">${yid}</td><td>${name}</td><td>${order}</td><td>${progId||'—'}</td><td><span class="badge b-green">✓ Inserted</span></td><td><span class="badge b-green">✓</span></td></tr>`;
     }
   }
 
