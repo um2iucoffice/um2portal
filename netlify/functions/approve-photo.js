@@ -52,14 +52,22 @@ export const handler = async (event) => {
       return { statusCode: 200, headers: CORS_HEADERS, body: JSON.stringify({ success: false, message: 'Missing studentId or pendingUrl.' }) };
     }
 
-    // 1. Download the pending photo
-    const dlRes = await fetch(pendingUrl, {
-      headers: {
-        'apikey':        SUPABASE_SERVICE_KEY,
-        'Authorization': `Bearer ${SUPABASE_SERVICE_KEY}`
-      }
-    });
-    if (!dlRes.ok) throw new Error(`Failed to download pending photo: ${dlRes.status}`);
+    // 1. Download the pending photo.
+    //    Try public URL first (no auth), then fall back to service-key auth.
+    //    This handles both public and private bucket configurations.
+    let dlRes = await fetch(pendingUrl);
+    if (!dlRes.ok) {
+      // Try with service key in case bucket isn't fully public
+      dlRes = await fetch(pendingUrl, {
+        headers: {
+          'apikey':        SUPABASE_SERVICE_KEY,
+          'Authorization': `Bearer ${SUPABASE_SERVICE_KEY}`
+        }
+      });
+    }
+    if (!dlRes.ok) {
+      throw new Error(`Failed to download pending photo (${dlRes.status}). URL: ${pendingUrl}`);
+    }
 
     const imageBuffer = Buffer.from(await dlRes.arrayBuffer());
     const contentType = dlRes.headers.get('content-type') || 'image/jpeg';
