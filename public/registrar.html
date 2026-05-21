@@ -3168,11 +3168,18 @@ async function submitBulkStudents() {
 
     let effectiveBatchError = null;
 
-    // Update existing students one by one (or in small batches via individual updates)
-    for (const { record } of toUpdate) {
-      const { id, ...fields } = record;
-      const { error } = await db.from('students').update(fields).eq('id', id);
-      if (error && !effectiveBatchError) effectiveBatchError = error;
+    // Update existing students in parallel — Promise.all fires all requests simultaneously
+    // instead of awaiting each one sequentially, cutting round-trip time proportionally.
+    if (toUpdate.length > 0) {
+      const updateResults = await Promise.all(
+        toUpdate.map(({ record }) => {
+          const { id, ...fields } = record;
+          return db.from('students').update(fields).eq('id', id);
+        })
+      );
+      for (const { error } of updateResults) {
+        if (error && !effectiveBatchError) effectiveBatchError = error;
+      }
     }
 
     // Insert new students in a single batch
@@ -3478,18 +3485,31 @@ async function submitGrades() {
   const uploadedBy = currentUser?.staff_id || '—';
   const uploadAttempt = document.getElementById('grade-attempt').value;
 
-  // ── Detect available columns once before the batch ──
+  // ── Detect available columns once per session, then cache in sessionStorage ──
+  // This avoids 7 sequential network round-trips on every upload.
   if (_gradesColumns === null) {
-    _gradesColumns = { scoreCol: null, sidCol: null, cidCol: null, extras: new Set() };
-    const { error: scoreErr } = await db.from('grades').select('id,score').limit(0);
-    _gradesColumns.scoreCol = scoreErr ? 'NumericScore' : 'score';
-    const { error: sidErr } = await db.from('grades').select('id,student_id').limit(0);
-    _gradesColumns.sidCol = sidErr ? 'StudentID' : 'student_id';
-    const { error: cidErr } = await db.from('grades').select('id,course_id').limit(0);
-    _gradesColumns.cidCol = cidErr ? 'CourseID' : 'course_id';
-    for (const col of ['course','attempt','year','uploaded_by','updated_at']) {
-      const { error: e } = await db.from('grades').select('id,' + col).limit(0);
-      if (!e) _gradesColumns.extras.add(col);
+    const cached = sessionStorage.getItem('_gradesColumns');
+    if (cached) {
+      const parsed = JSON.parse(cached);
+      _gradesColumns = { ...parsed, extras: new Set(parsed.extras) };
+    } else {
+      _gradesColumns = { scoreCol: null, sidCol: null, cidCol: null, extras: new Set() };
+      const [scoreRes, sidRes, cidRes, ...extraRes] = await Promise.all([
+        db.from('grades').select('id,score').limit(0),
+        db.from('grades').select('id,student_id').limit(0),
+        db.from('grades').select('id,course_id').limit(0),
+        ...['course','attempt','year','uploaded_by','updated_at'].map(col =>
+          db.from('grades').select('id,' + col).limit(0).then(r => ({ col, error: r.error }))
+        )
+      ]);
+      _gradesColumns.scoreCol = scoreRes.error ? 'NumericScore' : 'score';
+      _gradesColumns.sidCol   = sidRes.error   ? 'StudentID'    : 'student_id';
+      _gradesColumns.cidCol   = cidRes.error   ? 'CourseID'     : 'course_id';
+      for (const { col, error } of extraRes) { if (!error) _gradesColumns.extras.add(col); }
+      // Persist for the rest of this browser session
+      sessionStorage.setItem('_gradesColumns', JSON.stringify({
+        ..._gradesColumns, extras: [..._gradesColumns.extras]
+      }));
     }
     const warn = document.getElementById('gradeSchemaWarning');
     if (warn) warn.style.display = (_gradesColumns.cidCol === 'CourseID' || !_gradesColumns.extras.has('attempt')) ? '' : 'none';
@@ -3497,32 +3517,38 @@ async function submitGrades() {
   
   const validRecords = [];
 
-for (const row of gradeCSVRows) {
+  for (const [i, row] of gradeCSVRows.entries()) {
+    const sid      = (row.StudentID || row.studentid || row.student_id || '').trim();
+    const courseId = (row.CourseID  || row.courseid  || row.course_id  || '').trim();
+    const score    = parseFloat(row.NumericScore || row.numericscore || row.score || 0);
+    const { gp, letter } = computeGradePoint(score);
 
-  const score = parseFloat(row.NumericScore || row.score || 0);
+    // Deterministic ID: same student+course+attempt always maps to the same grade row.
+    // Re-uploading the same CSV updates existing grades rather than creating duplicates.
+    const gid = 'GRD-' + stableGradeId(sid, courseId, uploadAttempt);
 
-  const record = {
-    id: 'GRD-' + Date.now().toString(36).toUpperCase() +
-    '-' +
-    Math.random().toString(36).substring(2,5).toUpperCase(),
+    const courseMatch = courses.find(c => c[0].toLowerCase() === courseId.toLowerCase());
+    const courseName  = courseMatch ? courseMatch[1] : courseId;
 
-    StudentID: row.StudentID,
-    CourseID: row.CourseID,
+    // Use snake_case column names that match the actual Supabase schema.
+    // Sending camelCase keys (StudentID, CourseID, NumericScore) causes Postgres to
+    // silently ignore them — which means the 'id' field never lands and Postgres
+    // auto-generates its own, breaking the stableGradeId deduplication entirely.
+    const record = {
+      id:          gid,
+      student_id:  sid,
+      course_id:   courseId,
+      score:       score,
+      letter,
+      gp,
+      course:      courseName,
+      attempt:     uploadAttempt,
+      uploaded_by: uploadedBy,
+      created_at:  new Date().toISOString(),
+    };
 
-    NumericScore: score,
-
-    created_at: new Date().toISOString(),
-
-    attempt: uploadAttempt,
-    uploaded_by: uploadedBy
-  };
-
-  validRecords.push({
-    record,
-    gid: record.id,
-    score
-  });
-}
+    validRecords.push({ record, gid, score, gp, letter, sid, courseId, i });
+  }
 
 
   
@@ -3545,16 +3571,17 @@ for (const row of gradeCSVRows) {
       for (const item of chunk) {
         let { error: rowErr } = await db.from('grades').insert(item.record);
         if (rowErr && (rowErr.message.includes('duplicate') || rowErr.message.includes('unique') || rowErr.message.includes('already exists'))) {
+          // Fallback update always uses snake_case columns to match the actual schema
           const upd = {
-            [_gradesColumns.scoreCol]: item.score,
-            letter: item.letter, gp: item.gp,
+            score:       item.score,
+            letter:      item.letter,
+            gp:          item.gp,
+            course_id:   item.courseId,
+            course:      item.record.course,
+            attempt:     item.record.attempt,
+            uploaded_by: item.record.uploaded_by,
+            updated_at:  new Date().toISOString(),
           };
-          if (item.record.course)      upd.course       = item.record.course;
-          if (item.record[_gradesColumns.cidCol]) upd[_gradesColumns.cidCol] = item.record[_gradesColumns.cidCol];
-          if (item.record.attempt)     upd.attempt      = item.record.attempt;
-          if (item.record.year)        upd.year         = item.record.year;
-          if (item.record.uploaded_by) upd.uploaded_by  = item.record.uploaded_by;
-          if (item.record.updated_at)  upd.updated_at   = item.record.updated_at;
           const { error: updErr } = await db.from('grades').update(upd).eq('id', item.gid);
           rowErr = updErr;
         }
@@ -3641,10 +3668,11 @@ hideUploadOverlay();
 
   updateDashboardStats();
 
-  for (const sid of notifiedStudents) {
+  // Fire all grade notification emails in parallel — no need to await each one serially.
+  await Promise.all([...notifiedStudents].map(sid => {
     const s = students.find(x => x.id === sid);
-    if (s) await logEmail(s.email, sid, '[UM2] Your grades have been updated', 'Grade CSV upload');
-  }
+    return s ? logEmail(s.email, sid, '[UM2] Your grades have been updated', 'Grade CSV upload') : Promise.resolve();
+  }));
   const errNote = errCount > 0 ? ` — hover the red badges for error details.` : '';
   toast(`✅ ${okCount} grades saved. ${errCount} errors.${errNote}`, 'Notice');
 }
@@ -3674,9 +3702,8 @@ async function saveEditGrade() {
   const attempt = document.getElementById('egm-attempt').value;
   const { gp, letter } = computeGradePoint(score);
 
-  const scoreCol = (_gradesColumns && _gradesColumns.scoreCol) ? _gradesColumns.scoreCol : 'NumericScore';
   const { error } = await db.from('grades')
-    .update({ [scoreCol]: score, gp, letter, year: yr, attempt, updated_at: new Date().toISOString() })
+    .update({ score, gp, letter, year: yr, attempt, updated_at: new Date().toISOString() })
     .eq('id', _editGradeId);
   if (error) { toast('Update failed: ' + error.message, 'DB Error'); return; }
 
