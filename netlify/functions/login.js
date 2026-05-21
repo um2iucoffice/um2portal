@@ -42,6 +42,8 @@ function mapStudent(row, programName) {
     fullNameMM:       row.name_my         || '',
     fatherName:       row.father          || '',
     fatherNameMM:     row.father_my       || '',
+    motherName:       row.mother          || '',
+    motherNameMM:     row.mother_my       || '',
     dob:              row.dob             || '',
     email:            row.email           || '',
     phone:            row.phone           || '',
