@@ -1,13 +1,12 @@
 // ============================================================
-//  netlify/functions/login.js
-//  Reads from Supabase PostgreSQL (students, grades tables)
+//  netlify/functions/login.js  — v2 (multi-degree support)
+//  Reads from Supabase PostgreSQL:
+//    students, grades, courses, degree_programs, degree_enrollments
 //
-//  Environment variables required (set in Netlify dashboard):
+//  Environment variables required (Netlify dashboard):
 //    SUPABASE_URL          e.g. https://xxxx.supabase.co
-//    SUPABASE_ANON_KEY     your anon/public key
-//    SUPABASE_SERVICE_KEY  service_role key (used only server-side
-//                          after password is verified — never sent
-//                          to the browser)
+//    SUPABASE_ANON_KEY     your anon / public key
+//    SUPABASE_SERVICE_KEY  service_role key (never sent to browser)
 // ============================================================
 
 const SUPABASE_URL         = process.env.SUPABASE_URL;
@@ -15,8 +14,6 @@ const SUPABASE_ANON_KEY    = process.env.SUPABASE_ANON_KEY;
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY;
 
 // ── Supabase REST helper ─────────────────────────────────────
-// useServiceKey = true bypasses RLS — only used after the student's
-// password has already been verified in this same request.
 async function supabase(path, options = {}, useServiceKey = false) {
   const key = useServiceKey ? SUPABASE_SERVICE_KEY : SUPABASE_ANON_KEY;
   const url  = `${SUPABASE_URL}/rest/v1/${path}`;
@@ -36,7 +33,7 @@ async function supabase(path, options = {}, useServiceKey = false) {
   return res.json();
 }
 
-// ── Map student row to safe object (never expose master_password) ──
+// ── Map student row (never expose master_password) ───────────
 function mapStudent(row, programName) {
   return {
     id:               row.id              || '',
@@ -58,11 +55,12 @@ function mapStudent(row, programName) {
     photo:            row.photo           || '',
     program:          row.program         || '',
     programName:      programName         || row.program || '',
-    // master_password is intentionally excluded
+    degreeLevel:      row.degree_level    || 'bachelor',
+    // master_password intentionally excluded
   };
 }
 
-// ── Map grade row ────────────────────────────────────────────
+// ── Map a single grade row ───────────────────────────────────
 function mapGrade(row) {
   return {
     gradeId:      String(row.id                        || ''),
@@ -74,7 +72,29 @@ function mapGrade(row) {
     year:         row.year                             || '',
     attempt:      row.attempt                          || '',
     notes:        row.notes                            || '',
-    updatedAt:    row.updated_at                       || ''
+    updatedAt:    row.updated_at                       || '',
+    enrollmentId: row.enrollment_id                    || null,   // NEW: links grade → degree enrollment
+  };
+}
+
+// ── Map a degree_enrollment row ──────────────────────────────
+function mapEnrollment(row) {
+  const prog = row.degree_programs || {};
+  return {
+    id:               row.id                  || '',
+    studentId:        row.student_id          || '',
+    degreeProgramId:  row.degree_program_id   || '',
+    programName:      prog.name || row.degree_program_id || '',
+    degreeLevel:      row.degree_level        || 'bachelor',
+    currentYear:      row.current_year        || '',
+    enrollmentStatus: row.enrollment_status   || '',
+    gpa:              row.gpa != null ? String(row.gpa) : '',
+    admissionDate:    row.admission_date      || '',
+    graduationStatus: row.graduation_status   || '',
+    graduationId:     row.graduation_id       || '',
+    graduationDate:   row.graduation_date     || '',
+    thesisTitle:      row.thesis_title        || '',
+    supervisor:       row.supervisor          || '',
   };
 }
 
@@ -111,7 +131,7 @@ export const handler = async (event) => {
   }
 
   try {
-    // ── 1. Fetch student by ID (anon key — public read is fine) ─
+    // ── 1. Fetch student by ID (anon key) ────────────────────
     const students = await supabase(
       `students?id=eq.${encodeURIComponent(normId)}&select=*&limit=1`
     );
@@ -125,7 +145,7 @@ export const handler = async (event) => {
 
     const raw = students[0];
 
-    // ── 2. Verify master_password BEFORE using service key ───
+    // ── 2. Verify password BEFORE using service key ──────────
     const storedPassword = String(raw.master_password || '').trim();
     if (storedPassword !== normPass) {
       return {
@@ -134,7 +154,7 @@ export const handler = async (event) => {
       };
     }
 
-    // ── 3. Fetch degree program name ─────────────────────────
+    // ── 3. Fetch primary degree program name ─────────────────
     let programName = raw.program || '';
     if (raw.program) {
       try {
@@ -152,8 +172,7 @@ export const handler = async (event) => {
     // ── 4. Map student (strips master_password) ──────────────
     const student = mapStudent(raw, programName);
 
-    // ── 5. Fetch grades — service key used here, password already
-    //       verified above. RLS stays ON, no public policy needed.
+    // ── 5. Fetch grades (service key — password already verified) ──
     const gradeRows = await supabase(
       `grades?StudentID=eq.${encodeURIComponent(raw.id)}&select=*&order=CourseID.asc`,
       {},
@@ -161,7 +180,39 @@ export const handler = async (event) => {
     );
     const grades = (gradeRows || []).map(mapGrade);
 
-    // ── 6. Fetch all courses (public) — fresh every login ────
+    // ── 6. Fetch all degree enrollments for this student ─────
+    //       Joined with degree_programs to get name + level.
+    let enrollments = [];
+    try {
+      const enrollmentRows = await supabase(
+        `degree_enrollments?student_id=eq.${encodeURIComponent(raw.id)}`
+        + `&select=*,degree_programs(id,name,level)&order=created_at.asc`,
+        {},
+        true
+      );
+      enrollments = (enrollmentRows || []).map(mapEnrollment);
+    } catch (e) {
+      console.warn('Could not fetch degree enrollments:', e.message);
+      // Graceful fallback: synthesise a single bachelor enrollment from students row
+      enrollments = [{
+        id:               '',
+        studentId:        raw.id,
+        degreeProgramId:  raw.program         || '',
+        programName:      programName          || '',
+        degreeLevel:      raw.degree_level     || 'bachelor',
+        currentYear:      raw.year             || '',
+        enrollmentStatus: raw.status           || '',
+        gpa:              raw.gpa != null ? String(raw.gpa) : '',
+        admissionDate:    '',
+        graduationStatus: raw.grad_status      || '',
+        graduationId:     raw.graduation_id    || '',
+        graduationDate:   raw.graduation_date  || '',
+        thesisTitle:      '',
+        supervisor:       '',
+      }];
+    }
+
+    // ── 7. Fetch all courses (public) ────────────────────────
     let courses = {};
     try {
       const courseRows = await supabase(
@@ -180,14 +231,20 @@ export const handler = async (event) => {
       console.warn('Could not fetch courses:', e.message);
     }
 
-    // ── 7. Build photo URL if needed ─────────────────────────
+    // ── 8. Build photo URL if needed ─────────────────────────
     if (student.photo && !student.photo.startsWith('http')) {
       student.photo = `${SUPABASE_URL}/storage/v1/object/public/student-photos/${student.photo}`;
     }
 
     return {
       statusCode: 200, headers,
-      body: JSON.stringify({ success: true, student, grades, courses })
+      body: JSON.stringify({
+        success: true,
+        student,
+        grades,
+        courses,
+        enrollments,   // NEW — array of all degree enrollments
+      })
     };
 
   } catch (err) {
