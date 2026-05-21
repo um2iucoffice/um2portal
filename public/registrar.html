@@ -3502,7 +3502,9 @@ for (const row of gradeCSVRows) {
   const score = parseFloat(row.NumericScore || row.score || 0);
 
   const record = {
-    id: crypto.randomUUID(),
+    id: 'GRD-' + Date.now().toString(36).toUpperCase() +
+    '-' +
+    Math.random().toString(36).substring(2,5).toUpperCase(),
 
     StudentID: row.StudentID,
     CourseID: row.CourseID,
