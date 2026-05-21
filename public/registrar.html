@@ -3495,8 +3495,7 @@ async function submitGrades() {
     if (warn) warn.style.display = (_gradesColumns.cidCol === 'CourseID' || !_gradesColumns.extras.has('attempt')) ? '' : 'none';
   }
 
-  // ── Batch upsert in chunks of 100 ──
-  }
+}
 
   // ── Build validRecords from parsed CSV rows ──
   const validRecords = [];
