@@ -1715,32 +1715,203 @@ canvas.photo-canvas, #idcardPhoto canvas, #homeAvatar canvas, #gradesAvatar canv
   flex-shrink: 0;
 }
 
-/* ── RESPONSIVE ── */
-@media(max-width:700px){
-  .login-left { display: none; }
-  .login-right { padding: 32px 24px; }
-  .sidebar { transform: translateX(-100%); transition: transform .3s ease; }
-  .sidebar.open { transform: translateX(0); }
-  .sb-toggle { display: flex; }
-  .dash-main { margin-left: 0; }
-  .dash-content { padding: 20px 18px 60px; }
-  .dash-topbar { padding: 0 18px 0 62px; }
-  .banner { flex-direction: column; gap: 12px; }
-  .igrid { grid-template-columns: 1fr; }
-  .icell:nth-child(odd) { border-right: none; }
-  .icell:nth-last-child(-n+2) { border-bottom: 1px solid rgba(255,255,255,0.05); }
-  .icell:last-child { border-bottom: none; }
-  .qlinks { grid-template-columns: 1fr 1fr; }
-  .home-hero { flex-direction: column; text-align: center; }
-  .home-hero-badge { width: 100%; }
-  .grades-header-banner { flex-wrap: wrap; }
-  .transcript-summary { flex-wrap: wrap; gap: 12px; }
-  .ts-divider { display: none; }
-  .ts-item { padding: 0; flex: 0 0 calc(50% - 8px); }
-}
+/* ── TABLET ── */
 @media(max-width:900px){
   .sidebar { width: 220px; }
   .dash-main { margin-left: 220px; }
+}
+
+/* ══════════════════════════════════════════════════
+   MOBILE — Complete redesign (≤700px)
+   Pattern: fixed top bar + bottom tab bar + icon grid
+   ══════════════════════════════════════════════════ */
+@media(max-width:700px){
+
+  /* ── Hide desktop sidebar completely ── */
+  .sidebar, .sb-toggle, .sb-overlay { display: none !important; }
+
+  /* ── Login ── */
+  .login-left { display: none; }
+  .login-right { padding: 0; min-height: 100vh; display: flex; align-items: center; justify-content: center; background: none; }
+  .login-form-wrap {
+    width: 100%; max-width: 100%; border-radius: 0;
+    padding: 40px 24px 40px;
+    min-height: 100vh;
+    display: flex; flex-direction: column; justify-content: center;
+    border: none; box-shadow: none;
+    background: transparent;
+  }
+  body.theme-light .login-form-wrap { background: transparent; }
+  .login-form-wrap h2 { font-size: 22px; }
+  .field input { padding: 14px 16px; font-size: 15px; border-radius: 10px; }
+  .btn-login { padding: 15px; font-size: 15px; border-radius: 10px; }
+
+  /* ── Main layout: no left margin, full width ── */
+  .dash-main { margin-left: 0 !important; }
+
+  /* ── MOBILE TOP BAR ── */
+  .dash-topbar {
+    height: 56px;
+    padding: 0 16px;
+    display: flex; align-items: center; gap: 10px;
+    position: sticky; top: 0; z-index: 50;
+  }
+  /* Brand logo/name on left */
+  .dash-topbar::before {
+    content: 'IRIS';
+    font-family: 'Libre Baskerville', serif;
+    font-size: 20px;
+    font-weight: 700;
+    color: rgba(255,255,255,0.9);
+    letter-spacing: 2px;
+    margin-right: auto;
+  }
+  body.theme-light .dash-topbar::before { color: var(--ink); }
+  .dash-topbar-title { display: none; }
+  .dash-topbar-id {
+    font-size: 11px; padding: 4px 10px;
+    max-width: 110px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    border-radius: 6px;
+  }
+  .theme-toggle-btn { width: 36px; height: 36px; flex-shrink: 0; }
+
+  /* ── MOBILE BOTTOM TAB BAR ── */
+  .mob-tabbar {
+    display: flex !important;
+  }
+
+  /* ── Content area: padding for top + bottom bars ── */
+  .dash-content {
+    padding: 16px 14px 90px;
+    overflow-x: hidden;
+  }
+
+  /* ── HOME: Hero banner ── */
+  .home-hero {
+    flex-direction: row;
+    gap: 14px;
+    padding: 18px 16px;
+    border-radius: 14px;
+    margin-bottom: 20px;
+    align-items: center;
+  }
+  .home-hero-avatar { width: 52px; height: 52px; font-size: 20px; border-radius: 10px; flex-shrink: 0; }
+  .home-hero-text { flex: 1; text-align: left; }
+  .home-hero-greeting { font-size: 10px; margin-bottom: 2px; }
+  .home-hero-name { font-size: 17px; margin-bottom: 2px; }
+  .home-hero-sub { font-size: 11px; }
+  .home-hero-badge { display: none; }
+
+  /* ── HOME: MUNI-style icon grid ── */
+  .home-section-label { font-size: 11px; margin-bottom: 12px; }
+  .qlinks {
+    display: grid !important;
+    grid-template-columns: repeat(3, 1fr) !important;
+    gap: 8px !important;
+    margin-bottom: 24px;
+  }
+  .ql {
+    background: rgba(255,255,255,0.05) !important;
+    border: 1px solid rgba(255,255,255,0.09) !important;
+    border-radius: 14px !important;
+    padding: 16px 8px 12px !important;
+    min-height: auto !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    text-align: center !important;
+    gap: 0 !important;
+    transform: none !important;
+  }
+  .ql:hover { transform: none !important; }
+  .ql::after { display: none !important; }
+  .ql-icon {
+    width: 52px; height: 52px;
+    border-radius: 50% !important;
+    background: rgba(139,26,46,0.22) !important;
+    border: 1.5px solid rgba(139,26,46,0.3);
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 8px !important;
+    flex-shrink: 0;
+  }
+  .ql-icon svg { width: 22px; height: 22px; }
+  .ql-t { font-size: 11px !important; font-weight: 600; line-height: 1.3; color: rgba(255,255,255,0.82) !important; }
+  .ql-s { display: none !important; }
+  .ql-arrow { display: none !important; }
+
+  body.theme-light .ql {
+    background: var(--white) !important;
+    border-color: var(--line) !important;
+  }
+  body.theme-light .ql-icon {
+    background: var(--crimson-light) !important;
+    border-color: rgba(139,26,46,0.15) !important;
+  }
+  body.theme-light .ql-t { color: var(--ink) !important; }
+
+  /* ── Journey card ── */
+  .journey-card { border-radius: 12px; }
+  .degree-row { padding: 12px 14px; gap: 10px; }
+  .degree-row-name { font-size: 12px; }
+  .degree-row-meta { font-size: 10px; }
+  .degree-row-gpa-val { font-size: 18px; }
+  .degree-row-badge { display: none; }
+
+  /* ── PROFILE section ── */
+  .banner {
+    flex-direction: column; gap: 14px;
+    align-items: flex-start;
+    padding: 16px 16px;
+    border-radius: 12px;
+    margin-bottom: 14px;
+  }
+  .b-name h1 { font-size: 18px; }
+  .b-name .mm { font-size: 12px; margin-bottom: 8px; }
+
+  .icard { border-radius: 12px; margin-bottom: 14px; }
+  .icard-head { padding: 10px 14px; font-size: 9px; }
+  .igrid { grid-template-columns: 1fr; }
+  .icell { padding: 12px 14px; border-right: none !important; }
+  .icell:nth-last-child(-n+2) { border-bottom: 1px solid rgba(255,255,255,0.05) !important; }
+  body.theme-light .icell:nth-last-child(-n+2) { border-bottom: 1px solid var(--line) !important; }
+  .icell:last-child { border-bottom: none !important; }
+  .ic-lbl { font-size: 9px; }
+  .ic-val { font-size: 13px; }
+
+  /* ── GRADES section ── */
+  .grades-header-banner { flex-direction: column; gap: 10px; padding: 14px; border-radius: 12px; }
+  .grades-hdr-gpa { text-align: left; }
+  .grades-hdr-gpa-val { font-size: 28px; }
+  .transcript-summary { flex-wrap: wrap; gap: 10px; padding: 12px 14px; border-radius: 12px; }
+  .ts-divider { display: none; }
+  .ts-item { padding: 0; flex: 0 0 calc(50% - 6px); }
+  .ts-val { font-size: 20px; }
+  .ts-lbl { font-size: 9px; }
+  .degree-tabs { padding: 0 4px; }
+  .degree-tab { padding: 10px 12px; font-size: 12px; }
+  .g-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; border-radius: 12px; }
+  table.gt { min-width: 520px; }
+  table.gt th, table.gt td { padding: 8px 10px; }
+  .sec-head { margin-bottom: 16px; }
+  .sec-head h2 { font-size: 18px; }
+  .sec-head p { font-size: 12px; }
+
+  /* ── DOCUMENTS section ── */
+  .doc-grid { grid-template-columns: 1fr !important; gap: 12px; }
+  .doc-card { padding: 18px 16px 14px; border-radius: 12px; }
+  .doc-title { font-size: 15px; }
+  .doc-desc { font-size: 12px; }
+
+  /* ── ID CARD section ── */
+  .idcard { width: 100%; max-width: 340px; }
+  .idcard-wrap { padding: 8px 0 0; gap: 16px; }
+  .idcard-actions { flex-direction: column; gap: 8px; }
+  .btn-idcard { justify-content: center; padding: 13px 20px; }
+
+  /* ── Glass card ── */
+  .glass-card { border-radius: 12px; }
+  .glass-card-head { padding: 11px 14px; }
 }
 
 /* ══════════════════════════════════════
@@ -2122,9 +2293,126 @@ body.theme-light #photoDropZone { border-color: var(--line) !important; backgrou
 }
 
 @media(max-width:380px){
-  .qlinks { grid-template-columns: 1fr; }
-  .dash-content { padding: 14px 12px 80px; }
+  .qlinks { grid-template-columns: repeat(3,1fr) !important; }
+  .dash-content { padding: 14px 10px 90px; }
 }
+
+/* ══════════════════════════════════════
+   MOBILE BOTTOM TAB BAR
+   ══════════════════════════════════════ */
+.mob-tabbar {
+  display: none;
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  height: 68px;
+  z-index: 60;
+  background: rgba(10,15,26,0.97);
+  border-top: 1px solid rgba(255,255,255,0.08);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  padding: 0 4px;
+  padding-bottom: env(safe-area-inset-bottom);
+  align-items: center;
+  justify-content: space-around;
+}
+body.theme-light .mob-tabbar {
+  background: rgba(255,255,255,0.97);
+  border-top-color: var(--line);
+}
+.mob-tab {
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 3px; flex: 1;
+  height: 56px;
+  border: none; background: none;
+  cursor: pointer; padding: 6px 4px;
+  border-radius: 10px;
+  transition: background .15s;
+  -webkit-tap-highlight-color: transparent;
+  position: relative;
+}
+.mob-tab:active { background: rgba(255,255,255,0.06); }
+body.theme-light .mob-tab:active { background: rgba(13,27,42,0.05); }
+.mob-tab-icon {
+  width: 22px; height: 22px;
+  color: rgba(255,255,255,0.35);
+  transition: color .15s, transform .15s;
+  flex-shrink: 0;
+}
+.mob-tab-label {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 9.5px; font-weight: 500;
+  color: rgba(255,255,255,0.35);
+  transition: color .15s;
+  white-space: nowrap;
+}
+body.theme-light .mob-tab-icon  { color: var(--ink3); }
+body.theme-light .mob-tab-label { color: var(--ink3); }
+.mob-tab.active .mob-tab-icon  { color: #e05470; transform: translateY(-1px); }
+.mob-tab.active .mob-tab-label { color: #e05470; font-weight: 700; }
+body.theme-light .mob-tab.active .mob-tab-icon  { color: var(--crimson); }
+body.theme-light .mob-tab.active .mob-tab-label { color: var(--crimson); }
+.mob-tab.active::after {
+  content: '';
+  position: absolute; top: 4px;
+  width: 4px; height: 4px; border-radius: 50%;
+  background: #e05470;
+}
+body.theme-light .mob-tab.active::after { background: var(--crimson); }
+
+/* More menu popup */
+.mob-more-menu {
+  display: none;
+  position: fixed;
+  bottom: 76px; right: 8px;
+  background: rgba(14,20,32,0.97);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 16px;
+  overflow: hidden; z-index: 70;
+  min-width: 210px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+  backdrop-filter: blur(20px);
+}
+body.theme-light .mob-more-menu {
+  background: var(--white);
+  border-color: var(--line);
+  box-shadow: 0 8px 32px rgba(13,27,42,0.15);
+}
+.mob-more-menu.open { display: block; }
+.mob-more-user {
+  padding: 14px 18px 12px;
+  border-bottom: 1px solid rgba(255,255,255,0.07);
+}
+body.theme-light .mob-more-user { border-bottom-color: var(--line); }
+.mob-more-user-name {
+  font-size: 14px; font-weight: 600;
+  color: rgba(255,255,255,0.88);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.mob-more-user-id { font-size: 11px; color: rgba(255,255,255,0.3); font-family: monospace; margin-top: 2px; }
+body.theme-light .mob-more-user-name { color: var(--ink); }
+body.theme-light .mob-more-user-id   { color: var(--ink3); }
+.mob-more-item {
+  display: flex; align-items: center; gap: 12px;
+  padding: 13px 18px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px; color: rgba(255,255,255,0.7);
+  border-top: 1px solid rgba(255,255,255,0.05);
+  cursor: pointer; transition: background .15s;
+  border-left: none; border-right: none; border-bottom: none;
+  background: none; width: 100%; text-align: left;
+}
+.mob-more-item:first-of-type { border-top: 1px solid rgba(255,255,255,0.06); }
+.mob-more-item:active { background: rgba(255,255,255,0.06); }
+.mob-more-item svg { flex-shrink: 0; color: rgba(255,255,255,0.35); }
+body.theme-light .mob-more-item { color: var(--ink2); border-top-color: var(--line); }
+body.theme-light .mob-more-item svg { color: var(--ink3); }
+.mob-more-item.danger { color: #f87171; }
+.mob-more-item.danger svg { color: #f87171; }
+body.theme-light .mob-more-item.danger { color: var(--crimson); }
+body.theme-light .mob-more-item.danger svg { color: var(--crimson); }
+.mob-more-overlay { display:none; position:fixed; inset:0; z-index:65; }
+.mob-more-overlay.open { display:block; }
 </style>
 </head>
 <body>
@@ -2180,7 +2468,54 @@ body.theme-light #photoDropZone { border-color: var(--line) !important; backgrou
 
 <div id="dashboard">
 
-  <!-- Mobile toggle button -->
+  <!-- ── MOBILE BOTTOM TAB BAR ── -->
+  <nav class="mob-tabbar" id="mobTabbar">
+    <button class="mob-tab active" data-section="home" onclick="mobSwitchTab('home',this)">
+      <svg class="mob-tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg>
+      <span class="mob-tab-label">Home</span>
+    </button>
+    <button class="mob-tab" data-section="profile" onclick="mobSwitchTab('profile',this)">
+      <svg class="mob-tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+      <span class="mob-tab-label">Profile</span>
+    </button>
+    <button class="mob-tab" data-section="grades" onclick="mobSwitchTab('grades',this)">
+      <svg class="mob-tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="12" width="4" height="9" rx="1"/><rect x="10" y="7" width="4" height="14" rx="1"/><rect x="17" y="3" width="4" height="18" rx="1"/></svg>
+      <span class="mob-tab-label">Grades</span>
+    </button>
+    <button class="mob-tab" data-section="docs" onclick="mobSwitchTab('docs',this)">
+      <svg class="mob-tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/></svg>
+      <span class="mob-tab-label">Docs</span>
+    </button>
+    <button class="mob-tab" onclick="toggleMobMore(this)">
+      <svg class="mob-tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="5" cy="12" r="1.5" fill="currentColor"/><circle cx="12" cy="12" r="1.5" fill="currentColor"/><circle cx="19" cy="12" r="1.5" fill="currentColor"/></svg>
+      <span class="mob-tab-label">More</span>
+    </button>
+  </nav>
+
+  <!-- More menu popup -->
+  <div class="mob-more-overlay" id="mobMoreOverlay" onclick="closeMobMore()"></div>
+  <div class="mob-more-menu" id="mobMoreMenu">
+    <div class="mob-more-user">
+      <div class="mob-more-user-name" id="mobMoreName">—</div>
+      <div class="mob-more-user-id" id="mobMoreId">—</div>
+    </div>
+    <button class="mob-more-item" onclick="mobSwitchTab('idcard',null);closeMobMore()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><circle cx="8" cy="12" r="2.5"/><line x1="13" y1="10" x2="19" y2="10"/><line x1="13" y1="14" x2="17" y2="14"/></svg>
+      ID Card
+    </button>
+    <button class="mob-more-item" onclick="mobSwitchTab('photo',null);closeMobMore()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+      Profile Photo
+    </button>
+    <button class="mob-more-item" onclick="toggleTheme();closeMobMore()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/></svg>
+      Toggle Theme
+    </button>
+    <button class="mob-more-item danger" onclick="doSignOut();closeMobMore()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16,17 21,12 16,7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+      Sign Out
+    </button>
+  </div>
   <button class="sb-toggle" id="sbToggle" onclick="toggleSidebar()" aria-label="Toggle navigation">
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
   </button>
@@ -2955,6 +3290,9 @@ function populate(s, grades, courses, program_meta, enrollments) {
   if (sbName) sbName.textContent = s.fullName || '—';
   if (sbId)   sbId.textContent   = s.id || '—';
   if (sbAv)   sbAv.textContent   = init;
+  // Populate mobile more menu
+  const mobN = document.getElementById('mobMoreName'); if (mobN) mobN.textContent = s.fullName || '—';
+  const mobI = document.getElementById('mobMoreId');   if (mobI) mobI.textContent = s.id || '—';
 
   // Activate dark dashboard background
   document.body.classList.add('dashboard-active');
@@ -3688,13 +4026,18 @@ function switchSection(id, btn) {
 
   // Update sidebar nav items
   document.querySelectorAll('.sbnav-item').forEach(b => b.classList.remove('active'));
-  if (btn) {
+  if (btn && btn.classList.contains('sbnav-item')) {
     btn.classList.add('active');
   } else {
     document.querySelectorAll('.sbnav-item[data-section]').forEach(b => {
       if (b.dataset.section === id) b.classList.add('active');
     });
   }
+
+  // Sync mobile tab bar
+  document.querySelectorAll('.mob-tab[data-section]').forEach(t => t.classList.remove('active'));
+  const mobTab = document.querySelector('.mob-tab[data-section="'+id+'"]');
+  if (mobTab) mobTab.classList.add('active');
 
   // Update topbar title
   const titleEl = document.getElementById('topbarTitle');
@@ -4367,6 +4710,33 @@ function printDocument(type) {
 }
 
 
+// ── Mobile Tab Bar ────────────────────────────────────────────────
+function mobSwitchTab(section, btn) {
+  // Sync desktop sidebar
+  switchSection(section, document.querySelector('.sbnav-item[data-section="'+section+'"]'));
+  // Update mobile tab active states
+  document.querySelectorAll('.mob-tab[data-section]').forEach(t => t.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  else {
+    const t = document.querySelector('.mob-tab[data-section="'+section+'"]');
+    if (t) t.classList.add('active');
+  }
+  // Scroll to top
+  const content = document.querySelector('.dash-content');
+  if (content) content.scrollTo(0, 0);
+}
+
+function toggleMobMore(btn) {
+  const menu = document.getElementById('mobMoreMenu');
+  const overlay = document.getElementById('mobMoreOverlay');
+  menu.classList.toggle('open');
+  overlay.classList.toggle('open');
+}
+function closeMobMore() {
+  document.getElementById('mobMoreMenu').classList.remove('open');
+  document.getElementById('mobMoreOverlay').classList.remove('open');
+}
+
 // ── Theme Toggle ──────────────────────────────────────────────────
 const MOON_SVG = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>`;
 const SUN_SVG  = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>`;
@@ -4440,6 +4810,8 @@ function doSignOut() {
   const sbAv = document.getElementById('sidebarAvatar'); if (sbAv) sbAv.textContent = '—';
   const sbNm = document.getElementById('sidebarName');   if (sbNm) sbNm.textContent = '—';
   const sbId = document.getElementById('sidebarId');     if (sbId) sbId.textContent = '—';
+  const mobN = document.getElementById('mobMoreName');   if (mobN) mobN.textContent = '—';
+  const mobI = document.getElementById('mobMoreId');     if (mobI) mobI.textContent = '—';
 
   switchSection('home');
 }
