@@ -3331,16 +3331,15 @@ function autoGradeId() {
   return id;
 }
 
-// Stable grade ID: deterministic 8-char code from student+course+attempt
-// Same combo always produces same ID so upsert deduplicates correctly.
-function stableGradeId(sid, cid, attempt, year) {
-  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-  const src   = (sid + '|' + (cid || '') + '|' + (attempt || '1st')).toUpperCase();
-  let h = 0x811c9dc5;
-  for (let i = 0; i < src.length; i++) { h ^= src.charCodeAt(i); h = (h * 0x01000193) >>> 0; }
-  let id = '';
-  for (let i = 0; i < 8; i++) { id += chars[h % chars.length]; h = (h * 0x01000193 + i) >>> 0; }
-  return id;
+// Stable grade ID: deterministic key from student+course+attempt.
+// Format: {studentId}-{courseId}-{attemptNumber}
+// e.g. IUC125044-CRS002-A1  (A1=1st, A2=2nd, A3=3rd attempt)
+// Guaranteed unique per student+course+attempt — no hashing, no collisions.
+function stableGradeId(sid, cid, attempt) {
+  const attemptNum = { '1st Attempt':'A1','2nd Attempt':'A2','3rd Attempt':'A3',
+                       '4th Attempt':'A4','5th Attempt':'A5' };
+  const aN = attemptNum[attempt] || attempt.replace(/[^0-9]/g,'') || 'A1';
+  return (sid + '-' + (cid || 'UNK') + '-' + aN).toUpperCase();
 }
 
 function normalizeGradeData() {
