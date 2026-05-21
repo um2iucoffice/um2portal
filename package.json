@@ -1,0 +1,8 @@
+{
+  "name": "um2-portal",
+  "version": "1.0.0",
+  "dependencies": {
+    "@supabase/supabase-js": "^2.0.0",
+    "canvas": "^2.11.2"
+  }
+}
