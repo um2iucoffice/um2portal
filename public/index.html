@@ -1,173 +1,141 @@
-<!-- ============================================================
-  INSTRUCTIONS: Two changes needed in index.html
-  
-  CHANGE 1: Replace the entire <!-- DOCUMENTS --> panel content
-  (the <div class="panel" id="panel-docs"> block) with this:
-  ============================================================ -->
+// ── INSTRUCTIONS ─────────────────────────────────────────────
+// In index.html, find the entire printDocument() function
+// (search for "function printDocument(type) {") and replace
+// the whole function with this one.
+// ─────────────────────────────────────────────────────────────
 
-    <!-- DOCUMENTS -->
-    <div class="section-sep" aria-hidden="true"></div>
-    <div class="panel" id="panel-docs">
-      <div class="ph">
-        <h2>Document Office</h2>
-        <p>Generate &amp; print official university documents.</p>
-      </div>
-
-      <!-- Cards are generated dynamically per enrollment by renderDocCards() -->
-      <div id="docCardsContainer"></div>
-
-      <!-- Degree Certificate(s) — shown when student has graduated -->
-      <div id="certSection" style="display:none">
-        <div class="cert-section-head">🏅 Degree Certificate</div>
-        <div class="doc-grid" id="certGrid">
-          <!-- populated by renderCertCards() -->
-        </div>
-      </div>
-    </div>
-
-
-<!-- ============================================================
-  CHANGE 2: Replace the renderDocDegreePicker() function AND
-  the printDocument() function in the <script> block with
-  everything below (from the triple-slash comment down to the
-  closing brace of printDocument).
-  ============================================================ -->
-
-// ── Document Office: one card-pair per enrollment ────────────
-// Replaces the old degree-picker + single printDocument approach.
-// Each enrollment gets its own Confirmation card (graduation or
-// study) plus the transcript card.  The cert cards are handled
-// separately by renderCertCards() which already works correctly.
-function renderDocCards(enrollments) {
-  const container = document.getElementById('docCardsContainer');
-  if (!container) return;
-
-  if (!enrollments || enrollments.length === 0) {
-    container.innerHTML = '<p style="color:var(--ink3);font-size:13px">No enrollment data available.</p>';
-    return;
-  }
-
-  // Helper: is this enrollment graduated?
-  const isGrad = e => /graduated|completed/i.test(e.graduationStatus || '');
-
-  // Build one row of cards per enrollment
-  let html = '';
-  enrollments.forEach((e, idx) => {
-    const graduated    = isGrad(e);
-    const programLabel = e.programName || e.degreeProgramId || 'Degree Program';
-    const levelLabel   = { bachelor: 'Bachelor', master: 'Master', phd: 'PhD / Doctoral' }[e.degreeLevel] || 'Bachelor';
-
-    // Section label when there are multiple enrollments
-    if (enrollments.length > 1) {
-      const statusBadge = graduated
-        ? '<span style="background:var(--green-light);color:var(--green);border:1px solid rgba(26,92,58,.15);font-size:9px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;padding:2px 8px;border-radius:3px;margin-left:8px">Graduated</span>'
-        : '<span style="background:var(--gold-light);color:var(--gold);border:1px solid rgba(154,123,47,.2);font-size:9px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;padding:2px 8px;border-radius:3px;margin-left:8px">Active</span>';
-      html += `<div style="font-size:11px;font-weight:700;letter-spacing:1.4px;text-transform:uppercase;color:var(--ink3);margin:${idx === 0 ? '0' : '28px'} 0 12px;display:flex;align-items:center;gap:6px">
-        ${levelLabel} — ${programLabel} ${statusBadge}
-      </div>`;
-    }
-
-    html += '<div class="doc-grid">';
-
-    // ── Confirmation card ─────────────────────────────────────
-    const confirmTitle = graduated ? 'Confirmation of Graduation' : 'Confirmation of Study';
-    const confirmDesc  = graduated
-      ? `Official letter confirming graduation from the <strong>${programLabel}</strong> program at the University of Medicine (2).`
-      : `Official letter confirming current enrollment in the <strong>${programLabel}</strong> program at the University of Medicine (2).`;
-    const confirmTag   = graduated ? 'Graduated' : 'Enrolled';
-
-    html += `
-      <div class="doc-card${graduated ? ' cert-banner' : ''}">
-        <div class="doc-icon">
-          <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10,9 9,9 8,9"/></svg>
-        </div>
-        <div class="doc-title">${confirmTitle}</div>
-        <div class="doc-desc">${confirmDesc}</div>
-        <div class="doc-tags">
-          <span class="doc-tag">Official Document</span>
-          <span class="doc-tag">Instant</span>
-          <span class="doc-tag">${confirmTag}</span>
-        </div>
-        <button class="btn-print-doc" onclick="printConfirmation(${idx})">
-          <svg viewBox="0 0 24 24"><polyline points="6,9 6,2 18,2 18,9"/><path d="M6,18H4a2,2,0,0,1-2-2V11a2,2,0,0,1,2-2H20a2,2,0,0,1,2,2v5a2,2,0,0,1-2,2H18"/><rect x="6" y="14" width="12" height="8"/></svg>
-          Print / Save PDF
-        </button>
-      </div>`;
-
-    // ── Transcript card (one per enrollment if grades are filtered,
-    //    otherwise shared — for now always shown) ───────────────
-    html += `
-      <div class="doc-card">
-        <div class="doc-icon">
-          <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10,9 9,9 8,9"/></svg>
-        </div>
-        <div class="doc-title">Academic Transcript</div>
-        <div class="doc-desc">Complete record of academic performance for the <strong>${programLabel}</strong> program, including all course grades and scores.</div>
-        <div class="doc-tags">
-          <span class="doc-tag">Official Document</span>
-          <span class="doc-tag">Instant</span>
-        </div>
-        <button class="btn-print-doc" onclick="printDocument('transcript')">
-          <svg viewBox="0 0 24 24"><polyline points="6,9 6,2 18,2 18,9"/><path d="M6,18H4a2,2,0,0,1-2-2V11a2,2,0,0,1,2-2H20a2,2,0,0,1,2,2v5a2,2,0,0,1-2,2H18"/><rect x="6" y="14" width="12" height="8"/></svg>
-          Print / Save PDF
-        </button>
-      </div>`;
-
-    html += '</div>'; // end doc-grid
-  });
-
-  container.innerHTML = html;
-}
-
-// Keep renderDocDegreePicker as a no-op so old calls don't break
-function renderDocDegreePicker() {}
-
-// ── printConfirmation(enrollmentIndex) ───────────────────────
-// Prints the Confirmation of Study / Graduation for a specific
-// enrollment.  Called from the per-enrollment doc card buttons.
-function printConfirmation(enrollIdx) {
+function printDocument(type) {
+  // ── Multi-degree: pick the enrollment the user selected ──────
   const enrollments = window._enrollments || [];
-  const e = enrollments[enrollIdx] || enrollments[0];
-  if (!e) return;
+  const eIdx = window._docEnrollmentIndex || 0;
+  const chosenE = enrollments[eIdx] || null;
 
-  const isGraduated = /graduated|completed/i.test(e.graduationStatus || '');
-  const idLabel     = isGraduated ? 'Alumni ID' : 'Student ID';
-
-  const name      = document.getElementById('profileName').textContent      || '—';
-  const sid       = document.getElementById('infoID').textContent           || '—';
-  const birth     = document.getElementById('infoBirth').textContent        || '—';
-  const father    = document.getElementById('infoFather').textContent       || '—';
-  const admission = e.admissionDate || document.getElementById('infoAdmission').textContent || '—';
-  const status    = e.currentYear   || document.getElementById('infoStatus').textContent    || '—';
-  const enroll    = e.enrollmentStatus || document.getElementById('infoEnroll').textContent || '—';
-  const program   = e.programName   || e.degreeProgramId || document.getElementById('infoProgram')?.textContent || '';
-  const grad      = e.graduationStatus || '—';
-  const gradID    = e.graduationId   || '';
-  const gradDate  = e.graduationDate || '';
+  const name      = document.getElementById('profileName').textContent || '—';
+  const nameMM    = document.getElementById('profileNameMM').textContent || '';
+  const sid       = document.getElementById('infoID').textContent || '—';
+  const birth     = document.getElementById('infoBirth').textContent || '—';
+  const father    = document.getElementById('infoFather').textContent || '—';
+  const fatherMM  = document.getElementById('infoFatherMM').textContent || '—';
+  const phone     = document.getElementById('infoPhone').textContent || '—';
+  const email     = document.getElementById('infoEmail').textContent || '—';
+  const admission = document.getElementById('infoAdmission').textContent || '—';
+  const status    = chosenE ? (chosenE.currentYear || document.getElementById('infoStatus').textContent || '—') : (document.getElementById('infoStatus').textContent || '—');
+  const enroll    = chosenE ? (chosenE.enrollmentStatus || document.getElementById('infoEnroll').textContent || '—') : (document.getElementById('infoEnroll').textContent || '—');
+  const program   = chosenE ? (chosenE.programName || chosenE.degreeProgramId || document.getElementById('infoProgram')?.textContent || '') : (document.getElementById('infoProgram')?.textContent || '');
+  const rawGrad   = chosenE ? (chosenE.graduationStatus || '') : (document.getElementById('infoGrad').textContent || '—');
+  const grad      = rawGrad || '—';
+  const gradID    = chosenE ? (chosenE.graduationId || '') : (document.getElementById('infoGradID')?.textContent || '');
+  const gradDate  = chosenE ? (chosenE.graduationDate || '') : (document.getElementById('infoGradDate')?.textContent || '');
+  const isGraduated = /^graduated$/i.test((rawGrad || grad).trim());
+  const idLabel   = isGraduated ? 'Alumni ID' : 'Student ID';
   const today     = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
 
-  const TD  = `padding:5px 10px;border-bottom:1px solid #e8e8e8;font-size:7.5pt;color:#0D1B2A;font-family:'DM Sans',sans-serif;`;
+  // ── Resolve program label — never falls back to "MBBS Program" ──
+  // Priority: chosen enrollment name → PROGRAM_META → stored window var → generic
+  const programLabel = (chosenE && (chosenE.programName || chosenE.degreeProgramId))
+    || (PROGRAM_META && PROGRAM_META.label && PROGRAM_META.label !== 'MBBS Program' ? PROGRAM_META.label : null)
+    || window._studentProgram
+    || program
+    || 'Degree Program';
 
-  const confirmationBody = `
+  // ── Collect grade data grouped by Academic Year ─────────────
+  const yearGroups = [];
+  if (type === 'transcript') {
+    const gradeContainer = document.getElementById('gradesContent');
+    gradeContainer.querySelectorAll('.g-wrap').forEach(wrap => {
+      const head = wrap.querySelector('.g-year-head');
+      // Strip whatever program label is embedded — handles any program name
+      let yearText = head?.textContent || '';
+      // Remove everything after " · " (the program label suffix added by renderGrades)
+      yearText = yearText.replace(/\s*·\s*.+$/, '').replace(/^—\s*/, '').trim();
+      const year = head?.dataset?.year || yearText || 'Academic Year';
+      const rows = [];
+      wrap.querySelectorAll('tbody tr').forEach(el => {
+        const tds = el.querySelectorAll('td');
+        if (tds.length < 7) return;
+        rows.push({
+          courseId: tds[0].textContent.trim(),
+          course:   tds[1].querySelector('.gt-course')?.textContent?.trim() || tds[1].textContent.trim(),
+          credits:  tds[2].textContent.trim(),
+          assess:   tds[3].textContent.trim(),
+          score:    tds[4].textContent.trim(),
+          date:     tds[5].textContent.trim(),
+          grade:    tds[6].textContent.trim(),
+          note:     tds[7]?.textContent?.trim() || '',
+        });
+      });
+      if (rows.length) yearGroups.push({ year, rows });
+    });
+  }
+
+  // ── Helper: render one year/semester table ────────────────────
+  const TD  = `padding:5px 10px;border-bottom:1px solid #e8e8e8;font-size:7.5pt;color:#0D1B2A;font-family:'DM Sans',sans-serif;`;
+  const TDH = `padding:6px 10px;font-size:8pt;font-weight:bold;letter-spacing:.4px;text-transform:uppercase;color:#444;border-bottom:1.5px solid #0D1B2A;text-align:left;white-space:nowrap;font-family:'DM Sans',sans-serif;`;
+
+  function yearTable(group) {
+    let rows = '';
+    group.rows.forEach((r, i) => {
+      const bg = i % 2 === 1 ? 'background:#fafafa;' : '';
+      rows += `<tr>
+        <td style="${TD}${bg}font-size:7.5pt;color:#666">${r.courseId || '—'}</td>
+        <td style="${TD}${bg}font-weight:500;font-size:7pt;line-height:1.25;letter-spacing:-.05px">${r.course}</td>
+        <td style="${TD}${bg}text-align:center">${r.credits || '—'}</td>
+        <td style="${TD}${bg}text-align:center;color:#444;font-size:6.5pt">${r.assess || '—'}</td>
+        <td style="${TD}${bg}text-align:center;color:#333;font-size:7.5pt">${r.score || '—'}</td>
+        <td style="${TD}${bg}text-align:center;color:#444">${r.date || '—'}</td>
+        <td style="${TD}${bg}text-align:center;font-weight:bold;font-size:7.5pt">${r.grade}</td>
+        <td style="${TD}${bg}font-size:6.5pt;color:#555;font-style:italic">${r.note || ''}</td>
+      </tr>`;
+    });
+    return `
+      <div style="margin-bottom:22px;page-break-inside:avoid">
+        <div style="font-family:'DM Sans',sans-serif;font-size:13pt;font-weight:bold;color:#0D1B2A;margin-bottom:10px;padding-bottom:6px;border-bottom:2px solid #0D1B2A;display:flex;justify-content:space-between;align-items:baseline">
+          <span>— &nbsp;${group.year} &nbsp;·&nbsp; ${programLabel}</span>
+        </div>
+        <table style="width:100%;border-collapse:collapse;margin-bottom:14px;font-family:'DM Sans',sans-serif">
+          <thead><tr>
+            <th style="${TDH}width:11%">Course Code</th>
+            <th style="${TDH}width:34%">Course Title</th>
+            <th style="${TDH}width:7%;text-align:center">Credits</th>
+            <th style="${TDH}width:12%;text-align:center">Type</th>
+            <th style="${TDH}width:8%;text-align:center">Score</th>
+            <th style="${TDH}width:14%;text-align:center">Year</th>
+            <th style="${TDH}width:14%;text-align:center">Grade</th>
+            <th style="${TDH}width:14%">Note</th>
+          </tr></thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </div>`;
+  }
+
+  // ── Build academic record HTML ────────────────────────────────
+  let academicRecord = '';
+  if (type === 'transcript') {
+    yearGroups.forEach(yg => { academicRecord += yearTable(yg); });
+  }
+
+  // ── Confirmation body ─────────────────────────────────────────
+  const confirmationBody = type === 'confirmation' ? `
   <div style="margin:32px 0;font-family:'DM Sans',sans-serif;font-size:11pt;color:#0D1B2A;line-height:2;text-align:justify;">
     ${isGraduated ? `
     <p>
-      This is to confirm that <strong>${name}</strong> (${idLabel}: <strong>${sid}</strong>)
-      has successfully completed the requirements for the degree of
-      <strong>${program || 'the awarded degree'}</strong>
+      This is to confirm that <strong>${name}</strong> (${idLabel}:
+      <strong>${sid}</strong>) has successfully completed the requirements
+      for the degree of <strong>${program || programLabel}</strong>
       at the <strong>University of Medicine (2)</strong>, under the administration
       of the Interim University Council, Republic of the Union of Myanmar.
     </p>
     <br>
     <p style="text-align:justify;">
       The above-named graduate was admitted in <strong>${admission}</strong>
-      and has been conferred the degree with a status of <strong>${grad}</strong>${gradDate ? ', effective <strong>' + gradDate + '</strong>' : ''}.
+      and has been conferred the degree with a status of
+      <strong>${grad}</strong>${gradDate ? ', effective <strong>' + gradDate + '</strong>' : ''}.
       ${gradID ? 'Graduation Reference: <strong>' + gradID + '</strong>.' : ''}
     </p>
     ` : `
     <p>
-      This is to confirm that <strong>${name}</strong> (Student ID: <strong>${sid}</strong>)
-      is currently enrolled as a student at the
+      This is to confirm that <strong>${name}</strong> (Student ID:
+      <strong>${sid}</strong>) is currently enrolled as a student at the
       <strong>University of Medicine (2)</strong>, under the administration
       of the Interim University Council, Republic of the Union of Myanmar.
     </p>
@@ -180,12 +148,13 @@ function printConfirmation(enrollIdx) {
     `}
     <br>
     <p>This letter is issued digitally for official purposes.</p>
-  </div>`;
+  </div>` : '';
 
+  // ── Closing / signature ───────────────────────────────────────
   const closing = `
-  <div style="margin-top:28px;border-top:1.5px solid #0D1B2A;display:flex;justify-content:space-between;align-items:stretch;font-family:'DM Sans',sans-serif;">
+  <div style="margin-top:28px;border-top:1.5px solid #0D1B2A;display:flex;justify-content:space-between;align-items:stretch;font-family:'DM Sans',sans-serif">
     <div style="flex:1;padding:12px 16px;font-size:11pt;color:#0D1B2A;line-height:1.7;">
-      <div style="font-size:11pt;font-weight:bold;letter-spacing:.8px;text-transform:uppercase;color:#0D1B2A;margin-bottom:5px;">Official Notice</div>
+      <div style="font-size:11pt;font-weight:bold;letter-spacing:.8px;text-transform:uppercase;color:#0D1B2A;margin-bottom:5px">Official Notice</div>
       <div>This document is an official record.</div>
       <div>Any alteration renders it invalid.</div>
       <div>Issued on ${today}.</div>
@@ -201,13 +170,14 @@ function printConfirmation(enrollIdx) {
     </div>
   </div>`;
 
-  const docType = isGraduated ? 'Confirmation of Graduation' : 'Confirmation of Study';
+  // ── Full print window HTML ────────────────────────────────────
+  const docTitle = type === 'transcript' ? 'Academic Transcript' : (isGraduated ? 'Confirmation of Graduation' : 'Confirmation of Study');
 
   const html = `<!DOCTYPE html>
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>${docType} — ${name}</title>
+  <title>${docTitle} — ${name}</title>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -218,11 +188,17 @@ function printConfirmation(enrollIdx) {
     body > table { width: 100%; border-collapse: collapse; }
     body > table > tbody > tr > td { vertical-align: top; }
     .pg-ftr { display:flex; justify-content:space-between; align-items:center; padding-top:6px; border-top:1.5px solid #0D1B2A; margin-top:2px; font-size:8.5pt; color:#555; font-family:'DM Sans',sans-serif; }
-    .wm { position:fixed; top:50%; left:50%; transform:translate(-50%,-50%) rotate(-35deg); font-size:40pt; font-weight:bold; color:rgba(13,27,42,0.04); letter-spacing:10px; pointer-events:none; white-space:nowrap; z-index:0; }
+    .wm { position:fixed; top:50%; left:50%; transform:translate(-50%,-50%) rotate(-35deg); font-family:'DM Sans',sans-serif; font-size:40pt; font-weight:bold; color:rgba(13,27,42,0.04); letter-spacing:10px; pointer-events:none; white-space:nowrap; z-index:0; }
     .inst-hdr { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:12px; padding-bottom:10px; border-bottom:2.5px solid #0D1B2A; }
-    .inst-name { font-size:17pt; font-weight:bold; color:#0D1B2A; line-height:1.2; }
-    .doc-type-badge { font-size:13pt; font-weight:bold; color:#0D1B2A; text-transform:uppercase; letter-spacing:.5px; text-align:right; }
-    .doc-meta { font-size:9pt; color:#444; text-align:right; margin-top:5px; line-height:1.7; }
+    .inst-name { font-family:'DM Sans',sans-serif; font-size:17pt; font-weight:bold; color:#0D1B2A; line-height:1.2; }
+    .doc-type-badge { font-family:'DM Sans',sans-serif; font-size:13pt; font-weight:bold; color:#0D1B2A; text-transform:uppercase; letter-spacing:.5px; text-align:right; }
+    .doc-meta { font-size:9pt; color:#444; text-align:right; margin-top:5px; line-height:1.7; font-family:'DM Sans',sans-serif; }
+    .transcript-student-section { border:1px solid #bbb; margin:10px 0 16px; padding:12px 14px; display:grid; grid-template-columns:1.2fr 1.2fr .8fr; gap:14px; background:#fff; page-break-inside:avoid; }
+    .transcript-student-item { border-right:1px solid #ddd; padding-right:12px; }
+    .transcript-student-item:last-child { border-right:none; padding-right:0; }
+    .transcript-student-label { font-size:7.5pt; font-weight:bold; letter-spacing:.8px; text-transform:uppercase; color:#555; margin-bottom:4px; }
+    .transcript-student-value { font-size:10pt; font-weight:bold; color:#0D1B2A; line-height:1.35; }
+    .section-label { font-size:8pt; font-weight:bold; letter-spacing:1.2px; text-transform:uppercase; color:#444; font-family:'DM Sans',sans-serif; margin:14px 0 6px; border-bottom:1px solid #ccc; padding-bottom:4px; }
   </style>
 </head>
 <body>
@@ -235,17 +211,19 @@ function printConfirmation(enrollIdx) {
       </div>
     </td></tr></tfoot>
     <tbody><tr><td style="position:relative;z-index:1">
+
+      <!-- Institution header -->
       <div class="inst-hdr">
         <div style="display:flex;align-items:center;gap:18px">
           <img src="https://raw.githubusercontent.com/um2iucoffice/um2portal/c5797a374732d917b6b54aa88b6a874d66984ba1/public/UM2_Logo.svg" alt="UM2 Logo" style="width:72px;height:86px;flex-shrink:0;object-fit:contain"/>
           <div>
             <div class="inst-name">UM2</div>
-            <div style="font-size:10pt;font-weight:400;color:#0D1B2A;">Interim University Council</div>
-            <div style="font-size:10pt;color:#333;">Republic of the Union of Myanmar</div>
+            <div class="inst-name" style="font-size:10pt;font-weight:400;">Interim University Council</div>
+            <div style="font-size:10pt;color:#333;font-family:'DM Sans',sans-serif;">Republic of the Union of Myanmar</div>
           </div>
         </div>
         <div>
-          <div class="doc-type-badge">${docType}</div>
+          <div class="doc-type-badge">${docTitle}</div>
           <div class="doc-meta">
             ${idLabel}: <strong style="color:#8B1A2E">${sid}</strong><br>
             ${isGraduated ? 'Status: ' + grad : 'Enrollment: ' + enroll}
@@ -254,8 +232,52 @@ function printConfirmation(enrollIdx) {
           </div>
         </div>
       </div>
+
+      ${type === 'transcript' ? `
+      <div class="section-label">Student Details</div>
+      <div class="transcript-student-section" style="grid-template-columns:1.2fr 1.2fr .8fr${program && program !== '—' ? ' .8fr' : ''}${isGraduated && gradID ? ' .8fr' : ''}">
+        <div class="transcript-student-item">
+          <div class="transcript-student-label">Name</div>
+          <div class="transcript-student-value">${name}</div>
+        </div>
+        <div class="transcript-student-item">
+          <div class="transcript-student-label">Father's Name</div>
+          <div class="transcript-student-value">${father}</div>
+        </div>
+        <div class="transcript-student-item">
+          <div class="transcript-student-label">Date of Birth</div>
+          <div class="transcript-student-value">${birth}</div>
+        </div>
+        ${program && program !== '—' ? `
+        <div class="transcript-student-item">
+          <div class="transcript-student-label">Degree Program</div>
+          <div class="transcript-student-value">${program}</div>
+        </div>` : ''}
+        ${isGraduated && gradID ? `
+        <div class="transcript-student-item">
+          <div class="transcript-student-label">Graduation ID</div>
+          <div class="transcript-student-value">${gradID}</div>
+        </div>` : ''}
+      </div>
+      ${isGraduated ? `
+      <div class="section-label">Graduation Information</div>
+      <div class="transcript-student-section" style="grid-template-columns:1fr 1fr">
+        <div class="transcript-student-item">
+          <div class="transcript-student-label">Status</div>
+          <div class="transcript-student-value">${grad}</div>
+        </div>
+        ${gradDate ? `
+        <div class="transcript-student-item">
+          <div class="transcript-student-label">Date of Graduation</div>
+          <div class="transcript-student-value">${gradDate}</div>
+        </div>` : ''}
+      </div>` : ''}
+      <div class="section-label">Academic Record — ${programLabel}</div>
+      ${academicRecord}` : ''}
+
       ${confirmationBody}
       ${closing}
+
     </td></tr></tbody>
   </table>
   <script>
@@ -268,14 +290,3 @@ function printConfirmation(enrollIdx) {
   win.document.write(html);
   win.document.close();
 }
-
-
-<!-- ============================================================
-  CHANGE 3: In the populate() function, replace the line:
-    renderDocDegreePicker(window._enrollments);
-  with:
-    renderDocCards(window._enrollments);
-
-  Also remove the old renderCertCards() call duplication if any —
-  renderCertCards() should still be called once as it already is.
-  ============================================================ -->
