@@ -3174,21 +3174,7 @@ function doLogin() {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ studentId, password })
   })
-    .then(res => {
-      // DEBUG: capture raw response
-      const status = res.status;
-      return res.text().then(text => {
-        console.log('[DEBUG] HTTP status:', status);
-        console.log('[DEBUG] Raw response:', text);
-        errEl.textContent = '[DEBUG] Status ' + status + ' | ' + text.substring(0, 300);
-        errEl.classList.add('show');
-        let json;
-        try { json = JSON.parse(text); } catch(e) {
-          throw new Error('Non-JSON response (status ' + status + '): ' + text.substring(0, 200));
-        }
-        return json;
-      });
-    })
+    .then(res => res.json())
     .then(handleAuth)
     .catch(handleAuthErr);
 }
@@ -3246,15 +3232,14 @@ function handleAuth(r) {
   setTimeout(() => { dash.classList.add('show'); }, 100);
 }
 
-function handleAuthErr(err) {
+function handleAuthErr() {
   const btn = document.getElementById('signinBtn');
   btn.disabled = false;
   btn.textContent = 'Sign in';
   document.getElementById('accessLoading').classList.remove('show');
   const errEl = document.getElementById('accessError');
-  errEl.textContent = '[DEBUG] Error: ' + (err && err.message ? err.message : String(err));
+  errEl.textContent = 'Connection error. Please try again.';
   errEl.classList.add('show');
-  console.error('[DEBUG] handleAuthErr:', err);
 }
 
 // ── Data normalisation helpers ───────────────────────────────
@@ -3879,7 +3864,7 @@ function printIDCard() {
   const html = `<!DOCTYPE html><html><head><meta charset="UTF-8">
   <title>${esc(s.isGrad ? 'Alumni ID Card' : 'Student ID Card')} — ${esc(s.id)}</title>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet">
-  <scr' + 'ipt src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"><\/script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"><\/script>
   <style>
     *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
     :root{--ink:#0D1B2A;--ink2:#3D4A5C;--ink3:#7A8599;--line:#E8EBF0;--surface:#F2F4F8;--white:#FFFFFF;--crimson:#8B1A2E;--crimson-light:#F7EEF0;--crimson-mid:#C4273E;--gold:#9A7B2F;--gold-light:#FBF6E8;--green:#1A5C3A;--green-light:#EBF5F0;--r:6px;--shadow-sm:0 1px 3px rgba(13,27,42,.07),0 1px 2px rgba(13,27,42,.04);--shadow-md:0 4px 16px rgba(13,27,42,.08),0 1px 4px rgba(13,27,42,.04);--shadow-lg:0 8px 32px rgba(13,27,42,.10),0 2px 8px rgba(13,27,42,.05)}
@@ -3982,7 +3967,7 @@ function printIDCard() {
       <div class="idcard-notice">This card is the property of University of Medicine (2) - IUC. Misuse is subject to disciplinary action.</div>
     </div>
   </div>
-  <scr' + 'ipt>
+  <script>
     window.onload = function() {
       new QRCode(document.getElementById('printQR'), { text: ${JSON.stringify(qrData)}, width: 76, height: 76, colorDark: '#0D1B2A', colorLight: '#ffffff', correctLevel: QRCode.CorrectLevel.M });
       setTimeout(function(){ window.print(); }, 900);
@@ -4482,7 +4467,7 @@ function printDegreeCertificate(enrollIdx) {
   <meta charset="UTF-8">
   <title>Degree Certificate — ${name}</title>
   <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=DM+Sans:opsz,wght@9..40,400;9..40,600;9..40,700&display=swap" rel="stylesheet">
-  <scr' + 'ipt src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"><\/script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"><\/script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     html, body { width: 210mm; min-height: 297mm; background: #fff; }
@@ -4859,7 +4844,7 @@ function printDegreeCertificate(enrollIdx) {
   </div><!-- /.cert-inner -->
 </div><!-- /.cert-page -->
 
-<scr' + 'ipt>
+<script>
   // Generate QR
   window.addEventListener('load', function() {
     try {
@@ -5013,7 +4998,7 @@ function printConfirmation(enrollIdx) {
       ${closing}
     </td></tr></tbody>
   </table>
-  <scr' + 'ipt>
+  <script>
     window.onload = function() { setTimeout(function() { window.print(); }, 600); };
   <\/script>
 </body>
@@ -5293,7 +5278,7 @@ function printDocument(type) {
 
     </td></tr></tbody>
   </table>
-  <scr' + 'ipt>
+  <script>
     window.onload = function() { setTimeout(function() { window.print(); }, 600); };
   <\/script>
 </body>
