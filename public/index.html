@@ -3640,12 +3640,12 @@ async function uploadPhoto() {
     const data = await resp.json();
 
     if (data.success && data.pending) {
-      // Photo is pending Registrar approval — do NOT update the live photo in the UI
-      if (status) {
-        status.style.color = 'var(--gold, #9A7B2F)';
-        status.textContent = '⏳ Photo submitted for Registrar approval. Your ID photo will update once approved.';
-      }
-      clearPhotoSelection();
+  clearPhotoSelection();  // clear first
+  if (status) {
+    status.style.color = 'var(--gold, #9A7B2F)';
+    status.textContent = '⏳ Photo submitted for Registrar approval. Your ID photo will update once approved.';
+  }  // then set message after
+      
     } else if (data.success && data.photoUrl) {
       // Legacy direct-upload path (kept for safety)
       updatePhotoInUI(data.photoUrl);
