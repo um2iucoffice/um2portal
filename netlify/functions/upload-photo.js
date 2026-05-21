@@ -60,7 +60,7 @@ export const handler = async (event) => {
   if (event.httpMethod !== 'POST')    return { statusCode: 405, headers: CORS_HEADERS, body: JSON.stringify({ error: 'Method not allowed' }) };
 
   try {
-    const { studentId, password, imageBase64, mimeType } = JSON.parse(event.body || '{}');
+    const { studentId, password, imageBase64, mimeType, removePhoto } = JSON.parse(event.body || '{}');
 
     if (!studentId || !password) {
       return { statusCode: 200, headers: CORS_HEADERS, body: JSON.stringify({ success: false, message: 'Missing studentId or password.' }) };
@@ -81,6 +81,15 @@ export const handler = async (event) => {
     }
 
     const currentPhoto = students[0].photo || null;
+
+// Handle photo removal
+if (removePhoto === true) {
+  await supabaseRest(
+    `students?id=eq.${encodeURIComponent(studentId)}`,
+    { method: 'PATCH', headers: { 'Prefer': 'return=minimal' }, body: JSON.stringify({ photo: null }) }
+  );
+  return { statusCode: 200, headers: CORS_HEADERS, body: JSON.stringify({ success: true }) };
+}
 
     // 2. Upload to pending-photos/<studentId>.jpg (NOT the permanent path)
     const pendingPath   = `pending-photos/${studentId}.jpg`;
