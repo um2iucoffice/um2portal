@@ -1822,6 +1822,37 @@ function populate(s, grades, courses, program_meta, enrollments) {
   populateIDCard(s, isGraduated, gradID, gradDate);
 }
 
+// ── Update all photo slots in the UI with a photo URL ────────
+function updatePhotoInUI(photoUrl) {
+  if (!photoUrl) return;
+  // Profile banner avatar (top of profile tab)
+  const avatarPhoto    = document.getElementById('avatarPhoto');
+  const avatarInitials = document.getElementById('avatarInitials');
+  if (avatarPhoto) {
+    avatarPhoto.src = photoUrl;
+    avatarPhoto.style.display = '';
+    if (avatarInitials) avatarInitials.style.display = 'none';
+  }
+  // Home hero avatar
+  const homeAvatar = document.getElementById('homeAvatar');
+  if (homeAvatar) {
+    homeAvatar.innerHTML = '';
+    const img = document.createElement('img');
+    img.src = photoUrl;
+    img.style.cssText = 'width:100%;height:100%;object-fit:cover;border-radius:10px;display:block';
+    homeAvatar.appendChild(img);
+  }
+  // Grades banner avatar
+  const gradesAvatar = document.getElementById('gradesAvatar');
+  if (gradesAvatar) {
+    gradesAvatar.innerHTML = '';
+    const img2 = document.createElement('img');
+    img2.src = photoUrl;
+    img2.style.cssText = 'width:100%;height:100%;object-fit:cover;border-radius:8px;display:block';
+    gradesAvatar.appendChild(img2);
+  }
+}
+
 function populateIDCard(s, isGraduated, gradID, gradDate) {
   const init = (s.fullName || '').split(' ').map(w => w[0]).join('').toUpperCase().slice(0,2) || '?';
   const idcardPhotoEl = document.getElementById('idcardPhoto');
