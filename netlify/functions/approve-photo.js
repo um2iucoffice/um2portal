@@ -10,7 +10,8 @@ const CORS_HEADERS = {
 };
 
 async function supabaseRest(path, options = {}) {
-  const res = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, {
+  const url = `${SUPABASE_URL}/rest/v1/${path}`;
+  const res = await fetch(url, {
     ...options,
     headers: {
       'apikey':        SUPABASE_SERVICE_KEY,
@@ -19,7 +20,10 @@ async function supabaseRest(path, options = {}) {
       ...(options.headers || {})
     }
   });
-  if (!res.ok) throw new Error(`REST ${path}: ${await res.text()}`);
+  if (!res.ok) {
+    const body = await res.text();
+    throw new Error(`REST ${path} [${res.status}]: ${body}`);
+  }
   const text = await res.text();
   return text ? JSON.parse(text) : null;
 }
@@ -38,7 +42,7 @@ async function uploadToStorage(filePath, buffer, contentType) {
       body: buffer
     }
   );
-  if (!res.ok) throw new Error(`Storage upload failed: ${await res.text()}`);
+  if (!res.ok) throw new Error(`Storage upload failed [${res.status}]: ${await res.text()}`);
 }
 
 export const handler = async (event) => {
@@ -52,18 +56,21 @@ export const handler = async (event) => {
       return { statusCode: 200, headers: CORS_HEADERS, body: JSON.stringify({ success: false, message: 'Missing studentId or pendingUrl.' }) };
     }
 
+    if (!SUPABASE_URL || !SUPABASE_SERVICE_KEY) {
+      return { statusCode: 200, headers: CORS_HEADERS, body: JSON.stringify({ success: false, message: 'Server misconfiguration: SUPABASE_URL or SUPABASE_SERVICE_KEY not set.' }) };
+    }
+
     // 1. Download the pending photo.
-    //    Try public URL first (no auth), then fall back to service-key auth.
-    //    This handles both public and private bucket configurations.
-    let dlRes = await fetch(pendingUrl);
+    //    Try with service key first (handles both public and private buckets).
+    let dlRes = await fetch(pendingUrl, {
+      headers: {
+        'apikey':        SUPABASE_SERVICE_KEY,
+        'Authorization': `Bearer ${SUPABASE_SERVICE_KEY}`
+      }
+    });
+    // Fallback: try without auth (public bucket)
     if (!dlRes.ok) {
-      // Try with service key in case bucket isn't fully public
-      dlRes = await fetch(pendingUrl, {
-        headers: {
-          'apikey':        SUPABASE_SERVICE_KEY,
-          'Authorization': `Bearer ${SUPABASE_SERVICE_KEY}`
-        }
-      });
+      dlRes = await fetch(pendingUrl);
     }
     if (!dlRes.ok) {
       throw new Error(`Failed to download pending photo (${dlRes.status}). URL: ${pendingUrl}`);
