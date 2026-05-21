@@ -3590,6 +3590,7 @@ for (const row of gradeCSVRows) {
   document.getElementById('gradeOkCount').textContent    = okCount + ' processed';
   document.getElementById('gradeEmailCount').textContent = notifiedStudents.size + ' emails queued';
   document.getElementById('gradeErrCount').textContent   = errCount + ' errors';
+  hideUploadOverlay();
   const bar = document.getElementById('gradeProgressBar');
   bar.style.width = '0';
   setTimeout(() => bar.style.width = (gradeCSVRows.length ? okCount / gradeCSVRows.length * 100 : 0) + '%', 100);
