@@ -64,16 +64,16 @@ function mapStudent(row, programName) {
 // ── Map grade row ────────────────────────────────────────────
 function mapGrade(row) {
   return {
-    gradeId:      String(row.id                        || ''),
-    courseId:     String(row.CourseID || row.course_id || '').trim().toUpperCase(),
-    course:       row.course                           || '',
-    grade:        row.letter                           || '',
-    numericScore: row.NumericScore                     ?? '',
-    gradePoint:   row.gp                               ?? '',
-    year:         row.year                             || '',
-    attempt:      row.attempt                          || '',
-    notes:        row.notes                            || '',
-    updatedAt:    row.updated_at                       || ''
+    gradeId:      String(row.id                                            || ''),
+    courseId:     String(row.course_id || row.CourseID || row.courseId     || '').trim().toUpperCase(),
+    course:       row.course                                               || '',
+    grade:        row.letter          || row.grade                        || '',
+    numericScore: row.numeric_score   ?? row.NumericScore                 ?? '',
+    gradePoint:   row.grade_point     ?? row.gp                           ?? '',
+    year:         row.year                                                 || '',
+    attempt:      row.attempt                                              || '',
+    notes:        row.notes                                                || '',
+    updatedAt:    row.updated_at                                           || ''
   };
 }
 
@@ -97,7 +97,7 @@ function mapEnrollment(row, programName) {
 }
 
 // ── Netlify handler ──────────────────────────────────────────
-export const handler = async (event) => {
+exports.handler = async (event) => {
   if (event.httpMethod !== 'POST') {
     return { statusCode: 405, body: JSON.stringify({ error: 'Method not allowed' }) };
   }
@@ -172,7 +172,7 @@ export const handler = async (event) => {
 
     // ── 5. Fetch grades ──────────────────────────────────────
     const gradeRows = await supabase(
-      `grades?StudentID=eq.${encodeURIComponent(raw.id)}&select=*&order=CourseID.asc`,
+      `grades?student_id=eq.${encodeURIComponent(raw.id)}&select=*&order=course_id.asc`,
       {},
       true
     );
