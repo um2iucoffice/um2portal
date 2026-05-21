@@ -4317,7 +4317,7 @@ function renderCertCards(enrollments) {
         <span class="doc-tag">Official Document</span>
         <span class="doc-tag">Graduated</span>
       </div>
-      <button class="btn-print-doc" onclick="printConfirmation(${enrollIdx >= 0 ? enrollIdx : 0})">
+      <button class="btn-print-doc" onclick="printDegreeCertificate(${enrollIdx >= 0 ? enrollIdx : 0})">
         <svg viewBox="0 0 24 24"><polyline points="6,9 6,2 18,2 18,9"/><path d="M6,18H4a2,2,0,0,1-2-2V11a2,2,0,0,1,2-2H20a2,2,0,0,1,2,2v5a2,2,0,0,1-2,2H18"/><rect x="6" y="14" width="12" height="8"/></svg>
         Print / Save PDF
       </button>
@@ -4403,6 +4403,449 @@ function renderDocCards(enrollments) {
 
 // Keep as no-op so any old calls don't throw
 function renderDocDegreePicker() {}
+
+// ── printDegreeCertificate(enrollmentIndex) ──────────────────
+// Renders a formal A4 Degree Certificate matching UM2 design.
+function printDegreeCertificate(enrollIdx) {
+  const enrollments = window._enrollments || [];
+  const e = enrollments[enrollIdx] || enrollments[0];
+  if (!e) return;
+
+  const s         = window._currentStudent || {};
+  const name      = document.getElementById('profileName')?.textContent?.trim()   || s.fullName   || '—';
+  const nameMM    = document.getElementById('profileNameMM')?.textContent?.trim() || s.fullNameMM || '';
+  const sid       = document.getElementById('infoID')?.textContent?.trim()        || s.id         || '—';
+  const fatherEN  = document.getElementById('infoFather')?.textContent?.trim()    || s.fatherName  || '';
+  const fatherMM  = document.getElementById('infoFatherMM')?.textContent?.trim()  || s.fatherNameMM|| '';
+  const photo     = s.photo || '';
+
+  // Determine gender prefix and parent line
+  // We'll derive gender from MM name conventions; fallback to 'Son/Daughter'
+  const gender   = ''; // leave for cert to show "of" only
+  const parentEN = fatherEN ? fatherEN : '';
+  const parentMM = fatherMM ? fatherMM : '';
+
+  const gradID   = e.graduationId   || s.graduationId   || '';
+  const gradDate = e.graduationDate || s.graduationDate || '';
+  const gradDateMY = s.graduationDateMY || '';
+  const gradIDMY   = s.graduationIdMY  || '';
+
+  // Degree label — map program name to the formal degree title
+  const programName = e.programName || e.degreeProgramId || s.programName || '';
+  let degreeTitle = 'Bachelor of Medicine and Bachelor of Surgery';
+  if (/master|msc|mmed|m\.med/i.test(programName)) degreeTitle = 'Master of Medicine';
+  else if (/phd|doctorate|doctoral/i.test(programName)) degreeTitle = 'Doctor of Philosophy';
+  else if (/mbbs|medicine.*surgery|bachelor.*medicine/i.test(programName)) degreeTitle = 'Bachelor of Medicine and Bachelor of Surgery';
+
+  // QR data
+  const qrData = (typeof window !== 'undefined' ? window.location.origin : '') + '/verify?id=' + encodeURIComponent(sid);
+
+  const html = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Degree Certificate — ${name}</title>
+  <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=DM+Sans:opsz,wght@9..40,400;9..40,600;9..40,700&display=swap" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"><\/script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { width: 210mm; min-height: 297mm; background: #fff; }
+    @page { size: A4 portrait; margin: 0; }
+    @media print {
+      *, *::before, *::after { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      html, body { width: 210mm; height: 297mm; }
+    }
+    body {
+      font-family: 'Libre Baskerville', Georgia, serif;
+      color: #1a1a1a;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+    }
+    .cert-page {
+      width: 210mm;
+      min-height: 297mm;
+      padding: 14mm 16mm 12mm;
+      position: relative;
+      background: #fff;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    /* ── Outer border frame ── */
+    .cert-page::before {
+      content: '';
+      position: absolute;
+      inset: 6mm;
+      border: 2.5px solid #002060;
+      pointer-events: none;
+      z-index: 0;
+    }
+    .cert-page::after {
+      content: '';
+      position: absolute;
+      inset: 8mm;
+      border: 1px solid #002060;
+      pointer-events: none;
+      z-index: 0;
+    }
+    /* ── All cert content above borders ── */
+    .cert-inner {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0;
+    }
+    /* ── University name header ── */
+    .cert-univ {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 19pt;
+      font-weight: 700;
+      color: #002060;
+      text-align: center;
+      letter-spacing: .5px;
+      margin-top: 6mm;
+      line-height: 1.2;
+    }
+    /* ── Logo ── */
+    .cert-logo {
+      margin: 4mm 0 3mm;
+      width: 26mm;
+      height: 26mm;
+      object-fit: contain;
+      display: block;
+    }
+    .cert-logo-placeholder {
+      width: 26mm;
+      height: 26mm;
+      border-radius: 50%;
+      background: radial-gradient(circle at 40% 35%, #c0392b 0%, #8B0000 60%, #4a0000 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 4mm auto 3mm;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 0 0 3px #c8a800, 0 0 0 5px #002060;
+    }
+    /* ── Main title ── */
+    .cert-title {
+      font-family: 'Libre Baskerville', serif;
+      font-size: 20pt;
+      font-weight: 700;
+      color: #1a1a1a;
+      text-align: center;
+      margin: 3mm 0 5mm;
+      letter-spacing: .2px;
+    }
+    /* ── Name ── */
+    .cert-name-wrap {
+      text-align: center;
+      margin: 2mm 0 1mm;
+    }
+    .cert-name {
+      font-family: 'Libre Baskerville', serif;
+      font-size: 17pt;
+      font-weight: 700;
+      color: #1a1a1a;
+      display: block;
+    }
+    .cert-name-mm {
+      font-family: 'Padauk', 'Myanmar Text', 'Pyidaungsu', sans-serif;
+      font-size: 12pt;
+      color: #333;
+      display: block;
+      margin-top: 1mm;
+    }
+    /* ── Parent line ── */
+    .cert-parent {
+      font-family: 'Libre Baskerville', serif;
+      font-size: 10pt;
+      color: #333;
+      text-align: center;
+      margin: 1.5mm 0 4mm;
+      line-height: 1.6;
+    }
+    .cert-parent-mm {
+      font-family: 'Padauk','Myanmar Text','Pyidaungsu',sans-serif;
+      font-size: 9.5pt;
+    }
+    /* ── Conferral text ── */
+    .cert-body {
+      font-family: 'Libre Baskerville', serif;
+      font-size: 10pt;
+      color: #222;
+      text-align: center;
+      margin: 2mm 0 1mm;
+      line-height: 1.8;
+    }
+    /* ── Degree name ── */
+    .cert-degree {
+      font-family: 'Libre Baskerville', serif;
+      font-size: 13pt;
+      font-weight: 700;
+      color: #1a1a1a;
+      text-align: center;
+      margin: 2mm 0 6mm;
+    }
+    /* ── Divider ── */
+    .cert-divider {
+      width: 55%;
+      height: 1px;
+      background: linear-gradient(to right, transparent, #002060 30%, #002060 70%, transparent);
+      margin: 1mm 0 5mm;
+    }
+    /* ── Signature row ── */
+    .cert-sig-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      width: 88%;
+      margin: 0 0 4mm;
+    }
+    .cert-sig-block {
+      text-align: center;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 8.5pt;
+      color: #333;
+      line-height: 1.6;
+      flex: 1;
+    }
+    .cert-sig-line {
+      border-top: 1px solid #555;
+      margin: 0 8mm 1.5mm;
+      display: block;
+    }
+    /* ── Photo box ── */
+    .cert-photo-area {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1.5mm;
+      margin: 1mm 0 3mm;
+    }
+    .cert-photo-box {
+      width: 25mm;
+      height: 30mm;
+      border: 1.5px solid #555;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      background: #f5f5f5;
+    }
+    .cert-photo-box img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .cert-photo-label {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 7pt;
+      color: #888;
+      letter-spacing: .5px;
+      text-transform: uppercase;
+    }
+    /* ── Seal / stamp ── */
+    .cert-seal {
+      width: 22mm;
+      height: 22mm;
+      border-radius: 50%;
+      background: radial-gradient(circle, #c8a800 0%, #9a7a00 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 6pt;
+      font-weight: 700;
+      color: rgba(255,255,255,0.85);
+      text-align: center;
+      letter-spacing: .8px;
+      text-transform: uppercase;
+      box-shadow: 0 0 0 2px #c8a800, 0 0 0 4px rgba(200,168,0,0.3);
+    }
+    /* ── Bottom info strip ── */
+    .cert-bottom {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      width: 88%;
+      margin-top: 2mm;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 8pt;
+      color: #555;
+    }
+    .cert-qr { display: flex; flex-direction: column; align-items: center; gap: 1.5mm; }
+    .cert-qr-lbl { font-size: 6.5pt; letter-spacing: .5px; text-transform: uppercase; color: #888; }
+    .cert-reg-info { text-align: right; line-height: 1.8; }
+    /* ── Gold ornamental corners ── */
+    .corner {
+      position: absolute;
+      width: 18mm;
+      height: 18mm;
+      z-index: 2;
+    }
+    .corner svg { width: 100%; height: 100%; }
+    .corner.tl { top: 5mm; left: 5mm; }
+    .corner.tr { top: 5mm; right: 5mm; transform: scaleX(-1); }
+    .corner.bl { bottom: 5mm; left: 5mm; transform: scaleY(-1); }
+    .corner.br { bottom: 5mm; right: 5mm; transform: scale(-1); }
+  </style>
+</head>
+<body>
+<div class="cert-page">
+
+  <!-- Ornamental corners -->
+  <div class="corner tl">
+    <svg viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg">
+      <path d="M2 2 L2 28 Q2 32 6 32 L10 32" fill="none" stroke="#c8a800" stroke-width="2"/>
+      <path d="M2 2 L28 2 Q32 2 32 6 L32 10" fill="none" stroke="#c8a800" stroke-width="2"/>
+      <circle cx="2" cy="2" r="3" fill="#c8a800"/>
+      <path d="M6 6 L6 24 Q6 28 10 28 L22 28" fill="none" stroke="#c8a800" stroke-width="1" stroke-dasharray="2,2"/>
+      <path d="M6 6 L24 6 Q28 6 28 10 L28 22" fill="none" stroke="#c8a800" stroke-width="1" stroke-dasharray="2,2"/>
+    </svg>
+  </div>
+  <div class="corner tr">
+    <svg viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg">
+      <path d="M2 2 L2 28 Q2 32 6 32 L10 32" fill="none" stroke="#c8a800" stroke-width="2"/>
+      <path d="M2 2 L28 2 Q32 2 32 6 L32 10" fill="none" stroke="#c8a800" stroke-width="2"/>
+      <circle cx="2" cy="2" r="3" fill="#c8a800"/>
+      <path d="M6 6 L6 24 Q6 28 10 28 L22 28" fill="none" stroke="#c8a800" stroke-width="1" stroke-dasharray="2,2"/>
+      <path d="M6 6 L24 6 Q28 6 28 10 L28 22" fill="none" stroke="#c8a800" stroke-width="1" stroke-dasharray="2,2"/>
+    </svg>
+  </div>
+  <div class="corner bl">
+    <svg viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg">
+      <path d="M2 2 L2 28 Q2 32 6 32 L10 32" fill="none" stroke="#c8a800" stroke-width="2"/>
+      <path d="M2 2 L28 2 Q32 2 32 6 L32 10" fill="none" stroke="#c8a800" stroke-width="2"/>
+      <circle cx="2" cy="2" r="3" fill="#c8a800"/>
+      <path d="M6 6 L6 24 Q6 28 10 28 L22 28" fill="none" stroke="#c8a800" stroke-width="1" stroke-dasharray="2,2"/>
+      <path d="M6 6 L24 6 Q28 6 28 10 L28 22" fill="none" stroke="#c8a800" stroke-width="1" stroke-dasharray="2,2"/>
+    </svg>
+  </div>
+  <div class="corner br">
+    <svg viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg">
+      <path d="M2 2 L2 28 Q2 32 6 32 L10 32" fill="none" stroke="#c8a800" stroke-width="2"/>
+      <path d="M2 2 L28 2 Q32 2 32 6 L32 10" fill="none" stroke="#c8a800" stroke-width="2"/>
+      <circle cx="2" cy="2" r="3" fill="#c8a800"/>
+      <path d="M6 6 L6 24 Q6 28 10 28 L22 28" fill="none" stroke="#c8a800" stroke-width="1" stroke-dasharray="2,2"/>
+      <path d="M6 6 L24 6 Q28 6 28 10 L28 22" fill="none" stroke="#c8a800" stroke-width="1" stroke-dasharray="2,2"/>
+    </svg>
+  </div>
+
+  <div class="cert-inner">
+
+    <!-- University name -->
+    <div class="cert-univ">UNIVERSITY OF MEDICINE -2, YANGON</div>
+
+    <!-- Logo -->
+    <img class="cert-logo"
+      src="https://raw.githubusercontent.com/um2iucoffice/um2portal/c5797a374732d917b6b54aa88b6a874d66984ba1/public/UM2_Logo.svg"
+      alt="UM2 Logo"
+      onerror="this.style.display='none';document.getElementById('certLogoFallback').style.display='flex'">
+    <div id="certLogoFallback" class="cert-logo-placeholder" style="display:none">
+      <span style="font-size:8pt;font-weight:700;color:#fff;letter-spacing:.5px">UM2</span>
+    </div>
+
+    <!-- Certificate title -->
+    <div class="cert-title">Degree Certificate</div>
+
+    <!-- Student name -->
+    <div class="cert-name-wrap">
+      <span class="cert-name">${name}</span>
+      ${nameMM ? `<span class="cert-name-mm">${nameMM}</span>` : ''}
+    </div>
+
+    <!-- Parent line -->
+    ${parentEN ? `
+    <div class="cert-parent">
+      Son / Daughter of &nbsp;<strong>${parentEN}</strong>
+      ${parentMM ? `<br><span class="cert-parent-mm">${parentMM} ၏ သား / သမီး</span>` : ''}
+    </div>` : '<div style="height:4mm"></div>'}
+
+    <!-- Conferral body -->
+    <div class="cert-body">is hereby conferred the degree of</div>
+
+    <!-- Degree name -->
+    <div class="cert-degree">${degreeTitle}.</div>
+
+    <div class="cert-divider"></div>
+
+    <!-- Signature row -->
+    <div class="cert-sig-row">
+      <div class="cert-sig-block">
+        <span class="cert-sig-line"></span>
+        Interim University Council<br>
+        University of Medicine -2, Yangon
+      </div>
+      <div style="flex:0.4;display:flex;justify-content:center;align-items:flex-end;padding-bottom:1mm">
+        <div class="cert-seal">OFFICIAL<br>SEAL</div>
+      </div>
+      <div class="cert-sig-block">
+        <span class="cert-sig-line"></span>
+        Chancellor<br>
+        University of Medicine -2, Yangon
+      </div>
+    </div>
+
+    <!-- Photo + QR + registration info -->
+    <div style="display:flex;justify-content:space-between;align-items:flex-end;width:88%;margin-top:1mm">
+
+      <!-- QR -->
+      <div class="cert-qr">
+        <div id="certQR"></div>
+        <div class="cert-qr-lbl">Scan to Verify</div>
+      </div>
+
+      <!-- Photo -->
+      <div class="cert-photo-area">
+        <div class="cert-photo-box">
+          ${photo
+            ? `<img src="${photo}" alt="Student Photo" onerror="this.parentElement.innerHTML='<span style=\\'font-size:7pt;color:#aaa;text-align:center;padding:4px\\'>Photo</span>'">`
+            : '<span style="font-size:7pt;color:#aaa;text-align:center;padding:4px">Photo</span>'}
+        </div>
+        <div class="cert-photo-label">Photo</div>
+      </div>
+
+      <!-- Registration info -->
+      <div class="cert-reg-info">
+        ${gradDate ? `<div><strong>Date:</strong> ${gradDate}</div>` : ''}
+        ${gradDateMY ? `<div style="font-family:'Padauk','Myanmar Text',sans-serif;font-size:7.5pt">${gradDateMY}</div>` : ''}
+        ${gradID ? `<div style="margin-top:1mm"><strong>Registration ID:</strong> ${gradID}</div>` : ''}
+        ${gradIDMY ? `<div style="font-family:'Padauk','Myanmar Text',sans-serif;font-size:7.5pt">${gradIDMY}</div>` : ''}
+      </div>
+    </div>
+
+  </div><!-- /.cert-inner -->
+</div><!-- /.cert-page -->
+
+<script>
+  // Generate QR
+  window.addEventListener('load', function() {
+    try {
+      new QRCode(document.getElementById('certQR'), {
+        text: ${JSON.stringify(qrData)},
+        width: 56, height: 56,
+        colorDark: '#002060',
+        colorLight: '#ffffff',
+        correctLevel: QRCode.CorrectLevel.M
+      });
+    } catch(e) {}
+    setTimeout(function() { window.print(); }, 800);
+  });
+<\/script>
+</body>
+</html>`;
+
+  const win = window.open('', '_blank', 'width=860,height=1000');
+  if (!win) { alert('Please allow popups to print the certificate.'); return; }
+  win.document.write(html);
+  win.document.close();
+}
 
 // ── printConfirmation(enrollmentIndex) ───────────────────────
 function printConfirmation(enrollIdx) {
