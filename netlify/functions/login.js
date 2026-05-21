@@ -15,8 +15,6 @@ const SUPABASE_ANON_KEY    = process.env.SUPABASE_ANON_KEY;
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY;
 
 // ── Supabase REST helper ─────────────────────────────────────
-// useServiceKey = true bypasses RLS — only used after the student's
-// password has already been verified in this same request.
 async function supabase(path, options = {}, useServiceKey = false) {
   const key = useServiceKey ? SUPABASE_SERVICE_KEY : SUPABASE_ANON_KEY;
   const url  = `${SUPABASE_URL}/rest/v1/${path}`;
@@ -36,7 +34,7 @@ async function supabase(path, options = {}, useServiceKey = false) {
   return res.json();
 }
 
-// ── Map student row to safe object (never expose master_password) ──
+// ── Map student row (never expose master_password) ───────────
 function mapStudent(row, programName) {
   return {
     id:               row.id              || '',
@@ -58,7 +56,6 @@ function mapStudent(row, programName) {
     photo:            row.photo           || '',
     program:          row.program         || '',
     programName:      programName         || row.program || '',
-    // master_password is intentionally excluded
   };
 }
 
@@ -75,6 +72,25 @@ function mapGrade(row) {
     attempt:      row.attempt                          || '',
     notes:        row.notes                            || '',
     updatedAt:    row.updated_at                       || ''
+  };
+}
+
+// ── Map enrollment row ───────────────────────────────────────
+function mapEnrollment(row, programName) {
+  return {
+    id:               String(row.id                 || ''),
+    degreeProgramId:  row.degree_program_id          || row.program_id || '',
+    programName:      programName                    || row.program_name || row.degree_program_id || '',
+    degreeLevel:      row.degree_level               || 'bachelor',
+    currentYear:      row.current_year               || row.year || '',
+    enrollmentStatus: row.enrollment_status          || row.status || '',
+    admissionDate:    row.admission_date             || row.admission || '',
+    gpa:              row.gpa != null ? String(row.gpa) : '',
+    graduationStatus: row.graduation_status          || row.grad_status || '',
+    graduationId:     row.graduation_id              || '',
+    graduationDate:   row.graduation_date            || '',
+    thesisTitle:      row.thesis_title               || '',
+    supervisor:       row.supervisor                 || '',
   };
 }
 
@@ -111,7 +127,7 @@ export const handler = async (event) => {
   }
 
   try {
-    // ── 1. Fetch student by ID (anon key — public read is fine) ─
+    // ── 1. Fetch student by ID ───────────────────────────────
     const students = await supabase(
       `students?id=eq.${encodeURIComponent(normId)}&select=*&limit=1`
     );
@@ -125,7 +141,7 @@ export const handler = async (event) => {
 
     const raw = students[0];
 
-    // ── 2. Verify master_password BEFORE using service key ───
+    // ── 2. Verify master_password ────────────────────────────
     const storedPassword = String(raw.master_password || '').trim();
     if (storedPassword !== normPass) {
       return {
@@ -134,7 +150,7 @@ export const handler = async (event) => {
       };
     }
 
-    // ── 3. Fetch degree program name ─────────────────────────
+    // ── 3. Fetch degree program name for primary enrollment ──
     let programName = raw.program || '';
     if (raw.program) {
       try {
@@ -149,11 +165,10 @@ export const handler = async (event) => {
       }
     }
 
-    // ── 4. Map student (strips master_password) ──────────────
+    // ── 4. Map student ───────────────────────────────────────
     const student = mapStudent(raw, programName);
 
-    // ── 5. Fetch grades — service key used here, password already
-    //       verified above. RLS stays ON, no public policy needed.
+    // ── 5. Fetch grades ──────────────────────────────────────
     const gradeRows = await supabase(
       `grades?StudentID=eq.${encodeURIComponent(raw.id)}&select=*&order=CourseID.asc`,
       {},
@@ -161,7 +176,7 @@ export const handler = async (event) => {
     );
     const grades = (gradeRows || []).map(mapGrade);
 
-    // ── 6. Fetch all courses (public) — fresh every login ────
+    // ── 6. Fetch all courses ─────────────────────────────────
     let courses = {};
     try {
       const courseRows = await supabase(
@@ -180,14 +195,79 @@ export const handler = async (event) => {
       console.warn('Could not fetch courses:', e.message);
     }
 
-    // ── 7. Build photo URL if needed ─────────────────────────
+    // ── 7. Fetch enrollments ─────────────────────────────────
+    // If you have an enrollments table, this fetches all enrollments
+    // for this student. Falls back to synthesising one from the
+    // students row if the table doesn't exist or returns nothing.
+    let enrollments = [];
+    try {
+      const enrollmentRows = await supabase(
+        `enrollments?student_id=eq.${encodeURIComponent(raw.id)}&select=*&order=admission_date.asc`,
+        {},
+        true
+      );
+
+      if (enrollmentRows && enrollmentRows.length > 0) {
+        // Fetch program names for each enrollment
+        const programIds = [...new Set(
+          enrollmentRows
+            .map(e => e.degree_program_id || e.program_id)
+            .filter(Boolean)
+        )];
+
+        const programMap = {};
+        if (programIds.length > 0) {
+          try {
+            const progRows = await supabase(
+              `degree_programs?id=in.(${programIds.map(encodeURIComponent).join(',')})&select=id,name`
+            );
+            for (const p of (progRows || [])) {
+              programMap[p.id] = p.name;
+            }
+          } catch (e) {
+            console.warn('Could not fetch program names for enrollments:', e.message);
+          }
+        }
+
+        enrollments = enrollmentRows.map(row => {
+          const pid = row.degree_program_id || row.program_id || '';
+          return mapEnrollment(row, programMap[pid] || pid);
+        });
+      }
+    } catch (e) {
+      console.warn('Could not fetch enrollments (table may not exist):', e.message);
+    }
+
+    // ── 8. Fallback: synthesise enrollment from students row ─
+    // If no enrollments table exists yet, build one entry from
+    // the students row so the frontend multi-enrollment logic
+    // has something to work with.
+    if (enrollments.length === 0) {
+      enrollments = [{
+        id:               '',
+        degreeProgramId:  raw.program         || '',
+        programName:      programName         || raw.program || '',
+        degreeLevel:      raw.degree_level    || 'bachelor',
+        currentYear:      raw.year            || '',
+        enrollmentStatus: raw.status          || '',
+        admissionDate:    raw.admission       || '',
+        gpa:              raw.gpa != null ? String(raw.gpa) : '',
+        graduationStatus: raw.grad_status     || '',
+        graduationId:     raw.graduation_id   || '',
+        graduationDate:   raw.graduation_date || '',
+        thesisTitle:      '',
+        supervisor:       raw.supervisor      || '',
+      }];
+    }
+
+    // ── 9. Build photo URL if needed ─────────────────────────
     if (student.photo && !student.photo.startsWith('http')) {
       student.photo = `${SUPABASE_URL}/storage/v1/object/public/student-photos/${student.photo}`;
     }
 
     return {
       statusCode: 200, headers,
-      body: JSON.stringify({ success: true, student, grades, courses })
+      body: JSON.stringify({ success: true, student, grades, courses, enrollments })
     };
 
   } catch (err) {
