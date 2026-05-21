@@ -2,46 +2,39 @@
 //
 // Called by the Registrar UI when a photo edit request is approved.
 // Workflow:
-//   1. Fetch the pending photo from its URL (stored in student_edit_requests.photo_url)
-//   2. Draw a repeating diagonal "UM2UM2UM2UM2UM2" watermark using Canvas
-//   3. Upload the watermarked JPEG to Supabase Storage (student-photos bucket, permanent path)
+//   1. Fetch the pending photo from its URL
+//   2. Draw a repeating diagonal "UM2UM2UM2UM2UM2" watermark using sharp + SVG overlay
+//   3. Upload the watermarked JPEG to Supabase Storage (student-photos bucket)
 //   4. Return { success: true, photoUrl: "<full public URL>" }
 //
-// Runtime: Node.js 18+  (Netlify Functions v2 / AWS Lambda)
-// Dependencies: @supabase/supabase-js, canvas
-//   npm install @supabase/supabase-js canvas
+// Runtime: Node.js 18+  (Netlify Functions / AWS Lambda)
+// Dependencies: @supabase/supabase-js, sharp
+//   npm install @supabase/supabase-js sharp
 //
-// Environment variables required (set in Netlify UI → Site settings → Environment):
-//   SUPABASE_URL          — your Supabase project URL
-//   SUPABASE_SERVICE_KEY  — service_role key (NOT the anon key — needs storage write access)
+// Environment variables required:
+//   SUPABASE_URL         — your Supabase project URL
+//   SUPABASE_SERVICE_KEY — service_role key (NOT the anon key)
 
 const { createClient } = require('@supabase/supabase-js');
-const { createCanvas, loadImage } = require('@napi-rs/canvas');
+const sharp = require('sharp');
 
-// ── Config ─────────────────────────────────────────────────────────────────
 const SUPABASE_URL         = process.env.SUPABASE_URL;
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY;
 const BUCKET               = 'student-photos';
 
-// Watermark text — repeating pattern across the photo
 const WM_TEXT      = 'UM2UM2UM2UM2UM2';
-const WM_FONT_SIZE = 18;          // px  — adjust to taste
-const WM_COLOR     = 'rgba(255, 255, 255, 0.30)'; // semi-transparent white
-const WM_ANGLE     = -30;         // degrees — diagonal tilt
-const WM_SPACING_X = 140;        // horizontal gap between repetitions
-const WM_SPACING_Y = 60;         // vertical gap between rows
+const WM_FONT_SIZE = 18;
+const WM_ANGLE     = -30;
+const WM_SPACING_X = 140;
+const WM_SPACING_Y = 60;
 
-// ── Handler ────────────────────────────────────────────────────────────────
 exports.handler = async function (event) {
-  // CORS pre-flight
   if (event.httpMethod === 'OPTIONS') {
     return { statusCode: 204, headers: corsHeaders() };
   }
-
   if (event.httpMethod !== 'POST') {
     return json(405, { success: false, message: 'Method not allowed' });
   }
-
   if (!SUPABASE_URL || !SUPABASE_SERVICE_KEY) {
     return json(500, { success: false, message: 'Server mis-configuration: missing Supabase env vars' });
   }
@@ -66,49 +59,51 @@ exports.handler = async function (event) {
     }
     const imgBuffer = Buffer.from(await imgRes.arrayBuffer());
 
-    // ── 2. Draw watermark using node-canvas ───────────────────────────────
-    const srcImage = await loadImage(imgBuffer);
-    const { width, height } = srcImage;
+    // ── 2. Get image dimensions ───────────────────────────────────────────
+    const meta = await sharp(imgBuffer).metadata();
+    const width  = meta.width  || 400;
+    const height = meta.height || 500;
 
-    const canvas = createCanvas(width, height);
-    const ctx    = canvas.getContext('2d');
-
-    // Draw original image
-    ctx.drawImage(srcImage, 0, 0, width, height);
-
-    // Watermark settings
-    ctx.save();
-    ctx.font        = `bold ${WM_FONT_SIZE}px sans-serif`;
-    ctx.fillStyle   = WM_COLOR;
-    ctx.textAlign   = 'center';
-    ctx.textBaseline = 'middle';
-
-    // Rotate canvas around its centre, then tile the text
-    ctx.translate(width / 2, height / 2);
-    ctx.rotate((WM_ANGLE * Math.PI) / 180);
-
-    // Tile across the rotated canvas — extend beyond edges to cover corners
-    const cols = Math.ceil(width  / WM_SPACING_X) + 4;
+    // ── 3. Build SVG watermark overlay ────────────────────────────────────
+    // We tile the watermark text across an SVG the same size as the image,
+    // rotated diagonally — sharp composites it on top as a transparent overlay.
+    const cols = Math.ceil(width  / WM_SPACING_X) + 6;
     const rows = Math.ceil(height / WM_SPACING_Y) + 6;
-    const startX = -Math.ceil(cols / 2) * WM_SPACING_X;
-    const startY = -Math.ceil(rows / 2) * WM_SPACING_Y;
 
+    let textElements = '';
     for (let r = 0; r < rows; r++) {
       for (let c = 0; c < cols; c++) {
-        const x = startX + c * WM_SPACING_X;
-        const y = startY + r * WM_SPACING_Y;
-        ctx.fillText(WM_TEXT, x, y);
+        const x = -Math.ceil(cols / 2) * WM_SPACING_X + c * WM_SPACING_X + width  / 2;
+        const y = -Math.ceil(rows / 2) * WM_SPACING_Y + r * WM_SPACING_Y + height / 2;
+        textElements += `<text x="${x}" y="${y}" transform="rotate(${WM_ANGLE}, ${x}, ${y})">${WM_TEXT}</text>`;
       }
     }
-    ctx.restore();
 
-    // Export as JPEG (quality 0.90 — good balance of file size vs quality)
-    const watermarkedBuffer = canvas.toBuffer('image/jpeg', { quality: 0.90 });
+    const svgOverlay = Buffer.from(`
+      <svg width="${width}" height="${height}" xmlns="http://www.w3.org/2000/svg">
+        <style>
+          text {
+            font-family: sans-serif;
+            font-size: ${WM_FONT_SIZE}px;
+            font-weight: bold;
+            fill: rgba(255,255,255,0.30);
+            text-anchor: middle;
+            dominant-baseline: middle;
+          }
+        </style>
+        ${textElements}
+      </svg>
+    `);
 
-    // ── 3. Upload to Supabase Storage ─────────────────────────────────────
+    // ── 4. Composite watermark and export as JPEG ─────────────────────────
+    const watermarkedBuffer = await sharp(imgBuffer)
+      .composite([{ input: svgOverlay, blend: 'over' }])
+      .jpeg({ quality: 90 })
+      .toBuffer();
+
+    // ── 5. Upload to Supabase Storage ─────────────────────────────────────
     const db = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
 
-    // Permanent path: approved/<studentId>_<timestamp>.jpg
     const timestamp   = Date.now();
     const storagePath = `approved/${studentId}_${timestamp}.jpg`;
 
@@ -116,27 +111,21 @@ exports.handler = async function (event) {
       .from(BUCKET)
       .upload(storagePath, watermarkedBuffer, {
         contentType: 'image/jpeg',
-        upsert: true,          // overwrite if same path already exists
+        upsert: true,
       });
 
     if (uploadError) {
       throw new Error('Supabase upload failed: ' + uploadError.message);
     }
 
-    // Build the public URL
-    const { data: urlData } = db.storage
-      .from(BUCKET)
-      .getPublicUrl(storagePath);
+    const { data: urlData } = db.storage.from(BUCKET).getPublicUrl(storagePath);
+    const photoUrl = urlData?.publicUrl
+      || `${SUPABASE_URL}/storage/v1/object/public/${BUCKET}/${storagePath}`;
 
-    const photoUrl = urlData?.publicUrl || `${SUPABASE_URL}/storage/v1/object/public/${BUCKET}/${storagePath}`;
-
-    // ── 4. Optionally delete the pending photo from temp storage ──────────
-    // The pending photo lives at whatever path pendingUrl points to.
-    // Extract the relative storage path and remove it to save space.
+    // ── 6. Delete pending photo (best-effort) ─────────────────────────────
     const pendingStoragePrefix = `${SUPABASE_URL}/storage/v1/object/public/${BUCKET}/`;
     if (pendingUrl.startsWith(pendingStoragePrefix)) {
       const pendingPath = pendingUrl.slice(pendingStoragePrefix.length);
-      // Best-effort — ignore errors (file may already be gone)
       await db.storage.from(BUCKET).remove([pendingPath]).catch(() => {});
     }
 
@@ -148,7 +137,6 @@ exports.handler = async function (event) {
   }
 };
 
-// ── Helpers ────────────────────────────────────────────────────────────────
 function json(status, body) {
   return {
     statusCode: status,
