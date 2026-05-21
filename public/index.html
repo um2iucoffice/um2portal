@@ -1218,6 +1218,10 @@ canvas.photo-canvas, #idcardPhoto canvas, #homeAvatar canvas, #gradesAvatar canv
                     <span class="idcard-field-lbl">Program</span>
                     <span class="idcard-field-val" id="idcardProgram">—</span>
                   </div>
+                  <div class="idcard-field" id="idcardSupervisorRow" style="display:none">
+                    <span class="idcard-field-lbl">Supervisor</span>
+                    <span class="idcard-field-val" id="idcardSupervisor">—</span>
+                  </div>
                   <div class="idcard-field">
                     <span class="idcard-field-lbl">Admission Year</span>
                     <span class="idcard-field-val" id="idcardAdmission">—</span>
@@ -1669,32 +1673,14 @@ function populate(s, grades, courses, program_meta, enrollments) {
   //   status         → enrollmentStatus
   //   grad_status    → graduationStatus
   // No further overwriting needed here.
-  // ── Multi-degree: derive display status from the ACTIVE enrollment ──
-// If there's an active non-bachelor enrollment, the student is a
-// current student again — not an alumni.
-const activeEnrollment = (enrollments || []).find(e =>
-  /^active$/i.test(e.enrollmentStatus || '')
-);
-const latestEnrollment = (enrollments || []).slice(-1)[0];
-
-const _rawGrad = s.graduationStatus || '';
-
-if (activeEnrollment && activeEnrollment.degreeLevel !== 'bachelor') {
-  // Currently active in a Master or PhD — treat as active student
-  s.graduationStatus  = 'In Progress';
-  s.enrollmentStatus  = 'Active';
-  s.currentStatus     = activeEnrollment.currentYear || s.currentStatus;
-  s.programName       = activeEnrollment.programName || s.programName;
-  s.program           = activeEnrollment.degreeProgramId || s.program;
-  s.degreeLevel       = activeEnrollment.degreeLevel;
-} else if (/^graduated$/i.test(_rawGrad.trim()) && !activeEnrollment) {
-  // Truly graduated with no active enrollment → Alumni
-  s.graduationStatus = 'Graduated';
-} else if (/^active$/i.test((s.enrollmentStatus || '').trim())) {
-  s.graduationStatus = 'In Progress';
-} else {
-  s.graduationStatus = _rawGrad || '—';
-}
+  const _rawGrad = s.graduationStatus || '';
+  if (/^graduated$/i.test(_rawGrad.trim())) {
+    s.graduationStatus = 'Graduated';
+  } else if (/^active$/i.test((s.enrollmentStatus || '').trim())) {
+    s.graduationStatus = 'In Progress';
+  } else {
+    s.graduationStatus = _rawGrad || '—';
+  }
   s.graduationId     = s.graduation_id   || s.graduationId     || '';
   s.graduationDate   = s.graduation_date || s.graduationDate   || '';
   s.id               = s.id              || '';
@@ -1876,6 +1862,18 @@ function populateIDCard(s, isGraduated, gradID, gradDate) {
   const idcardProgramEl = document.getElementById('idcardProgram');
   if (idcardProgramEl) idcardProgramEl.textContent = s.programName || s.program || '—';
 
+  // ── Supervisor — show for Master / PhD only ───────────────────
+  const activeEnroll = (window._enrollments || []).find(e =>
+    /^active$/i.test(e.enrollmentStatus || '')
+  );
+  const supervisorRow = document.getElementById('idcardSupervisorRow');
+  const supervisorEl  = document.getElementById('idcardSupervisor');
+  const supervisorVal = activeEnroll?.supervisor || s.supervisor || '';
+  const showSupervisor = supervisorVal &&
+    (activeEnroll?.degreeLevel === 'master' || activeEnroll?.degreeLevel === 'phd');
+  if (supervisorRow) supervisorRow.style.display = showSupervisor ? '' : 'none';
+  if (supervisorEl && showSupervisor) supervisorEl.textContent = supervisorVal;
+
   // ── Alumni vs Student labels on card ─────────────────────────
   const typeBadge = document.getElementById('idcardTypeBadge');
   const idLabel   = document.getElementById('idcardIDLabel');
@@ -1958,6 +1956,8 @@ function printIDCard() {
     admission:  document.getElementById('idcardAdmission').textContent,
     enroll:     document.getElementById('idcardEnroll').textContent,
     program:    document.getElementById('idcardProgram')?.textContent || '',
+    supervisor: document.getElementById('idcardSupervisor')?.textContent || '',
+    supervisorVisible: document.getElementById('idcardSupervisorRow')?.style.display !== 'none',
     birth:      document.getElementById('idcardBirth').textContent,
     phone:      document.getElementById('idcardPhone').textContent,
     father:     document.getElementById('idcardFather').textContent,
@@ -2044,6 +2044,7 @@ function printIDCard() {
           <div class="idcard-fields">
             <div class="idcard-field"><span class="idcard-field-lbl">Year</span><span class="idcard-field-val">${esc(s.status)}</span></div>
             <div class="idcard-field"><span class="idcard-field-lbl">Program</span><span class="idcard-field-val">${esc(s.program)}</span></div>
+            ${s.supervisorVisible ? `<div class="idcard-field"><span class="idcard-field-lbl">Supervisor</span><span class="idcard-field-val">${esc(s.supervisor)}</span></div>` : ''}
             <div class="idcard-field"><span class="idcard-field-lbl">Admission Year</span><span class="idcard-field-val">${esc(s.admission)}</span></div>
             <div class="idcard-field"><span class="idcard-field-lbl">Enrollment Status</span><span class="idcard-field-val">${esc(s.enroll)}</span></div>
           </div>
