@@ -1,132 +1,5554 @@
-// ============================================================
-//  netlify/functions/upload-photo.js
-//  Photo upload → pending approval flow.
-//  Uploads to pending-photos/<studentId>.jpg, then inserts a
-//  row into student_edit_requests (field_name='photo', status='pending').
-//  Does NOT touch the students table — Registrar must approve first.
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IRIS System - UM2IUC</title>
+<link rel="icon" type="image/png" sizes="40x40" href="/favicon.png">
+<link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --ink:#0D1B2A;
+  --ink2:#3D4A5C;
+  --ink3:#7A8599;
+  --line:#E8EBF0;
+  --surface:#F2F4F8;
+  --white:#FFFFFF;
+  --crimson:#8B1A2E;
+  --crimson-light:#F7EEF0;
+  --crimson-mid:#C4273E;
+  --gold:#9A7B2F;
+  --gold-light:#FBF6E8;
+  --green:#1A5C3A;
+  --green-light:#EBF5F0;
+  --r:6px;
+  --shadow-sm: 0 1px 3px rgba(13,27,42,.07), 0 1px 2px rgba(13,27,42,.04);
+  --shadow-md: 0 4px 16px rgba(13,27,42,.08), 0 1px 4px rgba(13,27,42,.04);
+  --shadow-lg: 0 8px 32px rgba(13,27,42,.10), 0 2px 8px rgba(13,27,42,.05);
+}
+
+/* ── LIGHT THEME OVERRIDES ── */
+body.theme-light {
+  --dash-bg: #f0f2f7;
+  --dash-bg2: #f7f8fc;
+  --sidebar-bg: rgba(255,255,255,0.98);
+  --sidebar-border: rgba(13,27,42,0.09);
+  --sidebar-text: var(--ink2);
+  --sidebar-text-dim: var(--ink3);
+  --topbar-bg: rgba(247,248,252,0.97);
+  --topbar-border: var(--line);
+  --sbnav-active-bg: rgba(139,26,46,0.08);
+  --sbnav-active-border: rgba(139,26,46,0.2);
+  --sbnav-active-color: var(--crimson);
+  --sbnav-icon-active: var(--crimson);
+  --sbnav-hover-bg: rgba(13,27,42,0.04);
+  --sbnav-color: var(--ink3);
+  --glass-card-bg: rgba(255,255,255,0.9);
+  --glass-card-border: var(--line);
+  --glass-card-head-bg: var(--surface);
+  --hero-bg: linear-gradient(130deg,#f7eef0 0%,#eef1f7 100%);
+  --hero-border: rgba(139,26,46,0.18);
+  --journey-bg: var(--white);
+  --journey-border: var(--line);
+  --journey-head-bg: var(--surface);
+  --degree-row-border: var(--line);
+  --ql-bg: var(--white);
+  --ql-border: var(--line);
+  --ql-hover-bg: var(--crimson-light);
+  --ql-hover-border: rgba(139,26,46,0.2);
+  --ql-title: var(--ink);
+  --ql-sub: var(--ink3);
+  --ql-icon-bg: var(--crimson-light);
+  --ql-arrow: rgba(13,27,42,0.18);
+  --ql-arrow-hover: var(--crimson);
+  --banner-bg: var(--white);
+  --banner-border: var(--line);
+  --icard-bg: var(--white);
+  --icard-border: var(--line);
+  --icard-head-bg: var(--surface);
+  --icard-cell-border: var(--line);
+  --grades-banner-bg: var(--crimson-light);
+  --grades-banner-border: rgba(139,26,46,0.18);
+  --ts-bg: var(--white);
+  --ts-border: var(--line);
+  --ts-val-color: var(--ink);
+  --ts-lbl-color: var(--ink3);
+  --ts-divider: var(--line);
+  --gwrap-bg: var(--white);
+  --gwrap-border: var(--line);
+  --g-year-head-bg: var(--surface);
+  --g-year-color: var(--ink);
+  --g-block-head-bg: #FAFBFC;
+  --g-block-color: var(--ink3);
+  --g-totals-bg: var(--surface);
+  --g-totals-color: var(--ink3);
+  --gt-th-color: var(--ink3);
+  --gt-td-color: var(--ink);
+  --gt-row-border: var(--line);
+  --gt-hover-bg: #F8F9FC;
+  --gt-course-color: var(--ink);
+  --gt-assess-color: var(--ink3);
+  --gt-cr-bg: var(--surface);
+  --gt-cr-border: var(--line);
+  --gt-cr-color: var(--ink);
+  --sbar-num-color: var(--ink);
+  --gt-pts-color: var(--ink);
+  --no-g-color: var(--ink3);
+  --doc-card-bg: var(--white);
+  --doc-card-border: var(--line);
+  --doc-title-color: var(--ink);
+  --doc-desc-color: var(--ink3);
+  --doc-deg-bg: var(--surface);
+  --doc-deg-border: var(--line);
+  --degree-name-color: var(--ink);
+  --degree-meta-color: var(--ink3);
+  --sec-head-title: var(--ink);
+  --sec-head-sub: var(--ink3);
+  --section-label-color: var(--ink3);
+  --signout-bg: var(--surface);
+  --signout-border: var(--line);
+  --signout-color: var(--ink2);
+  --topbar-title-color: var(--ink);
+  --topbar-id-bg: var(--surface);
+  --topbar-id-border: var(--line);
+  --topbar-id-color: var(--ink3);
+  --footer-bg: rgba(247,248,252,0.9);
+  --footer-border: var(--line);
+  --footer-color: var(--ink3);
+  --tab-color: var(--ink3);
+  --tab-active-color: var(--crimson);
+  --tab-active-border: var(--crimson);
+  --photo-input-bg: var(--white);
+  --photo-input-border: var(--line);
+  --photo-input-color: var(--ink);
+}
+
+/* ── DOODLE BACKGROUND ── */
+body{
+  font-family:'DM Sans',sans-serif;
+  background-color:var(--surface);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='900' height='900' viewBox='0 0 900 900'%3E%3Cg stroke='%238B1A2E' stroke-width='1' fill='none' opacity='0.055'%3E%3C!-- Stethoscope head --%3E%3Ccircle cx='80' cy='80' r='18'/%3E%3Ccircle cx='80' cy='80' r='10'/%3E%3Cpath d='M80 62 Q80 30 110 30 Q140 30 140 60 L140 110 Q140 150 110 165 Q80 180 70 210'/%3E%3C!-- Heartbeat/ECG line --%3E%3Cpolyline points='200,120 230,120 245,90 255,150 270,80 285,160 300,120 340,120'/%3E%3C!-- DNA double helix strands --%3E%3Cpath d='M400 60 Q415 90 400 120 Q385 150 400 180 Q415 210 400 240'/%3E%3Cpath d='M420 60 Q405 90 420 120 Q435 150 420 180 Q405 210 420 240'/%3E%3Cline x1='403' y1='75' x2='417' y2='75'/%3E%3Cline x1='397' y1='105' x2='423' y2='105'/%3E%3Cline x1='403' y1='135' x2='417' y2='135'/%3E%3Cline x1='397' y1='165' x2='423' y2='165'/%3E%3Cline x1='403' y1='195' x2='417' y2='195'/%3E%3Cline x1='397' y1='225' x2='423' y2='225'/%3E%3C!-- Graduation cap --%3E%3Cpolygon points='560,50 520,70 560,90 600,70'/%3E%3Cline x1='560' y1='90' x2='560' y2='120'/%3E%3Cpath d='M540 105 Q540 130 560 135 Q580 130 580 105'/%3E%3Cline x1='600' y1='70' x2='600' y2='95'/%3E%3C!-- Microscope --%3E%3Crect x='700' y='100' width='10' height='40' rx='3'/%3E%3Cpath d='M695 100 Q705 80 715 100'/%3E%3Crect x='690' y='140' width='30' height='8' rx='2'/%3E%3Cpath d='M700 148 L695 165 L715 165 L710 148'/%3E%3C!-- Pill / capsule shapes --%3E%3Cellipse cx='100' cy='250' rx='25' ry='10' transform='rotate(-30 100 250)'/%3E%3Cellipse cx='160' cy='280' rx='25' ry='10' transform='rotate(15 160 280)'/%3E%3C!-- Caduceus staff (simplified) --%3E%3Cline x1='800' y1='40' x2='800' y2='160'/%3E%3Cpath d='M800 60 Q820 75 800 90 Q780 105 800 120'/%3E%3Cpath d='M800 55 Q780 70 800 85 Q820 100 800 115'/%3E%3Ccircle cx='800' cy='42' r='8'/%3E%3C!-- Atom-like rings --%3E%3Cellipse cx='200' cy='340' rx='35' ry='12'/%3E%3Cellipse cx='200' cy='340' rx='35' ry='12' transform='rotate(60 200 340)'/%3E%3Cellipse cx='200' cy='340' rx='35' ry='12' transform='rotate(120 200 340)'/%3E%3Ccircle cx='200' cy='340' r='5'/%3E%3C!-- Medical cross --%3E%3Crect x='438' y='310' width='8' height='40' rx='2'/%3E%3Crect x='422' y='326' width='40' height='8' rx='2'/%3E%3C!-- Diploma / scroll --%3E%3Crect x='550' y='280' width='80' height='60' rx='4'/%3E%3Ccircle cx='550' cy='310' r='8'/%3E%3Ccircle cx='630' cy='310' r='8'/%3E%3Cline x1='570' y1='300' x2='610' y2='300'/%3E%3Cline x1='570' y1='312' x2='610' y2='312'/%3E%3Cline x1='570' y1='324' x2='610' y2='324'/%3E%3C!-- Heartbeat again lower --%3E%3Cpolyline points='700,320 730,320 745,290 755,350 770,270 785,360 800,320 840,320'/%3E%3C!-- Syringe / injector --%3E%3Crect x='60' y='420' width='12' height='50' rx='3'/%3E%3Cpolygon points='66,470 60,500 72,500'/%3E%3Crect x='48' y='430' width='36' height='8' rx='2'/%3E%3Cline x1='66' y1='415' x2='66' y2='420'/%3E%3C!-- Book open --%3E%3Cpath d='M160 400 Q160 380 200 380 Q240 380 240 400 L240 460 Q200 450 160 460 Z'/%3E%3Cline x1='200' y1='380' x2='200' y2='460'/%3E%3C!-- Bacteria / cell-like circles --%3E%3Ccircle cx='350' cy='460' r='20'/%3E%3Cline x1='370' y1='450' x2='390' y2='440'/%3E%3Cline x1='370' y1='462' x2='395' y2='462'/%3E%3Cline x1='368' y1='474' x2='388' y2='484'/%3E%3Cline x1='330' y1='474' x2='310' y2='484'/%3E%3Cline x1='330' y1='450' x2='310' y2='440'/%3E%3Ccircle cx='350' cy='460' r='8'/%3E%3C!-- Lungs simplified --%3E%3Cpath d='M490 400 Q480 420 480 450 Q480 480 500 490 Q520 500 530 480 Q540 460 530 440 Q525 420 510 400'/%3E%3Cpath d='M510 400 Q520 420 520 450 Q520 480 500 490'/%3E%3Cline x1='500' y1='395' x2='500' y2='410'/%3E%3C!-- Corner dots / decorative --%3E%3Ccircle cx='650' cy='430' r='3'/%3E%3Ccircle cx='665' cy='430' r='3'/%3E%3Ccircle cx='680' cy='430' r='3'/%3E%3Ccircle cx='650' cy='445' r='3'/%3E%3Ccircle cx='665' cy='445' r='3'/%3E%3Ccircle cx='680' cy='445' r='3'/%3E%3Ccircle cx='650' cy='460' r='3'/%3E%3Ccircle cx='665' cy='460' r='3'/%3E%3Ccircle cx='680' cy='460' r='3'/%3E%3C!-- More hearts / ECG bottom --%3E%3Cpolyline points='50,600 80,600 95,570 105,630 120,550 135,640 150,600 190,600'/%3E%3C!-- Spine-like dots column --%3E%3Ccircle cx='780' cy='480' r='6'/%3E%3Ccircle cx='780' cy='500' r='6'/%3E%3Ccircle cx='780' cy='520' r='6'/%3E%3Ccircle cx='780' cy='540' r='6'/%3E%3Ccircle cx='780' cy='560' r='6'/%3E%3Cline x1='786' y1='486' x2='786' y2='494'/%3E%3Cline x1='786' y1='506' x2='786' y2='514'/%3E%3Cline x1='786' y1='526' x2='786' y2='534'/%3E%3Cline x1='786' y1='546' x2='786' y2='554'/%3E%3C!-- Test tube --%3E%3Crect x='860' y='60' width='14' height='50' rx='7'/%3E%3Cellipse cx='867' cy='110' rx='7' ry='7'/%3E%3Cline x1='856' y1='80' x2='874' y2='80'/%3E%3C!-- Circular pattern bottom right --%3E%3Ccircle cx='820' cy='700' r='40'/%3E%3Ccircle cx='820' cy='700' r='28'/%3E%3Ccircle cx='820' cy='700' r='14'/%3E%3Ccircle cx='820' cy='700' r='4'/%3E%3C!-- Cross pattern scatter --%3E%3Crect x='300' y='600' width='6' height='24' rx='2'/%3E%3Crect x='293' y='607' width='20' height='6' rx='2'/%3E%3Crect x='440' y='550' width='6' height='24' rx='2'/%3E%3Crect x='433' y='557' width='20' height='6' rx='2'/%3E%3Crect x='120' y='720' width='6' height='24' rx='2'/%3E%3Crect x='113' y='727' width='20' height='6' rx='2'/%3E%3C!-- Wavy lines (paper/document feel) --%3E%3Cpath d='M500 620 Q510 610 520 620 Q530 630 540 620 Q550 610 560 620 Q570 630 580 620'/%3E%3Cpath d='M500 635 Q510 625 520 635 Q530 645 540 635 Q550 625 560 635 Q570 645 580 635'/%3E%3Cpath d='M500 650 Q510 640 520 650 Q530 660 540 650 Q550 640 560 650 Q570 660 580 650'/%3E%3C!-- Mortar and pestle hint --%3E%3Cellipse cx='200' cy='700' rx='30' ry='12'/%3E%3Cpath d='M175 700 Q175 720 200 725 Q225 720 225 700'/%3E%3Cline x1='215' y1='680' x2='225' y2='695'/%3E%3C!-- Pills bottom --%3E%3Cellipse cx='650' cy='660' rx='22' ry='9' transform='rotate(-25 650 660)'/%3E%3Cellipse cx='700' cy='640' rx='22' ry='9' transform='rotate(20 700 640)'/%3E%3Cellipse cx='680' cy='700' rx='22' ry='9' transform='rotate(-10 680 700)'/%3E%3C!-- Star of life hints --%3E%3Cline x1='400' y1='730' x2='400' y2='780'/%3E%3Cline x1='375' y1='742' x2='425' y2='768'/%3E%3Cline x1='375' y1='768' x2='425' y2='742'/%3E%3Ccircle cx='400' cy='755' r='12'/%3E%3Crect x='394' y='749' width='12' height='12' rx='1' fill='%238B1A2E' opacity='0.6'/%3E%3C!-- UM2 hint - circles/university seal --%3E%3Ccircle cx='850' cy='840' r='30'/%3E%3Ccircle cx='850' cy='840' r='22'/%3E%3Ctext x='850' y='845' font-family='serif' font-size='14' text-anchor='middle' fill='%238B1A2E' opacity='0.1'%3EUM2%3C/text%3E%3C/g%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-size: 900px 900px;
+  color:var(--ink);
+  min-height:100vh;
+  -webkit-font-smoothing:antialiased;
+  font-size:14px;
+}
+
+/* ── LOGIN ── */
+#loginScreen{position:fixed;inset:0;z-index:100;display:flex;background:var(--white);transition:opacity .4s,visibility .4s}
+#loginScreen.hidden{opacity:0;visibility:hidden;pointer-events:none}
+.login-left{width:440px;flex-shrink:0;background:var(--ink);display:flex;flex-direction:column;justify-content:space-between;padding:52px 56px;position:relative;overflow:hidden}
+.login-left::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 30% 20%, rgba(139,26,46,0.35) 0%, transparent 60%), radial-gradient(ellipse at 80% 80%, rgba(154,123,47,0.15) 0%, transparent 50%);pointer-events:none}
+.login-left::after{content:'';position:absolute;top:-80px;right:-80px;width:320px;height:320px;border:1.5px solid rgba(255,255,255,0.06);border-radius:50%;pointer-events:none}
+.login-crest{margin-bottom:auto;position:relative;z-index:1}
+.crest-ring{width:68px;height:68px;border:1.5px solid rgba(255,255,255,0.18);border-radius:50%;display:flex;align-items:center;justify-content:center;margin-bottom:32px;background:rgba(255,255,255,0.04);backdrop-filter:blur(4px);box-shadow:0 0 0 6px rgba(255,255,255,0.03)}
+.crest-abbr{font-family:'Bebas Neue',sans-serif;font-size:22px;color:var(--white);letter-spacing:1px}
+.login-institution{
+  font-family:'Bebas Neue',sans-serif;
+  font-size:20px;
+  letter-spacing:3px;
+  text-transform:uppercase;
+  color:rgba(255,255,255,0.35);
+  margin-bottom:14px;
+}
+.login-tagline{font-family:'Bebas Neue',sans-serif;font-size:30px;color:var(--white);line-height:1.2;letter-spacing:-0.3px}
+.login-tagline em{font-style;color:rgba(255,255,255,0.4)}
+.login-footer-txt{font-size:11px;color:rgba(255,255,255,0.22);line-height:1.7;position:relative;z-index:1}
+.login-right{
+  flex:1;display:flex;align-items:center;justify-content:center;padding:40px;
+  background-color:var(--white);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='900' height='900' viewBox='0 0 900 900'%3E%3Cg stroke='%238B1A2E' stroke-width='1' fill='none' opacity='0.045'%3E%3Ccircle cx='80' cy='80' r='18'/%3E%3Ccircle cx='80' cy='80' r='10'/%3E%3Cpath d='M80 62 Q80 30 110 30 Q140 30 140 60 L140 110 Q140 150 110 165 Q80 180 70 210'/%3E%3Cpolyline points='200,120 230,120 245,90 255,150 270,80 285,160 300,120 340,120'/%3E%3Cpath d='M400 60 Q415 90 400 120 Q385 150 400 180 Q415 210 400 240'/%3E%3Cpath d='M420 60 Q405 90 420 120 Q435 150 420 180 Q405 210 420 240'/%3E%3Cline x1='403' y1='75' x2='417' y2='75'/%3E%3Cline x1='397' y1='105' x2='423' y2='105'/%3E%3Cline x1='403' y1='135' x2='417' y2='135'/%3E%3Cline x1='397' y1='165' x2='423' y2='165'/%3E%3Cpolygon points='560,50 520,70 560,90 600,70'/%3E%3Cline x1='560' y1='90' x2='560' y2='120'/%3E%3Cpath d='M540 105 Q540 130 560 135 Q580 130 580 105'/%3E%3Crect x='700' y='100' width='10' height='40' rx='3'/%3E%3Cpath d='M695 100 Q705 80 715 100'/%3E%3Crect x='690' y='140' width='30' height='8' rx='2'/%3E%3Cellipse cx='100' cy='250' rx='25' ry='10' transform='rotate(-30 100 250)'/%3E%3Cellipse cx='160' cy='280' rx='25' ry='10' transform='rotate(15 160 280)'/%3E%3Cline x1='800' y1='40' x2='800' y2='160'/%3E%3Cpath d='M800 60 Q820 75 800 90 Q780 105 800 120'/%3E%3Ccircle cx='800' cy='42' r='8'/%3E%3Cellipse cx='200' cy='340' rx='35' ry='12'/%3E%3Cellipse cx='200' cy='340' rx='35' ry='12' transform='rotate(60 200 340)'/%3E%3Cellipse cx='200' cy='340' rx='35' ry='12' transform='rotate(120 200 340)'/%3E%3Ccircle cx='200' cy='340' r='5'/%3E%3Crect x='438' y='310' width='8' height='40' rx='2'/%3E%3Crect x='422' y='326' width='40' height='8' rx='2'/%3E%3Crect x='550' y='280' width='80' height='60' rx='4'/%3E%3Ccircle cx='550' cy='310' r='8'/%3E%3Ccircle cx='630' cy='310' r='8'/%3E%3Cpolyline points='700,320 730,320 745,290 755,350 770,270 785,360 800,320 840,320'/%3E%3Crect x='60' y='420' width='12' height='50' rx='3'/%3E%3Cpolygon points='66,470 60,500 72,500'/%3E%3Cpath d='M160 400 Q160 380 200 380 Q240 380 240 400 L240 460 Q200 450 160 460 Z'/%3E%3Ccircle cx='350' cy='460' r='20'/%3E%3Ccircle cx='350' cy='460' r='8'/%3E%3Cpath d='M490 400 Q480 420 480 450 Q480 480 500 490 Q520 500 530 480 Q540 460 530 440 Q525 420 510 400'/%3E%3Ccircle cx='650' cy='430' r='3'/%3E%3Ccircle cx='665' cy='430' r='3'/%3E%3Ccircle cx='680' cy='430' r='3'/%3E%3Ccircle cx='650' cy='445' r='3'/%3E%3Ccircle cx='665' cy='445' r='3'/%3E%3Ccircle cx='680' cy='445' r='3'/%3E%3Cpolyline points='50,600 80,600 95,570 105,630 120,550 135,640 150,600 190,600'/%3E%3Ccircle cx='780' cy='480' r='6'/%3E%3Ccircle cx='780' cy='500' r='6'/%3E%3Ccircle cx='780' cy='520' r='6'/%3E%3Ccircle cx='780' cy='540' r='6'/%3E%3Crect x='860' y='60' width='14' height='50' rx='7'/%3E%3Ccircle cx='820' cy='700' r='40'/%3E%3Ccircle cx='820' cy='700' r='28'/%3E%3Ccircle cx='820' cy='700' r='14'/%3E%3Ccircle cx='820' cy='700' r='4'/%3E%3Crect x='300' y='600' width='6' height='24' rx='2'/%3E%3Crect x='293' y='607' width='20' height='6' rx='2'/%3E%3Cpath d='M500 620 Q510 610 520 620 Q530 630 540 620 Q550 610 560 620 Q570 630 580 620'/%3E%3Cellipse cx='200' cy='700' rx='30' ry='12'/%3E%3Cellipse cx='650' cy='660' rx='22' ry='9' transform='rotate(-25 650 660)'/%3E%3Ccircle cx='850' cy='840' r='30'/%3E%3Ccircle cx='850' cy='840' r='22'/%3E%3C/g%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-size: 900px 900px;
+  position: relative;
+}
+.login-form-wrap{
+  width:100%;max-width:380px;
+  background: rgba(255,255,255,0.88);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255,255,255,0.9);
+  border-radius: 16px;
+  padding: 40px 36px;
+  box-shadow: 0 8px 40px rgba(13,27,42,0.10), 0 1px 4px rgba(13,27,42,0.06);
+}
+.login-form-wrap h2{font-family:'DM Sans',sans-serif;font-size:23px;color:var(--ink);margin-bottom:6px;letter-spacing:-0.3px}
+.login-form-wrap p{font-size:13px;color:var(--ink3);margin-bottom:36px}
+.field{margin-bottom:20px}
+.field label{display:block;font-size:11px;font-weight:600;letter-spacing:1.2px;text-transform:uppercase;color:var(--ink3);margin-bottom:8px}
+.field input{width:100%;padding:11px 14px;border:1.5px solid var(--line);border-radius:var(--r);font-family:'DM Sans',sans-serif;font-size:14px;color:var(--ink);background:var(--white);outline:none;transition:border-color .2s, box-shadow .2s}
+.field input:focus{border-color:var(--crimson);box-shadow:0 0 0 3px rgba(139,26,46,0.08)}
+.field input::placeholder{color:#C5CBD6}
+.btn-login{width:100%;padding:13px;background:var(--crimson);border:none;border-radius:var(--r);font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;color:var(--white);cursor:pointer;letter-spacing:.3px;transition:background .15s, box-shadow .15s, transform .1s;box-shadow:0 2px 8px rgba(139,26,46,0.25)}
+.btn-login:hover{background:var(--crimson-mid);box-shadow:0 4px 16px rgba(139,26,46,0.3);transform:translateY(-1px)}
+.btn-login:disabled{opacity:.5;cursor:not-allowed;transform:none;box-shadow:none}
+.login-err{display:none;margin-top:14px;padding:10px 14px;background:#FEF2F4;border:1px solid #FACDD3;border-radius:var(--r);font-size:13px;color:#8B1A2E;text-align:center}
+.login-err.show{display:block}
+.login-loading{display:none;text-align:center;padding:10px 0 0;font-size:13px;color:var(--ink3)}
+.login-loading.show{display:block}
+
+/* ── DASHBOARD ── */
+#dashboard{display:none;min-height:100vh;flex-direction:column}
+#dashboard.show{display:flex;animation:fadeUp .35s ease}
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+
+/* ── HEADER ── */
+.header{background:rgba(255,255,255,0.92);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:50;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);box-shadow:0 1px 0 var(--line), 0 2px 8px rgba(13,27,42,0.04)}
+.header-inner{max-width:1120px;margin:0 auto;padding:0 28px;height:58px;display:flex;align-items:center;gap:16px}
+.h-brand{display:flex;align-items:center;gap:12px;margin-right:auto}
+.h-badge{background:var(--crimson);color:var(--white);font-family:'DM Sans',sans-serif;font-size:13px;padding:4px 10px;border-radius:4px;letter-spacing:.5px}
+.h-name{font-size:13px;color:var(--ink3);font-weight:400}
+.h-divider{width:1px;height:20px;background:var(--line)}
+.h-user{font-size:13px;color:var(--ink2);font-weight:500}
+.h-user span{color:var(--ink3);font-weight:400;margin-right:4px}
+.btn-out{font-family:'DM Sans',sans-serif;font-size:12px;color:var(--ink3);background:none;border:1px solid var(--line);border-radius:4px;padding:5px 12px;cursor:pointer;transition:all .15s}
+.btn-out:hover{border-color:var(--crimson);color:var(--crimson);background:var(--crimson-light)}
+
+/* ── NAV ── */
+.nav{background:rgba(255,255,255,0.92);border-bottom:1px solid var(--line);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
+.nav-inner{max-width:1120px;margin:0 auto;padding:0 28px;display:flex;overflow-x:auto;scrollbar-width:none}
+.nav-inner::-webkit-scrollbar{display:none}
+.ntab{padding:14px 16px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:400;color:var(--ink3);background:none;border:none;border-bottom:2px solid transparent;cursor:pointer;white-space:nowrap;transition:color .15s,border-color .15s}
+.ntab:hover{color:var(--ink)}
+.ntab.active{color:var(--crimson);border-bottom-color:var(--crimson);font-weight:500}
+.ntab.ext::after{content:'↗';font-size:10px;margin-left:4px;opacity:.5}
+
+/* ── MAIN ── */
+.main{max-width:1120px;margin:0 auto;padding:32px 28px 80px;flex:1}
+.panel{display:none}
+.panel.active{display:block;animation:fadeUp .2s ease}
+
+/* ── PAGE HEADER ── */
+.ph{margin-bottom:24px}
+.ph h2{font-family:'DM Sans',sans-serif;font-size:24px;color:var(--ink);margin-bottom:3px}
+.ph p{font-size:13px;color:var(--ink3)}
+
+/* ── STUDENT BANNER ── */
+.banner{background:var(--white);border:1px solid var(--line);border-radius:10px;padding:24px 28px;margin-bottom:16px;display:grid;grid-template-columns:60px 1fr auto;gap:20px;align-items:center;position:relative;overflow:hidden;box-shadow:var(--shadow-sm)}
+.banner::after{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:linear-gradient(180deg,var(--crimson),var(--crimson-mid));border-radius:3px 0 0 3px}
+.avatar{width:60px;height:60px;border-radius:8px;background:var(--crimson-light);display:flex;align-items:center;justify-content:center;font-family:'DM Sans',sans-serif;font-size:22px;color:var(--crimson);flex-shrink:0;border:1.5px solid rgba(139,26,46,0.12)}
+.b-name h1{font-family:'DM Sans',sans-serif;font-size:20px;color:var(--ink);margin-bottom:2px;letter-spacing:-0.2px}
+.b-name .mm{font-size:13px;color:var(--ink3);margin-bottom:10px}
+.tags{display:flex;flex-wrap:wrap;gap:6px}
+.tag{font-size:10px;font-weight:600;letter-spacing:.6px;text-transform:uppercase;padding:3px 8px;border-radius:3px}
+.tag-r{background:var(--crimson-light);color:var(--crimson);border:1px solid rgba(139,26,46,.12)}
+.tag-g{background:var(--gold-light);color:var(--gold);border:1px solid rgba(154,123,47,.15)}
+.tag-n{background:var(--surface);color:var(--ink3);border:1px solid var(--line)}
+
+
+/* ── INFO CARD ── */
+.icard{background:var(--white);border:1px solid var(--line);border-radius:10px;overflow:hidden;margin-bottom:16px;box-shadow:var(--shadow-sm)}
+.icard-head{padding:11px 18px;background:var(--surface);border-bottom:1px solid var(--line);font-size:10px;font-weight:700;letter-spacing:1.8px;text-transform:uppercase;color:var(--ink3)}
+.igrid{display:grid;grid-template-columns:1fr 1fr}
+.icell{padding:14px 18px;border-bottom:1px solid var(--line)}
+.icell:nth-child(odd){border-right:1px solid var(--line)}
+.icell:nth-last-child(-n+2){border-bottom:none}
+.ic-lbl{font-size:10px;font-weight:600;letter-spacing:.9px;text-transform:uppercase;color:var(--ink3);margin-bottom:3px}
+.ic-val{font-size:13px;color:var(--ink)}
+
+/* ── QUICK LINKS — improved home grid ── */
+.qlinks{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px;margin-bottom:24px}
+.ql{
+  background:var(--white);border:1px solid var(--line);border-radius:12px;
+  padding:22px 22px;cursor:pointer;
+  transition:border-color .2s,box-shadow .2s,transform .15s;
+  text-align:left;box-shadow:var(--shadow-sm);
+  display:flex;flex-direction:column;gap:0;
+  min-height:120px;
+  position:relative;overflow:hidden;
+}
+.ql::after{
+  content:'';position:absolute;bottom:0;left:0;right:0;height:3px;
+  background:linear-gradient(90deg,var(--crimson),var(--crimson-mid));
+  opacity:0;transition:opacity .2s;
+}
+.ql:hover{border-color:rgba(139,26,46,0.25);box-shadow:0 6px 24px rgba(139,26,46,.12);transform:translateY(-3px)}
+.ql:hover::after{opacity:1}
+.ql.dim{opacity:.4;cursor:not-allowed;pointer-events:none}
+.ql-icon{width:40px;height:40px;border-radius:8px;background:var(--crimson-light);display:flex;align-items:center;justify-content:center;margin-bottom:12px;flex-shrink:0}
+.ql-bar{width:24px;height:2.5px;background:var(--crimson);border-radius:99px;margin-bottom:14px}
+.ql-t{font-size:14px;font-weight:600;color:var(--ink);margin-bottom:4px;letter-spacing:-.1px}
+.ql-s{font-size:12px;color:var(--ink3);line-height:1.4}
+.ql-arrow{
+  position:absolute;top:18px;right:18px;
+  font-size:16px;color:var(--line);
+  transition:color .2s,transform .2s;
+}
+.ql:hover .ql-arrow{color:var(--crimson);transform:translate(2px,-2px)}
+
+/* ── DEGREE LEVEL TOKENS ── */
+:root {
+  --bach:#1E3A6E; --bach-light:#EBF0F8;
+  --mast:#4A2080; --mast-light:#F0EBF8;
+  --phd:#8B1A2E;  --phd-light:#F7EEF0;
+}
+
+/* ── ACADEMIC JOURNEY (home panel) ── */
+.journey-card{background:var(--white);border:1px solid var(--line);border-radius:10px;overflow:hidden;margin-bottom:24px;box-shadow:var(--shadow-sm)}
+.journey-card-head{padding:11px 18px;background:var(--surface);border-bottom:1px solid var(--line);font-size:10px;font-weight:700;letter-spacing:1.8px;text-transform:uppercase;color:var(--ink3)}
+.degree-row{display:flex;align-items:center;gap:14px;padding:14px 18px;border-bottom:1px solid var(--line);transition:background .12s;cursor:default;position:relative}
+.degree-row:last-child{border-bottom:none}
+.degree-lvl-pip{width:4px;position:absolute;left:0;top:0;bottom:0;border-radius:0}
+.degree-lvl-pip.bach{background:var(--bach)}
+.degree-lvl-pip.mast{background:var(--mast)}
+.degree-lvl-pip.phd {background:var(--phd)}
+.degree-row-icon{width:38px;height:38px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.degree-row-icon.bach{background:var(--bach-light)}
+.degree-row-icon.mast{background:var(--mast-light)}
+.degree-row-icon.phd {background:var(--phd-light)}
+.degree-row-info{flex:1;min-width:0}
+.degree-row-name{font-size:13px;font-weight:600;color:var(--ink);margin-bottom:2px}
+.degree-row-meta{font-size:11px;color:var(--ink3)}
+.degree-row-lvl{font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:3px}
+.degree-row-lvl.bach{color:var(--bach)}
+.degree-row-lvl.mast{color:var(--mast)}
+.degree-row-lvl.phd {color:var(--phd)}
+.degree-row-gpa{text-align:right;flex-shrink:0}
+.degree-row-gpa-val{font-family:'Libre Baskerville',serif;font-size:20px;color:var(--ink);line-height:1}
+.degree-row-gpa-den{font-size:10px;color:var(--ink3)}
+.degree-row-badge{margin-left:10px;flex-shrink:0}
+.dbadge{display:inline-block;padding:2px 8px;border-radius:3px;font-size:9px;font-weight:700;letter-spacing:.4px;text-transform:uppercase}
+.dbadge-green{background:var(--green-light);color:var(--green)}
+.dbadge-gold{background:var(--gold-light);color:var(--gold)}
+.dbadge-muted{background:var(--surface);color:var(--ink3);border:1px solid var(--line)}
+.dbadge-red{background:var(--crimson-light);color:var(--crimson)}
+
+/* ── GRADES DEGREE TABS ── */
+.degree-tabs{display:flex;gap:2px;border-bottom:2px solid var(--line);margin-bottom:0;overflow-x:auto;scrollbar-width:none}
+.degree-tabs::-webkit-scrollbar{display:none}
+.degree-tab{padding:10px 18px;font-size:13px;color:var(--ink3);border-bottom:2px solid transparent;margin-bottom:-2px;cursor:pointer;white-space:nowrap;transition:color .15s,border-color .15s;background:none;border-top:none;border-left:none;border-right:none;font-family:'DM Sans',sans-serif}
+.degree-tab:hover{color:var(--ink)}
+.degree-tab.active{color:var(--crimson);border-bottom-color:var(--crimson);font-weight:500}
+.degree-panel{display:none}
+.degree-panel.active{display:block;animation:fadeUp .2s ease}
+
+/* ── DOCUMENT DEGREE PICKER ── */
+.doc-degree-picker{display:none;margin-bottom:12px;padding:12px 16px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r)}
+.doc-degree-picker label{display:block;font-size:10px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:var(--ink3);margin-bottom:7px}
+.doc-degree-picker select{width:100%;padding:9px 12px;border:1.5px solid var(--line);border-radius:var(--r);font-family:'DM Sans',sans-serif;font-size:13px;color:var(--ink);background:var(--white);outline:none;transition:border-color .15s}
+.doc-degree-picker select:focus{border-color:var(--crimson)}
+.doc-degree-picker.show{display:block}
+
+/* ── HOME welcome banner ── */
+.home-hero{
+  background:linear-gradient(130deg,var(--ink) 0%,#1e3050 100%);
+  border-radius:14px;padding:32px 36px;margin-bottom:24px;
+  display:flex;align-items:center;gap:28px;
+  position:relative;overflow:hidden;
+  box-shadow:0 4px 24px rgba(13,27,42,.18);
+}
+.home-hero::before{
+  content:'';position:absolute;inset:0;
+  background:radial-gradient(ellipse at 80% 50%,rgba(139,26,46,.28) 0%,transparent 60%),
+             radial-gradient(ellipse at 10% 80%,rgba(154,123,47,.12) 0%,transparent 50%);
+  pointer-events:none;
+}
+.home-hero-avatar{
+  width:72px;height:72px;border-radius:12px;
+  background:rgba(255,255,255,.1);border:2px solid rgba(255,255,255,.15);
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Libre Baskerville',serif;font-size:28px;color:rgba(255,255,255,.9);
+  flex-shrink:0;position:relative;z-index:1;
+  backdrop-filter:blur(4px);
+}
+.home-hero-text{position:relative;z-index:1;flex:1}
+.home-hero-greeting{font-size:13px;color:rgba(255,255,255,.5);letter-spacing:.5px;text-transform:uppercase;margin-bottom:4px}
+.home-hero-name{font-family:'Libre Baskerville',serif;font-size:26px;color:#fff;margin-bottom:4px;line-height:1.2}
+.home-hero-sub{font-size:13px;color:rgba(255,255,255,.45)}
+.home-hero-badge{
+  position:relative;z-index:1;flex-shrink:0;
+  background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);
+  border-radius:10px;padding:14px 20px;text-align:center;
+  backdrop-filter:blur(8px);
+}
+.home-hero-badge-label{font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,.4);margin-bottom:4px}
+.home-hero-badge-val{font-family:'Libre Baskerville',serif;font-size:28px;color:#fff;line-height:1}
+.home-hero-badge-sub{font-size:11px;color:rgba(255,255,255,.35);margin-top:2px}
+
+/* ── HOME section label ── */
+.home-section-label{font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--ink3);margin-bottom:12px;padding-left:2px}
+
+/* ── GRADES — redesigned transcript ── */
+.g-wrap {
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  overflow: hidden;
+  margin-bottom: 20px;
+  box-shadow: var(--shadow-sm);
+}
+
+/* Student identity banner at top of grades panel */
+.grades-header-banner {
+  background: var(--ink);
+  border-radius: 10px;
+  padding: 20px 24px;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  position: relative;
+  overflow: hidden;
+}
+.grades-header-banner::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: radial-gradient(ellipse at 85% 50%, rgba(139,26,46,.3) 0%, transparent 60%);
+  pointer-events: none;
+}
+.grades-hdr-avatar {
+  width: 52px; height: 52px; border-radius: 8px;
+  background: rgba(255,255,255,.1);
+  border: 1.5px solid rgba(255,255,255,.15);
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Libre Baskerville', serif; font-size: 20px;
+  color: rgba(255,255,255,.9); flex-shrink: 0; position: relative; z-index: 1;
+}
+.grades-hdr-info { flex: 1; position: relative; z-index: 1; }
+.grades-hdr-name {
+  font-family: 'Libre Baskerville', serif;
+  font-size: 18px; color: #fff; margin-bottom: 2px; line-height: 1.2;
+}
+.grades-hdr-id {
+  font-size: 11px; color: rgba(255,255,255,.45);
+  font-family: monospace; letter-spacing: .06em;
+}
+.grades-hdr-gpa {
+  position: relative; z-index: 1; text-align: right; flex-shrink: 0;
+}
+.grades-hdr-gpa-label {
+  font-size: 9px; font-weight: 700; letter-spacing: 1.4px;
+  text-transform: uppercase; color: rgba(255,255,255,.4); margin-bottom: 2px;
+}
+.grades-hdr-gpa-val {
+  font-family: 'Libre Baskerville', serif;
+  font-size: 32px; color: #fff; line-height: 1;
+}
+.grades-hdr-gpa-den { font-size: 12px; color: rgba(255,255,255,.35); }
+
+/* Year heading */
+.g-year-head {
+  background: var(--surface);
+  padding: 10px 18px;
+  border-bottom: 1px solid var(--line);
+  font-size: 11px; font-weight: 700; letter-spacing: 1.4px;
+  text-transform: uppercase; color: var(--ink);
+  display: flex; align-items: center; gap: 10px;
+}
+.g-year-head::before {
+  content: '';
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--crimson); flex-shrink: 0;
+}
+.g-block-head {
+  padding: 7px 18px;
+  background: #FAFBFC;
+  border-bottom: 1px solid var(--line);
+  font-size: 10px; font-weight: 700; letter-spacing: 1.2px;
+  text-transform: uppercase; color: var(--ink3);
+}
+.g-year-totals {
+  background: var(--surface);
+  border-top: 1px solid var(--line);
+  padding: 9px 18px;
+  display: flex; justify-content: flex-end; gap: 28px;
+  font-size: 11px; color: var(--ink3);
+}
+.g-year-totals strong { color: var(--ink); font-weight: 700; }
+
+/* Table — clean transcript style */
+table.gt {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+  font-family: 'DM Sans', sans-serif;
+}
+table.gt thead tr { border-bottom: 2px solid var(--line); }
+table.gt th {
+  padding: 9px 14px;
+  text-align: left;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  color: var(--ink3);
+  white-space: nowrap;
+}
+table.gt th:nth-child(3),
+table.gt th:nth-child(4),
+table.gt th:nth-child(5),
+table.gt th:nth-child(6),
+table.gt th:nth-child(7) { text-align: center; }
+table.gt th:nth-child(8) { text-align: left; }
+table.gt td {
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--line);
+  color: var(--ink);
+  vertical-align: middle;
+}
+table.gt td:nth-child(3),
+table.gt td:nth-child(4),
+table.gt td:nth-child(5),
+table.gt td:nth-child(6),
+table.gt td:nth-child(7) { text-align: center; }
+table.gt td:nth-child(8) { font-size: 11px; color: var(--ink3); font-style: italic; }
+table.gt tr:last-child td { border-bottom: none; }
+table.gt tbody tr { transition: background .1s; }
+table.gt tbody tr:hover { background: #F8F9FC; }
+
+/* Course name */
+.gt-course {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ink);
+  line-height: 1.3;
+}
+.gt-assess { font-size: 11px; color: var(--ink3); margin-top: 2px; }
+
+/* Credits */
+.gt-cr {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--ink);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  padding: 2px 8px;
+  display: inline-block;
+}
+
+/* Score bar */
+.sbar-wrap { display: inline-flex; align-items: center; gap: 7px; }
+.sbar { display: none; }
+.sbar-fill { display: none; }
+.sbar-num { font-size: 12px; font-weight: 600; color: var(--ink); }
+
+/* Grade badge — proper colored badges */
+.gbadge {
+  display: inline-flex;
+  align-items: center; justify-content: center;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  min-width: 36px;
+  height: 26px;
+  border-radius: 5px;
+  padding: 0 8px;
+  letter-spacing: .2px;
+}
+.gAp { background: #D1FAE5; color: #065F46; border: 1px solid #6EE7B7; }
+.gA  { background: #D1FAE5; color: #065F46; border: 1px solid #A7F3D0; }
+.gAm { background: #DBEAFE; color: #1E40AF; border: 1px solid #BFDBFE; }
+.gBp { background: var(--gold-light); color: #7C5F0A; border: 1px solid #FCD34D; }
+.gB  { background: var(--gold-light); color: var(--gold); border: 1px solid rgba(154,123,47,.25); }
+.gX  { background: var(--surface); color: var(--ink3); border: 1px solid var(--line); }
+
+/* Grade points */
+.gt-pts {
+  font-size: 13px; font-weight: 700; color: var(--ink);
+  font-family: 'Libre Baskerville', serif;
+}
+
+/* Empty state */
+.no-g { padding: 56px; text-align: center; color: var(--ink3); font-size: 13px; }
+
+/* Transcript summary bar */
+.transcript-summary {
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 16px 22px;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 0;
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+}
+.ts-item { display: flex; flex-direction: column; gap: 3px; flex: 1; padding: 0 22px; }
+.ts-item:first-child { padding-left: 0; }
+.ts-item:last-child { padding-right: 0; }
+.ts-lbl { font-size: 10px; font-weight: 700; letter-spacing: 1.3px; text-transform: uppercase; color: var(--ink3); }
+.ts-val { font-family: 'Libre Baskerville', serif; font-size: 24px; font-weight: 700; color: var(--ink); line-height: 1.1; }
+.ts-val.accent { color: var(--crimson); }
+.ts-divider { width: 1px; height: 40px; background: var(--line); flex-shrink: 0; }
+
+/* ── ID CARD ── */
+.idcard-wrap{display:flex;flex-direction:column;align-items:center;gap:28px;padding:20px 0}
+.idcard{width:340px;border-radius:16px;overflow:hidden;box-shadow:0 20px 60px rgba(13,27,42,.18),0 4px 16px rgba(13,27,42,.1);position:relative;user-select:none}
+.idcard-front{background:linear-gradient(145deg,#0D1B2A 0%,#1a2e45 60%,#0D1B2A 100%);padding:0;min-height:210px;position:relative;overflow:hidden}
+.idcard-front::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 20% 20%,rgba(139,26,46,.4) 0%,transparent 55%),radial-gradient(ellipse at 85% 80%,rgba(154,123,47,.2) 0%,transparent 45%);pointer-events:none}
+.idcard-top{padding:20px 22px 14px;display:flex;align-items:center;justify-content:space-between;position:relative;z-index:1}
+.idcard-logo-wrap{display:flex;align-items:center;gap:10px}
+.idcard-logo{width:36px;height:44px;object-fit:contain}
+.idcard-uni{display:flex;flex-direction:column}
+.idcard-uni-name{font-family:'DM Sans',sans-serif;font-size:11px;font-weight:700;color:rgba(255,255,255,.95);letter-spacing:.5px;line-height:1.2}
+.idcard-uni-sub{font-size:9px;color:rgba(255,255,255,.45);letter-spacing:.3px;line-height:1.4}
+.idcard-type-badge{font-size:8px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,.5);border:1px solid rgba(255,255,255,.15);padding:3px 8px;border-radius:3px}
+.idcard-divider-line{height:1px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.12),transparent);margin:0 22px}
+.idcard-body{padding:16px 22px 20px;display:flex;gap:16px;align-items:flex-start;position:relative;z-index:1}
+.idcard-photo{width:72px;height:86px;border-radius:8px;background:rgba(255,255,255,.08);border:1.5px solid rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden;font-size:26px;font-weight:700;color:rgba(255,255,255,.6);font-family:'DM Sans',sans-serif;letter-spacing:-1px}
+.idcard-info{flex:1;min-width:0}
+.idcard-name{font-family:'DM Sans',sans-serif;font-size:15px;font-weight:700;color:#fff;line-height:1.2;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.idcard-name-mm{font-size:11px;color:rgba(255,255,255,.45);margin-bottom:10px;line-height:1.4}
+.idcard-fields{display:flex;flex-direction:column;gap:5px}
+.idcard-field{display:flex;flex-direction:column;gap:1px}
+.idcard-field-lbl{font-size:7.5px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:rgba(255,255,255,.35)}
+.idcard-field-val{font-size:12px;font-weight:500;color:rgba(255,255,255,.9);font-family:'DM Sans',sans-serif}
+.idcard-bottom{background:var(--crimson);padding:10px 22px;display:flex;align-items:center;justify-content:space-between;position:relative;z-index:1}
+.idcard-id-label{font-size:8px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,.6)}
+.idcard-id-value{font-family:'DM Sans',sans-serif;font-size:15px;font-weight:700;color:#fff;letter-spacing:1px}
+.idcard-validity{font-size:9px;color:rgba(255,255,255,.6);text-align:right}
+.idcard-validity strong{display:block;font-size:10px;color:rgba(255,255,255,.85)}
+.idcard-back{background:var(--white);padding:18px 22px;border-top:3px solid var(--crimson)}
+.idcard-back-header{font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--ink3);margin-bottom:12px}
+.idcard-back-fields{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+.idcard-back-field .lbl{font-size:9px;font-weight:600;letter-spacing:.8px;text-transform:uppercase;color:var(--ink3);margin-bottom:2px}
+.idcard-back-field .val{font-size:12px;color:var(--ink);font-family:'DM Sans',sans-serif}
+.idcard-back-bottom{display:flex;align-items:flex-start;gap:14px;margin-top:2px}
+.idcard-qr-wrap{display:flex;flex-direction:column;align-items:center;gap:5px;flex-shrink:0}
+.idcard-qr-wrap canvas,.idcard-qr-wrap img{border:1.5px solid var(--line);border-radius:4px;display:block}
+.idcard-qr-lbl{font-size:7px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--ink3)}
+.idcard-back-right{flex:1;display:flex;flex-direction:column;gap:0}
+.idcard-sid-block{margin-bottom:10px}
+.idcard-sid-block .lbl{font-size:8px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--ink3);margin-bottom:2px}
+.idcard-sid-block .val{font-size:14px;font-weight:700;color:var(--ink);letter-spacing:1.5px;font-family:monospace}
+.idcard-sig-area{border-top:1px solid #bbb;margin-top:16px;padding-top:4px;font-size:7.5px;color:var(--ink3);text-align:center;letter-spacing:.3px}
+.idcard-notice{font-size:8.5px;color:var(--ink3);line-height:1.6;border-top:1px solid var(--line);padding-top:8px;margin-top:10px}
+.idcard-actions{display:flex;gap:10px}
+.btn-idcard{padding:10px 20px;border-radius:var(--r);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:8px}
+.btn-idcard-primary{background:var(--crimson);color:#fff;border:none;box-shadow:0 2px 8px rgba(139,26,46,.25)}
+.btn-idcard-primary:hover{background:var(--crimson-mid)}
+.btn-idcard-secondary{background:transparent;color:var(--crimson);border:1.5px solid var(--crimson)}
+.btn-idcard-secondary:hover{background:var(--crimson-light)}
+
+/* ── PRINT ── */
+/* Watermark: hidden on screen */
+.print-watermark {
+  display: none;
+}
+/* Print footer: hidden on screen */
+.print-footer {
+  display: none;
+}
+/* Print page header: hidden on screen */
+.print-page-header {
+  display: none;
+}
+
+@page {
+  margin: 24mm 20mm 22mm 20mm;
+  @bottom-left {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 7.5pt;
+    color: #444;
+    border-top: 1.5px solid #0D1B2A;
+    padding-top: 5pt;
+  }
+  @bottom-center {
+    content: attr(data-student-name);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 7.5pt;
+    color: #777;
+    border-top: 1.5px solid #0D1B2A;
+    padding-top: 5pt;
+    text-align: center;
+  }
+  @bottom-right {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 7.5pt;
+    color: #444;
+    border-top: 1.5px solid #0D1B2A;
+    padding-top: 5pt;
+  }
+}
+
+@media print {
+  /* General print reset */
+  * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  body { background: #fff; font-size: 12px; padding-bottom: 18mm; }
+
+  /* Watermark — fixed so it appears on every printed page */
+  .print-watermark {
+    display: block !important;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) rotate(-35deg);
+    font-family: 'DM Sans', serif;
+    font-size: 40pt;
+    font-weight: 700;
+    color: rgba(139, 26, 46, 0.07);
+    letter-spacing: 10px;
+    pointer-events: none;
+    z-index: 0;
+    white-space: nowrap;
+  }
+
+  /* Footer — fixed so it appears on every printed page */
+  .print-footer {
+    display: flex !important;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    border-top: 1.5px solid #0D1B2A;
+    padding: 5px 20mm;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 8pt;
+    color: #444;
+    justify-content: space-between;
+    align-items: center;
+    z-index: 9999;
+    background: #fff;
+    counter-increment: page;
+  }
+  .print-footer-sid {
+    font-weight: 700;
+    color: #0D1B2A;
+    margin-left: 4px;
+  }
+  .print-footer-center {
+    font-size: 7.5pt;
+    color: #888;
+  }
+  .print-footer-page::before {
+    content: "Page " counter(page);
+    font-size: 7.5pt;
+    color: #444;
+    letter-spacing: .3px;
+  }
+
+  /* Print page header — repeats at top of each page */
+  .print-page-header {
+    display: flex !important;
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    border-bottom: 1.5px solid #0D1B2A;
+    padding: 5px 28mm;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 8pt;
+    color: #444;
+    justify-content: space-between;
+    align-items: center;
+    background: #fff;
+    z-index: 9999;
+  }
+  #printPageHeaderSID {
+    font-weight: 700;
+    color: #8B1A2E;
+    font-size: 8pt;
+  }
+
+  /* Hide everything except the active panel */
+  #loginScreen, .sidebar, .sb-toggle, .dash-topbar,
+  .ql, .qlinks, .btn-signout, .btn-login, .dash-footer { display: none !important; }
+  #dashboard { display: block !important; }
+  .dash-main { margin-left: 0 !important; }
+  .dash-content { padding: 0 !important; }
+  .section { display: none !important; }
+  .section.active { display: block !important; }
+
+  /* ── DOCUMENTS / PROFILE print ── */
+  #panel-profile.active {
+    padding: 24mm 28mm;   /* increased left/right margins */
+  }
+
+  /* Remove the seal / avatar — hide and collapse grid column */
+  #panel-profile .avatar,
+  #panel-profile #avatarEl {
+    display: none !important;
+    width: 0 !important;
+    min-width: 0 !important;
+  }
+
+  /* Banner layout without avatar column */
+  #panel-profile .banner {
+    grid-template-columns: 1fr auto;
+    border: 1px solid #ccc;
+    box-shadow: none;
+    padding: 16px 20px;
+    page-break-inside: avoid;
+  }
+  #panel-profile .banner::after { display: none; }
+
+  /* Info card */
+  #panel-profile .icard {
+    border: 1px solid #ccc;
+    box-shadow: none;
+    page-break-inside: avoid;
+  }
+  #panel-profile .icard-head { background: #f0f0f0 !important; }
+  #panel-profile .igrid { grid-template-columns: 1fr 1fr; }
+  #panel-profile .icell { padding: 8px 14px; }
+
+  /* Page header for profile print */
+  #panel-profile .ph h2 { font-size: 18px; }
+
+  /* ── TRANSCRIPT / GRADES print ── */
+  #panel-grades.active { padding: 0; }
+
+  /* Summary card in print */
+  .transcript-summary {
+    border: 1px solid #ccc !important;
+    box-shadow: none !important;
+    margin-bottom: 12px !important;
+    padding: 12px 16px !important;
+    gap: 20px !important;
+    page-break-inside: avoid;
+  }
+  .ts-val { font-size: 16px !important; }
+  .ts-divider { height: 28px !important; }
+
+  /* Hide score bars in print — show number only */
+  .sbar { display: none !important; }
+  .sbar-wrap { display: inline !important; }
+  .sbar-num { font-size: 11px !important; }
+
+  /* Year block */
+  .g-wrap {
+    border: none !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+    margin-bottom: 16px !important;
+    page-break-inside: avoid;
+  }
+
+  /* Semester header — clean uppercase label */
+  .g-year-head {
+    background: var(--white) !important;
+    color: var(--ink) !important;
+    font-size: 8pt !important;
+    padding: 8px 0 4px !important;
+    letter-spacing: 2px !important;
+    border-bottom: 1.5px solid #0D1B2A !important;
+  }
+  .g-year-head::before { display: none !important; }
+
+  /* Block sub-heading — hidden */
+  .g-block-head { display: none !important; }
+
+  /* Year totals footer */
+  .g-year-totals {
+    background: #fff !important;
+    border-top: 1px solid #ccc !important;
+    font-size: 8pt !important;
+    padding: 5px 0 !important;
+    gap: 24px !important;
+  }
+
+  /* Table */
+  table.gt {
+    font-size: 7.5pt !important;
+    border-collapse: collapse !important;
+  }
+  table.gt thead tr { border-bottom: 1.5px solid #0D1B2A !important; }
+  table.gt th {
+    padding: 5px 8px !important;
+    font-size: 6.5pt !important;
+    letter-spacing: .8px !important;
+    color: #555 !important;
+    background: transparent !important;
+    border-bottom: 1px solid #999 !important;
+    text-align: left !important;
+    white-space: nowrap !important;
+  }
+  table.gt th:nth-child(3),
+  table.gt th:nth-child(4),
+  table.gt th:nth-child(5),
+  table.gt th:nth-child(6),
+  table.gt td:nth-child(3),
+  table.gt td:nth-child(4),
+  table.gt td:nth-child(5),
+  table.gt td:nth-child(6) { text-align: center !important; }
+  table.gt td {
+    padding: 5px 8px !important;
+    border-bottom: 1px solid #ebebeb !important;
+    color: #111 !important;
+    vertical-align: middle !important;
+  }
+  table.gt tr:last-child td { border-bottom: none !important; }
+  table.gt tbody tr:nth-child(even) td { background: #fafafa !important; }
+  table.gt tbody tr:hover { background: none !important; }
+
+
+  /* Print-only: Type of Completion column — 4pt smaller than regular table text */
+  table.gt td:nth-child(4) {
+    font-size: 6.5pt !important;
+  }
+
+  /* Course cell */
+  .gt-course {
+    font-family: 'DM Sans', sans-serif !important;
+    font-weight: 500 !important;
+    font-size: 7pt !important;
+    line-height: 1.25 !important;
+    color: #0D1B2A !important;
+    letter-spacing: -.05px !important;
+  }
+
+  /* Credits — plain */
+  .gt-cr {
+    background: none !important;
+    border: none !important;
+    font-size: 9pt !important;
+    color: #333 !important;
+    padding: 0 !important;
+  }
+
+  /* Score bar — hide */
+  .sbar { display: none !important; }
+  .sbar-wrap { display: inline !important; }
+  .sbar-num { font-size: 9pt !important; }
+
+  /* Grade badge — plain letter */
+  .gbadge {
+    background: none !important;
+    border: none !important;
+    color: #0D1B2A !important;
+    font-family: 'DM Sans', sans-serif !important;
+    font-size: 8.8pt !important;
+    font-weight: 700 !important;
+    min-width: auto !important;
+    height: auto !important;
+    padding: 0 !important;
+  }
+
+  /* Grade points */
+  .gt-pts {
+    font-size: 9pt !important;
+    font-weight: 400 !important;
+    color: #0D1B2A !important;
+  }
+
+  /* Page title */
+  #panel-grades .ph h2 { font-size: 16pt !important; margin-bottom: 2px !important; }
+  #panel-grades .ph p  { font-size: 9pt !important; color: #666 !important; }
+
+  #panel-grades,
+#panel-grades *,
+#panel-profile,
+#panel-profile *,
+.transcript-summary,
+.transcript-summary *,
+table.gt,
+table.gt * {
+  font-family: 'DM Sans', sans-serif !important;
+}
+}
+
+
+/* ── DOCUMENTS TAB ── */
+.doc-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+@media(max-width:700px){ .doc-grid { grid-template-columns: 1fr; } }
+
+.doc-card {
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 28px 28px 24px;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  box-shadow: 0 1px 4px rgba(13,27,42,.04);
+  transition: border-color .15s, box-shadow .15s;
+}
+.doc-card:hover { border-color: rgba(139,26,46,.25); box-shadow: 0 4px 16px rgba(139,26,46,.07); }
+.doc-card::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 3px;
+  background: var(--crimson);
+  border-radius: 3px 0 0 3px;
+}
+.doc-icon {
+  width: 44px; height: 44px;
+  border-radius: 8px;
+  background: var(--crimson-light);
+  display: flex; align-items: center; justify-content: center;
+  margin-bottom: 16px;
+}
+.doc-icon svg { width: 20px; height: 20px; stroke: var(--crimson); fill: none; stroke-width: 1.8; }
+.doc-title {
+  font-family: 'DM Sans', serif;
+  font-size: 17px;
+  color: var(--ink);
+  margin-bottom: 8px;
+}
+.doc-desc {
+  font-size: 13px;
+  color: var(--ink3);
+  line-height: 1.55;
+  margin-bottom: 16px;
+  flex: 1;
+}
+.doc-tags {
+  display: flex; gap: 6px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+.doc-tag {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  padding: 3px 9px;
+  border-radius: 3px;
+  border: 1px solid rgba(139,26,46,.2);
+  color: var(--crimson);
+  background: var(--crimson-light);
+}
+.btn-print-doc {
+  width: 100%;
+  padding: 13px 0;
+  background: var(--crimson);
+  border: none;
+  border-radius: 7px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--white);
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  letter-spacing: .2px;
+  transition: background .15s, transform .1s;
+}
+.btn-print-doc:hover { background: var(--crimson-mid); transform: translateY(-1px); }
+.btn-print-doc svg { width: 15px; height: 15px; stroke: currentColor; fill: none; stroke-width: 2; }
+
+/* ── Photo protection ── */
+canvas.photo-canvas, #idcardPhoto canvas, #homeAvatar canvas, #gradesAvatar canvas, #profilePhotoPreview canvas {
+  -webkit-touch-callout: none;
+  user-select: none;
+  -webkit-user-select: none;
+  pointer-events: none;
+}
+
+/* ══════════════════════════════════════════════
+   SIDEBAR DASHBOARD LAYOUT
+   ══════════════════════════════════════════════ */
+
+/* Dark academic background for dashboard */
+body.dashboard-active {
+  background-color: #0a0f1a;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='900' height='900' viewBox='0 0 900 900'%3E%3Cg stroke='%238B1A2E' stroke-width='1' fill='none' opacity='0.03'%3E%3Ccircle cx='80' cy='80' r='18'/%3E%3Ccircle cx='80' cy='80' r='10'/%3E%3Cpolyline points='200,120 230,120 245,90 255,150 270,80 285,160 300,120 340,120'/%3E%3Cpath d='M400 60 Q415 90 400 120 Q385 150 400 180 Q415 210 400 240'/%3E%3Cpath d='M420 60 Q405 90 420 120 Q435 150 420 180 Q405 210 420 240'/%3E%3Cpolygon points='560,50 520,70 560,90 600,70'/%3E%3Crect x='438' y='310' width='8' height='40' rx='2'/%3E%3Crect x='422' y='326' width='40' height='8' rx='2'/%3E%3Cpolyline points='700,320 730,320 745,290 755,350 770,270 785,360 800,320 840,320'/%3E%3Ccircle cx='820' cy='700' r='40'/%3E%3Ccircle cx='820' cy='700' r='28'/%3E%3Ccircle cx='820' cy='700' r='14'/%3E%3C/g%3E%3C/svg%3E");
+}
+
+/* ── SIDEBAR LAYOUT ── */
+#dashboard {
+  display: none;
+  min-height: 100vh;
+}
+#dashboard.show {
+  display: flex;
+  flex-direction: row;
+  animation: fadeUp .35s ease;
+}
+
+/* ── SIDEBAR ── */
+.sidebar {
+  width: 256px;
+  flex-shrink: 0;
+  background: rgba(10,15,26,0.97);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-right: 1px solid rgba(255,255,255,0.06);
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  top: 0; left: 0; bottom: 0;
+  z-index: 40;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-width: none;
+}
+.sidebar::-webkit-scrollbar { display: none; }
+
+/* Sidebar brand */
+.sb-brand {
+  padding: 24px 22px 20px;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+}
+.sb-brand img { height: 36px; width: auto; object-fit: contain; opacity: .9; }
+.sb-brand-text { display: flex; flex-direction: column; gap: 1px; }
+.sb-brand-name {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px; font-weight: 700;
+  color: rgba(255,255,255,0.92);
+  letter-spacing: .3px;
+}
+.sb-brand-sub {
+  font-size: 10px;
+  color: rgba(255,255,255,0.3);
+  letter-spacing: .5px;
+  text-transform: uppercase;
+}
+
+/* Sidebar user card */
+.sb-user {
+  margin: 16px 14px;
+  padding: 14px 14px;
+  background: rgba(139,26,46,0.12);
+  border: 1px solid rgba(139,26,46,0.2);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+.sb-user-avatar {
+  width: 36px; height: 36px;
+  border-radius: 8px;
+  background: rgba(139,26,46,0.3);
+  border: 1.5px solid rgba(139,26,46,0.4);
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Libre Baskerville', serif;
+  font-size: 14px; color: rgba(255,255,255,0.85);
+  flex-shrink: 0; overflow: hidden;
+}
+.sb-user-avatar img { width: 100%; height: 100%; object-fit: cover; border-radius: 6px; }
+.sb-user-info { flex: 1; min-width: 0; }
+.sb-user-name {
+  font-size: 12px; font-weight: 600;
+  color: rgba(255,255,255,0.88);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.sb-user-id {
+  font-size: 10px;
+  color: rgba(255,255,255,0.35);
+  font-family: monospace;
+  letter-spacing: .05em;
+  margin-top: 1px;
+}
+
+/* Nav section label */
+.sb-section-lbl {
+  padding: 14px 22px 6px;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 1.8px;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.22);
+  flex-shrink: 0;
+}
+
+/* Nav items */
+.sb-nav { flex: 1; padding: 4px 0 8px; }
+.sbnav-item {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 10px 14px 10px 18px;
+  margin: 1px 10px;
+  border-radius: 9px;
+  cursor: pointer;
+  transition: background .15s, color .15s;
+  text-decoration: none;
+  border: none;
+  background: none;
+  width: calc(100% - 20px);
+  text-align: left;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  color: rgba(255,255,255,0.45);
+  position: relative;
+}
+.sbnav-item:hover {
+  background: rgba(255,255,255,0.05);
+  color: rgba(255,255,255,0.78);
+}
+.sbnav-item.active {
+  background: rgba(139,26,46,0.18);
+  color: rgba(255,255,255,0.92);
+  border: 1px solid rgba(139,26,46,0.25);
+}
+.sbnav-item.active .sbnav-icon { color: #e05470; }
+.sbnav-icon {
+  width: 18px; height: 18px;
+  flex-shrink: 0;
+  color: rgba(255,255,255,0.3);
+  transition: color .15s;
+}
+.sbnav-item:hover .sbnav-icon { color: rgba(255,255,255,0.6); }
+.sbnav-label { font-size: 13px; font-weight: 500; }
+.sbnav-ext {
+  margin-left: auto;
+  font-size: 9px;
+  color: rgba(255,255,255,0.2);
+  flex-shrink: 0;
+}
+.sbnav-item.ext-link { opacity: .7; }
+
+/* Sidebar footer */
+.sb-footer {
+  padding: 14px 14px 20px;
+  border-top: 1px solid rgba(255,255,255,0.06);
+  flex-shrink: 0;
+}
+.btn-signout {
+  width: 100%;
+  padding: 9px 14px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 8px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  color: rgba(255,255,255,0.4);
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  transition: all .15s;
+}
+.btn-signout:hover {
+  background: rgba(139,26,46,0.15);
+  border-color: rgba(139,26,46,0.3);
+  color: rgba(255,255,255,0.7);
+}
+
+/* Mobile sidebar toggle */
+.sb-toggle {
+  display: none;
+  position: fixed;
+  top: 14px; left: 14px;
+  z-index: 60;
+  width: 40px; height: 40px;
+  background: rgba(10,15,26,0.92);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 9px;
+  align-items: center; justify-content: center;
+  cursor: pointer;
+  backdrop-filter: blur(12px);
+  color: rgba(255,255,255,0.7);
+}
+.sb-overlay {
+  display: none;
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.55);
+  z-index: 39;
+  backdrop-filter: blur(2px);
+}
+.sb-overlay.show { display: block; }
+
+/* ── MAIN CONTENT AREA ── */
+.dash-main {
+  margin-left: 256px;
+  flex: 1;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: #0e1420;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='600' height='600' viewBox='0 0 600 600'%3E%3Cg stroke='%238B1A2E' stroke-width='1' fill='none' opacity='0.025'%3E%3Ccircle cx='50' cy='50' r='14'/%3E%3Cpolyline points='140,80 160,80 170,60 178,100 188,50 196,110 206,80 230,80'/%3E%3Crect x='290' y='205' width='6' height='28' rx='2'/%3E%3Crect x='278' y='217' width='30' height='6' rx='2'/%3E%3Ccircle cx='530' cy='460' r='30'/%3E%3Ccircle cx='530' cy='460' r='20'/%3E%3Cpath d='M320 40 Q330 60 320 80 Q310 100 320 120'/%3E%3Cpath d='M334 40 Q324 60 334 80 Q344 100 334 120'/%3E%3C/g%3E%3C/svg%3E");
+}
+
+/* Top bar inside main */
+.dash-topbar {
+  height: 56px;
+  background: rgba(14,20,32,0.95);
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+  display: flex;
+  align-items: center;
+  padding: 0 32px;
+  gap: 14px;
+  position: sticky; top: 0; z-index: 30;
+  backdrop-filter: blur(12px);
+  flex-shrink: 0;
+}
+.dash-topbar-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: rgba(255,255,255,0.85);
+  flex: 1;
+  letter-spacing: -.1px;
+}
+.dash-topbar-id {
+  font-size: 11px;
+  color: rgba(255,255,255,0.3);
+  font-family: monospace;
+  letter-spacing: .06em;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 5px;
+  padding: 4px 10px;
+}
+
+/* Content scroll area */
+.dash-content {
+  flex: 1;
+  padding: 32px 36px 80px;
+  overflow-x: hidden;
+}
+
+/* Section / Panel */
+.section { display: none; }
+.section.active { display: block; animation: fadeUp .25s ease; }
+
+/* ── SECTION HEADINGS ── */
+.sec-head {
+  margin-bottom: 28px;
+}
+.sec-head h2 {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 22px;
+  font-weight: 700;
+  color: rgba(255,255,255,0.9);
+  letter-spacing: -.3px;
+  margin-bottom: 4px;
+}
+.sec-head p {
+  font-size: 13px;
+  color: rgba(255,255,255,0.35);
+}
+
+/* ── GLASS CARD ── */
+.glass-card {
+  background: rgba(255,255,255,0.04);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 14px;
+  overflow: hidden;
+  margin-bottom: 20px;
+  transition: border-color .2s;
+}
+.glass-card:hover { border-color: rgba(255,255,255,0.12); }
+.glass-card-head {
+  padding: 13px 20px;
+  background: rgba(255,255,255,0.03);
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.8px;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.35);
+}
+
+/* ── HERO BANNER (home) ── */
+.home-hero {
+  background: linear-gradient(130deg, rgba(139,26,46,0.22) 0%, rgba(10,15,26,0.6) 100%);
+  border: 1px solid rgba(139,26,46,0.25);
+  border-radius: 16px;
+  padding: 32px 32px;
+  margin-bottom: 28px;
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  position: relative;
+  overflow: hidden;
+  backdrop-filter: blur(16px);
+}
+.home-hero::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: radial-gradient(ellipse at 85% 50%, rgba(139,26,46,.25) 0%, transparent 60%);
+  pointer-events: none;
+}
+.home-hero-avatar {
+  width: 72px; height: 72px;
+  border-radius: 12px;
+  background: rgba(139,26,46,0.3);
+  border: 2px solid rgba(139,26,46,0.4);
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Libre Baskerville', serif;
+  font-size: 26px; color: rgba(255,255,255,0.85);
+  flex-shrink: 0; position: relative; z-index: 1;
+  overflow: hidden;
+}
+.home-hero-text { position: relative; z-index: 1; flex: 1; min-width: 0; }
+.home-hero-greeting { font-size: 11px; color: rgba(255,255,255,.4); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 4px; }
+.home-hero-name { font-family: 'Libre Baskerville', serif; font-size: 24px; color: #fff; margin-bottom: 4px; line-height: 1.2; }
+.home-hero-sub { font-size: 12px; color: rgba(255,255,255,.35); }
+.home-hero-badge {
+  position: relative; z-index: 1; flex-shrink: 0;
+  background: rgba(255,255,255,.05);
+  border: 1px solid rgba(255,255,255,.1);
+  border-radius: 12px; padding: 14px 20px; text-align: center;
+  backdrop-filter: blur(8px);
+}
+.home-hero-badge-label { font-size: 9px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: rgba(255,255,255,.35); margin-bottom: 4px; }
+.home-hero-badge-val { font-family: monospace; font-size: 15px; color: #fff; letter-spacing: .06em; line-height: 1; }
+.home-hero-badge-sub { font-size: 10px; color: rgba(255,255,255,.25); margin-top: 3px; }
+
+/* ── JOURNEY CARD (home) ── */
+.journey-card {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 14px;
+  overflow: hidden;
+  margin-bottom: 24px;
+}
+.journey-card-head {
+  padding: 12px 20px;
+  background: rgba(255,255,255,0.03);
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  font-size: 10px; font-weight: 700; letter-spacing: 1.8px;
+  text-transform: uppercase; color: rgba(255,255,255,0.3);
+}
+.degree-row {
+  display: flex; align-items: center; gap: 14px;
+  padding: 14px 20px;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+  transition: background .12s; cursor: default; position: relative;
+}
+.degree-row:last-child { border-bottom: none; }
+.degree-lvl-pip { width: 3px; position: absolute; left: 0; top: 0; bottom: 0; border-radius: 0; }
+.degree-lvl-pip.bach { background: #4f86e0; }
+.degree-lvl-pip.mast { background: #9b72d4; }
+.degree-lvl-pip.phd  { background: #e05470; }
+.degree-row-icon { width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 17px; flex-shrink: 0; }
+.degree-row-icon.bach { background: rgba(79,134,224,0.15); }
+.degree-row-icon.mast { background: rgba(155,114,212,0.15); }
+.degree-row-icon.phd  { background: rgba(224,84,112,0.15); }
+.degree-row-info { flex: 1; min-width: 0; }
+.degree-row-name { font-size: 13px; font-weight: 600; color: rgba(255,255,255,0.8); margin-bottom: 2px; }
+.degree-row-meta { font-size: 11px; color: rgba(255,255,255,0.35); }
+.degree-row-lvl { font-size: 9px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 3px; }
+.degree-row-lvl.bach { color: #4f86e0; }
+.degree-row-lvl.mast { color: #9b72d4; }
+.degree-row-lvl.phd  { color: #e05470; }
+.degree-row-gpa { text-align: right; flex-shrink: 0; }
+.degree-row-gpa-val { font-family: 'Libre Baskerville', serif; font-size: 20px; color: rgba(255,255,255,0.85); line-height: 1; }
+.degree-row-gpa-den { font-size: 10px; color: rgba(255,255,255,0.3); }
+.degree-row-badge { margin-left: 10px; flex-shrink: 0; }
+.dbadge { display: inline-block; padding: 2px 8px; border-radius: 3px; font-size: 9px; font-weight: 700; letter-spacing: .4px; text-transform: uppercase; }
+.dbadge-green { background: rgba(26,92,58,0.4); color: #4ade80; border: 1px solid rgba(74,222,128,0.2); }
+.dbadge-gold  { background: rgba(154,123,47,0.25); color: #fbbf24; border: 1px solid rgba(251,191,36,0.2); }
+.dbadge-muted { background: rgba(255,255,255,0.05); color: rgba(255,255,255,0.4); border: 1px solid rgba(255,255,255,0.08); }
+.dbadge-red   { background: rgba(139,26,46,0.3); color: #f87171; border: 1px solid rgba(248,113,113,0.2); }
+
+/* ── QUICK LINKS ── */
+.home-section-label {
+  font-size: 10px; font-weight: 700; letter-spacing: 1.5px;
+  text-transform: uppercase; color: rgba(255,255,255,0.3);
+  margin-bottom: 14px; padding-left: 2px;
+}
+.qlinks {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 14px;
+  margin-bottom: 28px;
+}
+.ql {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 12px;
+  padding: 20px 20px;
+  cursor: pointer;
+  transition: border-color .2s, background .2s, transform .15s;
+  text-align: left;
+  display: flex; flex-direction: column; gap: 0;
+  min-height: 110px;
+  position: relative; overflow: hidden;
+}
+.ql::after {
+  content: '';
+  position: absolute; bottom: 0; left: 0; right: 0; height: 2px;
+  background: linear-gradient(90deg, #8B1A2E, #C4273E);
+  opacity: 0; transition: opacity .2s;
+}
+.ql:hover { border-color: rgba(139,26,46,0.35); background: rgba(139,26,46,0.08); transform: translateY(-2px); }
+.ql:hover::after { opacity: 1; }
+.ql.dim { opacity: .3; cursor: not-allowed; pointer-events: none; }
+.ql-icon { width: 36px; height: 36px; border-radius: 7px; background: rgba(139,26,46,0.2); display: flex; align-items: center; justify-content: center; margin-bottom: 12px; flex-shrink: 0; }
+.ql-t { font-size: 13px; font-weight: 600; color: rgba(255,255,255,0.8); margin-bottom: 4px; letter-spacing: -.1px; }
+.ql-s { font-size: 11px; color: rgba(255,255,255,0.3); line-height: 1.4; }
+.ql-arrow { position: absolute; top: 16px; right: 16px; font-size: 14px; color: rgba(255,255,255,0.15); transition: color .2s, transform .2s; }
+.ql:hover .ql-arrow { color: #e05470; transform: translate(2px,-2px); }
+
+/* ── PROFILE BANNER ── */
+.banner {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 14px;
+  padding: 24px 26px;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  position: relative; overflow: hidden;
+}
+.banner::after {
+  content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 3px;
+  background: linear-gradient(180deg, #8B1A2E, #C4273E);
+  border-radius: 3px 0 0 3px;
+}
+.avatar {
+  width: 60px; height: 60px; border-radius: 10px;
+  background: rgba(139,26,46,0.25);
+  border: 1.5px solid rgba(139,26,46,0.35);
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Libre Baskerville', serif;
+  font-size: 22px; color: rgba(255,255,255,0.8);
+  flex-shrink: 0; overflow: hidden;
+}
+.b-name h1 { font-family: 'DM Sans', sans-serif; font-size: 20px; color: rgba(255,255,255,0.88); margin-bottom: 2px; letter-spacing: -.2px; }
+.b-name .mm { font-size: 13px; color: rgba(255,255,255,0.35); margin-bottom: 10px; }
+.tags { display: flex; flex-wrap: wrap; gap: 6px; }
+.tag { font-size: 10px; font-weight: 600; letter-spacing: .6px; text-transform: uppercase; padding: 3px 8px; border-radius: 3px; }
+.tag-r { background: rgba(139,26,46,0.25); color: #f87171; border: 1px solid rgba(248,113,113,0.2); }
+.tag-g { background: rgba(154,123,47,0.2); color: #fbbf24; border: 1px solid rgba(251,191,36,0.15); }
+.tag-n { background: rgba(255,255,255,0.05); color: rgba(255,255,255,0.4); border: 1px solid rgba(255,255,255,0.08); }
+
+/* ── INFO CARD ── */
+.icard {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 14px;
+  overflow: hidden;
+  margin-bottom: 20px;
+}
+.icard-head {
+  padding: 12px 20px;
+  background: rgba(255,255,255,0.03);
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  font-size: 10px; font-weight: 700; letter-spacing: 1.8px;
+  text-transform: uppercase; color: rgba(255,255,255,0.3);
+}
+.igrid { display: grid; grid-template-columns: 1fr 1fr; }
+.icell { padding: 14px 20px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+.icell:nth-child(odd) { border-right: 1px solid rgba(255,255,255,0.05); }
+.icell:nth-last-child(-n+2) { border-bottom: none; }
+.ic-lbl { font-size: 10px; font-weight: 600; letter-spacing: .9px; text-transform: uppercase; color: rgba(255,255,255,0.3); margin-bottom: 4px; }
+.ic-val { font-size: 13px; color: rgba(255,255,255,0.75); }
+
+/* ── GRADES ── */
+.grades-header-banner {
+  background: rgba(139,26,46,0.15);
+  border: 1px solid rgba(139,26,46,0.25);
+  border-radius: 14px;
+  padding: 20px 24px;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  position: relative; overflow: hidden;
+}
+.grades-header-banner::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: radial-gradient(ellipse at 85% 50%, rgba(139,26,46,.3) 0%, transparent 60%);
+  pointer-events: none;
+}
+.grades-hdr-avatar {
+  width: 52px; height: 52px; border-radius: 9px;
+  background: rgba(139,26,46,0.3);
+  border: 1.5px solid rgba(139,26,46,0.4);
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Libre Baskerville', serif; font-size: 20px;
+  color: rgba(255,255,255,.9); flex-shrink: 0; position: relative; z-index: 1;
+  overflow: hidden;
+}
+.grades-hdr-info { flex: 1; position: relative; z-index: 1; }
+.grades-hdr-name { font-family: 'Libre Baskerville', serif; font-size: 18px; color: #fff; margin-bottom: 2px; }
+.grades-hdr-id { font-size: 11px; color: rgba(255,255,255,.4); font-family: monospace; letter-spacing: .06em; }
+.grades-hdr-gpa { position: relative; z-index: 1; text-align: right; flex-shrink: 0; }
+.grades-hdr-gpa-label { font-size: 9px; font-weight: 700; letter-spacing: 1.4px; text-transform: uppercase; color: rgba(255,255,255,.35); margin-bottom: 2px; }
+.grades-hdr-gpa-val { font-family: 'Libre Baskerville', serif; font-size: 32px; color: #fff; line-height: 1; }
+.grades-hdr-gpa-den { font-size: 12px; color: rgba(255,255,255,.3); }
+
+.transcript-summary {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 12px;
+  padding: 16px 22px;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 0;
+  overflow: hidden;
+}
+.ts-item { display: flex; flex-direction: column; gap: 3px; flex: 1; padding: 0 22px; }
+.ts-item:first-child { padding-left: 0; }
+.ts-item:last-child { padding-right: 0; }
+.ts-lbl { font-size: 10px; font-weight: 700; letter-spacing: 1.3px; text-transform: uppercase; color: rgba(255,255,255,0.3); }
+.ts-val { font-family: 'Libre Baskerville', serif; font-size: 22px; font-weight: 700; color: rgba(255,255,255,0.85); line-height: 1.1; }
+.ts-val.accent { color: #e05470; }
+.ts-divider { width: 1px; height: 36px; background: rgba(255,255,255,0.07); flex-shrink: 0; }
+
+/* Degree selector in grades */
+.degree-tabs { display: flex; gap: 2px; border-bottom: 1px solid rgba(255,255,255,0.07); margin-bottom: 0; overflow-x: auto; scrollbar-width: none; }
+.degree-tabs::-webkit-scrollbar { display: none; }
+.degree-tab { padding: 10px 18px; font-size: 13px; color: rgba(255,255,255,.35); border-bottom: 2px solid transparent; margin-bottom: -1px; cursor: pointer; white-space: nowrap; transition: color .15s, border-color .15s; background: none; border-top: none; border-left: none; border-right: none; font-family: 'DM Sans', sans-serif; }
+.degree-tab:hover { color: rgba(255,255,255,.65); }
+.degree-tab.active { color: #e05470; border-bottom-color: #e05470; font-weight: 500; }
+.degree-panel { display: none; }
+.degree-panel.active { display: block; animation: fadeUp .2s ease; }
+
+.g-wrap { background: rgba(255,255,255,0.025); border: 1px solid rgba(255,255,255,0.06); border-radius: 12px; overflow: hidden; margin-bottom: 16px; }
+.g-year-head { background: rgba(255,255,255,0.04); padding: 9px 18px; border-bottom: 1px solid rgba(255,255,255,0.06); font-size: 11px; font-weight: 700; letter-spacing: 1.4px; text-transform: uppercase; color: rgba(255,255,255,0.55); display: flex; align-items: center; gap: 10px; }
+.g-year-head::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: #e05470; flex-shrink: 0; }
+.g-block-head { padding: 6px 18px; background: rgba(255,255,255,0.02); border-bottom: 1px solid rgba(255,255,255,0.04); font-size: 10px; font-weight: 700; letter-spacing: 1.2px; text-transform: uppercase; color: rgba(255,255,255,0.25); }
+.g-year-totals { background: rgba(255,255,255,0.03); border-top: 1px solid rgba(255,255,255,0.05); padding: 9px 18px; display: flex; justify-content: flex-end; gap: 28px; font-size: 11px; color: rgba(255,255,255,0.35); }
+.g-year-totals strong { color: rgba(255,255,255,0.65); font-weight: 700; }
+table.gt { width: 100%; border-collapse: collapse; font-size: 12px; font-family: 'DM Sans', sans-serif; }
+table.gt thead tr { border-bottom: 1px solid rgba(255,255,255,0.08); }
+table.gt th { padding: 9px 14px; text-align: left; font-size: 10px; font-weight: 700; letter-spacing: 1.2px; text-transform: uppercase; color: rgba(255,255,255,0.3); white-space: nowrap; }
+table.gt th:nth-child(3),table.gt th:nth-child(4),table.gt th:nth-child(5),table.gt th:nth-child(6),table.gt th:nth-child(7) { text-align: center; }
+table.gt td { padding: 10px 14px; border-bottom: 1px solid rgba(255,255,255,0.04); color: rgba(255,255,255,0.7); vertical-align: middle; }
+table.gt td:nth-child(3),table.gt td:nth-child(4),table.gt td:nth-child(5),table.gt td:nth-child(6),table.gt td:nth-child(7) { text-align: center; }
+table.gt td:nth-child(8) { font-size: 11px; color: rgba(255,255,255,0.35); font-style: italic; }
+table.gt tr:last-child td { border-bottom: none; }
+table.gt tbody tr { transition: background .1s; }
+table.gt tbody tr:hover { background: rgba(255,255,255,0.03); }
+.gt-course { font-size: 13px; font-weight: 500; color: rgba(255,255,255,0.78); line-height: 1.3; }
+.gt-assess { font-size: 11px; color: rgba(255,255,255,0.3); margin-top: 2px; }
+.gt-cr { font-size: 12px; font-weight: 500; color: rgba(255,255,255,0.6); background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.08); border-radius: 4px; padding: 2px 8px; display: inline-block; }
+.sbar-wrap { display: inline-flex; align-items: center; gap: 7px; }
+.sbar { display: none; }
+.sbar-fill { display: none; }
+.sbar-num { font-size: 12px; font-weight: 600; color: rgba(255,255,255,0.7); }
+.gbadge { display: inline-flex; align-items: center; justify-content: center; font-family: 'DM Sans', sans-serif; font-size: 12px; font-weight: 700; min-width: 36px; height: 26px; border-radius: 5px; padding: 0 8px; letter-spacing: .2px; }
+.gAp { background: rgba(16,185,129,0.2); color: #34d399; border: 1px solid rgba(52,211,153,0.25); }
+.gA  { background: rgba(16,185,129,0.15); color: #6ee7b7; border: 1px solid rgba(110,231,183,0.2); }
+.gAm { background: rgba(59,130,246,0.15); color: #93c5fd; border: 1px solid rgba(147,197,253,0.2); }
+.gBp { background: rgba(251,191,36,0.15); color: #fcd34d; border: 1px solid rgba(252,211,77,0.2); }
+.gB  { background: rgba(154,123,47,0.2); color: #fbbf24; border: 1px solid rgba(251,191,36,0.15); }
+.gX  { background: rgba(255,255,255,0.05); color: rgba(255,255,255,0.4); border: 1px solid rgba(255,255,255,0.08); }
+.gt-pts { font-size: 13px; font-weight: 700; color: rgba(255,255,255,0.8); font-family: 'Libre Baskerville', serif; }
+.no-g { padding: 48px; text-align: center; color: rgba(255,255,255,0.3); font-size: 13px; }
+
+/* ── DOCUMENTS ── */
+.doc-degree-picker { display: none; margin-bottom: 14px; padding: 14px 18px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.07); border-radius: 10px; }
+.doc-degree-picker label { display: block; font-size: 10px; font-weight: 700; letter-spacing: .8px; text-transform: uppercase; color: rgba(255,255,255,0.3); margin-bottom: 8px; }
+.doc-degree-picker select { width: 100%; padding: 9px 12px; border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; font-family: 'DM Sans', sans-serif; font-size: 13px; color: rgba(255,255,255,0.75); background: rgba(255,255,255,0.06); outline: none; transition: border-color .15s; }
+.doc-degree-picker select:focus { border-color: #8B1A2E; }
+.doc-degree-picker.show { display: block; }
+.doc-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px; }
+@media(max-width:700px){ .doc-grid { grid-template-columns: 1fr; } }
+.doc-card { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.07); border-radius: 14px; padding: 26px 26px 22px; position: relative; overflow: hidden; display: flex; flex-direction: column; gap: 0; transition: border-color .15s, background .15s; }
+.doc-card:hover { border-color: rgba(139,26,46,0.3); background: rgba(139,26,46,0.04); }
+.doc-card::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 3px; background: #8B1A2E; border-radius: 3px 0 0 3px; }
+.doc-icon { width: 42px; height: 42px; border-radius: 8px; background: rgba(139,26,46,0.2); display: flex; align-items: center; justify-content: center; margin-bottom: 14px; }
+.doc-icon svg { width: 20px; height: 20px; stroke: #e05470; fill: none; stroke-width: 1.8; }
+.doc-title { font-family: 'DM Sans', serif; font-size: 16px; color: rgba(255,255,255,0.85); margin-bottom: 8px; }
+.doc-desc { font-size: 13px; color: rgba(255,255,255,0.35); line-height: 1.55; margin-bottom: 16px; flex: 1; }
+.doc-tags { display: flex; gap: 6px; margin-bottom: 18px; flex-wrap: wrap; }
+.doc-tag { font-size: 9px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; padding: 3px 9px; border-radius: 3px; border: 1px solid rgba(139,26,46,0.3); color: #e05470; background: rgba(139,26,46,0.15); }
+.btn-print-doc { width: 100%; padding: 12px 0; background: #8B1A2E; border: none; border-radius: 8px; font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 600; color: #fff; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; letter-spacing: .2px; transition: background .15s, transform .1s; }
+.btn-print-doc:hover { background: #C4273E; transform: translateY(-1px); }
+.btn-print-doc svg { width: 15px; height: 15px; stroke: currentColor; fill: none; stroke-width: 2; }
+.cert-section-head { font-size: 13px; font-weight: 700; color: rgba(255,255,255,0.6); margin: 24px 0 14px; letter-spacing: .3px; }
+
+/* ── ID CARD SECTION ── */
+.idcard-wrap { display: flex; flex-direction: column; align-items: center; gap: 24px; padding: 12px 0; }
+.idcard { width: 340px; border-radius: 16px; overflow: hidden; box-shadow: 0 24px 64px rgba(0,0,0,0.5), 0 4px 16px rgba(0,0,0,0.3); position: relative; user-select: none; }
+.idcard-front { background: linear-gradient(145deg,#0D1B2A 0%,#1a2e45 60%,#0D1B2A 100%); padding: 0; min-height: 210px; position: relative; overflow: hidden; }
+.idcard-front::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse at 20% 20%,rgba(139,26,46,.4) 0%,transparent 55%),radial-gradient(ellipse at 85% 80%,rgba(154,123,47,.2) 0%,transparent 45%); pointer-events: none; }
+.idcard-top { padding: 20px 22px 14px; display: flex; align-items: center; justify-content: space-between; position: relative; z-index: 1; }
+.idcard-logo-wrap { display: flex; align-items: center; gap: 10px; }
+.idcard-logo { width: 36px; height: 44px; object-fit: contain; }
+.idcard-uni { display: flex; flex-direction: column; }
+.idcard-uni-name { font-family: 'DM Sans', sans-serif; font-size: 11px; font-weight: 700; color: rgba(255,255,255,.95); letter-spacing: .5px; line-height: 1.2; }
+.idcard-uni-sub { font-size: 9px; color: rgba(255,255,255,.45); letter-spacing: .3px; line-height: 1.4; }
+.idcard-type-badge { font-size: 8px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: rgba(255,255,255,.5); border: 1px solid rgba(255,255,255,.15); padding: 3px 8px; border-radius: 3px; }
+.idcard-divider-line { height: 1px; background: linear-gradient(90deg,transparent,rgba(255,255,255,.12),transparent); margin: 0 22px; }
+.idcard-body { padding: 16px 22px 20px; display: flex; gap: 16px; align-items: flex-start; position: relative; z-index: 1; }
+.idcard-photo { width: 72px; height: 86px; border-radius: 8px; background: rgba(255,255,255,.08); border: 1.5px solid rgba(255,255,255,.15); display: flex; align-items: center; justify-content: center; flex-shrink: 0; overflow: hidden; font-size: 26px; font-weight: 700; color: rgba(255,255,255,.6); font-family: 'DM Sans', sans-serif; letter-spacing: -1px; }
+.idcard-info { flex: 1; min-width: 0; }
+.idcard-name { font-family: 'DM Sans', sans-serif; font-size: 15px; font-weight: 700; color: #fff; line-height: 1.2; margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.idcard-name-mm { font-size: 11px; color: rgba(255,255,255,.45); margin-bottom: 10px; line-height: 1.4; }
+.idcard-fields { display: flex; flex-direction: column; gap: 5px; }
+.idcard-field { display: flex; flex-direction: column; gap: 1px; }
+.idcard-field-lbl { font-size: 7.5px; font-weight: 700; letter-spacing: 1.2px; text-transform: uppercase; color: rgba(255,255,255,.35); }
+.idcard-field-val { font-size: 12px; font-weight: 500; color: rgba(255,255,255,.9); font-family: 'DM Sans', sans-serif; }
+.idcard-bottom { background: var(--crimson); padding: 10px 22px; display: flex; align-items: center; justify-content: space-between; position: relative; z-index: 1; }
+.idcard-id-label { font-size: 8px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: rgba(255,255,255,.6); }
+.idcard-id-value { font-family: 'DM Sans', sans-serif; font-size: 15px; font-weight: 700; color: #fff; letter-spacing: 1px; }
+.idcard-validity { font-size: 9px; color: rgba(255,255,255,.6); text-align: right; }
+.idcard-validity strong { display: block; font-size: 10px; color: rgba(255,255,255,.85); }
+.idcard-back { background: #fff; padding: 18px 22px; border-top: 3px solid var(--crimson); }
+.idcard-back-header { font-size: 9px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: var(--ink3); margin-bottom: 12px; }
+.idcard-back-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
+.idcard-back-field .lbl { font-size: 9px; font-weight: 600; letter-spacing: .8px; text-transform: uppercase; color: var(--ink3); margin-bottom: 2px; }
+.idcard-back-field .val { font-size: 12px; color: var(--ink); font-family: 'DM Sans', sans-serif; }
+.idcard-back-bottom { display: flex; align-items: flex-start; gap: 14px; margin-top: 2px; }
+.idcard-qr-wrap { display: flex; flex-direction: column; align-items: center; gap: 5px; flex-shrink: 0; }
+.idcard-qr-wrap canvas,.idcard-qr-wrap img { border: 1.5px solid var(--line); border-radius: 4px; display: block; }
+.idcard-qr-lbl { font-size: 7px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: var(--ink3); }
+.idcard-back-right { flex: 1; display: flex; flex-direction: column; gap: 0; }
+.idcard-sid-block { margin-bottom: 10px; }
+.idcard-sid-block .lbl { font-size: 8px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: var(--ink3); margin-bottom: 2px; }
+.idcard-sid-block .val { font-size: 14px; font-weight: 700; color: var(--ink); letter-spacing: 1.5px; font-family: monospace; }
+.idcard-sig-area { border-top: 1px solid #bbb; margin-top: 16px; padding-top: 4px; font-size: 7.5px; color: var(--ink3); text-align: center; letter-spacing: .3px; }
+.idcard-notice { font-size: 8.5px; color: var(--ink3); line-height: 1.6; border-top: 1px solid var(--line); padding-top: 8px; margin-top: 10px; }
+.idcard-actions { display: flex; gap: 10px; }
+.btn-idcard { padding: 10px 20px; border-radius: 8px; font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 600; cursor: pointer; transition: all .15s; display: flex; align-items: center; gap: 8px; }
+.btn-idcard-primary { background: #8B1A2E; color: #fff; border: none; box-shadow: 0 2px 12px rgba(139,26,46,0.4); }
+.btn-idcard-primary:hover { background: #C4273E; }
+.btn-idcard-secondary { background: transparent; color: #e05470; border: 1.5px solid rgba(224,84,112,0.4); }
+.btn-idcard-secondary:hover { background: rgba(139,26,46,0.12); }
+
+/* ── PHOTO PANEL ── */
+#panel-photo .icard { background: rgba(255,255,255,0.03); }
+#panel-photo .field input { background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.1); color: rgba(255,255,255,0.8); }
+#photoDropZone { border-color: rgba(255,255,255,0.12) !important; background: rgba(255,255,255,0.02) !important; }
+#photoDropZone:hover { border-color: rgba(139,26,46,0.4) !important; }
+#photoDropZone > div:first-child { color: rgba(255,255,255,0.6) !important; }
+#photoDropZone > div:last-child { color: rgba(255,255,255,0.25) !important; }
+
+/* ── PHOTO PROTECTION ── */
+canvas.photo-canvas, #idcardPhoto canvas, #homeAvatar canvas, #gradesAvatar canvas, #profilePhotoPreview canvas { -webkit-touch-callout: none; user-select: none; -webkit-user-select: none; pointer-events: none; }
+
+/* ── DASHBOARD FOOTER ── */
+.dash-footer {
+  padding: 16px 36px;
+  border-top: 1px solid rgba(255,255,255,0.05);
+  text-align: center;
+  font-size: 11px;
+  color: rgba(255,255,255,0.2);
+  background: rgba(14,20,32,0.8);
+  flex-shrink: 0;
+}
+
+/* ── TABLET ── */
+@media(max-width:900px){
+  .sidebar { width: 220px; }
+  .dash-main { margin-left: 220px; }
+}
+
+/* ══════════════════════════════════════════════════
+   MOBILE — Complete redesign (≤700px)
+   Pattern: fixed top bar + bottom tab bar + icon grid
+   ══════════════════════════════════════════════════ */
+@media(max-width:700px){
+
+  /* ── Hide desktop sidebar completely ── */
+  .sidebar, .sb-toggle, .sb-overlay { display: none !important; }
+
+  /* ── Login ── */
+  .login-left { display: none; }
+  .login-right { padding: 0; min-height: 100vh; display: flex; align-items: center; justify-content: center; background: none; }
+  .login-form-wrap {
+    width: 100%; max-width: 100%; border-radius: 0;
+    padding: 40px 24px 40px;
+    min-height: 100vh;
+    display: flex; flex-direction: column; justify-content: center;
+    border: none; box-shadow: none;
+    background: transparent;
+  }
+  body.theme-light .login-form-wrap { background: transparent; }
+  .login-form-wrap h2 { font-size: 22px; }
+  .field input { padding: 14px 16px; font-size: 15px; border-radius: 10px; }
+  .btn-login { padding: 15px; font-size: 15px; border-radius: 10px; }
+
+  /* ── Main layout: no left margin, full width ── */
+  .dash-main { margin-left: 0 !important; }
+
+  /* ── MOBILE TOP BAR ── */
+  .dash-topbar {
+    height: 56px;
+    padding: 0 16px;
+    display: flex; align-items: center; gap: 10px;
+    position: sticky; top: 0; z-index: 50;
+  }
+  /* Brand logo/name on left */
+  .dash-topbar::before {
+    content: 'IRIS';
+    font-family: 'Libre Baskerville', serif;
+    font-size: 20px;
+    font-weight: 700;
+    color: rgba(255,255,255,0.9);
+    letter-spacing: 2px;
+    margin-right: auto;
+  }
+  body.theme-light .dash-topbar::before { color: var(--ink); }
+  .dash-topbar-title { display: none; }
+  .dash-topbar-id {
+    font-size: 11px; padding: 4px 10px;
+    max-width: 110px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    border-radius: 6px;
+  }
+  .theme-toggle-btn { width: 36px; height: 36px; flex-shrink: 0; }
+
+  /* ── MOBILE BOTTOM TAB BAR ── */
+  .mob-tabbar {
+    display: flex !important;
+  }
+
+  /* ── Content area: padding for top + bottom bars ── */
+  .dash-content {
+    padding: 16px 14px 90px;
+    overflow-x: hidden;
+  }
+
+  /* ── HOME: Hero banner ── */
+  .home-hero {
+    flex-direction: row;
+    gap: 14px;
+    padding: 18px 16px;
+    border-radius: 14px;
+    margin-bottom: 20px;
+    align-items: center;
+  }
+  .home-hero-avatar { width: 52px; height: 52px; font-size: 20px; border-radius: 10px; flex-shrink: 0; }
+  .home-hero-text { flex: 1; text-align: left; }
+  .home-hero-greeting { font-size: 10px; margin-bottom: 2px; }
+  .home-hero-name { font-size: 17px; margin-bottom: 2px; }
+  .home-hero-sub { font-size: 11px; }
+  .home-hero-badge { display: none; }
+
+  /* ── HOME: MUNI-style icon grid ── */
+  .home-section-label { font-size: 11px; margin-bottom: 12px; }
+  .qlinks {
+    display: grid !important;
+    grid-template-columns: repeat(3, 1fr) !important;
+    gap: 8px !important;
+    margin-bottom: 24px;
+  }
+  .ql {
+    background: rgba(255,255,255,0.05) !important;
+    border: 1px solid rgba(255,255,255,0.09) !important;
+    border-radius: 14px !important;
+    padding: 16px 8px 12px !important;
+    min-height: auto !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    text-align: center !important;
+    gap: 0 !important;
+    transform: none !important;
+  }
+  .ql:hover { transform: none !important; }
+  .ql::after { display: none !important; }
+  .ql-icon {
+    width: 52px; height: 52px;
+    border-radius: 50% !important;
+    background: rgba(139,26,46,0.22) !important;
+    border: 1.5px solid rgba(139,26,46,0.3);
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 8px !important;
+    flex-shrink: 0;
+  }
+  .ql-icon svg { width: 22px; height: 22px; }
+  .ql-t { font-size: 11px !important; font-weight: 600; line-height: 1.3; color: rgba(255,255,255,0.82) !important; }
+  .ql-s { display: none !important; }
+  .ql-arrow { display: none !important; }
+
+  body.theme-light .ql {
+    background: var(--white) !important;
+    border-color: var(--line) !important;
+  }
+  body.theme-light .ql-icon {
+    background: var(--crimson-light) !important;
+    border-color: rgba(139,26,46,0.15) !important;
+  }
+  body.theme-light .ql-t { color: var(--ink) !important; }
+
+  /* ── Journey card ── */
+  .journey-card { border-radius: 12px; }
+  .degree-row { padding: 12px 14px; gap: 10px; }
+  .degree-row-name { font-size: 12px; }
+  .degree-row-meta { font-size: 10px; }
+  .degree-row-gpa-val { font-size: 18px; }
+  .degree-row-badge { display: none; }
+
+  /* ── PROFILE section ── */
+  .banner {
+    flex-direction: column; gap: 14px;
+    align-items: flex-start;
+    padding: 16px 16px;
+    border-radius: 12px;
+    margin-bottom: 14px;
+  }
+  .b-name h1 { font-size: 18px; }
+  .b-name .mm { font-size: 12px; margin-bottom: 8px; }
+
+  .icard { border-radius: 12px; margin-bottom: 14px; }
+  .icard-head { padding: 10px 14px; font-size: 9px; }
+  .igrid { grid-template-columns: 1fr; }
+  .icell { padding: 12px 14px; border-right: none !important; }
+  .icell:nth-last-child(-n+2) { border-bottom: 1px solid rgba(255,255,255,0.05) !important; }
+  body.theme-light .icell:nth-last-child(-n+2) { border-bottom: 1px solid var(--line) !important; }
+  .icell:last-child { border-bottom: none !important; }
+  .ic-lbl { font-size: 9px; }
+  .ic-val { font-size: 13px; }
+
+  /* ── GRADES section ── */
+  .grades-header-banner { flex-direction: column; gap: 10px; padding: 14px; border-radius: 12px; }
+  .grades-hdr-gpa { text-align: left; }
+  .grades-hdr-gpa-val { font-size: 28px; }
+  .transcript-summary { flex-wrap: wrap; gap: 10px; padding: 12px 14px; border-radius: 12px; }
+  .ts-divider { display: none; }
+  .ts-item { padding: 0; flex: 0 0 calc(50% - 6px); }
+  .ts-val { font-size: 20px; }
+  .ts-lbl { font-size: 9px; }
+  .degree-tabs { padding: 0 4px; }
+  .degree-tab { padding: 10px 12px; font-size: 12px; }
+  .g-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; border-radius: 12px; }
+  table.gt { min-width: 520px; }
+  table.gt th, table.gt td { padding: 8px 10px; }
+  .sec-head { margin-bottom: 16px; }
+  .sec-head h2 { font-size: 18px; }
+  .sec-head p { font-size: 12px; }
+
+  /* ── DOCUMENTS section ── */
+  .doc-grid { grid-template-columns: 1fr !important; gap: 12px; }
+  .doc-card { padding: 18px 16px 14px; border-radius: 12px; }
+  .doc-title { font-size: 15px; }
+  .doc-desc { font-size: 12px; }
+
+  /* ── ID CARD section ── */
+  .idcard { width: 100%; max-width: 340px; }
+  .idcard-wrap { padding: 8px 0 0; gap: 16px; }
+  .idcard-actions { flex-direction: column; gap: 8px; }
+  .btn-idcard { justify-content: center; padding: 13px 20px; }
+
+  /* ── Glass card ── */
+  .glass-card { border-radius: 12px; }
+  .glass-card-head { padding: 11px 14px; }
+}
+
+/* ══════════════════════════════════════
+   THEME TOGGLE BUTTON
+   ══════════════════════════════════════ */
+.theme-toggle-btn {
+  width: 36px; height: 36px;
+  border-radius: 8px;
+  border: 1px solid rgba(255,255,255,0.12);
+  background: rgba(255,255,255,0.07);
+  color: rgba(255,255,255,0.6);
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: all .2s;
+  flex-shrink: 0;
+}
+.theme-toggle-btn:hover {
+  background: rgba(255,255,255,0.13);
+  color: rgba(255,255,255,0.9);
+  border-color: rgba(255,255,255,0.2);
+}
+body.theme-light .theme-toggle-btn {
+  border-color: var(--line);
+  background: var(--surface);
+  color: var(--ink2);
+}
+body.theme-light .theme-toggle-btn:hover {
+  background: var(--crimson-light);
+  border-color: rgba(139,26,46,0.2);
+  color: var(--crimson);
+}
+
+/* Login page theme toggle */
+.login-theme-btn {
+  position: fixed;
+  top: 16px; right: 16px;
+  z-index: 200;
+  width: 40px; height: 40px;
+  border-radius: 10px;
+  border: 1.5px solid var(--line);
+  background: var(--white);
+  color: var(--ink2);
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 2px 8px rgba(13,27,42,0.08);
+  transition: all .2s;
+}
+.login-theme-btn:hover {
+  border-color: rgba(139,26,46,0.25);
+  color: var(--crimson);
+  background: var(--crimson-light);
+}
+
+/* ══════════════════════════════════════
+   LIGHT THEME — DASHBOARD OVERRIDES
+   ══════════════════════════════════════ */
+body.theme-light.dashboard-active {
+  background-color: #eef1f7;
+}
+body.theme-light .sidebar {
+  background: rgba(255,255,255,0.98);
+  border-right-color: rgba(13,27,42,0.09);
+}
+body.theme-light .sb-brand {
+  border-bottom-color: var(--line);
+}
+body.theme-light .sb-brand-name { color: var(--ink); }
+body.theme-light .sb-brand-sub  { color: var(--ink3); }
+body.theme-light .sb-user {
+  background: var(--crimson-light);
+  border-color: rgba(139,26,46,0.15);
+}
+body.theme-light .sb-user-avatar {
+  background: rgba(139,26,46,0.12);
+  border-color: rgba(139,26,46,0.2);
+  color: var(--crimson);
+}
+body.theme-light .sb-user-name { color: var(--ink); }
+body.theme-light .sb-user-id   { color: var(--ink3); }
+body.theme-light .sb-section-lbl { color: var(--ink3); opacity:.7; }
+body.theme-light .sbnav-item { color: var(--ink3); }
+body.theme-light .sbnav-item:hover { background: rgba(13,27,42,0.05); color: var(--ink); }
+body.theme-light .sbnav-item.active { background: rgba(139,26,46,0.08); border-color: rgba(139,26,46,0.18); color: var(--crimson); }
+body.theme-light .sbnav-icon { color: var(--ink3); }
+body.theme-light .sbnav-item.active .sbnav-icon { color: var(--crimson); }
+body.theme-light .sbnav-item:hover .sbnav-icon { color: var(--ink2); }
+body.theme-light .sbnav-ext { color: var(--ink3); }
+body.theme-light .sb-footer { border-top-color: var(--line); }
+body.theme-light .btn-signout {
+  background: var(--surface);
+  border-color: var(--line);
+  color: var(--ink2);
+}
+body.theme-light .btn-signout:hover {
+  background: var(--crimson-light);
+  border-color: rgba(139,26,46,0.2);
+  color: var(--crimson);
+}
+body.theme-light .sb-toggle {
+  background: rgba(255,255,255,0.95);
+  border-color: var(--line);
+  color: var(--ink2);
+}
+body.theme-light .dash-main {
+  background: #eef1f7;
+  background-image: none;
+}
+body.theme-light .dash-topbar {
+  background: rgba(255,255,255,0.97);
+  border-bottom-color: var(--line);
+}
+body.theme-light .dash-topbar-title { color: var(--ink); }
+body.theme-light .dash-topbar-id {
+  background: var(--surface);
+  border-color: var(--line);
+  color: var(--ink3);
+}
+body.theme-light .dash-footer {
+  background: rgba(247,248,252,0.95);
+  border-top-color: var(--line);
+  color: var(--ink3);
+}
+body.theme-light .sec-head h2 { color: var(--ink); }
+body.theme-light .sec-head p { color: var(--ink3); }
+body.theme-light .home-section-label { color: var(--ink3); }
+
+/* Home hero */
+body.theme-light .home-hero {
+  background: linear-gradient(130deg,rgba(139,26,46,0.08) 0%,rgba(224,228,240,0.7) 100%);
+  border-color: rgba(139,26,46,0.15);
+}
+body.theme-light .home-hero::before {
+  background: radial-gradient(ellipse at 85% 50%,rgba(139,26,46,.1) 0%,transparent 60%);
+}
+body.theme-light .home-hero-avatar {
+  background: var(--crimson-light);
+  border-color: rgba(139,26,46,0.18);
+  color: var(--crimson);
+}
+body.theme-light .home-hero-greeting { color: var(--ink3); }
+body.theme-light .home-hero-name { color: var(--ink); }
+body.theme-light .home-hero-sub { color: var(--ink3); }
+body.theme-light .home-hero-badge {
+  background: rgba(255,255,255,0.7);
+  border-color: var(--line);
+}
+body.theme-light .home-hero-badge-label { color: var(--ink3); }
+body.theme-light .home-hero-badge-val { color: var(--ink); }
+body.theme-light .home-hero-badge-sub { color: var(--ink3); }
+
+/* Quick links */
+body.theme-light .ql {
+  background: var(--white);
+  border-color: var(--line);
+}
+body.theme-light .ql:hover {
+  background: var(--crimson-light);
+  border-color: rgba(139,26,46,0.2);
+}
+body.theme-light .ql-icon { background: var(--crimson-light); }
+body.theme-light .ql-t { color: var(--ink); }
+body.theme-light .ql-s { color: var(--ink3); }
+body.theme-light .ql-arrow { color: rgba(13,27,42,0.18); }
+body.theme-light .ql:hover .ql-arrow { color: var(--crimson); }
+
+/* Journey card */
+body.theme-light .journey-card {
+  background: var(--white);
+  border-color: var(--line);
+}
+body.theme-light .journey-card-head {
+  background: var(--surface);
+  border-bottom-color: var(--line);
+  color: var(--ink3);
+}
+body.theme-light .degree-row { border-bottom-color: var(--line); }
+body.theme-light .degree-row-name { color: var(--ink); }
+body.theme-light .degree-row-meta { color: var(--ink3); }
+body.theme-light .degree-row-gpa-val { color: var(--ink); }
+body.theme-light .degree-row-gpa-den { color: var(--ink3); }
+
+/* Glass card */
+body.theme-light .glass-card {
+  background: var(--white);
+  border-color: var(--line);
+}
+body.theme-light .glass-card:hover { border-color: rgba(139,26,46,0.18); }
+body.theme-light .glass-card-head {
+  background: var(--surface);
+  border-bottom-color: var(--line);
+  color: var(--ink3);
+}
+
+/* Banner (profile) */
+body.theme-light .banner {
+  background: var(--white);
+  border-color: var(--line);
+}
+body.theme-light .avatar {
+  background: var(--crimson-light);
+  border-color: rgba(139,26,46,0.18);
+  color: var(--crimson);
+}
+body.theme-light .b-name h1 { color: var(--ink); }
+body.theme-light .b-name .mm { color: var(--ink3); }
+body.theme-light .tag-r { background: var(--crimson-light); color: var(--crimson); border-color: rgba(139,26,46,.12); }
+body.theme-light .tag-g { background: var(--gold-light); color: var(--gold); border-color: rgba(154,123,47,.15); }
+body.theme-light .tag-n { background: var(--surface); color: var(--ink3); border-color: var(--line); }
+
+/* Info card */
+body.theme-light .icard {
+  background: var(--white);
+  border-color: var(--line);
+}
+body.theme-light .icard-head {
+  background: var(--surface);
+  border-bottom-color: var(--line);
+  color: var(--ink3);
+}
+body.theme-light .icell { border-bottom-color: var(--line); }
+body.theme-light .icell:nth-child(odd) { border-right-color: var(--line); }
+body.theme-light .icell:nth-last-child(-n+2) { border-bottom-color: var(--line); }
+body.theme-light .icell:last-child { border-bottom: none; }
+body.theme-light .ic-lbl { color: var(--ink3); }
+body.theme-light .ic-val { color: var(--ink); }
+
+/* Grades */
+body.theme-light .grades-header-banner {
+  background: var(--crimson-light);
+  border-color: rgba(139,26,46,0.18);
+}
+body.theme-light .grades-header-banner::before { opacity: .5; }
+body.theme-light .grades-hdr-avatar { background: rgba(139,26,46,0.12); border-color: rgba(139,26,46,0.2); color: var(--crimson); }
+body.theme-light .grades-hdr-name { color: var(--ink); }
+body.theme-light .grades-hdr-id { color: var(--ink3); }
+body.theme-light .grades-hdr-gpa-label { color: var(--ink3); }
+body.theme-light .grades-hdr-gpa-val { color: var(--ink); }
+body.theme-light .grades-hdr-gpa-den { color: var(--ink3); }
+body.theme-light .transcript-summary { background: var(--white); border-color: var(--line); }
+body.theme-light .ts-lbl { color: var(--ink3); }
+body.theme-light .ts-val { color: var(--ink); }
+body.theme-light .ts-val.accent { color: var(--crimson); }
+body.theme-light .ts-divider { background: var(--line); }
+body.theme-light .degree-tabs { border-bottom-color: var(--line); }
+body.theme-light .degree-tab { color: var(--ink3); }
+body.theme-light .degree-tab:hover { color: var(--ink); }
+body.theme-light .degree-tab.active { color: var(--crimson); border-bottom-color: var(--crimson); }
+body.theme-light .g-wrap { background: var(--white); border-color: var(--line); }
+body.theme-light .g-year-head { background: var(--surface); border-bottom-color: var(--line); color: var(--ink); }
+body.theme-light .g-year-head::before { background: var(--crimson); }
+body.theme-light .g-block-head { background: #FAFBFC; border-bottom-color: var(--line); color: var(--ink3); }
+body.theme-light .g-year-totals { background: var(--surface); border-top-color: var(--line); color: var(--ink3); }
+body.theme-light .g-year-totals strong { color: var(--ink); }
+body.theme-light table.gt thead tr { border-bottom-color: var(--line); }
+body.theme-light table.gt th { color: var(--ink3); }
+body.theme-light table.gt td { color: var(--ink); border-bottom-color: var(--line); }
+body.theme-light table.gt tbody tr:hover { background: #F8F9FC; }
+body.theme-light .gt-course { color: var(--ink); }
+body.theme-light .gt-assess { color: var(--ink3); }
+body.theme-light .gt-cr { background: var(--surface); border-color: var(--line); color: var(--ink); }
+body.theme-light .sbar-num { color: var(--ink); }
+body.theme-light .gt-pts { color: var(--ink); }
+body.theme-light .no-g { color: var(--ink3); }
+body.theme-light .gAp { background: #D1FAE5; color: #065F46; border-color: #6EE7B7; }
+body.theme-light .gA  { background: #D1FAE5; color: #065F46; border-color: #A7F3D0; }
+body.theme-light .gAm { background: #DBEAFE; color: #1E40AF; border-color: #BFDBFE; }
+body.theme-light .gBp { background: var(--gold-light); color: #7C5F0A; border-color: #FCD34D; }
+body.theme-light .gB  { background: var(--gold-light); color: var(--gold); border-color: rgba(154,123,47,.25); }
+body.theme-light .gX  { background: var(--surface); color: var(--ink3); border-color: var(--line); }
+body.theme-light .dbadge-green { background: var(--green-light); color: var(--green); border-color: rgba(26,92,58,0.25); }
+body.theme-light .dbadge-gold  { background: var(--gold-light); color: var(--gold); border-color: rgba(154,123,47,0.2); }
+body.theme-light .dbadge-muted { background: var(--surface); color: var(--ink3); border-color: var(--line); }
+body.theme-light .dbadge-red   { background: var(--crimson-light); color: var(--crimson); border-color: rgba(139,26,46,0.2); }
+
+/* Documents */
+body.theme-light .doc-degree-picker { background: var(--surface); border-color: var(--line); }
+body.theme-light .doc-degree-picker label { color: var(--ink3); }
+body.theme-light .doc-degree-picker select { background: var(--white); border-color: var(--line); color: var(--ink); }
+body.theme-light .doc-card { background: var(--white); border-color: var(--line); }
+body.theme-light .doc-card:hover { border-color: rgba(139,26,46,0.2); background: var(--crimson-light); }
+body.theme-light .doc-icon { background: var(--crimson-light); }
+body.theme-light .doc-icon svg { stroke: var(--crimson); }
+body.theme-light .doc-title { color: var(--ink); }
+body.theme-light .doc-desc { color: var(--ink3); }
+body.theme-light .doc-tag { color: var(--crimson); border-color: rgba(139,26,46,0.15); background: var(--crimson-light); }
+body.theme-light .cert-section-head { color: var(--ink2); }
+
+/* Photo panel */
+body.theme-light #panel-photo .icard { background: var(--white); }
+body.theme-light #panel-photo .field input { background: var(--white); border-color: var(--line); color: var(--ink); }
+body.theme-light #photoDropZone { border-color: var(--line) !important; background: var(--surface) !important; }
+
+/* ══════════════════════════════════════
+   IMPROVED MOBILE STYLES
+   ══════════════════════════════════════ */
+@media(max-width:700px){
+  /* Better touch targets for nav items */
+  .sbnav-item {
+    padding: 13px 14px 13px 18px;
+    margin: 2px 10px;
+    font-size: 14px;
+  }
+  .sbnav-label { font-size: 14px; }
+  
+  /* Topbar improvements */
+  .dash-topbar { height: 52px; gap: 10px; padding: 0 14px 0 62px; }
+  .dash-topbar-title { font-size: 14px; }
+  .dash-topbar-id { font-size: 10px; padding: 3px 8px; max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  
+  /* Theme toggle in topbar on mobile */
+  .theme-toggle-btn { width: 32px; height: 32px; }
+  
+  /* Content padding */
+  .dash-content { padding: 16px 14px 80px; }
+  
+  /* Hero responsive */
+  .home-hero { padding: 20px 18px; gap: 16px; flex-direction: column; text-align: center; border-radius: 12px; }
+  .home-hero-avatar { width: 60px; height: 60px; font-size: 22px; }
+  .home-hero-name { font-size: 20px; }
+  .home-hero-badge { width: 100%; padding: 12px 16px; border-radius: 10px; display: flex; align-items: center; justify-content: space-between; }
+  .home-hero-badge-val { font-size: 22px; }
+  
+  /* Quick links — 2 columns on mobile */
+  .qlinks { grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
+  .ql { min-height: 96px; padding: 14px 14px; }
+  .ql-icon { width: 30px; height: 30px; margin-bottom: 8px; }
+  .ql-t { font-size: 12px; }
+  .ql-s { font-size: 10px; }
+  
+  /* Banner layout */
+  .banner { flex-direction: column; gap: 12px; padding: 18px 16px; border-radius: 12px; }
+  .b-name h1 { font-size: 17px; }
+  
+  /* Info grid — single column */
+  .igrid { grid-template-columns: 1fr; }
+  .icell:nth-child(odd) { border-right: none; }
+  .icell:nth-last-child(-n+2) { border-bottom: 1px solid rgba(255,255,255,0.05); }
+  body.theme-light .icell:nth-last-child(-n+2) { border-bottom: 1px solid var(--line); }
+  .icell:last-child { border-bottom: none !important; }
+  .icell { padding: 12px 16px; }
+  
+  /* Grades header */
+  .grades-header-banner { flex-wrap: wrap; gap: 12px; padding: 16px 16px; }
+  .grades-hdr-gpa { margin-top: 0; }
+  .grades-hdr-gpa-val { font-size: 26px; }
+  
+  /* Transcript summary */
+  .transcript-summary { flex-wrap: wrap; gap: 12px; padding: 14px 16px; }
+  .ts-divider { display: none; }
+  .ts-item { padding: 0; flex: 0 0 calc(50% - 8px); }
+  .ts-val { font-size: 20px; }
+  
+  /* Grade table — horizontal scroll */
+  .g-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  table.gt { min-width: 540px; }
+  
+  /* Section heading */
+  .sec-head { margin-bottom: 18px; }
+  .sec-head h2 { font-size: 19px; }
+  
+  /* Journey card */
+  .degree-row { padding: 12px 14px; gap: 10px; }
+  .degree-row-gpa-val { font-size: 17px; }
+  
+  /* Doc grid */
+  .doc-grid { gap: 12px; }
+  .doc-card { padding: 20px 18px 16px; }
+  
+  /* ID card */
+  .idcard { width: 100%; max-width: 340px; }
+  .idcard-wrap { padding: 8px 0; }
+  .idcard-actions { flex-direction: column; }
+  .btn-idcard { justify-content: center; }
+  
+  /* Login */
+  .login-right { padding: 24px 20px; }
+  .login-form-wrap { padding: 28px 22px; border-radius: 14px; }
+  .login-form-wrap h2 { font-size: 20px; }
+}
+
+@media(max-width:380px){
+  .qlinks { grid-template-columns: repeat(3,1fr) !important; }
+  .dash-content { padding: 14px 10px 90px; }
+}
+
+/* ══════════════════════════════════════
+   MOBILE BOTTOM TAB BAR
+   ══════════════════════════════════════ */
+.mob-tabbar {
+  display: none;
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  height: 68px;
+  z-index: 60;
+  background: rgba(10,15,26,0.97);
+  border-top: 1px solid rgba(255,255,255,0.08);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  padding: 0 4px;
+  padding-bottom: env(safe-area-inset-bottom);
+  align-items: center;
+  justify-content: space-around;
+}
+body.theme-light .mob-tabbar {
+  background: rgba(255,255,255,0.97);
+  border-top-color: var(--line);
+}
+.mob-tab {
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 3px; flex: 1;
+  height: 56px;
+  border: none; background: none;
+  cursor: pointer; padding: 6px 4px;
+  border-radius: 10px;
+  transition: background .15s;
+  -webkit-tap-highlight-color: transparent;
+  position: relative;
+}
+.mob-tab:active { background: rgba(255,255,255,0.06); }
+body.theme-light .mob-tab:active { background: rgba(13,27,42,0.05); }
+.mob-tab-icon {
+  width: 22px; height: 22px;
+  color: rgba(255,255,255,0.35);
+  transition: color .15s, transform .15s;
+  flex-shrink: 0;
+}
+.mob-tab-label {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 9.5px; font-weight: 500;
+  color: rgba(255,255,255,0.35);
+  transition: color .15s;
+  white-space: nowrap;
+}
+body.theme-light .mob-tab-icon  { color: var(--ink3); }
+body.theme-light .mob-tab-label { color: var(--ink3); }
+.mob-tab.active .mob-tab-icon  { color: #e05470; transform: translateY(-1px); }
+.mob-tab.active .mob-tab-label { color: #e05470; font-weight: 700; }
+body.theme-light .mob-tab.active .mob-tab-icon  { color: var(--crimson); }
+body.theme-light .mob-tab.active .mob-tab-label { color: var(--crimson); }
+.mob-tab.active::after {
+  content: '';
+  position: absolute; top: 4px;
+  width: 4px; height: 4px; border-radius: 50%;
+  background: #e05470;
+}
+body.theme-light .mob-tab.active::after { background: var(--crimson); }
+
+/* More menu popup */
+.mob-more-menu {
+  display: none;
+  position: fixed;
+  bottom: 76px; right: 8px;
+  background: rgba(14,20,32,0.97);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 16px;
+  overflow: hidden; z-index: 70;
+  min-width: 210px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+  backdrop-filter: blur(20px);
+}
+body.theme-light .mob-more-menu {
+  background: var(--white);
+  border-color: var(--line);
+  box-shadow: 0 8px 32px rgba(13,27,42,0.15);
+}
+.mob-more-menu.open { display: block; }
+.mob-more-user {
+  padding: 14px 18px 12px;
+  border-bottom: 1px solid rgba(255,255,255,0.07);
+}
+body.theme-light .mob-more-user { border-bottom-color: var(--line); }
+.mob-more-user-name {
+  font-size: 14px; font-weight: 600;
+  color: rgba(255,255,255,0.88);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.mob-more-user-id { font-size: 11px; color: rgba(255,255,255,0.3); font-family: monospace; margin-top: 2px; }
+body.theme-light .mob-more-user-name { color: var(--ink); }
+body.theme-light .mob-more-user-id   { color: var(--ink3); }
+.mob-more-item {
+  display: flex; align-items: center; gap: 12px;
+  padding: 13px 18px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px; color: rgba(255,255,255,0.7);
+  border-top: 1px solid rgba(255,255,255,0.05);
+  cursor: pointer; transition: background .15s;
+  border-left: none; border-right: none; border-bottom: none;
+  background: none; width: 100%; text-align: left;
+}
+.mob-more-item:first-of-type { border-top: 1px solid rgba(255,255,255,0.06); }
+.mob-more-item:active { background: rgba(255,255,255,0.06); }
+.mob-more-item svg { flex-shrink: 0; color: rgba(255,255,255,0.35); }
+body.theme-light .mob-more-item { color: var(--ink2); border-top-color: var(--line); }
+body.theme-light .mob-more-item svg { color: var(--ink3); }
+.mob-more-item.danger { color: #f87171; }
+.mob-more-item.danger svg { color: #f87171; }
+body.theme-light .mob-more-item.danger { color: var(--crimson); }
+body.theme-light .mob-more-item.danger svg { color: var(--crimson); }
+.mob-more-overlay { display:none; position:fixed; inset:0; z-index:65; }
+.mob-more-overlay.open { display:block; }
+</style>
+</head>
+<body>
+
+<!-- Theme Toggle Button (always visible) -->
+<button class="login-theme-btn" id="loginThemeBtn" onclick="toggleTheme()" aria-label="Toggle theme" title="Toggle light/dark theme">
+  <svg id="themeIconLogin" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+</button>
+
+<!-- ═══════════════════ LOGIN ═══════════════════ -->
+<div id="loginScreen">
+  <div class="login-left">
+    <div class="login-crest">
+      <div class="login-institution"></div>
+      <div class="login-institution">UM2IUC</div>
+      <div class="login-tagline"<br>IRIS System</div>
+    </div>
+    <div class="login-footer-txt">Academic Year 2026-2027<br>© 2026 UM2IUC. All rights reserved.</div>
+  </div>
+  <div class="login-right">
+    <div class="login-form-wrap">
+      <img src="https://raw.githubusercontent.com/um2iucoffice/um2portal/refs/heads/main/public/UM2_Logo.svg" alt="UM2 Logo" style="height:52px;width:auto;object-fit:contain;margin-bottom:20px;opacity:.85;display:block">
+      <h2>Welcome to IRIS!</h2>
+      <p>Use your UM2 ID and master password.</p>
+      <div class="field">
+        <label>Student ID</label>
+        <input type="text" id="loginStudentId" placeholder="e.g. iuc0001" autocomplete="username">
+      </div>
+      <div class="field">
+        <label>Password</label>
+        <input type="password" id="loginPassword" placeholder="Enter your password" autocomplete="current-password">
+      </div>
+      <button class="btn-login" id="signinBtn" onclick="doLogin()">Sign in</button>
+      <div class="login-err" id="accessError"></div>
+      <div class="login-loading" id="accessLoading">Verifying credentials…</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════ DASHBOARD ═══════════════════ -->
+
+<!-- Print overlay elements: watermark + footer, at body level -->
+<div class="print-watermark" aria-hidden="true"></div>
+<div class="print-footer" style="display:none">
+  <span id="printFooterLeft">University of Medicine (2) &nbsp;·&nbsp; Student ID: <span class="print-footer-sid" id="printFooterSID">—</span></span>
+  <span class="print-footer-center" id="printFooterCenter"></span>
+  <span class="print-footer-page" id="printFooterRight"></span>
+</div>
+<div class="print-page-header" style="display:none" id="printPageHeader">
+  <span id="printPageHeaderName">University of Medicine (2) — Official Transcript</span>
+  <span id="printPageHeaderSID"></span>
+</div>
+
+<div id="dashboard">
+
+  <!-- ── MOBILE BOTTOM TAB BAR ── -->
+  <nav class="mob-tabbar" id="mobTabbar">
+    <button class="mob-tab active" data-section="home" onclick="mobSwitchTab('home',this)">
+      <svg class="mob-tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg>
+      <span class="mob-tab-label">Home</span>
+    </button>
+    <button class="mob-tab" data-section="profile" onclick="mobSwitchTab('profile',this)">
+      <svg class="mob-tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+      <span class="mob-tab-label">Profile</span>
+    </button>
+    <button class="mob-tab" data-section="grades" onclick="mobSwitchTab('grades',this)">
+      <svg class="mob-tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="12" width="4" height="9" rx="1"/><rect x="10" y="7" width="4" height="14" rx="1"/><rect x="17" y="3" width="4" height="18" rx="1"/></svg>
+      <span class="mob-tab-label">Grades</span>
+    </button>
+    <button class="mob-tab" data-section="docs" onclick="mobSwitchTab('docs',this)">
+      <svg class="mob-tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/></svg>
+      <span class="mob-tab-label">Docs</span>
+    </button>
+    <button class="mob-tab" onclick="toggleMobMore(this)">
+      <svg class="mob-tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="5" cy="12" r="1.5" fill="currentColor"/><circle cx="12" cy="12" r="1.5" fill="currentColor"/><circle cx="19" cy="12" r="1.5" fill="currentColor"/></svg>
+      <span class="mob-tab-label">More</span>
+    </button>
+  </nav>
+
+  <!-- More menu popup -->
+  <div class="mob-more-overlay" id="mobMoreOverlay" onclick="closeMobMore()"></div>
+  <div class="mob-more-menu" id="mobMoreMenu">
+    <div class="mob-more-user">
+      <div class="mob-more-user-name" id="mobMoreName">—</div>
+      <div class="mob-more-user-id" id="mobMoreId">—</div>
+    </div>
+    <button class="mob-more-item" onclick="mobSwitchTab('idcard',null);closeMobMore()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><circle cx="8" cy="12" r="2.5"/><line x1="13" y1="10" x2="19" y2="10"/><line x1="13" y1="14" x2="17" y2="14"/></svg>
+      ID Card
+    </button>
+    <button class="mob-more-item" onclick="mobSwitchTab('photo',null);closeMobMore()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+      Profile Photo
+    </button>
+    <button class="mob-more-item" onclick="toggleTheme();closeMobMore()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/></svg>
+      Toggle Theme
+    </button>
+    <button class="mob-more-item danger" onclick="doSignOut();closeMobMore()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16,17 21,12 16,7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+      Sign Out
+    </button>
+  </div>
+  <button class="sb-toggle" id="sbToggle" onclick="toggleSidebar()" aria-label="Toggle navigation">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+  </button>
+  <div class="sb-overlay" id="sbOverlay" onclick="closeSidebar()"></div>
+
+  <!-- ── SIDEBAR ── -->
+  <aside class="sidebar" id="sidebar">
+
+    <!-- Brand -->
+    <div class="sb-brand">
+      <img src="https://raw.githubusercontent.com/um2iucoffice/um2portal/refs/heads/main/public/UM2_Logo.svg" alt="UM2">
+      <div class="sb-brand-text">
+        <div class="sb-brand-name">IRIS System</div>
+        <div class="sb-brand-sub">UM2IUC · 2026–2027</div>
+      </div>
+    </div>
+
+    <!-- User card -->
+    <div class="sb-user">
+      <div class="sb-user-avatar" id="sidebarAvatar">—</div>
+      <div class="sb-user-info">
+        <div class="sb-user-name" id="sidebarName">—</div>
+        <div class="sb-user-id" id="sidebarId">—</div>
+      </div>
+    </div>
+
+    <!-- Nav -->
+    <nav class="sb-nav">
+      <div class="sb-section-lbl">Portal</div>
+
+      <button class="sbnav-item active" data-section="home" onclick="switchSection('home',this)">
+        <svg class="sbnav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg>
+        <span class="sbnav-label">Home</span>
+      </button>
+
+      <button class="sbnav-item" data-section="profile" onclick="switchSection('profile',this)">
+        <svg class="sbnav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+        <span class="sbnav-label">My Personal Page</span>
+      </button>
+
+      <button class="sbnav-item" data-section="grades" onclick="switchSection('grades',this)">
+        <svg class="sbnav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="12" width="4" height="9" rx="1"/><rect x="10" y="7" width="4" height="14" rx="1"/><rect x="17" y="3" width="4" height="18" rx="1"/></svg>
+        <span class="sbnav-label">Academic Record</span>
+      </button>
+
+      <button class="sbnav-item" data-section="docs" onclick="switchSection('docs',this)">
+        <svg class="sbnav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+        <span class="sbnav-label">Document Office</span>
+      </button>
+
+      <button class="sbnav-item" data-section="idcard" id="navIdCard" onclick="switchSection('idcard',this)">
+        <svg class="sbnav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><circle cx="8" cy="12" r="2.5"/><line x1="13" y1="10" x2="19" y2="10"/><line x1="13" y1="14" x2="17" y2="14"/></svg>
+        <span class="sbnav-label">ID Card</span>
+      </button>
+
+      <button class="sbnav-item" data-section="photo" onclick="switchSection('photo',this)">
+        <svg class="sbnav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+        <span class="sbnav-label">Profile Photo</span>
+      </button>
+
+      <button class="sbnav-item" data-section="editinfo" onclick="switchSection('editinfo',this)" id="navEditInfo">
+        <svg class="sbnav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+        <span class="sbnav-label">Edit My Info <span id="editInfoBadge" style="display:none;background:var(--crimson);color:#fff;font-size:9px;font-weight:700;padding:1px 6px;border-radius:99px;margin-left:4px">Pending</span></span>
+      </button>
+
+      <div class="sb-section-lbl" style="margin-top:8px">External</div>
+
+      <a class="sbnav-item ext-link" href="https://um2campus.com/login/index.php" target="_blank" rel="noopener">
+        <svg class="sbnav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="12,2 22,8 12,14 2,8"/><polyline points="6,11 6,17 12,20 18,17 18,11"/></svg>
+        <span class="sbnav-label">E-Learning</span>
+        <span class="sbnav-ext">↗</span>
+      </a>
+
+      <a class="sbnav-item ext-link" href="https://supportportal.um2campus.org" target="_blank" rel="noopener">
+        <svg class="sbnav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11C3 6.03 7.03 2 12 2s9 4.03 9 9"/><path d="M3 11v2a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"/><path d="M21 11v2a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3z"/></svg>
+        <span class="sbnav-label">Support</span>
+        <span class="sbnav-ext">↗</span>
+      </a>
+    </nav>
+
+    <!-- Footer -->
+    <div class="sb-footer">
+      <button class="btn-signout" onclick="doSignOut()">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16,17 21,12 16,7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        Sign out
+      </button>
+    </div>
+
+  </aside>
+
+  <!-- ── MAIN ── -->
+  <div class="dash-main">
+
+    <!-- Top bar -->
+    <div class="dash-topbar">
+      <div class="dash-topbar-title" id="topbarTitle">Home</div>
+      <div class="dash-topbar-id" id="topbarEmail">—</div>
+      <button class="theme-toggle-btn" onclick="toggleTheme()" aria-label="Toggle theme" title="Toggle light/dark theme">
+        <svg id="themeIconDash" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+      </button>
+    </div>
+
+    <!-- Scrollable content -->
+    <div class="dash-content">
+
+    <!-- HOME -->
+    <div class="section active" id="panel-home">
+
+      <!-- Hero welcome banner -->
+      <div class="home-hero">
+        <div class="home-hero-avatar" id="homeAvatar">—</div>
+        <div class="home-hero-text">
+          <div class="home-hero-greeting">Welcome back</div>
+          <div class="home-hero-name" id="welcomeName">—</div>
+          <div class="home-hero-sub">Academic Year 2026–2027 &nbsp;·&nbsp; <span id="homeProgramName"></span></div>
+        </div>
+        <div class="home-hero-badge">
+          <div class="home-hero-badge-label" id="homeIdLabel">Student ID</div>
+          <div class="home-hero-badge-val" id="homeStudentId" style="font-family:monospace;font-size:16px;letter-spacing:.06em">—</div>
+          <div class="home-hero-badge-sub">University of Medicine (2)</div>
+        </div>
+      </div>
+
+      <!-- Academic Journey — shown only when student has 2+ degree enrollments -->
+      <div class="journey-card" id="journeyCard" style="display:none">
+        <div class="journey-card-head">Academic Journey</div>
+        <div id="journeyRows"><!-- populated by renderJourney() --></div>
+      </div>
+
+      <div class="home-section-label">Quick Access</div>
+      <div class="qlinks">
+        <div class="ql" onclick="switchTab('profile')">
+          <div class="ql-icon"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="var(--crimson)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg></div>
+          <div class="ql-t">My Personal Page</div>
+          <div class="ql-s">Personal &amp; enrollment details</div>
+          <span class="ql-arrow">→</span>
+        </div>
+        <div class="ql" onclick="switchTab('grades')">
+          <div class="ql-icon"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="var(--crimson)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="12" width="4" height="9" rx="1"/><rect x="10" y="7" width="4" height="14" rx="1"/><rect x="17" y="3" width="4" height="18" rx="1"/></svg></div>
+          <div class="ql-t">Academic Record</div>
+          <div class="ql-s">Grades, credits &amp; grade points</div>
+          <span class="ql-arrow">→</span>
+        </div>
+        <div class="ql" onclick="switchTab('docs')">
+          <div class="ql-icon"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="var(--crimson)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></div>
+          <div class="ql-t">Document Office</div>
+          <div class="ql-s">Official transcripts &amp; letters</div>
+          <span class="ql-arrow">→</span>
+        </div>
+        <div class="ql" onclick="switchTab('idcard')">
+          <div class="ql-icon"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="var(--crimson)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><circle cx="8" cy="12" r="2.5"/><line x1="13" y1="10" x2="19" y2="10"/><line x1="13" y1="14" x2="17" y2="14"/></svg></div>
+          <div class="ql-t">ID Card</div>
+          <div class="ql-s">View &amp; print your ID card</div>
+          <span class="ql-arrow">→</span>
+        </div>
+        <div class="ql" onclick="window.open('https://um2campus.com/login/index.php','_blank')">
+          <div class="ql-icon"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="var(--crimson)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><polygon points="12,2 22,8 12,14 2,8"/><polyline points="6,11 6,17 12,20 18,17 18,11"/><line x1="22" y1="8" x2="22" y2="14"/></svg></div>
+          <div class="ql-t">E-Learning</div>
+          <div class="ql-s">Courses, lectures &amp; materials</div>
+          <span class="ql-arrow">↗</span>
+        </div>
+        <div class="ql" onclick="window.open('https://supportportal.um2campus.org','_blank')">
+          <div class="ql-icon"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="var(--crimson)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11C3 6.03 7.03 2 12 2s9 4.03 9 9"/><path d="M3 11v2a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"/><path d="M21 11v2a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3z"/><path d="M19 15v1a4 4 0 0 1-4 4h-2"/></svg></div>
+          <div class="ql-t">Support</div>
+          <div class="ql-s">Submit a help request</div>
+          <span class="ql-arrow">↗</span>
+        </div>
+        <div class="ql dim">
+          <div class="ql-icon" style="opacity:.4"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="var(--crimson)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z"/></svg></div>
+          <div class="ql-t">Exam Registration</div>
+          <div class="ql-s">Coming soon</div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- PROFILE -->
+    <div class="section" id="panel-profile">
+      <div class="sec-head"><h2>My Personal Page</h2><p>Personal &amp; enrollment information</p></div>
+      <div class="banner">
+        <div class="avatar" id="avatarEl"><img id="avatarPhoto" style="width:100%;height:100%;object-fit:cover;border-radius:6px;display:none"><span id="avatarInitials">—</span></div>
+        <div class="b-name">
+          <h1 id="profileName">—</h1>
+          <div class="mm" id="profileNameMM"></div>
+          <div class="tags" id="profileTags"></div>
+        </div>
+
+      </div>
+
+
+      <div class="icard">
+        <div class="icard-head">Personal &amp; Enrollment Details</div>
+        <div class="igrid">
+          <div class="icell"><div class="ic-lbl" id="lblStudentID">Student ID</div><div class="ic-val" id="infoID">—</div></div>
+          <div class="icell"><div class="ic-lbl">Date of Birth</div><div class="ic-val" id="infoBirth">—</div></div>
+          <div class="icell"><div class="ic-lbl">Father's Name</div><div class="ic-val" id="infoFather">—</div></div>
+          <div class="icell"><div class="ic-lbl">Father's Name (Myanmar)</div><div class="ic-val" id="infoFatherMM">—</div></div>
+          <div class="icell"><div class="ic-lbl">Mother's Name</div><div class="ic-val" id="infoMother">—</div></div>
+          <div class="icell"><div class="ic-lbl">Mother's Name (Myanmar)</div><div class="ic-val" id="infoMotherMM">—</div></div>
+          <div class="icell"><div class="ic-lbl">Phone</div><div class="ic-val" id="infoPhone">—</div></div>
+          <div class="icell"><div class="ic-lbl">Email</div><div class="ic-val" id="infoEmail">—</div></div>
+          <div class="icell"><div class="ic-lbl">Admission Year</div><div class="ic-val" id="infoAdmission">—</div></div>
+          <div class="icell"><div class="ic-lbl">Current Year</div><div class="ic-val" id="infoStatus">—</div></div>
+          <div class="icell"><div class="ic-lbl">Enrollment Status</div><div class="ic-val" id="infoEnroll">—</div></div>
+          <div class="icell"><div class="ic-lbl">Degree Program</div><div class="ic-val" id="infoProgram">—</div></div>
+          <div class="icell"><div class="ic-lbl">Completion Status</div><div class="ic-val" id="infoGrad">—</div></div>
+          <div class="icell" id="cellGradID" style="display:none"><div class="ic-lbl">ဘွဲ့ရမှတ်ပုံတင် အမှတ် · Graduation ID</div><div class="ic-val" id="infoGradID">—</div></div>
+          <div class="icell" id="cellGradIDMY" style="display:none"><div class="ic-lbl">ဘွဲ့ရမှတ်ပုံတင် (Myanmar)</div><div class="ic-val" id="infoGradIDMY" style="font-family:'Noto Sans Myanmar','Myanmar Text','Pyidaungsu',sans-serif">—</div></div>
+          <div class="icell" id="cellGradDate" style="display:none"><div class="ic-lbl">Date of Graduation</div><div class="ic-val" id="infoGradDate">—</div></div>
+          <div class="icell" id="cellGradDateMY" style="display:none"><div class="ic-lbl">ရက်စွဲ (ဘွဲ့) · Graduation Date (Myanmar)</div><div class="ic-val" id="infoGradDateMY" style="font-family:'Noto Sans Myanmar','Myanmar Text','Pyidaungsu',sans-serif">—</div></div>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- DOCUMENTS -->
+    <div class="section-sep" aria-hidden="true"></div>
+    <div class="section" id="panel-docs">
+      <div class="sec-head">
+        <h2>Document Office</h2>
+        <p>Generate &amp; print official university documents.</p>
+      </div>
+
+      <!-- Cards are generated dynamically per enrollment by renderDocCards() -->
+      <div id="docCardsContainer"></div>
+
+      <!-- Degree Certificate(s) — shown when student has graduated -->
+      <div id="certSection" style="display:none">
+        <div class="cert-section-head"></div>
+        <div class="doc-grid" id="certGrid">
+          <!-- populated by renderCertCards() -->
+        </div>
+      </div>
+    </div>
+
+    <!-- ID CARD -->
+    <div class="section" id="panel-idcard">
+      <div class="sec-head"><h2 id="idCardPageTitle">Student ID Card</h2><p id="idCardPageSub">Your official University of Medicine (2) student identification</p></div>
+      <div class="idcard-wrap">
+        <div class="idcard">
+          <!-- FRONT -->
+          <div class="idcard-front">
+            <div class="idcard-top">
+              <div class="idcard-logo-wrap">
+                <img src="https://raw.githubusercontent.com/um2iucoffice/um2portal/cddfb252ec6cf6cecc25c53a8630d92b08c2aaa8/public/UM2_Logo.svg" alt="UM2" class="idcard-logo">
+                <div class="idcard-uni">
+                  <span class="idcard-uni-name">University of Medicine (2)</span>
+                  <span class="idcard-uni-sub">Interim University Council · Myanmar</span>
+                </div>
+              </div>
+              <div class="idcard-type-badge" id="idcardTypeBadge">Student</div>
+            </div>
+            <div class="idcard-divider-line"></div>
+            <div class="idcard-body">
+              <div class="idcard-photo" id="idcardPhoto"></div>
+              <div class="idcard-info">
+                <div class="idcard-name" id="idcardName"></div>
+                <div class="idcard-name-mm" id="idcardNameMM"></div>
+                <div class="idcard-fields">
+                  <div class="idcard-field">
+                    <span class="idcard-field-lbl">Year</span>
+                    <span class="idcard-field-val" id="idcardStatus">—</span>
+                  </div>
+                  <div class="idcard-field">
+                    <span class="idcard-field-lbl">Program</span>
+                    <span class="idcard-field-val" id="idcardProgram">—</span>
+                  </div>
+                  <div class="idcard-field" id="idcardSupervisorRow" style="display:none">
+                    <span class="idcard-field-lbl">Supervisor</span>
+                    <span class="idcard-field-val" id="idcardSupervisor">—</span>
+                  </div>
+                  <div class="idcard-field">
+                    <span class="idcard-field-lbl">Admission Year</span>
+                    <span class="idcard-field-val" id="idcardAdmission">—</span>
+                  </div>
+                  <div class="idcard-field">
+                    <span class="idcard-field-lbl">Enrollment Status</span>
+                    <span class="idcard-field-val" id="idcardEnroll">—</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="idcard-bottom">
+              <div>
+                <div class="idcard-id-label" id="idcardIDLabel">Student ID</div>
+                <div class="idcard-id-value" id="idcardID">—</div>
+              </div>
+              <div class="idcard-validity" id="idcardValidityBlock">
+                <span id="idcardValidityLabel">Valid</span>
+                <strong id="idcardValidityYear" style="display:block;font-size:10px;color:rgba(255,255,255,.85)">—</strong>
+              </div>
+            </div>
+          </div>
+          <!-- BACK -->
+          <div class="idcard-back">
+            <div class="idcard-back-header">Additional Information</div>
+            <div class="idcard-back-fields">
+              <div class="idcard-back-field">
+                <div class="lbl">Date of Birth</div>
+                <div class="val" id="idcardBirth">—</div>
+              </div>
+              <div class="idcard-back-field">
+                <div class="lbl">Phone</div>
+                <div class="val" id="idcardPhone">—</div>
+              </div>
+              <div class="idcard-back-field">
+                <div class="lbl">Father's Name</div>
+                <div class="val" id="idcardFather">—</div>
+              </div>
+              <div class="idcard-back-field">
+                <div class="lbl">Admission Year</div>
+                <div class="val" id="idcardAdmissionBack">—</div>
+              </div>
+            </div>
+            <div class="idcard-back-bottom">
+              <div class="idcard-qr-wrap">
+                <div id="idcardQR"></div>
+                <div class="idcard-qr-lbl">Scan to Verify</div>
+              </div>
+              <div class="idcard-back-right">
+                <div class="idcard-sid-block">
+                  <div class="lbl"></div>
+                  <div class="val" id="idcardBarcodeNum">—</div>
+                </div>
+                <div class="idcard-sig-area">Authorised by · Registrar</div>
+              </div>
+            </div>
+            <div class="idcard-notice">
+              This card is the property of University of Medicine (2) - IUC. Misuse is subject to disciplinary action.
+            </div>
+          </div>
+        </div>
+        <div class="idcard-actions">
+          <button class="btn-idcard btn-idcard-primary" onclick="printIDCard()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6,9 6,2 18,2 18,9"/><path d="M6,18H4a2,2,0,0,1-2-2V11a2,2,0,0,1,2-2H20a2,2,0,0,1,2,2v5a2,2,0,0,1-2,2H18"/><rect x="6" y="14" width="12" height="8"/></svg>
+            Print ID Card
+          </button>
+        </div>
+        <p style="font-size:11px;color:var(--ink3);text-align:center;max-width:500px">This digital student ID is personal and must not be shared with others.</p>
+      </div>
+    </div>
+
+    <!-- GRADES -->
+    <div class="section" id="panel-grades">
+      <div class="sec-head">
+        <h2>Academic Record</h2>
+        <p>Full record of grades, credits and grade points — Academic Year 2026–2027</p>
+      </div>
+
+      <!-- Student identity banner -->
+      <div class="grades-header-banner" id="gradesHeaderBanner" style="display:none">
+        <div class="grades-hdr-avatar" id="gradesAvatar">—</div>
+        <div class="grades-hdr-info">
+          <div class="grades-hdr-name" id="gradesStudentName">—</div>
+          <div class="grades-hdr-id"><span id="gradesIdLabel">Student ID</span>: <span id="gradesStudentId">—</span> &nbsp;·&nbsp; University of Medicine (2)</div>
+        </div>
+        
+      </div>
+
+      <div id="transcriptSummary" style="display:none" class="transcript-summary">
+        <div class="ts-item">
+          <span class="ts-lbl">Total Credits</span>
+          <span class="ts-val" id="tsCredits">—</span>
+        </div>
+        <div class="ts-divider"></div>
+        <div class="ts-item">
+          <span class="ts-lbl">Courses</span>
+          <span class="ts-val" id="tsCourses">—</span>
+        </div>
+        <div class="ts-divider"></div>
+        <div class="ts-item">
+          <span class="ts-lbl">Years on Record</span>
+          <span class="ts-val" id="tsYears">—</span>
+        </div>
+        <div class="ts-divider"></div>
+        <div class="ts-item">
+          <span class="ts-lbl">Overall GPA</span>
+          <span class="ts-val accent" id="tsGpa">—</span>
+        </div>
+      </div>
+
+      <!-- Degree tabs — shown only when student has 2+ enrollments -->
+      <div id="gradeDegreeTabs" style="display:none">
+        <div class="icard" style="margin-bottom:16px;overflow:hidden">
+          <div class="degree-tabs" id="degreeTabsBar"><!-- populated by renderDegreeTabs() --></div>
+        </div>
+      </div>
+
+      <div id="gradesContent"><div class="g-wrap"><div class="no-g">Loading results…</div></div></div>
+    </div>
+
+    <!-- EDIT MY INFO -->
+    <div class="section" id="panel-editinfo">
+      <div class="sec-head">
+        <h2>Edit My Information</h2>
+        <p>Submit a request to update your personal details. Changes require Registrar approval.</p>
+      </div>
+      <div style="max-width:640px">
+
+        <!-- Pending request notice -->
+        <div id="editInfoPendingNotice" style="display:none;margin-bottom:20px;padding:14px 18px;border-radius:10px;border:1px solid rgba(154,123,47,0.35);background:rgba(154,123,47,0.1)">
+          <div style="font-size:13px;font-weight:700;color:var(--gold);margin-bottom:4px">⏳ Pending Approval</div>
+          <div id="editInfoPendingText" style="font-size:12px;color:var(--ink3);line-height:1.6"></div>
+        </div>
+
+        <!-- Approved notice -->
+        <div id="editInfoApprovedNotice" style="display:none;margin-bottom:20px;padding:14px 18px;border-radius:10px;border:1px solid rgba(26,92,58,0.3);background:rgba(26,92,58,0.08)">
+          <div style="font-size:13px;font-weight:700;color:var(--green);margin-bottom:4px">✓ Last Request Approved</div>
+          <div id="editInfoApprovedText" style="font-size:12px;color:var(--ink3);line-height:1.6"></div>
+        </div>
+
+        <div class="icard">
+          <div class="icard-head">Request Information Change</div>
+          <div style="padding:24px">
+            <p style="font-size:13px;color:var(--ink3);margin-bottom:24px;line-height:1.6">
+              You can request changes to your Father's Name and Mother's Name (in both English and Myanmar). Other fields like your name, date of birth, and enrollment data must be updated by the Registrar directly.
+            </p>
+
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px">
+              <div>
+                <div style="font-size:11px;font-weight:600;letter-spacing:.8px;text-transform:uppercase;color:var(--ink3);margin-bottom:6px">Father's Name (English)</div>
+                <input id="editFatherEN" type="text" placeholder="U / Ko …"
+                  style="width:100%;padding:10px 12px;border:1.5px solid var(--line);border-radius:var(--r);font-family:'DM Sans',sans-serif;font-size:13px;color:var(--ink);background:var(--white);outline:none;transition:border-color .2s,box-shadow .2s"
+                  onfocus="this.style.borderColor='var(--crimson)';this.style.boxShadow='0 0 0 3px rgba(139,26,46,0.08)'"
+                  onblur="this.style.borderColor='var(--line)';this.style.boxShadow='none'">
+              </div>
+              <div>
+                <div style="font-size:11px;font-weight:600;letter-spacing:.8px;text-transform:uppercase;color:var(--ink3);margin-bottom:6px">Father's Name (Myanmar)</div>
+                <input id="editFatherMY" type="text" placeholder="ဦး / ကို …"
+                  style="width:100%;padding:10px 12px;border:1.5px solid var(--line);border-radius:var(--r);font-family:'Noto Sans Myanmar','Myanmar Text','Pyidaungsu','DM Sans',sans-serif;font-size:13px;color:var(--ink);background:var(--white);outline:none;transition:border-color .2s,box-shadow .2s"
+                  onfocus="this.style.borderColor='var(--crimson)';this.style.boxShadow='0 0 0 3px rgba(139,26,46,0.08)'"
+                  onblur="this.style.borderColor='var(--line)';this.style.boxShadow='none'">
+              </div>
+              <div>
+                <div style="font-size:11px;font-weight:600;letter-spacing:.8px;text-transform:uppercase;color:var(--ink3);margin-bottom:6px">Mother's Name (English)</div>
+                <input id="editMotherEN" type="text" placeholder="Daw / Ma …"
+                  style="width:100%;padding:10px 12px;border:1.5px solid var(--line);border-radius:var(--r);font-family:'DM Sans',sans-serif;font-size:13px;color:var(--ink);background:var(--white);outline:none;transition:border-color .2s,box-shadow .2s"
+                  onfocus="this.style.borderColor='var(--crimson)';this.style.boxShadow='0 0 0 3px rgba(139,26,46,0.08)'"
+                  onblur="this.style.borderColor='var(--line)';this.style.boxShadow='none'">
+              </div>
+              <div>
+                <div style="font-size:11px;font-weight:600;letter-spacing:.8px;text-transform:uppercase;color:var(--ink3);margin-bottom:6px">Mother's Name (Myanmar)</div>
+                <input id="editMotherMY" type="text" placeholder="ဒေါ် / မ …"
+                  style="width:100%;padding:10px 12px;border:1.5px solid var(--line);border-radius:var(--r);font-family:'Noto Sans Myanmar','Myanmar Text','Pyidaungsu','DM Sans',sans-serif;font-size:13px;color:var(--ink);background:var(--white);outline:none;transition:border-color .2s,box-shadow .2s"
+                  onfocus="this.style.borderColor='var(--crimson)';this.style.boxShadow='0 0 0 3px rgba(139,26,46,0.08)'"
+                  onblur="this.style.borderColor='var(--line)';this.style.boxShadow='none'">
+              </div>
+            </div>
+
+            <div style="margin-bottom:20px">
+              <div style="font-size:11px;font-weight:600;letter-spacing:.8px;text-transform:uppercase;color:var(--ink3);margin-bottom:6px">Reason for Change</div>
+              <textarea id="editInfoReason" rows="3" placeholder="Briefly explain why this information needs to be updated (e.g. spelling correction, legal name change)…"
+                style="width:100%;padding:10px 12px;border:1.5px solid var(--line);border-radius:var(--r);font-family:'DM Sans',sans-serif;font-size:13px;color:var(--ink);background:var(--white);outline:none;resize:vertical;transition:border-color .2s,box-shadow .2s"
+                onfocus="this.style.borderColor='var(--crimson)';this.style.boxShadow='0 0 0 3px rgba(139,26,46,0.08)'"
+                onblur="this.style.borderColor='var(--line)';this.style.boxShadow='none'"></textarea>
+            </div>
+
+            <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+              <button id="submitEditInfoBtn" onclick="submitInfoEditRequest()"
+                style="padding:11px 28px;background:var(--crimson);color:#fff;border:none;border-radius:var(--r);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:background .15s;box-shadow:0 2px 8px rgba(139,26,46,.22)">
+                Submit Request
+              </button>
+              <span id="editInfoStatus" style="font-size:13px;color:var(--ink3)"></span>
+            </div>
+          </div>
+        </div>
+
+        <div class="icard" style="margin-top:16px">
+          <div class="icard-head">Request History</div>
+          <div id="editInfoHistory" style="padding:16px 20px;font-size:13px;color:var(--ink3)">No requests submitted yet.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PHOTO UPLOAD -->
+    <div class="section" id="panel-photo">
+      <div class="sec-head">
+        <h2>Profile Photo</h2>
+        <p>Upload your official passport-style photo</p>
+      </div>
+
+      <div style="max-width:560px">
+        <!-- Current photo preview card -->
+        <div class="icard" style="margin-bottom:16px">
+          <div class="icard-head">Current Photo</div>
+          <div style="padding:28px 24px;display:flex;align-items:center;gap:28px;flex-wrap:wrap">
+            <div id="profilePhotoPreview" style="width:100px;height:120px;border-radius:10px;background:var(--surface);border:1.5px solid var(--line);overflow:hidden;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+              <svg id="photoPlaceholderSvg" width="56" height="64" viewBox="0 0 56 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <ellipse cx="28" cy="20" rx="13" ry="14" fill="#D1D5DB"/>
+                <path d="M2 58c0-13.255 11.64-24 26-24s26 10.745 26 24" fill="#D1D5DB"/>
+              </svg>
+            </div>
+            <div>
+              <div style="font-size:14px;font-weight:600;color:var(--ink);margin-bottom:4px" id="photoPreviewName">ကျောင်းသားဓာတ်ပုံ</div>
+              <div style="font-size:12px;color:var(--ink3)" id="photoPreviewId">Student's ID Photo</div>
+              <div style="margin-top:12px;font-size:12px;color:var(--ink3);line-height:1.6">
+                Your photo appears on your Student ID card<br>and throughout the portal.
+              </div>
+              <button id="removePhotoBtn" onclick="removePhoto()" style="display:none;margin-top:14px;padding:7px 16px;background:none;border:1px solid #FACDD3;border-radius:var(--r);font-size:12px;font-weight:600;color:var(--crimson);cursor:pointer;transition:background .15s,border-color .15s">
+                Remove Photo
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Upload card -->
+        <div class="icard">
+          <div class="icard-head">Upload New Photo</div>
+          <div style="padding:24px">
+            <p style="font-size:13px;color:var(--ink3);margin-bottom:20px;line-height:1.6">
+              Please upload a clear, passport-style photo with a plain background.<br>
+              ဤနေရာတွင် (ပတ်စ်ပို့) ပုံစံ ဓာတ်ပုံကို တင်ပေးပါ။ နောက်ခံအရောင် အဖြူ ဖြစ်ရပါမည်။<br>
+              Accepted formats: <strong>JPEG, PNG, WebP</strong> &nbsp;·&nbsp; Max size: <strong>5 MB</strong>
+            </p>
+
+            <!-- Drop zone -->
+            <div id="photoDropZone" onclick="document.getElementById('photoFileInput').click()"
+              style="border:2px dashed var(--line);border-radius:10px;padding:36px 24px;text-align:center;cursor:pointer;transition:border-color .2s,background .2s;background:var(--surface);margin-bottom:20px">
+              <div style="font-size:14px;font-weight:600;color:var(--ink);margin-bottom:4px">Click to choose a photo</div>
+              <div style="font-size:12px;color:var(--ink3)">or drag &amp; drop here</div>
+              <input type="file" id="photoFileInput" accept="image/jpeg,image/png,image/webp" style="display:none" onchange="previewPhoto(this)">
+            </div>
+
+            <!-- Preview of selected file -->
+            <div id="photoSelectedWrap" style="display:none;margin-bottom:20px;padding:16px;background:var(--surface);border-radius:8px;border:1px solid var(--line);display:none;align-items:center;gap:16px">
+              <img id="photoSelectedThumb" src="" alt="Preview" style="width:64px;height:76px;object-fit:cover;border-radius:6px;border:1px solid var(--line);flex-shrink:0">
+              <div style="flex:1;min-width:0">
+                <div id="photoSelectedName" style="font-size:13px;font-weight:600;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">—</div>
+                <div id="photoSelectedSize" style="font-size:12px;color:var(--ink3);margin-top:2px">—</div>
+              </div>
+              <button onclick="clearPhotoSelection()" style="background:none;border:1px solid var(--line);border-radius:4px;padding:4px 10px;font-size:12px;color:var(--ink3);cursor:pointer">Remove</button>
+            </div>
+
+            <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+              <button id="uploadPhotoBtn" onclick="uploadPhoto()" style="padding:11px 28px;background:var(--crimson);color:#fff;border:none;border-radius:var(--r);font-size:13px;font-weight:600;cursor:pointer;display:none;transition:background .15s;box-shadow:0 2px 8px rgba(139,26,46,.22)">Upload Photo</button>
+              <span id="photoUploadStatus" style="font-size:13px;color:var(--ink3)"></span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+    <!-- dashboard footer -->
+    <footer class="dash-footer">
+      &copy; <span id="footerYear"></span> UM2 Interim University Council &nbsp;·&nbsp; University of Medicine (2), Republic of the Union of Myanmar
+    </footer>
+
+  </div><!-- /.dash-main -->
+
+</div><!-- /#dashboard -->
+
+<script>
+// ── Course catalog ────────────────────────────────────────────
+// This is the built-in fallback catalog for the MBBS program.
+// To support additional degree programs, your backend's login response
+// can include a `courses` object and an optional `program_meta` object:
 //
-//  Environment variables required:
-//    SUPABASE_URL
-//    SUPABASE_SERVICE_KEY  (service_role key)
-// ============================================================
-
-const SUPABASE_URL         = process.env.SUPABASE_URL;
-const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY;
-
-const BUCKET = 'student-photos';
-
-const CORS_HEADERS = {
-  'Access-Control-Allow-Origin': '*',
-  'Content-Type': 'application/json'
+//   r.courses      → { [courseId]: { name, year, block, credits, assessment } }
+//   r.program_meta → {
+//                      label: 'MSc Nursing',          // shown in grade headers
+//                      yearOrder: ['Year 1','Year 2']  // preferred sort order
+//                    }
+//
+// When present, these override the built-in MBBS data below entirely.
+// No changes to this file are needed to add new programs.
+const COURSES_MBBS = {
+  CRS001: { name: 'Myanmar Language',                              year: 'Foundation Year', block: 'Block 1 — Foundation for Science',            credits: 5,  assessment: 'Written Exam' },
+  CRS002: { name: 'English Language',                              year: 'Foundation Year', block: 'Block 1 — Foundation for Science',            credits: 5,  assessment: 'Written Exam' },
+  CRS003: { name: 'Mathematics',                                   year: 'Foundation Year', block: 'Block 1 — Foundation for Science',            credits: 5,  assessment: 'Written Exam' },
+  CRS004: { name: 'Chemistry',                                     year: 'Foundation Year', block: 'Block 1 — Foundation for Science',            credits: 5,  assessment: 'Written Exam' },
+  CRS005: { name: 'Physics',                                       year: 'Foundation Year', block: 'Block 1 — Foundation for Science',            credits: 5,  assessment: 'Written Exam' },
+  CRS006: { name: 'Botany',                                        year: 'Foundation Year', block: 'Block 1 — Foundation for Science',            credits: 3,  assessment: 'Written Exam' },
+  CRS007: { name: 'Zoology',                                       year: 'Foundation Year', block: 'Block 1 — Foundation for Science',            credits: 2,  assessment: 'Written Exam' },
+  CRS008: { name: 'Principle of Structure (Anatomy)',              year: 'Foundation Year', block: 'Block 2 — Principle Block',                   credits: 3,  assessment: 'Written Exam' },
+  CRS009: { name: 'Principle of Function (Physiology)',            year: 'Foundation Year', block: 'Block 2 — Principle Block',                   credits: 3,  assessment: 'Written Exam' },
+  CRS010: { name: 'Principle of Molecule (Biochemistry)',          year: 'Foundation Year', block: 'Block 2 — Principle Block',                   credits: 2,  assessment: 'Written Exam' },
+  CRS011: { name: 'Principle of Disease Mechanism (Pathology)',    year: 'Foundation Year', block: 'Block 2 — Principle Block',                   credits: 3,  assessment: 'Written Exam' },
+  CRS012: { name: 'Principle of Drug Therapy (Pharmacology)',      year: 'Foundation Year', block: 'Block 2 — Principle Block',                   credits: 2,  assessment: 'Written Exam' },
+  CRS013: { name: 'Principle of Defence Mechanism (Microbiology)', year: 'Foundation Year', block: 'Block 2 — Principle Block',                   credits: 2,  assessment: 'Written Exam' },
+  CRS014: { name: 'Personal & Professional Development (PPD)',     year: 'Foundation Year', block: 'Block 3 — Personal & Professional Development',credits: 10, assessment: 'Portfolio / Continuous' },
+  CRS015: { name: 'Musculo-skeletal',                              year: 'M-1',             block: 'Integrated System Modules',                   credits: 8,  assessment: 'In-block exam' },
+  CRS016: { name: 'Genetic',                                       year: 'M-1',             block: 'Integrated System Modules',                   credits: 8,  assessment: 'In-block exam' },
+  CRS017: { name: 'Cardio-vascular',                               year: 'M-1',             block: 'Integrated System Modules',                   credits: 8,  assessment: 'In-block exam' },
+  CRS018: { name: 'Respiratory',                                   year: 'M-1',             block: 'Integrated System Modules',                   credits: 8,  assessment: 'In-block exam' },
+  CRS019: { name: 'GI, Liver, Nutrition',                          year: 'M-1',             block: 'Integrated System Modules',                   credits: 8,  assessment: 'In-block exam' },
+  CRS020: { name: 'Haematology',                                   year: 'M-2',             block: 'Integrated System Modules',                   credits: 8,  assessment: 'In-block exam' },
+  CRS021: { name: 'Immunology',                                    year: 'M-2',             block: 'Integrated System Modules',                   credits: 8,  assessment: 'In-block exam' },
+  CRS022: { name: 'Endocrine',                                     year: 'M-2',             block: 'Integrated System Modules',                   credits: 8,  assessment: 'In-block exam' },
+  CRS023: { name: 'Renal & Reproductive',                          year: 'M-2',             block: 'Integrated System Modules',                   credits: 8,  assessment: 'In-block exam' },
+  CRS024: { name: 'Neurology & Psychiatry',                        year: 'M-2',             block: 'Integrated System Modules',                   credits: 8,  assessment: 'In-block exam' },
+  CRS025: { name: 'General Medicine',                              year: 'M-3',             block: 'Junior Clerkship',                            credits: 10, assessment: 'DOPS / Mini-CEX' },
+  CRS026: { name: 'General Surgery',                               year: 'M-3',             block: 'Junior Clerkship',                            credits: 10, assessment: 'DOPS / Mini-CEX' },
+  CRS027: { name: 'Infectious Diseases',                           year: 'M-3',             block: 'Junior Clerkship',                            credits: 3,  assessment: 'DOPS / Mini-CEX' },
+  CRS028: { name: 'Radiology & Imaging',                           year: 'M-3',             block: 'Junior Clerkship',                            credits: 3,  assessment: 'Image interpretation OSCE' },
+  CRS029: { name: 'Dermatology',                                   year: 'M-3',             block: 'Junior Clerkship',                            credits: 2,  assessment: 'Clinical exam' },
+  CRS030: { name: 'Ophthalmology (Eye)',                           year: 'M-3',             block: 'Junior Clerkship',                            credits: 1,  assessment: 'Clinical exam' },
+  CRS031: { name: 'Ear, Nose & Throat (ENT)',                      year: 'M-3',             block: 'Junior Clerkship',                            credits: 1,  assessment: 'Clinical exam' },
+  CRS032: { name: 'Orthopaedics & Trauma Surgery',                 year: 'M-3',             block: 'Junior Clerkship',                            credits: 4,  assessment: 'DOPS / Mini-CEX' },
+  CRS033: { name: 'Rehabilitation Medicine',                       year: 'M-3',             block: 'Junior Clerkship',                            credits: 3,  assessment: 'Case presentation' },
+  CRS034: { name: 'Forensic Medicine',                             year: 'M-3',             block: 'Junior Clerkship',                            credits: 3,  assessment: 'Written exam' },
+  CRS035: { name: 'Elective',                                      year: 'M-3',             block: 'Junior Clerkship',                            credits: 5,  assessment: 'Elective report' },
+  CRS036: { name: 'Paediatrics',                                   year: 'M-4',             block: 'Specialty Clerkship',                         credits: 5,  assessment: 'DOPS / Mini-CEX' },
+  CRS037: { name: 'Obstetrics & Gynaecology (O&G)',                year: 'M-4',             block: 'Specialty Clerkship',                         credits: 5,  assessment: 'DOPS / Mini-CEX' },
+  CRS038: { name: 'Psychiatry',                                    year: 'M-4',             block: 'Specialty Clerkship',                         credits: 5,  assessment: 'MSE / Case report' },
+  CRS039: { name: 'Medicine (Internal Medicine)',                   year: 'M-4',             block: 'Specialty Clerkship',                         credits: 3,  assessment: 'Mini-CEX' },
+  CRS040: { name: 'Geriatric Medicine',                            year: 'M-4',             block: 'Specialty Clerkship',                         credits: 2,  assessment: 'Case presentation' },
+  CRS041: { name: 'Palliative Care',                               year: 'M-4',             block: 'Specialty Clerkship',                         credits: 2,  assessment: 'Portfolio' },
+  CRS042: { name: 'Surgery (Advanced General)',                    year: 'M-4',             block: 'Specialty Clerkship',                         credits: 3,  assessment: 'DOPS' },
+  CRS043: { name: 'Emergency Medicine (EM)',                       year: 'M-4',             block: 'Specialty Clerkship',                         credits: 3,  assessment: 'DOPS / Mini-CEX' },
+  CRS044: { name: 'Anaesthesia',                                   year: 'M-4',             block: 'Specialty Clerkship',                         credits: 2,  assessment: 'DOPS' },
+  CRS045: { name: 'Forensic Medicine',                             year: 'M-4',             block: 'Specialty Clerkship',                         credits: 1,  assessment: 'Written exam' },
+  CRS046: { name: 'Residential Field Trip',                        year: 'M-4',             block: 'Specialty Clerkship',                         credits: 5,  assessment: 'Field report' },
+  CRS047: { name: 'Medicine — Senior Hospital Posting',            year: 'M-5',             block: 'Senior Clerkship',                            credits: 10, assessment: 'Mini-CEX / CBD' },
+  CRS048: { name: 'Surgery — Senior Hospital Posting',             year: 'M-5',             block: 'Senior Clerkship',                            credits: 10, assessment: 'DOPS / CBD' },
+  CRS049: { name: 'Obstetrics & Gynaecology — Senior',             year: 'M-5',             block: 'Senior Clerkship',                            credits: 10, assessment: 'DOPS / Mini-CEX' },
+  CRS050: { name: 'Paediatrics — Senior Hospital Posting',         year: 'M-5',             block: 'Senior Clerkship',                            credits: 10, assessment: 'Mini-CEX / CBD' },
+  CRS051: { name: 'SSC — Research Project (Dissertation)',         year: 'M-5',             block: 'Senior Clerkship',                            credits: 5,  assessment: 'Dissertation + viva' },
+  CRS052: { name: 'SSC — Clinical Special Interest Attachment',    year: 'M-5',             block: 'Senior Clerkship',                            credits: 5,  assessment: 'Portfolio / log' },
 };
 
-// ── Supabase REST helper ──────────────────────────────────────
-async function supabaseRest(path, options = {}) {
-  const res = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, {
-    ...options,
-    headers: {
-      'apikey':        SUPABASE_SERVICE_KEY,
-      'Authorization': `Bearer ${SUPABASE_SERVICE_KEY}`,
-      'Content-Type':  'application/json',
-      ...(options.headers || {})
-    }
-  });
-  if (!res.ok) throw new Error(`REST ${path}: ${await res.text()}`);
-  const text = await res.text();
-  return text ? JSON.parse(text) : null;
+// ── Program metadata defaults (MBBS) ─────────────────────────
+// Overridden at runtime by r.program_meta from the login response.
+const PROGRAM_META_MBBS = {
+  label:     'MBBS Program',
+  yearOrder: ['Foundation Year', 'M-1', 'M-2', 'M-3', 'M-4', 'M-5']
+};
+
+// Active catalog and program — set by populate(), used by renderGrades()
+let COURSES       = COURSES_MBBS;
+let PROGRAM_META  = PROGRAM_META_MBBS;
+
+// ── Auth ─────────────────────────────────────────────────────
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Enter' && !document.getElementById('loginScreen').classList.contains('hidden')) doLogin();
+});
+
+function doLogin() {
+  const studentId = (document.getElementById('loginStudentId').value || '').trim().toLowerCase();
+  const password = (document.getElementById('loginPassword').value || '').trim();
+  const errEl    = document.getElementById('accessError');
+  const btn      = document.getElementById('signinBtn');
+  errEl.classList.remove('show');
+  if (!studentId || !password) {
+    errEl.textContent = 'Please enter your Student ID and password.';
+    errEl.classList.add('show');
+    return;
+  }
+  btn.disabled = true;
+  btn.textContent = 'Signing in…';
+  document.getElementById('accessLoading').classList.add('show');
+  window._sessionPassword = password;
+  fetch('/.netlify/functions/login', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ studentId, password })
+  })
+    .then(res => res.json())
+    .then(handleAuth)
+    .catch(handleAuthErr);
 }
 
-// ── Supabase Storage upload ───────────────────────────────────
-async function uploadToStorage(filePath, buffer, contentType) {
-  const res = await fetch(
-    `${SUPABASE_URL}/storage/v1/object/${BUCKET}/${filePath}`,
-    {
-      method: 'POST',
-      headers: {
-        'apikey':        SUPABASE_SERVICE_KEY,
-        'Authorization': `Bearer ${SUPABASE_SERVICE_KEY}`,
-        'Content-Type':  contentType,
-        'x-upsert':      'true'
-      },
-      body: buffer
-    }
-  );
-  if (!res.ok) throw new Error(`Storage upload failed: ${await res.text()}`);
+function handleAuth(r) {
+  const btn = document.getElementById('signinBtn');
+  btn.disabled = false;
+  btn.textContent = 'Sign in';
+  document.getElementById('accessLoading').classList.remove('show');
+  if (!r || !r.success) {
+    const errEl = document.getElementById('accessError');
+    errEl.textContent = (r && r.message) ? r.message : 'Invalid Student ID or password.';
+    errEl.classList.add('show');
+    document.getElementById('loginPassword').value = '';
+    document.getElementById('loginPassword').focus();
+    return;
+  }
+  if (!r.student) {
+    const errEl = document.getElementById('accessError');
+    errEl.textContent = 'Login succeeded but no student data was returned. Please try again or contact support.';
+    errEl.classList.add('show');
+    console.error('handleAuth: r.student is missing. Full response:', r);
+    btn.disabled = false;
+    btn.textContent = 'Sign in';
+    return;
+  }
+  try {
+    populate(r.student, r.grades || [], r.courses || {}, r.program_meta || null, r.enrollments || []);
+  } catch(e) {
+    const errEl = document.getElementById('accessError');
+    errEl.textContent = 'Login succeeded but failed to load profile: ' + e.message + '. Please try again.';
+    errEl.classList.add('show');
+    console.error('populate() error:', e);
+    btn.disabled = false;
+    btn.textContent = 'Sign in';
+    return;
+  }
+  // ── Persist session for refresh recovery (3 min TTL) ──
+  try {
+    sessionStorage.setItem('iris_session', JSON.stringify({
+      studentId   : (document.getElementById('loginStudentId').value || '').trim().toLowerCase(),
+      password    : window._sessionPassword,
+      studentData : r.student,
+      grades      : r.grades || [],
+      courses     : r.courses || {},
+      program_meta: r.program_meta || null,
+      enrollments : r.enrollments || [],
+      savedAt     : Date.now()
+    }));
+  } catch(e) {}
+
+  document.getElementById('loginScreen').classList.add('hidden');
+  const dash = document.getElementById('dashboard');
+  dash.style.display = '';
+  setTimeout(() => { dash.classList.add('show'); }, 100);
 }
 
-// ── Main handler ─────────────────────────────────────────────
-export const handler = async (event) => {
-  if (event.httpMethod === 'OPTIONS') return { statusCode: 204, headers: CORS_HEADERS };
-  if (event.httpMethod !== 'POST')    return { statusCode: 405, headers: CORS_HEADERS, body: JSON.stringify({ error: 'Method not allowed' }) };
+function handleAuthErr() {
+  const btn = document.getElementById('signinBtn');
+  btn.disabled = false;
+  btn.textContent = 'Sign in';
+  document.getElementById('accessLoading').classList.remove('show');
+  const errEl = document.getElementById('accessError');
+  errEl.textContent = 'Connection error. Please try again.';
+  errEl.classList.add('show');
+}
+
+// ── Data normalisation helpers ───────────────────────────────
+function firstValue(obj, keys, fallback = '') {
+  if (!obj) return fallback;
+  for (const key of keys) {
+    if (Object.prototype.hasOwnProperty.call(obj, key)) {
+      const val = obj[key];
+      if (val !== undefined && val !== null && String(val).trim() !== '') return val;
+    }
+  }
+  return fallback;
+}
+
+function normaliseStudent(raw) {
+  const s = raw || {};
+  return {
+    ...s,
+    id: firstValue(s, ['id', 'student_id', 'studentId', 'Student ID', 'StudentID']),
+    fullName: firstValue(s, ['name_en', 'fullName', 'full_name', 'Name', 'name']),
+    fullNameMM: firstValue(s, ['name_my', 'fullNameMM', 'full_name_mm', 'Name Myanmar', 'name_mm']),
+    fatherName: firstValue(s, ['father', 'fatherName', 'father_name']),
+    fatherNameMM: firstValue(s, ['father_my', 'fatherNameMM', 'father_name_mm']),
+    motherName: firstValue(s, ['mother', 'motherName', 'mother_name']),
+    motherNameMM: firstValue(s, ['mother_my', 'motherNameMM', 'mother_name_mm']),
+    birthDate: firstValue(s, ['dob', 'birthDate', 'birth_date', 'date_of_birth']),
+    phone: firstValue(s, ['phone', 'Phone']),
+    email: firstValue(s, ['email', 'Email']),
+    address: firstValue(s, ['address', 'Address']),
+    admissionYear: firstValue(s, ['admission', 'admissionYear', 'admission_year']),
+    currentStatus: firstValue(s, ['year', 'currentStatus', 'current_status', 'academic_year']),
+    enrollmentStatus: firstValue(s, ['status', 'enrollmentStatus', 'enrollment_status']),
+    program:     firstValue(s, ['program', 'Program']),
+    programName: firstValue(s, ['programName', 'program_name', 'program', 'Program']),
+    graduationStatus: firstValue(s, ['grad_status', 'graduationStatus', 'graduation_status']),
+    graduationId: firstValue(s, ['graduation_id', 'graduationId']),
+    graduationDate: firstValue(s, ['graduation_date', 'graduationDate']),
+    graduationIdMY: firstValue(s, ['graduation_id_my', 'graduationIdMY']),
+    graduationDateMY: firstValue(s, ['graduation_date_my', 'graduationDateMY']),
+    gpa: firstValue(s, ['Overall GPA', 'overall_gpa', 'OverallGPA', 'overallGPA', 'gpa', 'GPA'])
+  };
+}
+
+function normaliseGradeRow(raw) {
+  const g = raw || {};
+  const courseId = String(firstValue(g, [
+    'courseId', 'course_id', 'Course ID', 'CourseID', 'course_code', 'Course Code', 'code'
+  ], '')).trim();
+
+  return {
+    ...g,
+    courseId,
+    course:        firstValue(g, ['course', 'Course', 'course_name', 'CourseName', 'courseName', 'subject', 'Subject']),
+    numericScore:  firstValue(g, ['numericScore', 'NumericScore', 'numeric_score', 'score', 'Score']),
+    grade:         firstValue(g, ['grade', 'Grade', 'letter', 'letter_grade', 'LetterGrade']),
+    gradePoint:    firstValue(g, ['gradePoint', 'grade_point', 'gp', 'GP', 'GradePoint', 'gradepoint']),
+    attempt:       firstValue(g, ['attempt', 'Attempt', 'attemptNo', 'attempt_no']),
+    completionType: firstValue(g, ['completionType', 'CompletionType', 'completion_type', 'type_of_completion', 'assessment']),
+    completionYear: firstValue(g, ['completionYear', 'CompletionYear', 'completion_year', 'year', 'Year']),
+    academicYear:  firstValue(g, ['academicYear', 'AcademicYear', 'academic_year', 'yearLevel', 'YearLevel', 'course_year']),
+    note:          firstValue(g, ['note', 'Note', 'notes', 'Notes', 'comment', 'Comment', 'remarks', 'Remarks'])
+  };
+}
+
+// ── Populate dashboard ────────────────────────────────────────
+function populate(s, grades, courses, program_meta, enrollments) {
+  if (!s) throw new Error('Student data is null or undefined — the server may have returned an empty profile.');
+  // ── Activate the right course catalog for this student's program ──
+  // The server can send `courses` (course catalog) and `program_meta`
+  // ({ label, yearOrder }) to fully describe any degree program.
+  // If neither is provided, the built-in MBBS defaults are used.
+  if (courses && Object.keys(courses).length > 0) {
+    COURSES      = courses;          // replace active catalog
+    window._COURSES = courses;       // legacy compat for renderGrades
+  } else {
+    COURSES      = COURSES_MBBS;
+    window._COURSES = null;
+  }
+  if (program_meta && program_meta.label) {
+    PROGRAM_META = {
+      label:     program_meta.label,
+      yearOrder: Array.isArray(program_meta.yearOrder) ? program_meta.yearOrder : []
+    };
+  } else {
+    PROGRAM_META = PROGRAM_META_MBBS;
+  }
+  // ── Normalise raw SQL / Google Sheet column names → app field names ──
+  s = normaliseStudent(s);
+  grades = (grades || []).map(normaliseGradeRow);
+
+  // normaliseStudent() already maps:
+  //   year           → currentStatus
+  //   status         → enrollmentStatus
+  //   grad_status    → graduationStatus
+  // No further overwriting needed here.
+  const _rawGrad = s.graduationStatus || '';
+  if (/^graduated$/i.test(_rawGrad.trim())) {
+    s.graduationStatus = 'Graduated';
+  } else if (/^active$/i.test((s.enrollmentStatus || '').trim())) {
+    s.graduationStatus = 'In Progress';
+  } else {
+    s.graduationStatus = _rawGrad || '—';
+  }
+  s.graduationId     = s.graduation_id   || s.graduationId     || '';
+  s.graduationDate   = s.graduation_date || s.graduationDate   || '';
+  s.id               = s.id              || '';
+  s.gpa              = s.gpa             || '';
+  // ── End normalisation ──────────────────────────────────────
+
+  const firstName = (s.fullName || '').split(' ')[0] || '—';
+  const init = (s.fullName || '').split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2) || '?';
+
+  // Home hero
+  document.getElementById('welcomeName').textContent = s.fullName || firstName;
+  document.getElementById('homeStudentId').textContent = s.id || '—';
+  const _homeIdLbl = document.getElementById('homeIdLabel');
+  if (_homeIdLbl) _homeIdLbl.textContent = /^graduated$/i.test((s.graduationStatus||'').trim()) ? 'Alumni ID' : 'Student ID';
+  const homeAvatar = document.getElementById('homeAvatar');
+  if (homeAvatar) homeAvatar.textContent = init;
+
+  // Grades banner
+  const gradesBanner = document.getElementById('gradesHeaderBanner');
+  if (gradesBanner) {
+    gradesBanner.style.display = 'flex';
+    document.getElementById('gradesAvatar').textContent  = init;
+    document.getElementById('gradesStudentName').textContent = s.fullName || '—';
+    document.getElementById('gradesStudentId').textContent   = s.id || '—';
+    // GPA is displayed only from the sheet/data source
+  }
+
+  document.getElementById('topbarEmail').textContent = s.id || '—';
+  document.getElementById('profileName').textContent = s.fullName || '—';
+  document.getElementById('profileNameMM').textContent = s.fullNameMM || '';
+  document.getElementById('avatarInitials').textContent = init;
+
+  // Populate sidebar user card
+  const sbName = document.getElementById('sidebarName');
+  const sbId   = document.getElementById('sidebarId');
+  const sbAv   = document.getElementById('sidebarAvatar');
+  if (sbName) sbName.textContent = s.fullName || '—';
+  if (sbId)   sbId.textContent   = s.id || '—';
+  if (sbAv)   sbAv.textContent   = init;
+  // Populate mobile more menu
+  const mobN = document.getElementById('mobMoreName'); if (mobN) mobN.textContent = s.fullName || '—';
+  const mobI = document.getElementById('mobMoreId');   if (mobI) mobI.textContent = s.id || '—';
+
+  // Activate dark dashboard background
+  document.body.classList.add('dashboard-active');
+
+  // Update print footer and @page attr with student ID
+  const sid = s.id || '—';
+  const sidSpan = document.getElementById('printFooterSID');
+  if (sidSpan) sidSpan.textContent = sid;
+  document.documentElement.setAttribute('data-sid', sid);
+  document.documentElement.setAttribute('data-student-name', s.fullName || '');
+  const tags = document.getElementById('profileTags');
+  tags.innerHTML = '';
+  if (s.currentStatus)    tags.innerHTML += `<span class="tag tag-r">${s.currentStatus}</span>`;
+  if (s.enrollmentStatus) tags.innerHTML += `<span class="tag tag-g">${s.enrollmentStatus}</span>`;
+  if (s.graduationStatus) tags.innerHTML += `<span class="tag tag-n">${s.graduationStatus}</span>`;
+  // ── Graduation status logic ──────────────────────────────────
+  const isGraduated = /^graduated$/i.test((s.graduationStatus || '').trim());
+  const idLabel     = isGraduated ? 'Alumni ID' : 'Student ID';
+
+  // Fetch graduation fields from sheet
+  const gradID   = s.graduationId   || s.graduation_id   || '';
+  const gradDate = s.graduationDate || s.graduation_date || '';
+
+  // ── Profile card ─────────────────────────────────────────────
+  const lblSID = document.getElementById('lblStudentID');
+  if (lblSID) lblSID.textContent = idLabel;
+
+  document.getElementById('infoID').textContent        = s.id               || '—';
+  document.getElementById('infoBirth').textContent     = s.birthDate        || '—';
+  document.getElementById('infoFather').textContent    = s.fatherName       || '—';
+  document.getElementById('infoFatherMM').textContent  = s.fatherNameMM     || '—';
+  document.getElementById('infoMother').textContent    = s.motherName       || '—';
+  document.getElementById('infoMotherMM').textContent  = s.motherNameMM     || '—';
+  document.getElementById('infoPhone').textContent     = s.phone            || '—';
+  document.getElementById('infoEmail').textContent     = s.email            || '—';
+  document.getElementById('infoAdmission').textContent = s.admissionYear    || '—';
+  document.getElementById('infoStatus').textContent    = s.currentStatus    || '—';
+  document.getElementById('infoEnroll').textContent    = s.enrollmentStatus || '—';
+  document.getElementById('infoGrad').textContent      = s.graduationStatus || '—';
+
+  // Degree Program
+  const programVal = s.programName || s.program || '—';
+  const infoProgramEl = document.getElementById('infoProgram');
+  if (infoProgramEl) infoProgramEl.textContent = programVal;
+  const homeProgramEl = document.getElementById('homeProgramName');
+  if (homeProgramEl) homeProgramEl.textContent = s.programName || s.program || '';
+
+  // Show/hide graduation fields
+  const cellGradID   = document.getElementById('cellGradID');
+  const cellGradIDMY = document.getElementById('cellGradIDMY');
+  const cellGradDate = document.getElementById('cellGradDate');
+  const cellGradDateMY = document.getElementById('cellGradDateMY');
+  if (cellGradID)     cellGradID.style.display     = isGraduated ? '' : 'none';
+  if (cellGradIDMY)   cellGradIDMY.style.display   = isGraduated ? '' : 'none';
+  if (cellGradDate)   cellGradDate.style.display   = isGraduated ? '' : 'none';
+  if (cellGradDateMY) cellGradDateMY.style.display = isGraduated ? '' : 'none';
+  const infoGradID   = document.getElementById('infoGradID');
+  const infoGradIDMY = document.getElementById('infoGradIDMY');
+  const infoGradDate = document.getElementById('infoGradDate');
+  const infoGradDateMY = document.getElementById('infoGradDateMY');
+  if (infoGradID)     infoGradID.textContent     = gradID   || '—';
+  if (infoGradIDMY)   infoGradIDMY.textContent   = s.graduationIdMY || s.graduation_id_my || '—';
+  if (infoGradDate)   infoGradDate.textContent   = gradDate || '—';
+  if (infoGradDateMY) infoGradDateMY.textContent = s.graduationDateMY || s.graduation_date_my || '—';
+
+  // ── ID Card tab label ─────────────────────────────────────────
+  const navIdCard = document.getElementById('navIdCard');
+  if (navIdCard) navIdCard.textContent = isGraduated ? 'Alumni ID Card' : 'ID Card';
+  const idCardTitle = document.getElementById('idCardPageTitle');
+  const idCardSub   = document.getElementById('idCardPageSub');
+  if (idCardTitle) idCardTitle.textContent = isGraduated ? 'Alumni ID Card' : 'Student ID Card';
+  if (idCardSub)   idCardSub.textContent   = isGraduated
+    ? 'Your official University of Medicine (2) alumni identification'
+    : 'Your official University of Medicine (2) student identification';
+
+  // ── Documents panel label ────────────────────────────────────
+  const docConfirmTitle = document.getElementById('docConfirmTitle');
+  const docConfirmDesc  = document.getElementById('docConfirmDesc');
+  if (docConfirmTitle) docConfirmTitle.textContent = isGraduated ? 'Confirmation of Graduation' : 'Confirmation of Study';
+  if (docConfirmDesc)  docConfirmDesc.textContent  = isGraduated
+    ? 'Official letter confirming your graduation from the University of Medicine (2).'
+    : 'Official letter confirming your current enrollment status at the University of Medicine (2).';
+
+  // ── Grades header label ──────────────────────────────────────
+  const gradesIdLbl = document.getElementById('gradesIdLabel');
+  if (gradesIdLbl) gradesIdLbl.textContent = idLabel;
+
+  // Store graduation data on window for use in print
+  window._studentGraduated = isGraduated;
+  window._studentGradID    = gradID;
+  window._studentGradDate  = gradDate;
+  window._studentIdLabel   = idLabel;
+  window._studentProgram   = s.programName || s.program || '';
+
+
+  // ── Store enrollments globally ───────────────────────────────
+  window._enrollments = (enrollments || []);
+  // Store current student for Edit My Info
+  window._currentStudent = s;
+  // If no enrollments returned from server, synthesise one from students row
+  if (!window._enrollments.length) {
+    window._enrollments = [{
+      id: '',
+      degreeProgramId: s.program || '',
+      programName:     s.programName || s.program || '',
+      degreeLevel:     s.degreeLevel || 'bachelor',
+      currentYear:     s.currentStatus || '',
+      enrollmentStatus: s.enrollmentStatus || '',
+      gpa:             s.overallGPA || '',
+      admissionDate:   '',
+      graduationStatus: s.graduationStatus || '',
+      graduationId:    s.graduationId || '',
+      graduationDate:  s.graduationDate || '',
+      thesisTitle:     '',
+      supervisor:      '',
+    }];
+  }
+  window._activeEnrollmentIndex = 0;
+
+  // ── Academic Journey (home panel) ───────────────────────────
+  renderJourney(window._enrollments);
+
+  // ── Store grades/courses for tab switching ───────────────────
+  window._allGrades  = grades;
+  window._allCourses = courses;
+
+  // ── Grades degree tabs ───────────────────────────────────────
+  renderDegreeTabs(window._enrollments, grades, courses);
+
+  // ── Document office cards ────────────────────────────────────
+  renderDocCards(window._enrollments);
+  renderCertCards(window._enrollments);
+
+  // ── Render grades for the active (first) enrollment ─────────
+  renderGrades(grades, courses);
+  if (s.photo) {
+    updatePhotoInUI(s.photo);
+    const preview = document.getElementById('profilePhotoPreview');
+    if (preview) preview.innerHTML = '<img src="' + s.photo + '" style="width:100%;height:100%;object-fit:cover;border-radius:8px">';
+    const removeBtn = document.getElementById('removePhotoBtn');
+    if (removeBtn) removeBtn.style.display = 'inline-block';
+  }
+  populateIDCard(s, isGraduated, gradID, gradDate);
+}
+
+// ── Photo utility: create a protected (no right-click) img ───
+function makeProtectedPhoto(src, styleStr) {
+  const img = document.createElement('img');
+  img.src = src;
+  if (styleStr) img.style.cssText = styleStr;
+  img.draggable = false;
+  img.oncontextmenu = function(e) { e.preventDefault(); return false; };
+  return img;
+}
+
+// ── Photo panel: preview selected file before upload ─────────
+function previewPhoto(input) {
+  const file = input.files && input.files[0];
+  if (!file) return;
+  if (file.size > 5 * 1024 * 1024) {
+    alert('File is too large. Maximum size is 5 MB.');
+    input.value = '';
+    return;
+  }
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const wrap  = document.getElementById('photoSelectedWrap');
+    const thumb = document.getElementById('photoSelectedThumb');
+    const name  = document.getElementById('photoSelectedName');
+    const size  = document.getElementById('photoSelectedSize');
+    const btn   = document.getElementById('uploadPhotoBtn');
+    if (thumb) thumb.src = e.target.result;
+    if (name)  name.textContent = file.name;
+    if (size)  size.textContent = (file.size / 1024).toFixed(1) + ' KB';
+    if (wrap)  wrap.style.display = 'flex';
+    if (btn)   btn.style.display = '';
+    // store for upload
+    window._pendingPhotoFile   = file;
+    window._pendingPhotoBase64 = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+// ── Photo panel: clear selected file ─────────────────────────
+function clearPhotoSelection() {
+  const wrap  = document.getElementById('photoSelectedWrap');
+  const btn   = document.getElementById('uploadPhotoBtn');
+  const input = document.getElementById('photoFileInput');
+  const status = document.getElementById('photoUploadStatus');
+  if (wrap)   wrap.style.display = 'none';
+  if (btn)    btn.style.display = 'none';
+  if (input)  input.value = '';
+  if (status) status.textContent = '';
+  window._pendingPhotoFile   = null;
+  window._pendingPhotoBase64 = null;
+}
+
+// ── Photo panel: remove current photo ────────────────────────
+function removePhoto() {
+  // Clear UI slots
+  const preview = document.getElementById('profilePhotoPreview');
+  if (preview) {
+    preview.innerHTML = '<svg id="photoPlaceholderSvg" width="56" height="64" viewBox="0 0 56 64" fill="none" xmlns="http://www.w3.org/2000/svg"><ellipse cx="28" cy="20" rx="13" ry="14" fill="#D1D5DB"/><path d="M2 58c0-13.255 11.64-24 26-24s26 10.745 26 24" fill="#D1D5DB"/></svg>';
+  }
+  const avatarPhoto    = document.getElementById('avatarPhoto');
+  const avatarInitials = document.getElementById('avatarInitials');
+  if (avatarPhoto) { avatarPhoto.src = ''; avatarPhoto.style.display = 'none'; }
+  if (avatarInitials) avatarInitials.style.display = '';
+  const removeBtn = document.getElementById('removePhotoBtn');
+  if (removeBtn) removeBtn.style.display = 'none';
+  window._idcardPhotoData = null;
+  // Restore initials in id card
+  const idcardPhotoEl = document.getElementById('idcardPhoto');
+  if (idcardPhotoEl) {
+    const name = document.getElementById('profileName');
+    const init = ((name && name.textContent) || '').split(' ').map(w => w[0]).join('').toUpperCase().slice(0,2) || '?';
+    idcardPhotoEl.innerHTML = '';
+    idcardPhotoEl.textContent = init;
+  }
+}
+
+// ── Photo panel: upload photo to Supabase storage ────────────
+async function uploadPhoto() {
+  const file   = window._pendingPhotoFile;
+  const status = document.getElementById('photoUploadStatus');
+  const btn    = document.getElementById('uploadPhotoBtn');
+  if (!file) { if (status) status.textContent = 'No file selected.'; return; }
+
+  const studentId = (document.getElementById('loginStudentId').value || '').trim().toLowerCase();
+  if (!studentId) { if (status) status.textContent = 'Session expired — please log in again.'; return; }
+
+  if (btn) { btn.disabled = true; btn.textContent = 'Uploading…'; }
+  if (status) status.textContent = 'Uploading…';
 
   try {
-    const { studentId, password, imageBase64, mimeType, removePhoto } = JSON.parse(event.body || '{}');
-
-    if (!studentId || !password) {
-      return { statusCode: 200, headers: CORS_HEADERS, body: JSON.stringify({ success: false, message: 'Missing studentId or password.' }) };
-    }
-    if (!imageBase64) {
-      return { statusCode: 200, headers: CORS_HEADERS, body: JSON.stringify({ success: false, message: 'No image data received.' }) };
-    }
-
-    // 1. Verify credentials
-    const students = await supabaseRest(
-      `students?id=eq.${encodeURIComponent(studentId)}&select=id,master_password,photo&limit=1`
-    );
-    if (!students || students.length === 0) {
-      return { statusCode: 200, headers: CORS_HEADERS, body: JSON.stringify({ success: false, message: 'Student not found.' }) };
-    }
-    if (String(students[0].master_password || '').trim() !== String(password).trim()) {
-      return { statusCode: 200, headers: CORS_HEADERS, body: JSON.stringify({ success: false, message: 'Incorrect password.' }) };
-    }
-
-    const currentPhoto = students[0].photo || null;
-
-// Handle photo removal
-if (removePhoto === true) {
-  await supabaseRest(
-    `students?id=eq.${encodeURIComponent(studentId)}`,
-    { method: 'PATCH', headers: { 'Prefer': 'return=minimal' }, body: JSON.stringify({ photo: null }) }
-  );
-  return { statusCode: 200, headers: CORS_HEADERS, body: JSON.stringify({ success: true }) };
-}
-
-    // 2. Upload to pending-photos/<studentId>.jpg (NOT the permanent path)
-    const pendingPath   = `pending-photos/${studentId}.jpg`;
-    const contentType   = mimeType || 'image/jpeg';
-    const imageBuffer   = Buffer.from(imageBase64, 'base64');
-
-    await uploadToStorage(pendingPath, imageBuffer, contentType);
-
-    const pendingUrl = `${SUPABASE_URL}/storage/v1/object/public/${BUCKET}/${pendingPath}`;
-
-    // 3. Insert a pending edit request — do NOT touch students table
-    await supabaseRest('student_edit_requests', {
-      method: 'POST',
-      headers: { 'Prefer': 'return=minimal' },
-      body: JSON.stringify({
-        student_id: studentId,
-        field_name: 'photo',
-        old_value:  currentPhoto || null,
-        new_value:  null,           // not applicable for photos
-        photo_url:  pendingUrl,
-        reason:     'Student photo update request',
-        status:     'pending'
-      })
+    const reader = new FileReader();
+    const base64 = await new Promise((res, rej) => {
+      reader.onload = e => res(e.target.result.split(',')[1]);
+      reader.onerror = rej;
+      reader.readAsDataURL(file);
     });
 
-    return {
-      statusCode: 200,
-      headers: CORS_HEADERS,
+    const resp = await fetch('/.netlify/functions/upload-photo', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        success: true,
-        pending: true,
-        message: 'Photo submitted for Registrar approval.'
+        studentId,
+        password:  window._sessionPassword || '',
+        imageBase64: base64,
+        mimeType:    file.type
       })
+    });
+    const data = await resp.json();
+
+    if (data.success && data.pending) {
+      // Photo is pending Registrar approval — do NOT update the live photo in the UI
+      if (status) {
+        status.style.color = 'var(--gold, #9A7B2F)';
+        status.textContent = '⏳ Photo submitted for Registrar approval. Your ID photo will update once approved.';
+      }
+      clearPhotoSelection();
+    } else if (data.success && data.photoUrl) {
+      // Legacy direct-upload path (kept for safety)
+      updatePhotoInUI(data.photoUrl);
+      const preview = document.getElementById('profilePhotoPreview');
+      if (preview) preview.innerHTML = '<img src="' + data.photoUrl + '" style="width:100%;height:100%;object-fit:cover;border-radius:8px">';
+      const removeBtn = document.getElementById('removePhotoBtn');
+      if (removeBtn) removeBtn.style.display = 'inline-block';
+      if (status) status.textContent = 'Photo uploaded successfully!';
+      clearPhotoSelection();
+    } else {
+      if (status) status.textContent = 'Upload failed: ' + (data.message || 'Unknown error');
+    }
+  } catch(e) {
+    if (status) status.textContent = 'Upload error: ' + e.message;
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = 'Upload Photo'; }
+  }
+}
+
+
+function updatePhotoInUI(photoUrl) {
+  if (!photoUrl) return;
+  // Profile banner avatar (top of profile tab)
+  const avatarPhoto    = document.getElementById('avatarPhoto');
+  const avatarInitials = document.getElementById('avatarInitials');
+  if (avatarPhoto) {
+    avatarPhoto.src = photoUrl;
+    avatarPhoto.style.display = '';
+    if (avatarInitials) avatarInitials.style.display = 'none';
+  }
+  // Sidebar avatar
+  const sbAv = document.getElementById('sidebarAvatar');
+  if (sbAv) {
+    sbAv.innerHTML = '';
+    const si = document.createElement('img');
+    si.src = photoUrl;
+    si.style.cssText = 'width:100%;height:100%;object-fit:cover;border-radius:7px;display:block';
+    sbAv.appendChild(si);
+  }
+  // Home hero avatar
+  const homeAvatar = document.getElementById('homeAvatar');
+  if (homeAvatar) {
+    homeAvatar.innerHTML = '';
+    const img = document.createElement('img');
+    img.src = photoUrl;
+    img.style.cssText = 'width:100%;height:100%;object-fit:cover;border-radius:10px;display:block';
+    homeAvatar.appendChild(img);
+  }
+  // Grades banner avatar
+  const gradesAvatar = document.getElementById('gradesAvatar');
+  if (gradesAvatar) {
+    gradesAvatar.innerHTML = '';
+    const img2 = document.createElement('img');
+    img2.src = photoUrl;
+    img2.style.cssText = 'width:100%;height:100%;object-fit:cover;border-radius:8px;display:block';
+    gradesAvatar.appendChild(img2);
+  }
+}
+
+function populateIDCard(s, isGraduated, gradID, gradDate) {
+  const init = (s.fullName || '').split(' ').map(w => w[0]).join('').toUpperCase().slice(0,2) || '?';
+  const idcardPhotoEl = document.getElementById('idcardPhoto');
+  // Always reset — never carry over a previous student's photo
+  // Store photo data on window so printIDCard() can embed it directly
+  window._idcardPhotoData = s.photo || null;
+  if (idcardPhotoEl) {
+    if (s.photo) {
+      idcardPhotoEl.innerHTML = '';
+      idcardPhotoEl.appendChild(makeProtectedPhoto(s.photo, 'width:100%;height:100%;object-fit:cover;display:block'));
+    } else {
+      idcardPhotoEl.innerHTML = '';
+      idcardPhotoEl.textContent = init;
+    }
+  }
+  document.getElementById('idcardName').textContent     = s.fullName      || '';
+  document.getElementById('idcardNameMM').textContent   = s.fullNameMM    || '';
+  document.getElementById('idcardID').textContent       = s.id            || '—';
+  document.getElementById('idcardStatus').textContent   = s.currentStatus || '—';
+  document.getElementById('idcardAdmission').textContent= s.admissionYear || '—';
+  document.getElementById('idcardAdmissionBack').textContent = s.admissionYear || '—';
+  document.getElementById('idcardEnroll').textContent   = s.enrollmentStatus || '—';
+  const idcardProgramEl = document.getElementById('idcardProgram');
+  if (idcardProgramEl) idcardProgramEl.textContent = s.programName || s.program || '—';
+
+  // ── Supervisor — show for Master / PhD only ───────────────────
+  const activeEnroll = (window._enrollments || []).find(e =>
+    /^active$/i.test(e.enrollmentStatus || '')
+  );
+  const supervisorRow = document.getElementById('idcardSupervisorRow');
+  const supervisorEl  = document.getElementById('idcardSupervisor');
+  const supervisorVal = activeEnroll?.supervisor || s.supervisor || '';
+  const showSupervisor = supervisorVal &&
+    (activeEnroll?.degreeLevel === 'master' || activeEnroll?.degreeLevel === 'phd');
+  if (supervisorRow) supervisorRow.style.display = showSupervisor ? '' : 'none';
+  if (supervisorEl && showSupervisor) supervisorEl.textContent = supervisorVal;
+
+  // ── Alumni vs Student labels on card ─────────────────────────
+  const typeBadge = document.getElementById('idcardTypeBadge');
+  const idLabel   = document.getElementById('idcardIDLabel');
+  if (typeBadge) typeBadge.textContent = isGraduated ? 'Alumni' : 'Student';
+  if (idLabel)   idLabel.textContent   = isGraduated ? 'Alumni ID' : 'Student ID';
+
+  // ── Validity / graduation date ────────────────────────────────
+  const ACADEMIC_YEAR = '2026–2027';
+  const yearMatch = ACADEMIC_YEAR.match(/\d{4}.*?(\d{4})/);
+  const validYear = yearMatch ? yearMatch[1] : '';
+  const isActive = /^active$/i.test((s.enrollmentStatus || '').trim());
+  const validityLabel = document.getElementById('idcardValidityLabel');
+  const validityYear  = document.getElementById('idcardValidityYear');
+  if (isGraduated) {
+    if (validityLabel) validityLabel.textContent = 'Graduated';
+    if (validityYear)  {
+      validityYear.textContent   = gradDate || gradID || '';
+      validityYear.style.fontSize   = '9px';
+      validityYear.style.color      = 'rgba(255,255,255,.85)';
+      validityYear.style.fontWeight = '600';
+    }
+  } else if (isActive) {
+    if (validityLabel) validityLabel.textContent = 'Valid until';
+    if (validityYear)  {
+      validityYear.textContent   = validYear;
+      validityYear.style.fontSize   = '10px';
+      validityYear.style.color      = 'rgba(255,255,255,.85)';
+      validityYear.style.fontWeight = '700';
+    }
+  } else {
+    if (validityLabel) validityLabel.textContent = '';
+    if (validityYear)  {
+      validityYear.textContent   = 'This card is invalid';
+      validityYear.style.fontSize   = '8px';
+      validityYear.style.color      = 'rgba(255,180,180,.9)';
+      validityYear.style.fontWeight = '600';
+    }
+  }
+
+  document.getElementById('idcardBirth').textContent    = s.birthDate     || '—';
+  document.getElementById('idcardPhone').textContent    = s.phone         || '—';
+  document.getElementById('idcardFather').textContent   = s.fatherName    || '—';
+
+  const sid = s.id || '';
+  document.getElementById('idcardBarcodeNum').textContent = sid.toUpperCase();
+
+  // Generate QR code on the back
+  const qrEl = document.getElementById('idcardQR');
+  qrEl.innerHTML = '';
+  const qrData = window.location.origin + '/verify?id=' + encodeURIComponent(s.id || '');
+  new QRCode(qrEl, {
+    text: qrData,
+    width: 76,
+    height: 76,
+    colorDark: '#0D1B2A',
+    colorLight: '#ffffff',
+    correctLevel: QRCode.CorrectLevel.M
+  });
+}
+
+function printIDCard() {
+  const esc = function(value) {
+    return String(value || '—')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
+  };
+
+  const isGrad = window._studentGraduated || false;
+  const _gradID   = window._studentGradID   || '';
+  const _gradDate = window._studentGradDate || '';
+  const _idLabel  = window._studentIdLabel  || 'Student ID';
+  const s = {
+    name:       document.getElementById('idcardName').textContent,
+    nameMM:     document.getElementById('idcardNameMM').textContent,
+    id:         document.getElementById('idcardID').textContent,
+    status:     document.getElementById('idcardStatus').textContent,
+    admission:  document.getElementById('idcardAdmission').textContent,
+    enroll:     document.getElementById('idcardEnroll').textContent,
+    program:    document.getElementById('idcardProgram')?.textContent || '',
+    supervisor: document.getElementById('idcardSupervisor')?.textContent || '',
+    supervisorVisible: document.getElementById('idcardSupervisorRow')?.style.display !== 'none',
+    birth:      document.getElementById('idcardBirth').textContent,
+    phone:      document.getElementById('idcardPhone').textContent,
+    father:     document.getElementById('idcardFather').textContent,
+    init:       document.getElementById('idcardPhoto').textContent,
+    hasPhoto:   !!window._idcardPhotoData,
+    photoSrc:   window._idcardPhotoData || '',
+    isGrad,
+    gradID:     _gradID,
+    gradDate:   _gradDate,
+    idLabel:    _idLabel
+  };
+
+  const qrData = window.location.origin + '/verify?id=' + encodeURIComponent(s.id || '');
+
+  const html = `<!DOCTYPE html><html><head><meta charset="UTF-8">
+  <title>${esc(s.isGrad ? 'Alumni ID Card' : 'Student ID Card')} — ${esc(s.id)}</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"><\/script>
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{--ink:#0D1B2A;--ink2:#3D4A5C;--ink3:#7A8599;--line:#E8EBF0;--surface:#F2F4F8;--white:#FFFFFF;--crimson:#8B1A2E;--crimson-light:#F7EEF0;--crimson-mid:#C4273E;--gold:#9A7B2F;--gold-light:#FBF6E8;--green:#1A5C3A;--green-light:#EBF5F0;--r:6px;--shadow-sm:0 1px 3px rgba(13,27,42,.07),0 1px 2px rgba(13,27,42,.04);--shadow-md:0 4px 16px rgba(13,27,42,.08),0 1px 4px rgba(13,27,42,.04);--shadow-lg:0 8px 32px rgba(13,27,42,.10),0 2px 8px rgba(13,27,42,.05)}
+    body{font-family:'DM Sans',sans-serif;background:var(--surface);display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px;-webkit-font-smoothing:antialiased;color:var(--ink)}
+    .idcard{width:340px;border-radius:16px;overflow:hidden;box-shadow:0 20px 60px rgba(13,27,42,.18),0 4px 16px rgba(13,27,42,.1);position:relative;user-select:none}
+    .idcard-front{background:linear-gradient(145deg,#0D1B2A 0%,#1a2e45 60%,#0D1B2A 100%);padding:0;min-height:210px;position:relative;overflow:hidden}
+    .idcard-front::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 20% 20%,rgba(139,26,46,.4) 0%,transparent 55%),radial-gradient(ellipse at 85% 80%,rgba(154,123,47,.2) 0%,transparent 45%);pointer-events:none}
+    .idcard-top{padding:20px 22px 14px;display:flex;align-items:center;justify-content:space-between;position:relative;z-index:1}
+    .idcard-logo-wrap{display:flex;align-items:center;gap:10px}
+    .idcard-logo{width:36px;height:44px;object-fit:contain}
+    .idcard-uni{display:flex;flex-direction:column}
+    .idcard-uni-name{font-family:'DM Sans',sans-serif;font-size:11px;font-weight:700;color:rgba(255,255,255,.95);letter-spacing:.5px;line-height:1.2}
+    .idcard-uni-sub{font-size:9px;color:rgba(255,255,255,.45);letter-spacing:.3px;line-height:1.4}
+    .idcard-type-badge{font-size:8px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,.5);border:1px solid rgba(255,255,255,.15);padding:3px 8px;border-radius:3px}
+    .idcard-divider-line{height:1px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.12),transparent);margin:0 22px}
+    .idcard-body{padding:16px 22px 20px;display:flex;gap:16px;align-items:flex-start;position:relative;z-index:1}
+    .idcard-photo{width:72px;height:86px;border-radius:8px;background:rgba(255,255,255,.08);border:1.5px solid rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden;font-size:26px;font-weight:700;color:rgba(255,255,255,.6);font-family:'DM Sans',sans-serif;letter-spacing:-1px}
+    .idcard-info{flex:1;min-width:0}
+    .idcard-name{font-family:'DM Sans',sans-serif;font-size:15px;font-weight:700;color:#fff;line-height:1.2;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .idcard-name-mm{font-size:11px;color:rgba(255,255,255,.45);margin-bottom:10px;line-height:1.4}
+    .idcard-fields{display:flex;flex-direction:column;gap:5px}
+    .idcard-field{display:flex;flex-direction:column;gap:1px}
+    .idcard-field-lbl{font-size:7.5px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:rgba(255,255,255,.35)}
+    .idcard-field-val{font-size:12px;font-weight:500;color:rgba(255,255,255,.9);font-family:'DM Sans',sans-serif}
+    .idcard-bottom{background:var(--crimson);padding:10px 22px;display:flex;align-items:center;justify-content:space-between;position:relative;z-index:1}
+    .idcard-id-label{font-size:8px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,.6)}
+    .idcard-id-value{font-family:'DM Sans',sans-serif;font-size:15px;font-weight:700;color:#fff;letter-spacing:1px}
+    .idcard-validity{font-size:9px;color:rgba(255,255,255,.6);text-align:right}
+    .idcard-validity strong{display:block;font-size:10px;color:rgba(255,255,255,.85)}
+    .idcard-back{background:var(--white);padding:18px 22px;border-top:3px solid var(--crimson)}
+    .idcard-back-header{font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--ink3);margin-bottom:12px}
+    .idcard-back-fields{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+    .idcard-back-field .lbl{font-size:9px;font-weight:600;letter-spacing:.8px;text-transform:uppercase;color:var(--ink3);margin-bottom:2px}
+    .idcard-back-field .val{font-size:12px;color:var(--ink);font-family:'DM Sans',sans-serif}
+    .idcard-back-bottom{display:flex;align-items:flex-start;gap:14px;margin-top:2px}
+    .idcard-qr-wrap{display:flex;flex-direction:column;align-items:center;gap:5px;flex-shrink:0}
+    .idcard-qr-wrap canvas,.idcard-qr-wrap img{border:1.5px solid var(--line);border-radius:4px;display:block}
+    .idcard-qr-lbl{font-size:7px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--ink3)}
+    .idcard-back-right{flex:1;display:flex;flex-direction:column;gap:0}
+    .idcard-sid-block{margin-bottom:10px}
+    .idcard-sid-block .lbl{font-size:8px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--ink3);margin-bottom:2px}
+    .idcard-sid-block .val{font-size:14px;font-weight:700;color:var(--ink);letter-spacing:1.5px;font-family:monospace}
+    .idcard-sig-area{border-top:1px solid #bbb;margin-top:16px;padding-top:4px;font-size:7.5px;color:var(--ink3);text-align:center;letter-spacing:.3px}
+    .idcard-notice{font-size:7px;color:var(--ink3);line-height:1.6;border-top:1px solid var(--line);padding-top:8px;margin-top:10px}
+    @media print{*{-webkit-print-color-adjust:exact;print-color-adjust:exact}body{background:#fff;padding:0;min-height:auto}.idcard{box-shadow:0 20px 60px rgba(13,27,42,.18),0 4px 16px rgba(13,27,42,.1)}@page{margin:10mm}}
+  </style>
+  </head><body>
+  <div class="idcard">
+    <div class="idcard-front">
+      <div class="idcard-top">
+        <div class="idcard-logo-wrap">
+          <img src="https://raw.githubusercontent.com/um2iucoffice/um2portal/cddfb252ec6cf6cecc25c53a8630d92b08c2aaa8/public/UM2_Logo.svg" alt="UM2" class="idcard-logo">
+          <div class="idcard-uni">
+            <span class="idcard-uni-name">University of Medicine (2)</span>
+            <span class="idcard-uni-sub">Interim University Council · Myanmar</span>
+          </div>
+        </div>
+        <div class="idcard-type-badge">${esc(s.isGrad ? "Alumni" : "Student")}</div>
+      </div>
+      <div class="idcard-divider-line"></div>
+      <div class="idcard-body">
+        <div class="idcard-photo">${s.hasPhoto ? `<img src="${s.photoSrc}" style="width:100%;height:100%;object-fit:cover">` : esc(s.init)}</div>
+        <div class="idcard-info">
+          <div class="idcard-name">${esc(s.name)}</div>
+          <div class="idcard-name-mm">${esc(s.nameMM)}</div>
+          <div class="idcard-fields">
+            <div class="idcard-field"><span class="idcard-field-lbl">Year</span><span class="idcard-field-val">${esc(s.status)}</span></div>
+            <div class="idcard-field"><span class="idcard-field-lbl">Program</span><span class="idcard-field-val">${esc(s.program)}</span></div>
+            ${s.supervisorVisible ? `<div class="idcard-field"><span class="idcard-field-lbl">Supervisor</span><span class="idcard-field-val">${esc(s.supervisor)}</span></div>` : ''}
+            <div class="idcard-field"><span class="idcard-field-lbl">Admission Year</span><span class="idcard-field-val">${esc(s.admission)}</span></div>
+            <div class="idcard-field"><span class="idcard-field-lbl">Enrollment Status</span><span class="idcard-field-val">${esc(s.enroll)}</span></div>
+          </div>
+        </div>
+      </div>
+        <div class="idcard-bottom">
+        <div><div class="idcard-id-label">${esc(s.idLabel)}</div><div class="idcard-id-value">${esc(s.id)}</div></div>
+        ${s.isGrad
+          ? `<div class="idcard-validity"><span>Graduated</span><strong>${esc(s.gradDate || s.gradID || '')}</strong></div>`
+          : /^active$/i.test((s.enroll || '').trim())
+            ? `<div class="idcard-validity"><span>Valid until</span><strong>${((() => { const m = '2026–2027'.match(/\d{4}.*?(\d{4})/); return m ? m[1] : ''; })())}</strong></div>`
+            : `<div class="idcard-validity" style="text-align:right"><span style="font-size:8px;color:rgba(255,180,180,.9);font-weight:600">This card is invalid</span></div>`
+        }
+      </div>
+    </div>
+    <div class="idcard-back">
+      <div class="idcard-back-header">Additional Information</div>
+      <div class="idcard-back-fields">
+        <div class="idcard-back-field"><div class="lbl">Date of Birth</div><div class="val">${esc(s.birth)}</div></div>
+        <div class="idcard-back-field"><div class="lbl">Phone</div><div class="val">${esc(s.phone)}</div></div>
+        <div class="idcard-back-field"><div class="lbl">Father's Name</div><div class="val">${esc(s.father)}</div></div>
+        <div class="idcard-back-field"><div class="lbl">Admission Year</div><div class="val">${esc(s.admission)}</div></div>
+      </div>
+      <div class="idcard-back-bottom">
+        <div class="idcard-qr-wrap"><div id="printQR"></div><div class="idcard-qr-lbl">Scan to Verify</div></div>
+        <div class="idcard-back-right">
+          <div class="idcard-sid-block"><div class="lbl"></div><div class="val">${esc(String(s.id).toUpperCase())}</div></div>
+          <div class="idcard-sig-area">Authorised by · Registrar</div>
+        </div>
+      </div>
+      <div class="idcard-notice">This card is the property of University of Medicine (2) - IUC. Misuse is subject to disciplinary action.</div>
+    </div>
+  </div>
+  <script>
+    window.onload = function() {
+      new QRCode(document.getElementById('printQR'), { text: ${JSON.stringify(qrData)}, width: 76, height: 76, colorDark: '#0D1B2A', colorLight: '#ffffff', correctLevel: QRCode.CorrectLevel.M });
+      setTimeout(function(){ window.print(); }, 900);
+    };
+  <\/script>
+  </body></html>`;
+
+  const win = window.open('', '_blank', 'width=500,height=750');
+  win.document.write(html);
+  win.document.close();
+}
+
+
+// ── Grades ───────────────────────────────────────────────────
+function gc(g) {
+  if (!g) return 'gX';
+  const s = String(g).trim();
+  if (s === 'A+') return 'gAp';
+  if (s === 'A')  return 'gA';
+  if (s === 'A-') return 'gAm';
+  if (s === 'B+') return 'gBp';
+  if (s === 'B')  return 'gB';
+  return 'gX';
+}
+
+function escHtml(v) {
+  return String(v ?? '').replace(/[&<>'"]/g, ch => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;'
+  }[ch]));
+}
+
+function getAcademicYear(row, course) {
+  return row.academicYear || row.AcademicYear || row.academic_year ||
+         row.academic_year_name || row.AcademicYearName || row.yearLevel ||
+         row.YearLevel || row.currentAcademicYear || row.CurrentAcademicYear ||
+         row.currentYear || row.CurrentYear || row.courseYear || row.CourseYear ||
+         course.year || 'Other';
+}
+
+function getCompletionYear(row) {
+  return row.completionYear || row.CompletionYear || row.completion_year ||
+         row.year || row.Year || row.completionDate || row.CompletionDate || '—';
+}
+
+function getNote(row) {
+  return row.note || row.Note || row.notes || row.Notes ||
+         row.comment || row.Comment || row.remarks || row.Remarks || '';
+}
+
+function getSheetOverallGpa(student) {
+  if (!student) return '—';
+  const raw = student['Overall GPA'] ?? student.OverallGPA ?? student.overallGPA ??
+              student.overall_gpa ?? student.gpa ?? student.GPA ?? '';
+  if (raw === null || raw === undefined || String(raw).trim() === '') return '—';
+  return String(raw).trim();
+}
+
+function renderGrades(grades, student) {
+  const container = document.getElementById('gradesContent');
+  if (!grades || !grades.length) {
+    container.innerHTML = '<div class="g-wrap"><div class="no-g">No results recorded yet.</div></div>';
+    return;
+  }
+
+  // Group by academic year
+  const groups = {};
+  grades.forEach(g => {
+    const course = COURSES[g.courseId] || { name: g.course || g.courseId || '—', year: 'Other', block: g.block || 'General', credits: g.credits ?? null, assessment: g.assessment || '—' };
+    const academicYear = getAcademicYear(g, course);
+    if (!groups[academicYear]) groups[academicYear] = {};
+    const block = course.block || 'General';
+    if (!groups[academicYear][block]) groups[academicYear][block] = [];
+    groups[academicYear][block].push({ ...g, course, academicYear });
+  });
+
+  // Use program-aware year ordering from PROGRAM_META (set by populate())
+  const preferredOrder = PROGRAM_META.yearOrder;
+  const order = [
+    ...preferredOrder.filter(y => groups[y]),
+    ...Object.keys(groups).filter(y => !preferredOrder.includes(y)).sort()
+  ];
+
+  // Summary stats: GPA is not calculated here.
+  // It only reflects the value supplied by the sheet/data source.
+  let totalCourses = grades.length;
+  const overallGpa = getSheetOverallGpa(student);
+
+  // Calculate total credits from course data
+  let totalCredits = 0;
+  let creditsKnown = true;
+  grades.forEach(g => {
+    const c = COURSES[g.courseId];
+    if (c && c.credits != null) totalCredits += Number(c.credits);
+    else creditsKnown = false;
+  });
+
+  // Update summary bar
+  const summaryEl = document.getElementById('transcriptSummary');
+  if (summaryEl) {
+    summaryEl.style.display = 'flex';
+    document.getElementById('tsCredits').textContent = creditsKnown ? totalCredits : (totalCredits > 0 ? totalCredits + '+' : 'TBD');
+    document.getElementById('tsCourses').textContent = totalCourses;
+    document.getElementById('tsYears').textContent   = order.length;
+    const tsGpa = document.getElementById('tsGpa');
+    if (tsGpa) tsGpa.textContent = overallGpa;
+  }
+
+  // Update grades banner GPA
+  const gradesGpaEl = document.getElementById('gradesGpa');
+  if (gradesGpaEl) gradesGpaEl.textContent = overallGpa;
+
+  let html = '';
+  order.forEach(yr => {
+    const blockMap = groups[yr] || {};
+    const allRowsInYear = Object.values(blockMap).flat();
+    html += `<div class="g-wrap">`;
+    html += `<div class="g-year-head">${escHtml(yr)} &nbsp;·&nbsp; ${escHtml(PROGRAM_META.label)}</div>`;
+
+    // Render by block
+    Object.entries(blockMap).forEach(([blockName, rows]) => {
+      html += `<div class="g-block-head">${escHtml(blockName)}</div>`;
+      html += `<table class="gt">
+        <thead>
+          <tr>
+            <th style="width:11%">Code</th>
+            <th style="width:36%">Course Title</th>
+            <th style="text-align:center;width:7%">Credits</th>
+            <th style="text-align:center;width:14%">Assessment</th>
+            <th style="text-align:center;width:10%">Score</th>
+            <th style="text-align:center;width:8%">Year</th>
+            <th style="text-align:center;width:9%">Grade</th>
+            <th style="width:14%">Note</th>
+          </tr>
+        </thead>
+        <tbody>`;
+
+      rows.forEach(r => {
+        const scoreStr =
+          r.numericScore !== undefined && r.numericScore !== '' ? r.numericScore :
+          r.NumericScore !== undefined && r.NumericScore !== '' ? r.NumericScore :
+          r.numeric_score !== undefined && r.numeric_score !== '' ? r.numeric_score :
+          r.score !== undefined && r.score !== '' ? r.score : '—';
+        const dateStr = getCompletionYear(r);
+        const typeStr = r.completionType || r.CompletionType || r.course.assessment || '—';
+        html += `<tr>
+          <td style="font-size:11px;color:var(--ink3);font-family:monospace">${escHtml(r.courseId || '—')}</td>
+          <td>
+            <div class="gt-course">${escHtml(r.course.name)}</div>
+            <div class="gt-assess">${escHtml(typeStr)}</div>
+          </td>
+          <td style="text-align:center"><span class="gt-cr">${r.course.credits != null ? r.course.credits : '—'}</span></td>
+          <td style="text-align:center;font-size:11px;color:var(--ink3)">${escHtml(typeStr)}</td>
+          <td style="text-align:center">
+            <span class="sbar-num">${escHtml(scoreStr)}</span>
+          </td>
+          <td style="text-align:center;font-size:11px;color:var(--ink3)">${escHtml(dateStr)}</td>
+          <td style="text-align:center"><span class="gbadge ${gc(r.grade)}">${escHtml(r.grade || '—')}</span></td>
+          <td style="font-size:11px;color:var(--ink3);font-style:italic;max-width:140px">${escHtml(getNote(r))}</td>
+        </tr>`;
+      });
+      html += `</tbody></table>`;
+    });
+
+    // Year totals row
+    html += `<div class="g-year-totals">
+      <span>Courses: <strong>${allRowsInYear.length}</strong></span>
+    </div>`;
+    html += `</div>`;
+  });
+
+  container.innerHTML = html;
+}
+
+// ── Section / sidebar switching ───────────────────────────────
+const SECTION_TITLES = {
+  home:     'Home',
+  profile:  'My Personal Page',
+  grades:   'Academic Record',
+  docs:     'Document Office',
+  idcard:   'Student ID Card',
+  photo:    'Profile Photo',
+  editinfo: 'Edit My Information'
+};
+
+function switchSection(id, btn) {
+  // Update section panels
+  document.querySelectorAll('.section').forEach(p => p.classList.remove('active'));
+  const panel = document.getElementById('panel-' + id);
+  if (panel) panel.classList.add('active');
+
+  // Update sidebar nav items
+  document.querySelectorAll('.sbnav-item').forEach(b => b.classList.remove('active'));
+  if (btn && btn.classList.contains('sbnav-item')) {
+    btn.classList.add('active');
+  } else {
+    document.querySelectorAll('.sbnav-item[data-section]').forEach(b => {
+      if (b.dataset.section === id) b.classList.add('active');
+    });
+  }
+
+  // Sync mobile tab bar
+  document.querySelectorAll('.mob-tab[data-section]').forEach(t => t.classList.remove('active'));
+  const mobTab = document.querySelector('.mob-tab[data-section="'+id+'"]');
+  if (mobTab) mobTab.classList.add('active');
+
+  // Update topbar title
+  const titleEl = document.getElementById('topbarTitle');
+  if (titleEl) titleEl.textContent = SECTION_TITLES[id] || id;
+
+  // Load edit info data when navigating to that section
+  if (id === 'editinfo') { try { onSwitchToEditInfo(); } catch(e) {} }
+
+  // Close sidebar on mobile
+  closeSidebar();
+}
+
+// Legacy alias so existing switchTab() calls in renderDocCards etc. still work
+function switchTab(id, btn) { switchSection(id, btn); }
+
+function toggleSidebar() {
+  const sb = document.getElementById('sidebar');
+  const ov = document.getElementById('sbOverlay');
+  sb.classList.toggle('open');
+  ov.classList.toggle('show');
+}
+function closeSidebar() {
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('sbOverlay').classList.remove('show');
+}
+
+
+
+// ── Print helpers ─────────────────────────────────────────────
+// Page numbers are injected into each page via CSS counters in @page,
+// but the footer and watermark are real DOM elements fixed to viewport —
+// they repeat on every page automatically in print mode.
+// The right-side label just shows "Official Transcript" since browsers
+// handle page X/Y natively only in @page margin boxes (not supported by all).
+window.addEventListener('beforeprint', function() {
+  const footer = document.querySelector('.print-footer');
+  const wm     = document.querySelector('.print-watermark');
+  const hdr    = document.getElementById('printPageHeader');
+  if (footer) footer.style.display = 'flex';
+  if (wm)     wm.style.display     = 'block';
+  if (hdr)    hdr.style.display    = 'flex';
+  // Populate Student ID from active panel
+  const sidEl = document.getElementById('infoID');
+  const sidSpan = document.getElementById('printFooterSID');
+  const sidVal = sidEl ? sidEl.textContent : '—';
+  if (sidSpan) sidSpan.textContent = sidVal;
+  // Refresh @page margin box data attributes
+  document.documentElement.setAttribute('data-sid', sidVal);
+  const nameEl = document.getElementById('profileName');
+  const nameVal = nameEl ? nameEl.textContent : '';
+  document.documentElement.setAttribute('data-student-name', nameVal);
+  // Page header: student name + Student ID
+  const phName = document.getElementById('printPageHeaderName');
+  const phSid  = document.getElementById('printPageHeaderSID');
+  if (phName) phName.textContent = 'University of Medicine (2) — ' + (nameVal || 'Official Document');
+  const _lbl = (window._studentIdLabel || 'Student ID');
+  if (phSid)  phSid.textContent  = _lbl + ': ' + sidVal;
+  const ftLeft = document.getElementById('printFooterLeft');
+  if (ftLeft) ftLeft.innerHTML = 'University of Medicine (2) &nbsp;&middot;&nbsp; ' + _lbl + ': <span class="print-footer-sid">' + sidVal + '</span>';
+  // Right label on fixed footer — note: page number via @page is more reliable
+  const right = document.getElementById('printFooterRight');
+  if (right) right.textContent = ''; // page number rendered via CSS counter ::before
+  const center = document.getElementById('printFooterCenter');
+  if (center) center.textContent = nameVal;
+});
+window.addEventListener('afterprint', function() {
+  const footer = document.querySelector('.print-footer');
+  const wm     = document.querySelector('.print-watermark');
+  const hdr    = document.getElementById('printPageHeader');
+  if (footer) footer.style.display = 'none';
+  if (wm)     wm.style.display     = 'none';
+  if (hdr)    hdr.style.display    = 'none';
+});
+
+
+
+// ── Academic Journey (home panel, 2+ enrollments only) ───────
+function renderJourney(enrollments) {
+  const card = document.getElementById('journeyCard');
+  const rows = document.getElementById('journeyRows');
+  if (!card || !rows) return;
+  if (!enrollments || enrollments.length < 2) {
+    card.style.display = 'none';
+    return;
+  }
+  card.style.display = '';
+  rows.innerHTML = enrollments.map((e, i) => {
+    const label    = e.programName || e.degreeProgramId || 'Degree Program';
+    const lvl      = { bachelor: 'Bachelor', master: 'Master', phd: 'PhD / Doctoral' }[e.degreeLevel] || 'Bachelor';
+    const grad     = /graduated|completed/i.test(e.graduationStatus || '');
+    const badge    = grad
+      ? '<span style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;background:var(--green-light,#e6f4ec);color:var(--green,#1a5c3a);padding:2px 8px;border-radius:3px;margin-left:8px">Graduated</span>'
+      : '<span style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;background:var(--gold-light,#fdf6e3);color:var(--gold,#9a7b2f);padding:2px 8px;border-radius:3px;margin-left:8px">Active</span>';
+    return `<div style="display:flex;align-items:center;gap:10px;padding:10px 0;${i < enrollments.length - 1 ? 'border-bottom:1px solid var(--border,#e8e8e8)' : ''}">
+      <div style="width:28px;height:28px;border-radius:50%;background:var(--crimson,#8B1A2E);color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0">${i + 1}</div>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:13px;font-weight:600;color:var(--ink,#0D1B2A)">${lvl} — ${label}</div>
+        ${e.admissionDate ? `<div style="font-size:11px;color:var(--ink3,#888);margin-top:2px">Admitted: ${e.admissionDate}</div>` : ''}
+      </div>
+      ${badge}
+    </div>`;
+  }).join('');
+}
+
+// ── Degree tabs (grades panel, 2+ enrollments only) ───────────
+function renderDegreeTabs(enrollments, grades, courses) {
+  const wrap = document.getElementById('gradeDegreeTabs');
+  const bar  = document.getElementById('degreeTabsBar');
+  if (!wrap || !bar) return;
+  if (!enrollments || enrollments.length < 2) {
+    wrap.style.display = 'none';
+    window._activeEnrollmentIndex = 0;
+    return;
+  }
+  wrap.style.display = '';
+  bar.innerHTML = enrollments.map((e, i) => {
+    const label  = e.programName || e.degreeProgramId || 'Degree Program';
+    const lvl    = { bachelor: 'Bachelor', master: 'Master', phd: 'PhD / Doctoral' }[e.degreeLevel] || 'Bachelor';
+    const active = i === (window._activeEnrollmentIndex || 0);
+    return `<button class="degree-tab${active ? ' active' : ''}" onclick="switchDegreeTab(${i})" style="cursor:pointer;padding:8px 16px;font-size:12px;font-weight:${active ? '700' : '500'};border:none;border-bottom:2px solid ${active ? 'var(--crimson,#8B1A2E)' : 'transparent'};background:none;color:${active ? 'var(--crimson,#8B1A2E)' : 'var(--ink3,#666)'};white-space:nowrap">
+      ${lvl} — ${label}
+    </button>`;
+  }).join('');
+}
+
+function switchDegreeTab(idx) {
+  window._activeEnrollmentIndex = idx;
+  const enrollments = window._enrollments || [];
+  // Re-render tabs to update active state
+  renderDegreeTabs(enrollments, window._allGrades || [], window._allCourses || {});
+  // Filter grades to selected enrollment
+  const e = enrollments[idx];
+  const filtered = e
+    ? (window._allGrades || []).filter(g => !g.enrollmentId || g.enrollmentId === e.id)
+    : (window._allGrades || []);
+  renderGrades(filtered, window._allCourses || {});
+}
+
+// ── Cert cards (degree certificate section) ───────────────────
+function renderCertCards(enrollments) {
+  const section = document.getElementById('certSection');
+  const grid    = document.getElementById('certGrid');
+  if (!section || !grid) return;
+  const graduated = (enrollments || []).filter(e =>
+    /graduated|completed/i.test(e.graduationStatus || '')
+  );
+  if (graduated.length === 0) {
+    section.style.display = 'none';
+    return;
+  }
+  section.style.display = '';
+  grid.innerHTML = graduated.map((e, i) => {
+    const program = e.programName || e.degreeProgramId || 'Degree Program';
+    const gradDate = e.graduationDate ? `<div style="font-size:11px;color:var(--ink3,#888);margin-top:2px">Conferred: ${e.graduationDate}</div>` : '';
+    const enrollIdx = (window._enrollments || []).indexOf(e);
+    return `<div class="doc-card cert-banner">
+      <div class="doc-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="8" r="6"/><path d="M8 14l-2 7 6-3 6 3-2-7"/></svg>
+      </div>
+      <div class="doc-title">Degree Certificate</div>
+      <div class="doc-desc"><strong>${program}</strong> — University of Medicine (2)</div>
+      ${gradDate}
+      <div class="doc-tags">
+        <span class="doc-tag">Official Document</span>
+        <span class="doc-tag">Graduated</span>
+      </div>
+      <button class="btn-print-doc" onclick="printDegreeCertificate(${enrollIdx >= 0 ? enrollIdx : 0})">
+        <svg viewBox="0 0 24 24"><polyline points="6,9 6,2 18,2 18,9"/><path d="M6,18H4a2,2,0,0,1-2-2V11a2,2,0,0,1,2-2H20a2,2,0,0,1,2,2v5a2,2,0,0,1-2,2H18"/><rect x="6" y="14" width="12" height="8"/></svg>
+        Print / Save PDF
+      </button>
+    </div>`;
+  }).join('');
+}
+
+// ── Document Office: one card-pair per enrollment ────────────
+function renderDocCards(enrollments) {
+  const container = document.getElementById('docCardsContainer');
+  if (!container) return;
+
+  if (!enrollments || enrollments.length === 0) {
+    container.innerHTML = '<p style="color:var(--ink3);font-size:13px">No enrollment data available.</p>';
+    return;
+  }
+
+  const isGrad = e => /graduated|completed/i.test(e.graduationStatus || '');
+
+  let html = '';
+  enrollments.forEach((e, idx) => {
+    const graduated    = isGrad(e);
+    const programLabel = e.programName || e.degreeProgramId || 'Degree Program';
+    const lvl          = { bachelor: 'Bachelor', master: 'Master', phd: 'PhD / Doctoral' }[e.degreeLevel] || 'Bachelor';
+
+    if (enrollments.length > 1) {
+      const statusBadge = graduated
+        ? '<span style="background:var(--green-light);color:var(--green);border:1px solid rgba(26,92,58,.15);font-size:9px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;padding:2px 8px;border-radius:3px;margin-left:8px">Graduated</span>'
+        : '<span style="background:var(--gold-light);color:var(--gold);border:1px solid rgba(154,123,47,.2);font-size:9px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;padding:2px 8px;border-radius:3px;margin-left:8px">Active</span>';
+      html += `<div style="font-size:11px;font-weight:700;letter-spacing:1.4px;text-transform:uppercase;color:var(--ink3);margin:${idx === 0 ? '0' : '28px'} 0 12px;display:flex;align-items:center;gap:6px">
+        ${lvl} — ${programLabel} ${statusBadge}
+      </div>`;
+    }
+
+    html += '<div class="doc-grid">';
+
+    const confirmTitle = graduated ? 'Confirmation of Graduation' : 'Confirmation of Study';
+    const confirmDesc  = graduated
+      ? `Official letter confirming graduation from the <strong>${programLabel}</strong> program at the University of Medicine (2).`
+      : `Official letter confirming current enrollment in the <strong>${programLabel}</strong> program at the University of Medicine (2).`;
+    const confirmTag   = graduated ? 'Graduated' : 'Enrolled';
+
+    html += `
+      <div class="doc-card${graduated ? ' cert-banner' : ''}">
+        <div class="doc-icon">
+          <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10,9 9,9 8,9"/></svg>
+        </div>
+        <div class="doc-title">${confirmTitle}</div>
+        <div class="doc-desc">${confirmDesc}</div>
+        <div class="doc-tags">
+          <span class="doc-tag">Official Document</span>
+          <span class="doc-tag">Instant</span>
+          <span class="doc-tag">${confirmTag}</span>
+        </div>
+        <button class="btn-print-doc" onclick="printConfirmation(${idx})">
+          <svg viewBox="0 0 24 24"><polyline points="6,9 6,2 18,2 18,9"/><path d="M6,18H4a2,2,0,0,1-2-2V11a2,2,0,0,1,2-2H20a2,2,0,0,1,2,2v5a2,2,0,0,1-2,2H18"/><rect x="6" y="14" width="12" height="8"/></svg>
+          Print / Save PDF
+        </button>
+      </div>`;
+
+    html += `
+      <div class="doc-card">
+        <div class="doc-icon">
+          <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10,9 9,9 8,9"/></svg>
+        </div>
+        <div class="doc-title">Academic Transcript</div>
+        <div class="doc-desc">Complete record of academic performance for the <strong>${programLabel}</strong> program, including all course grades and scores.</div>
+        <div class="doc-tags">
+          <span class="doc-tag">Official Document</span>
+          <span class="doc-tag">Instant</span>
+        </div>
+        <button class="btn-print-doc" onclick="printDocument('transcript')">
+          <svg viewBox="0 0 24 24"><polyline points="6,9 6,2 18,2 18,9"/><path d="M6,18H4a2,2,0,0,1-2-2V11a2,2,0,0,1,2-2H20a2,2,0,0,1,2,2v5a2,2,0,0,1-2,2H18"/><rect x="6" y="14" width="12" height="8"/></svg>
+          Print / Save PDF
+        </button>
+      </div>`;
+
+    html += '</div>'; // end doc-grid
+  });
+
+  container.innerHTML = html;
+}
+
+// Keep as no-op so any old calls don't throw
+function renderDocDegreePicker() {}
+
+// ── printDegreeCertificate(enrollmentIndex) ──────────────────
+// Renders a formal A4 Degree Certificate matching UM2 design.
+function printDegreeCertificate(enrollIdx) {
+  const enrollments = window._enrollments || [];
+  const e = enrollments[enrollIdx] || enrollments[0];
+  if (!e) return;
+
+  const s         = window._currentStudent || {};
+  const name      = document.getElementById('profileName')?.textContent?.trim()   || s.fullName   || '—';
+  const nameMM    = document.getElementById('profileNameMM')?.textContent?.trim() || s.fullNameMM || '';
+  const sid       = document.getElementById('infoID')?.textContent?.trim()        || s.id         || '—';
+  const fatherEN  = document.getElementById('infoFather')?.textContent?.trim()    || s.fatherName  || '';
+  const fatherMM  = document.getElementById('infoFatherMM')?.textContent?.trim()  || s.fatherNameMM|| '';
+  const photo     = s.photo || '';
+
+  // Determine gender prefix and parent line
+  // We'll derive gender from MM name conventions; fallback to 'Son/Daughter'
+  const gender   = ''; // leave for cert to show "of" only
+  const parentEN = fatherEN ? fatherEN : '';
+  const parentMM = fatherMM ? fatherMM : '';
+
+  const gradID   = e.graduationId   || s.graduationId   || '';
+  const gradDate = e.graduationDate || s.graduationDate || '';
+  const gradDateMY = s.graduationDateMY || '';
+  const gradIDMY   = s.graduationIdMY  || '';
+
+  // Degree label — map program name to the formal degree title
+  const programName = e.programName || e.degreeProgramId || s.programName || '';
+  let degreeTitle = 'Bachelor of Medicine and Bachelor of Surgery';
+  if (/master|msc|mmed|m\.med/i.test(programName)) degreeTitle = 'Master of Medicine';
+  else if (/phd|doctorate|doctoral/i.test(programName)) degreeTitle = 'Doctor of Philosophy';
+  else if (/mbbs|medicine.*surgery|bachelor.*medicine/i.test(programName)) degreeTitle = 'Bachelor of Medicine and Bachelor of Surgery';
+
+  // QR data
+  const qrData = (typeof window !== 'undefined' ? window.location.origin : '') + '/verify?id=' + encodeURIComponent(sid);
+
+  const html = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Degree Certificate — ${name}</title>
+  <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=DM+Sans:opsz,wght@9..40,400;9..40,600;9..40,700&display=swap" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"><\/script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { width: 210mm; min-height: 297mm; background: #fff; }
+    @page { size: A4 portrait; margin: 0; }
+    @media print {
+      *, *::before, *::after { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      html, body { width: 210mm; height: 297mm; }
+    }
+    body {
+      font-family: 'Libre Baskerville', Georgia, serif;
+      color: #1a1a1a;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+    }
+    .cert-page {
+      width: 210mm;
+      min-height: 297mm;
+      padding: 14mm 16mm 12mm;
+      position: relative;
+      background: #fff;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    /* ── Outer border frame ── */
+    .cert-page::before {
+      content: '';
+      position: absolute;
+      inset: 6mm;
+      border: 2.5px solid #002060;
+      pointer-events: none;
+      z-index: 0;
+    }
+    .cert-page::after {
+      content: '';
+      position: absolute;
+      inset: 8mm;
+      border: 1px solid #002060;
+      pointer-events: none;
+      z-index: 0;
+    }
+    /* ── All cert content above borders ── */
+    .cert-inner {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0;
+    }
+    /* ── University name header ── */
+    .cert-univ {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 19pt;
+      font-weight: 700;
+      color: #002060;
+      text-align: center;
+      letter-spacing: .5px;
+      margin-top: 6mm;
+      line-height: 1.2;
+    }
+    /* ── Logo ── */
+    .cert-logo {
+      margin: 4mm 0 3mm;
+      width: 26mm;
+      height: 26mm;
+      object-fit: contain;
+      display: block;
+    }
+    .cert-logo-placeholder {
+      width: 26mm;
+      height: 26mm;
+      border-radius: 50%;
+      background: radial-gradient(circle at 40% 35%, #c0392b 0%, #8B0000 60%, #4a0000 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 4mm auto 3mm;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 0 0 3px #c8a800, 0 0 0 5px #002060;
+    }
+    /* ── Main title ── */
+    .cert-title {
+      font-family: 'Libre Baskerville', serif;
+      font-size: 20pt;
+      font-weight: 700;
+      color: #1a1a1a;
+      text-align: center;
+      margin: 3mm 0 5mm;
+      letter-spacing: .2px;
+    }
+    /* ── Name ── */
+    .cert-name-wrap {
+      text-align: center;
+      margin: 2mm 0 1mm;
+    }
+    .cert-name {
+      font-family: 'Libre Baskerville', serif;
+      font-size: 17pt;
+      font-weight: 700;
+      color: #1a1a1a;
+      display: block;
+    }
+    .cert-name-mm {
+      font-family: 'Padauk', 'Myanmar Text', 'Pyidaungsu', sans-serif;
+      font-size: 12pt;
+      color: #333;
+      display: block;
+      margin-top: 1mm;
+    }
+    /* ── Parent line ── */
+    .cert-parent {
+      font-family: 'Libre Baskerville', serif;
+      font-size: 10pt;
+      color: #333;
+      text-align: center;
+      margin: 1.5mm 0 4mm;
+      line-height: 1.6;
+    }
+    .cert-parent-mm {
+      font-family: 'Padauk','Myanmar Text','Pyidaungsu',sans-serif;
+      font-size: 9.5pt;
+    }
+    /* ── Conferral text ── */
+    .cert-body {
+      font-family: 'Libre Baskerville', serif;
+      font-size: 10pt;
+      color: #222;
+      text-align: center;
+      margin: 2mm 0 1mm;
+      line-height: 1.8;
+    }
+    /* ── Degree name ── */
+    .cert-degree {
+      font-family: 'Libre Baskerville', serif;
+      font-size: 13pt;
+      font-weight: 700;
+      color: #1a1a1a;
+      text-align: center;
+      margin: 2mm 0 6mm;
+    }
+    /* ── Divider ── */
+    .cert-divider {
+      width: 55%;
+      height: 1px;
+      background: linear-gradient(to right, transparent, #002060 30%, #002060 70%, transparent);
+      margin: 1mm 0 5mm;
+    }
+    /* ── Signature row ── */
+    .cert-sig-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      width: 88%;
+      margin: 0 0 4mm;
+    }
+    .cert-sig-block {
+      text-align: center;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 8.5pt;
+      color: #333;
+      line-height: 1.6;
+      flex: 1;
+    }
+    .cert-sig-line {
+      border-top: 1px solid #555;
+      margin: 0 8mm 1.5mm;
+      display: block;
+    }
+    /* ── Photo box ── */
+    .cert-photo-area {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1.5mm;
+      margin: 1mm 0 3mm;
+    }
+    .cert-photo-box {
+      width: 25mm;
+      height: 30mm;
+      border: 1.5px solid #555;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      background: #f5f5f5;
+    }
+    .cert-photo-box img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .cert-photo-label {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 7pt;
+      color: #888;
+      letter-spacing: .5px;
+      text-transform: uppercase;
+    }
+    /* ── Seal / stamp ── */
+    .cert-seal {
+      width: 22mm;
+      height: 22mm;
+      border-radius: 50%;
+      background: radial-gradient(circle, #c8a800 0%, #9a7a00 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 6pt;
+      font-weight: 700;
+      color: rgba(255,255,255,0.85);
+      text-align: center;
+      letter-spacing: .8px;
+      text-transform: uppercase;
+      box-shadow: 0 0 0 2px #c8a800, 0 0 0 4px rgba(200,168,0,0.3);
+    }
+    /* ── Bottom info strip ── */
+    .cert-bottom {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      width: 88%;
+      margin-top: 2mm;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 8pt;
+      color: #555;
+    }
+    .cert-qr { display: flex; flex-direction: column; align-items: center; gap: 1.5mm; }
+    .cert-qr-lbl { font-size: 6.5pt; letter-spacing: .5px; text-transform: uppercase; color: #888; }
+    .cert-reg-info { text-align: right; line-height: 1.8; }
+    /* ── Gold ornamental corners ── */
+    .corner {
+      position: absolute;
+      width: 18mm;
+      height: 18mm;
+      z-index: 2;
+    }
+    .corner svg { width: 100%; height: 100%; }
+    .corner.tl { top: 5mm; left: 5mm; }
+    .corner.tr { top: 5mm; right: 5mm; transform: scaleX(-1); }
+    .corner.bl { bottom: 5mm; left: 5mm; transform: scaleY(-1); }
+    .corner.br { bottom: 5mm; right: 5mm; transform: scale(-1); }
+  </style>
+</head>
+<body>
+<div class="cert-page">
+
+  <!-- Ornamental corners -->
+  <div class="corner tl">
+    <svg viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg">
+      <path d="M2 2 L2 28 Q2 32 6 32 L10 32" fill="none" stroke="#c8a800" stroke-width="2"/>
+      <path d="M2 2 L28 2 Q32 2 32 6 L32 10" fill="none" stroke="#c8a800" stroke-width="2"/>
+      <circle cx="2" cy="2" r="3" fill="#c8a800"/>
+      <path d="M6 6 L6 24 Q6 28 10 28 L22 28" fill="none" stroke="#c8a800" stroke-width="1" stroke-dasharray="2,2"/>
+      <path d="M6 6 L24 6 Q28 6 28 10 L28 22" fill="none" stroke="#c8a800" stroke-width="1" stroke-dasharray="2,2"/>
+    </svg>
+  </div>
+  <div class="corner tr">
+    <svg viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg">
+      <path d="M2 2 L2 28 Q2 32 6 32 L10 32" fill="none" stroke="#c8a800" stroke-width="2"/>
+      <path d="M2 2 L28 2 Q32 2 32 6 L32 10" fill="none" stroke="#c8a800" stroke-width="2"/>
+      <circle cx="2" cy="2" r="3" fill="#c8a800"/>
+      <path d="M6 6 L6 24 Q6 28 10 28 L22 28" fill="none" stroke="#c8a800" stroke-width="1" stroke-dasharray="2,2"/>
+      <path d="M6 6 L24 6 Q28 6 28 10 L28 22" fill="none" stroke="#c8a800" stroke-width="1" stroke-dasharray="2,2"/>
+    </svg>
+  </div>
+  <div class="corner bl">
+    <svg viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg">
+      <path d="M2 2 L2 28 Q2 32 6 32 L10 32" fill="none" stroke="#c8a800" stroke-width="2"/>
+      <path d="M2 2 L28 2 Q32 2 32 6 L32 10" fill="none" stroke="#c8a800" stroke-width="2"/>
+      <circle cx="2" cy="2" r="3" fill="#c8a800"/>
+      <path d="M6 6 L6 24 Q6 28 10 28 L22 28" fill="none" stroke="#c8a800" stroke-width="1" stroke-dasharray="2,2"/>
+      <path d="M6 6 L24 6 Q28 6 28 10 L28 22" fill="none" stroke="#c8a800" stroke-width="1" stroke-dasharray="2,2"/>
+    </svg>
+  </div>
+  <div class="corner br">
+    <svg viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg">
+      <path d="M2 2 L2 28 Q2 32 6 32 L10 32" fill="none" stroke="#c8a800" stroke-width="2"/>
+      <path d="M2 2 L28 2 Q32 2 32 6 L32 10" fill="none" stroke="#c8a800" stroke-width="2"/>
+      <circle cx="2" cy="2" r="3" fill="#c8a800"/>
+      <path d="M6 6 L6 24 Q6 28 10 28 L22 28" fill="none" stroke="#c8a800" stroke-width="1" stroke-dasharray="2,2"/>
+      <path d="M6 6 L24 6 Q28 6 28 10 L28 22" fill="none" stroke="#c8a800" stroke-width="1" stroke-dasharray="2,2"/>
+    </svg>
+  </div>
+
+  <div class="cert-inner">
+
+    <!-- University name -->
+    <div class="cert-univ">UNIVERSITY OF MEDICINE -2, YANGON</div>
+
+    <!-- Logo -->
+    <img class="cert-logo"
+      src="https://raw.githubusercontent.com/um2iucoffice/um2portal/c5797a374732d917b6b54aa88b6a874d66984ba1/public/UM2_Logo.svg"
+      alt="UM2 Logo"
+      onerror="this.style.display='none';document.getElementById('certLogoFallback').style.display='flex'">
+    <div id="certLogoFallback" class="cert-logo-placeholder" style="display:none">
+      <span style="font-size:8pt;font-weight:700;color:#fff;letter-spacing:.5px">UM2</span>
+    </div>
+
+    <!-- Certificate title -->
+    <div class="cert-title">Degree Certificate</div>
+
+    <!-- Student name -->
+    <div class="cert-name-wrap">
+      <span class="cert-name">${name}</span>
+      ${nameMM ? `<span class="cert-name-mm">${nameMM}</span>` : ''}
+    </div>
+
+    <!-- Parent line -->
+    ${parentEN ? `
+    <div class="cert-parent">
+      Son / Daughter of &nbsp;<strong>${parentEN}</strong>
+      ${parentMM ? `<br><span class="cert-parent-mm">${parentMM} ၏ သား / သမီး</span>` : ''}
+    </div>` : '<div style="height:4mm"></div>'}
+
+    <!-- Conferral body -->
+    <div class="cert-body">is hereby conferred the degree of</div>
+
+    <!-- Degree name -->
+    <div class="cert-degree">${degreeTitle}.</div>
+
+    <div class="cert-divider"></div>
+
+    <!-- Signature row -->
+    <div class="cert-sig-row">
+      <div class="cert-sig-block">
+        <span class="cert-sig-line"></span>
+        Interim University Council<br>
+        University of Medicine -2, Yangon
+      </div>
+      <div style="flex:0.4;display:flex;justify-content:center;align-items:flex-end;padding-bottom:1mm">
+        <div class="cert-seal">OFFICIAL<br>SEAL</div>
+      </div>
+      <div class="cert-sig-block">
+        <span class="cert-sig-line"></span>
+        Chancellor<br>
+        University of Medicine -2, Yangon
+      </div>
+    </div>
+
+    <!-- Photo + QR + registration info -->
+    <div style="display:flex;justify-content:space-between;align-items:flex-end;width:88%;margin-top:1mm">
+
+      <!-- QR -->
+      <div class="cert-qr">
+        <div id="certQR"></div>
+        <div class="cert-qr-lbl">Scan to Verify</div>
+      </div>
+
+      <!-- Photo -->
+      <div class="cert-photo-area">
+        <div class="cert-photo-box">
+          ${photo
+            ? `<img src="${photo}" alt="Student Photo" onerror="this.parentElement.innerHTML='<span style=\\'font-size:7pt;color:#aaa;text-align:center;padding:4px\\'>Photo</span>'">`
+            : '<span style="font-size:7pt;color:#aaa;text-align:center;padding:4px">Photo</span>'}
+        </div>
+        <div class="cert-photo-label">Photo</div>
+      </div>
+
+      <!-- Registration info -->
+      <div class="cert-reg-info">
+        ${gradDate ? `<div><strong>Date:</strong> ${gradDate}</div>` : ''}
+        ${gradDateMY ? `<div style="font-family:'Padauk','Myanmar Text',sans-serif;font-size:7.5pt">${gradDateMY}</div>` : ''}
+        ${gradID ? `<div style="margin-top:1mm"><strong>Registration ID:</strong> ${gradID}</div>` : ''}
+        ${gradIDMY ? `<div style="font-family:'Padauk','Myanmar Text',sans-serif;font-size:7.5pt">${gradIDMY}</div>` : ''}
+      </div>
+    </div>
+
+  </div><!-- /.cert-inner -->
+</div><!-- /.cert-page -->
+
+<script>
+  // Generate QR
+  window.addEventListener('load', function() {
+    try {
+      new QRCode(document.getElementById('certQR'), {
+        text: ${JSON.stringify(qrData)},
+        width: 56, height: 56,
+        colorDark: '#002060',
+        colorLight: '#ffffff',
+        correctLevel: QRCode.CorrectLevel.M
+      });
+    } catch(e) {}
+    setTimeout(function() { window.print(); }, 800);
+  });
+<\/script>
+</body>
+</html>`;
+
+  const win = window.open('', '_blank', 'width=860,height=1000');
+  if (!win) { alert('Please allow popups to print the certificate.'); return; }
+  win.document.write(html);
+  win.document.close();
+}
+
+// ── printConfirmation(enrollmentIndex) ───────────────────────
+function printConfirmation(enrollIdx) {
+  const enrollments = window._enrollments || [];
+  const e = enrollments[enrollIdx] || enrollments[0];
+  if (!e) return;
+
+  const isGraduated = /graduated|completed/i.test(e.graduationStatus || '');
+  const idLabel     = isGraduated ? 'Alumni ID' : 'Student ID';
+
+  const name      = document.getElementById('profileName').textContent      || '—';
+  const sid       = document.getElementById('infoID').textContent           || '—';
+  const admission = e.admissionDate || document.getElementById('infoAdmission').textContent || '—';
+  const status    = e.currentYear   || document.getElementById('infoStatus').textContent    || '—';
+  const enroll    = e.enrollmentStatus || document.getElementById('infoEnroll').textContent || '—';
+  const program   = e.programName   || e.degreeProgramId || document.getElementById('infoProgram')?.textContent || '';
+  const grad      = e.graduationStatus || '—';
+  const gradID    = e.graduationId   || '';
+  const gradDate  = e.graduationDate || '';
+  const today     = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+
+  const confirmationBody = `
+  <div style="margin:32px 0;font-family:'DM Sans',sans-serif;font-size:11pt;color:#0D1B2A;line-height:2;text-align:justify;">
+    ${isGraduated ? `
+    <p>
+      This is to confirm that <strong>${name}</strong> (${idLabel}: <strong>${sid}</strong>)
+      has successfully completed the requirements for the degree of
+      <strong>${program || 'the awarded degree'}</strong>
+      at the <strong>University of Medicine (2)</strong>, under the administration
+      of the Interim University Council, Republic of the Union of Myanmar.
+    </p>
+    <br>
+    <p style="text-align:justify;">
+      The above-named graduate was admitted in <strong>${admission}</strong>
+      and has been conferred the degree with a status of <strong>${grad}</strong>${gradDate ? ', effective <strong>' + gradDate + '</strong>' : ''}.
+      ${gradID ? 'Graduation Reference: <strong>' + gradID + '</strong>.' : ''}
+    </p>
+    ` : `
+    <p>
+      This is to confirm that <strong>${name}</strong> (Student ID: <strong>${sid}</strong>)
+      is currently enrolled as a student at the
+      <strong>University of Medicine (2)</strong>, under the administration
+      of the Interim University Council, Republic of the Union of Myanmar.
+    </p>
+    <br>
+    <p style="text-align:justify;">
+      The student was admitted in <strong>${admission}</strong> and is currently in
+      <strong>${status}</strong>${program && program !== '—' ? ', <strong>' + program + '</strong>' : ''} program
+      with the enrollment status — <strong>${enroll}</strong>.
+    </p>
+    `}
+    <br>
+    <p>This letter is issued digitally for official purposes.</p>
+  </div>`;
+
+  const closing = `
+  <div style="margin-top:28px;border-top:1.5px solid #0D1B2A;display:flex;justify-content:space-between;align-items:stretch;font-family:'DM Sans',sans-serif;">
+    <div style="flex:1;padding:12px 16px;font-size:11pt;color:#0D1B2A;line-height:1.7;">
+      <div style="font-size:11pt;font-weight:bold;letter-spacing:.8px;text-transform:uppercase;color:#0D1B2A;margin-bottom:5px;">Official Notice</div>
+      <div>This document is an official record.</div>
+      <div>Any alteration renders it invalid.</div>
+      <div>Issued on ${today}.</div>
+      <br>
+      <div style="display:flex;align-items:center;gap:16px;margin-top:8px;">
+        <div>
+          <div style="font-weight:bold;font-size:11pt;color:#0D1B2A">Kaung Khant</div>
+          <div style="font-size:11pt;color:#0D1B2A">Acting Registrar</div>
+          <div style="font-size:11pt;color:#0D1B2A">University of Medicine (2)</div>
+        </div>
+        <img src="signature.png" alt="Registrar Signature" style="width:180px;height:auto;object-fit:contain;position:relative;top:-50px;">
+      </div>
+    </div>
+  </div>`;
+
+  const docType = isGraduated ? 'Confirmation of Graduation' : 'Confirmation of Study';
+
+  const html = `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>${docType} — ${name}</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; }
+    body { font-family: 'DM Sans',sans-serif; color: #0D1B2A; background: #fff; font-size: 10.5pt; line-height: 1.5; }
+    @page { margin: 22mm 25mm 24mm 25mm; size: A4; }
+    @media print { * { -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
+    body > table { width: 100%; border-collapse: collapse; }
+    body > table > tbody > tr > td { vertical-align: top; }
+    .pg-ftr { display:flex; justify-content:space-between; align-items:center; padding-top:6px; border-top:1.5px solid #0D1B2A; margin-top:2px; font-size:8.5pt; color:#555; font-family:'DM Sans',sans-serif; }
+    .wm { position:fixed; top:50%; left:50%; transform:translate(-50%,-50%) rotate(-35deg); font-size:40pt; font-weight:bold; color:rgba(13,27,42,0.04); letter-spacing:10px; pointer-events:none; white-space:nowrap; z-index:0; }
+    .inst-hdr { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:12px; padding-bottom:10px; border-bottom:2.5px solid #0D1B2A; }
+    .inst-name { font-size:17pt; font-weight:bold; color:#0D1B2A; line-height:1.2; }
+    .doc-type-badge { font-size:13pt; font-weight:bold; color:#0D1B2A; text-transform:uppercase; letter-spacing:.5px; text-align:right; }
+    .doc-meta { font-size:9pt; color:#444; text-align:right; margin-top:5px; line-height:1.7; }
+  </style>
+</head>
+<body>
+  <div class="wm">OFFICIAL</div>
+  <table>
+    <thead><tr><td></td></tr></thead>
+    <tfoot><tr><td style="padding-top:10px">
+      <div class="pg-ftr">
+        <span>University of Medicine (2) &nbsp;·&nbsp; ${idLabel}: <b>${sid}</b> &nbsp;·&nbsp; ${name}</span>
+      </div>
+    </td></tr></tfoot>
+    <tbody><tr><td style="position:relative;z-index:1">
+      <div class="inst-hdr">
+        <div style="display:flex;align-items:center;gap:18px">
+          <img src="https://raw.githubusercontent.com/um2iucoffice/um2portal/c5797a374732d917b6b54aa88b6a874d66984ba1/public/UM2_Logo.svg" alt="UM2 Logo" style="width:72px;height:86px;flex-shrink:0;object-fit:contain"/>
+          <div>
+            <div class="inst-name">UM2</div>
+            <div style="font-size:10pt;font-weight:400;color:#0D1B2A;">Interim University Council</div>
+            <div style="font-size:10pt;color:#333;">Republic of the Union of Myanmar</div>
+          </div>
+        </div>
+        <div>
+          <div class="doc-type-badge">${docType}</div>
+          <div class="doc-meta">
+            ${idLabel}: <strong style="color:#8B1A2E">${sid}</strong><br>
+            ${isGraduated ? 'Status: ' + grad : 'Enrollment: ' + enroll}
+            ${isGraduated && gradDate ? '<br>Date of Graduation: ' + gradDate : ''}
+            ${isGraduated && gradID   ? '<br>Graduation ID: ' + gradID : ''}
+          </div>
+        </div>
+      </div>
+      ${confirmationBody}
+      ${closing}
+    </td></tr></tbody>
+  </table>
+  <script>
+    window.onload = function() { setTimeout(function() { window.print(); }, 600); };
+  <\/script>
+</body>
+</html>`;
+
+  const win = window.open('', '_blank', 'width=960,height=750');
+  win.document.write(html);
+  win.document.close();
+}
+
+// ── printDocument(type) — Transcript + fallback confirmation ─
+function printDocument(type) {
+  const enrollments = window._enrollments || [];
+  const eIdx = window._docEnrollmentIndex || 0;
+  const chosenE = enrollments[eIdx] || null;
+
+  const name      = document.getElementById('profileName').textContent || '—';
+  const nameMM    = document.getElementById('profileNameMM')?.textContent || '';
+  const sid       = document.getElementById('infoID').textContent || '—';
+  const birth     = document.getElementById('infoBirth').textContent || '—';
+  const father    = document.getElementById('infoFather').textContent || '—';
+  const fatherMM  = document.getElementById('infoFatherMM')?.textContent || '—';
+  const phone     = document.getElementById('infoPhone')?.textContent || '—';
+  const email     = document.getElementById('infoEmail')?.textContent || '—';
+  const admission = document.getElementById('infoAdmission').textContent || '—';
+  const status    = chosenE ? (chosenE.currentYear || document.getElementById('infoStatus').textContent || '—') : (document.getElementById('infoStatus').textContent || '—');
+  const enroll    = chosenE ? (chosenE.enrollmentStatus || document.getElementById('infoEnroll').textContent || '—') : (document.getElementById('infoEnroll').textContent || '—');
+  const program   = chosenE ? (chosenE.programName || chosenE.degreeProgramId || document.getElementById('infoProgram')?.textContent || '') : (document.getElementById('infoProgram')?.textContent || '');
+  const rawGrad   = chosenE ? (chosenE.graduationStatus || '') : (document.getElementById('infoGrad')?.textContent || '—');
+  const grad      = rawGrad || '—';
+  const gradID    = chosenE ? (chosenE.graduationId || '') : (document.getElementById('infoGradID')?.textContent || '');
+  const gradDate  = chosenE ? (chosenE.graduationDate || '') : (document.getElementById('infoGradDate')?.textContent || '');
+  const isGraduated = /^graduated$/i.test((rawGrad || grad).trim());
+  const idLabel   = isGraduated ? 'Alumni ID' : 'Student ID';
+  const today     = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+
+  const programLabel = (chosenE && (chosenE.programName || chosenE.degreeProgramId))
+    || (typeof PROGRAM_META !== 'undefined' && PROGRAM_META && PROGRAM_META.label && PROGRAM_META.label !== 'MBBS Program' ? PROGRAM_META.label : null)
+    || window._studentProgram
+    || program
+    || 'Degree Program';
+
+  // ── Collect grade data grouped by Academic Year ──────────────
+  const yearGroups = [];
+  if (type === 'transcript') {
+    const gradeContainer = document.getElementById('gradesContent');
+    gradeContainer.querySelectorAll('.g-wrap').forEach(wrap => {
+      const head = wrap.querySelector('.g-year-head');
+      let yearText = head?.textContent || '';
+      yearText = yearText.replace(/\s*·\s*.+$/, '').replace(/^—\s*/, '').trim();
+      const year = head?.dataset?.year || yearText || 'Academic Year';
+      const rows = [];
+      wrap.querySelectorAll('tbody tr').forEach(el => {
+        const tds = el.querySelectorAll('td');
+        if (tds.length < 7) return;
+        rows.push({
+          courseId: tds[0].textContent.trim(),
+          course:   tds[1].querySelector('.gt-course')?.textContent?.trim() || tds[1].textContent.trim(),
+          credits:  tds[2].textContent.trim(),
+          assess:   tds[3].textContent.trim(),
+          score:    tds[4].textContent.trim(),
+          date:     tds[5].textContent.trim(),
+          grade:    tds[6].textContent.trim(),
+          note:     tds[7]?.textContent?.trim() || '',
+        });
+      });
+      if (rows.length) yearGroups.push({ year, rows });
+    });
+  }
+
+  const TD  = `padding:5px 10px;border-bottom:1px solid #e8e8e8;font-size:7.5pt;color:#0D1B2A;font-family:'DM Sans',sans-serif;`;
+  const TDH = `padding:6px 10px;font-size:8pt;font-weight:bold;letter-spacing:.4px;text-transform:uppercase;color:#444;border-bottom:1.5px solid #0D1B2A;text-align:left;white-space:nowrap;font-family:'DM Sans',sans-serif;`;
+
+  function yearTable(group) {
+    let rows = '';
+    group.rows.forEach((r, i) => {
+      const bg = i % 2 === 1 ? 'background:#fafafa;' : '';
+      rows += `<tr>
+        <td style="${TD}${bg}font-size:7.5pt;color:#666">${r.courseId || '—'}</td>
+        <td style="${TD}${bg}font-weight:500;font-size:7pt;line-height:1.25;letter-spacing:-.05px">${r.course}</td>
+        <td style="${TD}${bg}text-align:center">${r.credits || '—'}</td>
+        <td style="${TD}${bg}text-align:center;color:#444;font-size:6.5pt">${r.assess || '—'}</td>
+        <td style="${TD}${bg}text-align:center;color:#333;font-size:7.5pt">${r.score || '—'}</td>
+        <td style="${TD}${bg}text-align:center;color:#444">${r.date || '—'}</td>
+        <td style="${TD}${bg}text-align:center;font-weight:bold;font-size:7.5pt">${r.grade}</td>
+        <td style="${TD}${bg}font-size:6.5pt;color:#555;font-style:italic">${r.note || ''}</td>
+      </tr>`;
+    });
+    return `
+      <div style="margin-bottom:22px;page-break-inside:avoid">
+        <div style="font-family:'DM Sans',sans-serif;font-size:13pt;font-weight:bold;color:#0D1B2A;margin-bottom:10px;padding-bottom:6px;border-bottom:2px solid #0D1B2A;display:flex;justify-content:space-between;align-items:baseline">
+          <span>— &nbsp;${group.year} &nbsp;·&nbsp; ${programLabel}</span>
+        </div>
+        <table style="width:100%;border-collapse:collapse;margin-bottom:14px;font-family:'DM Sans',sans-serif">
+          <thead><tr>
+            <th style="${TDH}width:11%">Course Code</th>
+            <th style="${TDH}width:34%">Course Title</th>
+            <th style="${TDH}width:7%;text-align:center">Credits</th>
+            <th style="${TDH}width:12%;text-align:center">Type</th>
+            <th style="${TDH}width:8%;text-align:center">Score</th>
+            <th style="${TDH}width:14%;text-align:center">Year</th>
+            <th style="${TDH}width:14%;text-align:center">Grade</th>
+            <th style="${TDH}width:14%">Note</th>
+          </tr></thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </div>`;
+  }
+
+  let academicRecord = '';
+  if (type === 'transcript') {
+    yearGroups.forEach(yg => { academicRecord += yearTable(yg); });
+  }
+
+  const confirmationBody = type === 'confirmation' ? `
+  <div style="margin:32px 0;font-family:'DM Sans',sans-serif;font-size:11pt;color:#0D1B2A;line-height:2;text-align:justify;">
+    ${isGraduated ? `
+    <p>
+      This is to confirm that <strong>${name}</strong> (${idLabel}:
+      <strong>${sid}</strong>) has successfully completed the requirements
+      for the degree of <strong>${program || programLabel}</strong>
+      at the <strong>University of Medicine (2)</strong>, under the administration
+      of the Interim University Council, Republic of the Union of Myanmar.
+    </p>
+    <br>
+    <p style="text-align:justify;">
+      The above-named graduate was admitted in <strong>${admission}</strong>
+      and has been conferred the degree with a status of
+      <strong>${grad}</strong>${gradDate ? ', effective <strong>' + gradDate + '</strong>' : ''}.
+      ${gradID ? 'Graduation Reference: <strong>' + gradID + '</strong>.' : ''}
+    </p>
+    ` : `
+    <p>
+      This is to confirm that <strong>${name}</strong> (Student ID:
+      <strong>${sid}</strong>) is currently enrolled as a student at the
+      <strong>University of Medicine (2)</strong>, under the administration
+      of the Interim University Council, Republic of the Union of Myanmar.
+    </p>
+    <br>
+    <p style="text-align:justify;">
+      The student was admitted in <strong>${admission}</strong> and is currently in
+      <strong>${status}</strong>${program && program !== '—' ? ', <strong>' + program + '</strong>' : ''} program
+      with the enrollment status — <strong>${enroll}</strong>.
+    </p>
+    `}
+    <br>
+    <p>This letter is issued digitally for official purposes.</p>
+  </div>` : '';
+
+  const closing = `
+  <div style="margin-top:28px;border-top:1.5px solid #0D1B2A;display:flex;justify-content:space-between;align-items:stretch;font-family:'DM Sans',sans-serif">
+    <div style="flex:1;padding:12px 16px;font-size:11pt;color:#0D1B2A;line-height:1.7;">
+      <div style="font-size:11pt;font-weight:bold;letter-spacing:.8px;text-transform:uppercase;color:#0D1B2A;margin-bottom:5px">Official Notice</div>
+      <div>This document is an official record.</div>
+      <div>Any alteration renders it invalid.</div>
+      <div>Issued on ${today}.</div>
+      <br>
+      <div style="display:flex;align-items:center;gap:16px;margin-top:8px;">
+        <div>
+          <div style="font-weight:bold;font-size:11pt;color:#0D1B2A">Kaung Khant</div>
+          <div style="font-size:11pt;color:#0D1B2A">Acting Registrar</div>
+          <div style="font-size:11pt;color:#0D1B2A">University of Medicine (2)</div>
+        </div>
+        <img src="signature.png" alt="Registrar Signature" style="width:180px;height:auto;object-fit:contain;position:relative;top:-50px;">
+      </div>
+    </div>
+  </div>`;
+
+  const docTitle = type === 'transcript' ? 'Academic Transcript' : (isGraduated ? 'Confirmation of Graduation' : 'Confirmation of Study');
+
+  const html = `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>${docTitle} — ${name}</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet">
+  <style>
+    @font-face {
+      font-family: 'Pyidaungsu';
+      src: url('Pyidaungsu.ttf') format('truetype');
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; }
+    body { font-family: 'DM Sans',sans-serif; color: #0D1B2A; background: #fff; font-size: 10.5pt; line-height: 1.5; }
+    @page { margin: 22mm 25mm 24mm 25mm; size: A4; }
+    @media print { * { -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
+    body > table { width: 100%; border-collapse: collapse; }
+    body > table > tbody > tr > td { vertical-align: top; }
+    .pg-ftr { display:flex; justify-content:space-between; align-items:center; padding-top:6px; border-top:1.5px solid #0D1B2A; margin-top:2px; font-size:8.5pt; color:#555; font-family:'DM Sans',sans-serif; }
+    .wm { position:fixed; top:50%; left:50%; transform:translate(-50%,-50%) rotate(-35deg); font-family:'DM Sans',sans-serif; font-size:40pt; font-weight:bold; color:rgba(13,27,42,0.04); letter-spacing:10px; pointer-events:none; white-space:nowrap; z-index:0; }
+    .inst-hdr { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:12px; padding-bottom:10px; border-bottom:2.5px solid #0D1B2A; }
+    .inst-name { font-family:'DM Sans',sans-serif; font-size:17pt; font-weight:bold; color:#0D1B2A; line-height:1.2; }
+    .doc-type-badge { font-family:'DM Sans',sans-serif; font-size:13pt; font-weight:bold; color:#0D1B2A; text-transform:uppercase; letter-spacing:.5px; text-align:right; }
+    .doc-meta { font-size:9pt; color:#444; text-align:right; margin-top:5px; line-height:1.7; font-family:'DM Sans',sans-serif; }
+    .transcript-student-section { border:1px solid #bbb; margin:10px 0 16px; padding:12px 14px; display:grid; grid-template-columns:1.2fr 1.2fr .8fr; gap:14px; background:#fff; page-break-inside:avoid; }
+    .transcript-student-item { border-right:1px solid #ddd; padding-right:12px; }
+    .transcript-student-item:last-child { border-right:none; padding-right:0; }
+    .transcript-student-label { font-size:7.5pt; font-weight:bold; letter-spacing:.8px; text-transform:uppercase; color:#555; margin-bottom:4px; }
+    .transcript-student-value { font-size:10pt; font-weight:bold; color:#0D1B2A; line-height:1.35; }
+    .section-label { font-size:8pt; font-weight:bold; letter-spacing:1.2px; text-transform:uppercase; color:#444; font-family:'DM Sans',sans-serif; margin:14px 0 6px; border-bottom:1px solid #ccc; padding-bottom:4px; }
+  </style>
+</head>
+<body>
+  <div class="wm">OFFICIAL</div>
+  <table>
+    <thead><tr><td></td></tr></thead>
+    <tfoot><tr><td style="padding-top:10px">
+      <div class="pg-ftr">
+        <span>University of Medicine (2) &nbsp;·&nbsp; ${idLabel}: <b>${sid}</b> &nbsp;·&nbsp; ${name}</span>
+      </div>
+    </td></tr></tfoot>
+    <tbody><tr><td style="position:relative;z-index:1">
+      <div class="inst-hdr">
+        <div style="display:flex;align-items:center;gap:18px">
+          <img src="https://raw.githubusercontent.com/um2iucoffice/um2portal/c5797a374732d917b6b54aa88b6a874d66984ba1/public/UM2_Logo.svg" alt="UM2 Logo" style="width:72px;height:86px;flex-shrink:0;object-fit:contain"/>
+          <div>
+            <div class="inst-name">UM2</div>
+            <div class="inst-name" style="font-size:10pt;font-weight:400;">Interim University Council</div>
+            <div style="font-size:10pt;color:#333;font-family:'DM Sans',sans-serif;">Republic of the Union of Myanmar</div>
+          </div>
+        </div>
+        <div>
+          <div class="doc-type-badge">${docTitle}</div>
+          <div class="doc-meta">
+            ${idLabel}: <strong style="color:#8B1A2E">${sid}</strong><br>
+            ${isGraduated ? 'Status: ' + grad : 'Enrollment: ' + enroll}
+            ${isGraduated && gradDate ? '<br>Date of Graduation: ' + gradDate : ''}
+            ${isGraduated && gradID   ? '<br>Graduation ID: ' + gradID : ''}
+          </div>
+        </div>
+      </div>
+
+      ${type === 'transcript' ? `
+      <div class="section-label">Student Details</div>
+      <div class="transcript-student-section" style="grid-template-columns:1.2fr 1.2fr .8fr${program && program !== '—' ? ' .8fr' : ''}${isGraduated && gradID ? ' .8fr' : ''}">
+        <div class="transcript-student-item">
+          <div class="transcript-student-label">Name</div>
+          <div class="transcript-student-value">${name}</div>
+        </div>
+        <div class="transcript-student-item">
+          <div class="transcript-student-label">Father's Name</div>
+          <div class="transcript-student-value">${father}</div>
+        </div>
+        <div class="transcript-student-item">
+          <div class="transcript-student-label">Date of Birth</div>
+          <div class="transcript-student-value">${birth}</div>
+        </div>
+        ${program && program !== '—' ? `
+        <div class="transcript-student-item">
+          <div class="transcript-student-label">Degree Program</div>
+          <div class="transcript-student-value">${program}</div>
+        </div>` : ''}
+        ${isGraduated && gradID ? `
+        <div class="transcript-student-item">
+          <div class="transcript-student-label">Graduation ID</div>
+          <div class="transcript-student-value">${gradID}</div>
+        </div>` : ''}
+      </div>
+      ${isGraduated ? `
+      <div class="section-label">Graduation Information</div>
+      <div class="transcript-student-section" style="grid-template-columns:1fr 1fr">
+        <div class="transcript-student-item">
+          <div class="transcript-student-label">Status</div>
+          <div class="transcript-student-value">${grad}</div>
+        </div>
+        ${gradDate ? `
+        <div class="transcript-student-item">
+          <div class="transcript-student-label">Date of Graduation</div>
+          <div class="transcript-student-value">${gradDate}</div>
+        </div>` : ''}
+      </div>` : ''}
+      <div class="section-label">Academic Record — ${programLabel}</div>
+      ${academicRecord}` : ''}
+
+      ${confirmationBody}
+      ${closing}
+
+    </td></tr></tbody>
+  </table>
+  <script>
+    window.onload = function() { setTimeout(function() { window.print(); }, 600); };
+  <\/script>
+</body>
+</html>`;
+
+  const win = window.open('', '_blank', 'width=960,height=750');
+  win.document.write(html);
+  win.document.close();
+}
+
+
+// ── Mobile Tab Bar ────────────────────────────────────────────────
+function mobSwitchTab(section, btn) {
+  // Sync desktop sidebar
+  switchSection(section, document.querySelector('.sbnav-item[data-section="'+section+'"]'));
+  // Update mobile tab active states
+  document.querySelectorAll('.mob-tab[data-section]').forEach(t => t.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  else {
+    const t = document.querySelector('.mob-tab[data-section="'+section+'"]');
+    if (t) t.classList.add('active');
+  }
+  // Scroll to top
+  const content = document.querySelector('.dash-content');
+  if (content) content.scrollTo(0, 0);
+}
+
+function toggleMobMore(btn) {
+  const menu = document.getElementById('mobMoreMenu');
+  const overlay = document.getElementById('mobMoreOverlay');
+  menu.classList.toggle('open');
+  overlay.classList.toggle('open');
+}
+function closeMobMore() {
+  document.getElementById('mobMoreMenu').classList.remove('open');
+  document.getElementById('mobMoreOverlay').classList.remove('open');
+}
+
+// ── Theme Toggle ──────────────────────────────────────────────────
+const MOON_SVG = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>`;
+const SUN_SVG  = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>`;
+
+function applyTheme(theme) {
+  if (theme === 'light') {
+    document.body.classList.add('theme-light');
+  } else {
+    document.body.classList.remove('theme-light');
+  }
+  // Update all toggle button icons
+  const isLight = theme === 'light';
+  const iconHtml = isLight ? MOON_SVG : SUN_SVG;
+  document.querySelectorAll('#themeIconLogin, #themeIconDash').forEach(el => {
+    el.outerHTML = (isLight ? MOON_SVG : SUN_SVG).replace('width="16"','id="' + el.id + '" width="16"').replace('width="18"','id="' + el.id + '" width="18"');
+  });
+  try { localStorage.setItem('iris_theme', theme); } catch(e) {}
+}
+
+function toggleTheme() {
+  const isLight = document.body.classList.contains('theme-light');
+  applyTheme(isLight ? 'dark' : 'light');
+}
+
+// Restore theme on load
+(function() {
+  let saved = 'dark';
+  try { saved = localStorage.getItem('iris_theme') || 'dark'; } catch(e) {}
+  applyTheme(saved);
+})();
+
+// ── Sign out ──────────────────────────────────────────────────
+// ── Edit My Info (student personal data change requests) ─────
+// Requires Netlify function: netlify/functions/edit-request.js
+// Table: student_edit_requests (see Setup Guide in registrar portal)
+
+async function loadEditInfoSection() {
+  const sid = (document.getElementById('loginStudentId').value || '').trim().toLowerCase();
+  const pwd = window._sessionPassword || '';
+  if (!sid) return;
+
+  try {
+    const res = await fetch('/.netlify/functions/get-edit-requests', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ studentId: sid, password: pwd })
+    });
+    if (!res.ok) return;
+    const data = await res.json();
+    const rows = data.requests || [];
+
+    // Pre-fill form with current values
+    const saved = window._currentStudent;
+    if (saved) {
+      document.getElementById('editFatherEN').value = saved.fatherName   || '';
+      document.getElementById('editFatherMY').value = saved.fatherNameMM || '';
+      document.getElementById('editMotherEN').value = saved.motherName   || '';
+      document.getElementById('editMotherMY').value = saved.motherNameMM || '';
+    }
+
+    // Check pending
+    const pending = rows.find(r => r.status === 'pending');
+    const lastApproved = rows.find(r => r.status === 'approved');
+    const pendingNotice  = document.getElementById('editInfoPendingNotice');
+    const approvedNotice = document.getElementById('editInfoApprovedNotice');
+
+    if (pending) {
+      pendingNotice.style.display = '';
+      document.getElementById('editInfoPendingText').textContent =
+        'Your request submitted on ' + (pending.submitted_at ? pending.submitted_at.slice(0,10) : '') + ' is awaiting Registrar review.';
+      document.getElementById('submitEditInfoBtn').disabled = true;
+      document.getElementById('submitEditInfoBtn').style.opacity = '0.5';
+      document.getElementById('editInfoBadge').style.display = '';
+    } else {
+      pendingNotice.style.display = 'none';
+      document.getElementById('submitEditInfoBtn').disabled = false;
+      document.getElementById('submitEditInfoBtn').style.opacity = '';
+      document.getElementById('editInfoBadge').style.display = 'none';
+    }
+
+    if (lastApproved && !pending) {
+      approvedNotice.style.display = '';
+      document.getElementById('editInfoApprovedText').textContent =
+        'Your request from ' + (lastApproved.submitted_at ? lastApproved.submitted_at.slice(0,10) : '') +
+        ' was approved on ' + (lastApproved.reviewed_at ? lastApproved.reviewed_at.slice(0,10) : '—') + '.';
+    } else {
+      approvedNotice.style.display = 'none';
+    }
+
+    // Render history
+    const histEl = document.getElementById('editInfoHistory');
+    if (!rows || !rows.length) {
+      histEl.innerHTML = '<div style="color:var(--ink3);font-size:13px">No requests submitted yet.</div>';
+      return;
+    }
+
+    const FIELD_LABELS = {
+      father:    "Father's Name (English)",
+      father_my: "Father's Name (Myanmar)",
+      mother:    "Mother's Name (English)",
+      mother_my: "Mother's Name (Myanmar)"
     };
 
-  } catch (err) {
-    console.error('upload-photo error:', err);
-    return { statusCode: 200, headers: CORS_HEADERS, body: JSON.stringify({ success: false, message: 'Server error: ' + err.message }) };
+    let html = '<div style="display:flex;flex-direction:column;gap:10px">';
+    rows.forEach(r => {
+      const sc = r.status === 'approved' ? 'var(--green)' : r.status === 'rejected' ? 'var(--crimson)' : 'var(--gold)';
+      const sl = r.status === 'approved' ? '✓ Approved' : r.status === 'rejected' ? '✗ Rejected' : '⏳ Pending';
+      const fl = FIELD_LABELS[r.field_name] || r.field_name;
+      html += `<div style="padding:12px 16px;border-radius:8px;border:1px solid var(--line);background:var(--surface)">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+          <span style="font-size:12px;font-weight:700;color:var(--ink)">${fl}</span>
+          <span style="font-size:11px;font-weight:700;color:${sc}">${sl}</span>
+        </div>
+        <div style="font-size:12px;color:var(--ink3)">
+          <span style="color:var(--ink2)">Old:</span> ${r.old_value || '—'} &nbsp;→&nbsp;
+          <span style="color:var(--ink2)">New:</span> ${r.new_value || '—'}
+        </div>
+        ${r.reason ? `<div style="font-size:11px;color:var(--ink3);margin-top:4px;font-style:italic">${r.reason}</div>` : ''}
+        <div style="font-size:11px;color:var(--ink3);margin-top:4px">${r.submitted_at ? r.submitted_at.slice(0,10) : ''}</div>
+        ${r.note ? `<div style="font-size:11px;color:var(--crimson);margin-top:4px">Registrar note: ${r.note}</div>` : ''}
+      </div>`;
+    });
+    html += '</div>';
+    histEl.innerHTML = html;
+  } catch(e) {
+    console.warn('loadEditInfoSection error:', e);
   }
-};
+}
+
+async function submitInfoEditRequest() {
+  const sid = (document.getElementById('loginStudentId').value || '').trim().toLowerCase();
+  const pwd = window._sessionPassword || '';
+  if (!sid) { alert('Session expired. Please log in again.'); return; }
+
+  const saved = window._currentStudent || {};
+  const newFatherEN = document.getElementById('editFatherEN').value.trim();
+  const newFatherMY = document.getElementById('editFatherMY').value.trim();
+  const newMotherEN = document.getElementById('editMotherEN').value.trim();
+  const newMotherMY = document.getElementById('editMotherMY').value.trim();
+  const reason      = document.getElementById('editInfoReason').value.trim();
+
+  const changes = [];
+  if (newFatherEN !== (saved.fatherName   || '')) changes.push({ field: 'father',    old: saved.fatherName   || '', new: newFatherEN });
+  if (newFatherMY !== (saved.fatherNameMM || '')) changes.push({ field: 'father_my', old: saved.fatherNameMM || '', new: newFatherMY });
+  if (newMotherEN !== (saved.motherName   || '')) changes.push({ field: 'mother',    old: saved.motherName   || '', new: newMotherEN });
+  if (newMotherMY !== (saved.motherNameMM || '')) changes.push({ field: 'mother_my', old: saved.motherNameMM || '', new: newMotherMY });
+
+  if (!changes.length) {
+    document.getElementById('editInfoStatus').textContent = 'No changes detected. Update the fields you want to change.';
+    return;
+  }
+  if (!reason) {
+    document.getElementById('editInfoStatus').textContent = 'Please enter a reason for this request.';
+    return;
+  }
+
+  const btn = document.getElementById('submitEditInfoBtn');
+  btn.disabled = true;
+  btn.textContent = 'Submitting…';
+  document.getElementById('editInfoStatus').textContent = '';
+
+  try {
+    const res = await fetch('/.netlify/functions/edit-request', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ studentId: sid, password: pwd, changes, reason })
+    });
+    const data = await res.json();
+
+    if (!data.success) throw new Error(data.message || 'Submission failed.');
+
+    document.getElementById('editInfoStatus').textContent = '✓ Request submitted successfully! Awaiting Registrar approval.';
+    document.getElementById('editInfoBadge').style.display = '';
+    document.getElementById('editInfoReason').value = '';
+    await loadEditInfoSection();
+  } catch(e) {
+    document.getElementById('editInfoStatus').textContent = 'Error: ' + e.message;
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Submit Request';
+  }
+}
+
+// Hook into switchSection to load edit info data on demand
+function onSwitchToEditInfo() {
+  loadEditInfoSection();
+}
+
+function doSignOut() {
+  try { sessionStorage.removeItem('iris_session'); } catch(e) {}
+  window._sessionPassword = '';
+  window._enrollments = [];
+  window._currentStudent = null;
+  window._docEnrollmentIndex = 0;
+  window._allGrades = [];
+  window._allCourses = {};
+  // Clear photo slots so they never bleed into the next login
+  const idPhoto = document.getElementById('idcardPhoto');
+  if (idPhoto) idPhoto.innerHTML = '';
+  const avatarPhoto = document.getElementById('avatarPhoto');
+  if (avatarPhoto) { avatarPhoto.src = ''; avatarPhoto.style.display = 'none'; }
+  const avatarInitials = document.getElementById('avatarInitials');
+  if (avatarInitials) avatarInitials.style.display = '';
+  const preview = document.getElementById('profilePhotoPreview');
+  if (preview) {
+    preview.innerHTML = '<svg id="photoPlaceholderSvg" width="56" height="64" viewBox="0 0 56 64" fill="none" xmlns="http://www.w3.org/2000/svg"><ellipse cx="28" cy="20" rx="13" ry="14" fill="#D1D5DB"/><path d="M2 58c0-13.255 11.64-24 26-24s26 10.745 26 24" fill="#D1D5DB"/></svg>';
+  }
+  const homeAv = document.getElementById('homeAvatar');
+  if (homeAv) homeAv.innerHTML = '';
+  const gradesAv = document.getElementById('gradesAvatar');
+  if (gradesAv) gradesAv.innerHTML = '';
+  const removeBtn = document.getElementById('removePhotoBtn');
+  if (removeBtn) removeBtn.style.display = 'none';
+  document.getElementById('dashboard').classList.remove('show');
+  document.getElementById('dashboard').style.display = 'none';
+  document.getElementById('loginScreen').classList.remove('hidden');
+  document.getElementById('accessError').classList.remove('show');
+  document.getElementById('accessLoading').classList.remove('show');
+  document.getElementById('loginStudentId').value = '';
+  document.getElementById('loginPassword').value = '';
+  document.body.classList.remove('dashboard-active');
+  // Reset sidebar nav to home
+  document.querySelectorAll('.sbnav-item').forEach(b => b.classList.remove('active'));
+  const homeBtn = document.querySelector('.sbnav-item[data-section="home"]');
+  if (homeBtn) homeBtn.classList.add('active');
+  // Reset sidebar user card
+  const sbAv = document.getElementById('sidebarAvatar'); if (sbAv) sbAv.textContent = '—';
+  const sbNm = document.getElementById('sidebarName');   if (sbNm) sbNm.textContent = '—';
+  const sbId = document.getElementById('sidebarId');     if (sbId) sbId.textContent = '—';
+  const mobN = document.getElementById('mobMoreName');   if (mobN) mobN.textContent = '—';
+  const mobI = document.getElementById('mobMoreId');     if (mobI) mobI.textContent = '—';
+
+  switchSection('home');
+}
+
+// ── Auto-restore session on page load (3-minute TTL) ─────────
+(function restoreSession() {
+  const SESSION_TTL = 3 * 60 * 1000; // 3 minutes
+  let saved;
+  try { saved = JSON.parse(sessionStorage.getItem('iris_session')); } catch(e) {}
+  if (!saved || !saved.savedAt || (Date.now() - saved.savedAt) > SESSION_TTL) return;
+  if (!saved.studentData || !saved.password) return;
+
+  window._sessionPassword = saved.password;
+  try {
+    populate(saved.studentData, saved.grades || [], saved.courses || {}, saved.program_meta || null, saved.enrollments || []);
+  } catch(e) { return; }
+
+  document.getElementById('loginScreen').classList.add('hidden');
+  const dash = document.getElementById('dashboard');
+  dash.style.display = '';
+  setTimeout(() => { dash.classList.add('show'); }, 100);
+})();
+</script>
+</body>
+</html>
