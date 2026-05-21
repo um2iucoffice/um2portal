@@ -2983,10 +2983,6 @@ body.theme-light .mob-more-item.danger svg { color: var(--crimson); }
           </div>
         </div>
 
-        <div class="icard" style="margin-top:16px">
-          <div class="icard-head">Request History</div>
-          <div id="editInfoHistory" style="padding:16px 20px;font-size:13px;color:var(--ink3)">No requests submitted yet.</div>
-        </div>
       </div>
     </div>
 
@@ -3523,7 +3519,15 @@ function populate(s, grades, courses, program_meta, enrollments) {
   if (s.photo) {
     updatePhotoInUI(s.photo);
     const preview = document.getElementById('profilePhotoPreview');
-    if (preview) preview.innerHTML = '<img src="' + s.photo + '" style="width:100%;height:100%;object-fit:cover;border-radius:8px">';
+    if (preview) {
+      const pImg = document.createElement('img');
+      pImg.src = s.photo;
+      pImg.style.cssText = 'width:100%;height:100%;object-fit:cover;border-radius:8px;pointer-events:none;user-select:none;-webkit-user-select:none';
+      pImg.draggable = false;
+      pImg.oncontextmenu = function(e){ e.preventDefault(); return false; };
+      preview.innerHTML = '';
+      preview.appendChild(pImg);
+    }
     const removeBtn = document.getElementById('removePhotoBtn');
     if (removeBtn) removeBtn.style.display = 'inline-block';
   }
@@ -3582,9 +3586,31 @@ function clearPhotoSelection() {
   window._pendingPhotoBase64 = null;
 }
 
-// ── Photo panel: remove current photo ────────────────────────
-function removePhoto() {
-  // Clear UI slots
+// ── Photo panel: remove current photo (clears UI + deletes from DB) ──
+async function removePhoto() {
+  const studentId = (document.getElementById('loginStudentId').value || '').trim().toLowerCase();
+  if (!studentId) { alert('Session expired — please log in again.'); return; }
+
+  const removeBtn = document.getElementById('removePhotoBtn');
+  const status    = document.getElementById('photoUploadStatus');
+  if (removeBtn) { removeBtn.disabled = true; removeBtn.textContent = 'Removing…'; }
+  if (status)    { status.style.color = 'var(--ink3)'; status.textContent = 'Removing photo…'; }
+
+  try {
+    const resp = await fetch('/.netlify/functions/remove-photo', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ studentId, password: window._sessionPassword || '' })
+    });
+    const data = await resp.json();
+    if (!data.success) throw new Error(data.message || 'Remove failed');
+  } catch(e) {
+    if (status)    { status.style.color = 'var(--crimson)'; status.textContent = 'Error: ' + e.message; }
+    if (removeBtn) { removeBtn.disabled = false; removeBtn.textContent = 'Remove Photo'; }
+    return;
+  }
+
+  // Clear all UI slots
   const preview = document.getElementById('profilePhotoPreview');
   if (preview) {
     preview.innerHTML = '<svg id="photoPlaceholderSvg" width="56" height="64" viewBox="0 0 56 64" fill="none" xmlns="http://www.w3.org/2000/svg"><ellipse cx="28" cy="20" rx="13" ry="14" fill="#D1D5DB"/><path d="M2 58c0-13.255 11.64-24 26-24s26 10.745 26 24" fill="#D1D5DB"/></svg>';
@@ -3593,9 +3619,9 @@ function removePhoto() {
   const avatarInitials = document.getElementById('avatarInitials');
   if (avatarPhoto) { avatarPhoto.src = ''; avatarPhoto.style.display = 'none'; }
   if (avatarInitials) avatarInitials.style.display = '';
-  const removeBtn = document.getElementById('removePhotoBtn');
-  if (removeBtn) removeBtn.style.display = 'none';
+  if (removeBtn) { removeBtn.disabled = false; removeBtn.textContent = 'Remove Photo'; removeBtn.style.display = 'none'; }
   window._idcardPhotoData = null;
+
   // Restore initials in id card
   const idcardPhotoEl = document.getElementById('idcardPhoto');
   if (idcardPhotoEl) {
@@ -3604,6 +3630,22 @@ function removePhoto() {
     idcardPhotoEl.innerHTML = '';
     idcardPhotoEl.textContent = init;
   }
+
+  // Clear sidebar avatar
+  const sbAv = document.getElementById('sidebarAvatar');
+  if (sbAv) { sbAv.innerHTML = ''; const n = document.getElementById('sidebarName'); sbAv.textContent = n ? (n.textContent||'').split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2)||'?' : '?'; }
+
+  // Clear home / grades avatars
+  const homeAvatar = document.getElementById('homeAvatar');
+  if (homeAvatar) homeAvatar.innerHTML = '';
+  const gradesAvatar = document.getElementById('gradesAvatar');
+  if (gradesAvatar) gradesAvatar.innerHTML = '';
+
+  // Update in-memory student data
+  if (window._currentStudent) window._currentStudent.photo = null;
+
+  if (status) { status.style.color = 'var(--green)'; status.textContent = '✓ Photo removed successfully.'; }
+  setTimeout(() => { if (status) status.textContent = ''; }, 4000);
 }
 
 // ── Photo panel: upload photo to Supabase storage ────────────
@@ -3640,17 +3682,38 @@ async function uploadPhoto() {
     const data = await resp.json();
 
    if (data.success && data.pending) {
-  clearPhotoSelection();  // clear first
+  // Show the pending photo in the preview with a "Pending Approval" overlay
+  const pendingUrl = data.pendingUrl || window._pendingPhotoBase64;
+  const preview = document.getElementById('profilePhotoPreview');
+  if (preview && pendingUrl) {
+    preview.innerHTML = `
+      <div style="position:relative;width:100%;height:100%">
+        <img src="${pendingUrl}" style="width:100%;height:100%;object-fit:cover;border-radius:8px;opacity:0.65;pointer-events:none;user-select:none;-webkit-user-select:none" draggable="false" oncontextmenu="return false">
+        <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;background:rgba(154,123,47,0.18);border-radius:8px;border:1.5px solid var(--gold,#9A7B2F)">
+          <span style="font-size:18px">⏳</span>
+          <span style="font-size:9px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:var(--gold,#9A7B2F);text-align:center;margin-top:3px">Pending<br>Approval</span>
+        </div>
+      </div>`;
+  }
+  clearPhotoSelection();  // clear file selection
   if (status) {
     status.style.color = 'var(--gold, #9A7B2F)';
     status.textContent = '⏳ Photo submitted for Registrar approval. Your ID photo will update once approved.';
-  }  // then set message after
-     
+  }
+
     } else if (data.success && data.photoUrl) {
       // Legacy direct-upload path (kept for safety)
       updatePhotoInUI(data.photoUrl);
       const preview = document.getElementById('profilePhotoPreview');
-      if (preview) preview.innerHTML = '<img src="' + data.photoUrl + '" style="width:100%;height:100%;object-fit:cover;border-radius:8px">';
+      if (preview) {
+        const pImg = document.createElement('img');
+        pImg.src = data.photoUrl;
+        pImg.style.cssText = 'width:100%;height:100%;object-fit:cover;border-radius:8px;pointer-events:none;user-select:none;-webkit-user-select:none';
+        pImg.draggable = false;
+        pImg.oncontextmenu = function(e){ e.preventDefault(); return false; };
+        preview.innerHTML = '';
+        preview.appendChild(pImg);
+      }
       const removeBtn = document.getElementById('removePhotoBtn');
       if (removeBtn) removeBtn.style.display = 'inline-block';
       if (status) status.textContent = 'Photo uploaded successfully!';
@@ -5385,41 +5448,9 @@ async function loadEditInfoSection() {
       approvedNotice.style.display = 'none';
     }
 
-    // Render history
-    const histEl = document.getElementById('editInfoHistory');
-    if (!rows || !rows.length) {
-      histEl.innerHTML = '<div style="color:var(--ink3);font-size:13px">No requests submitted yet.</div>';
-      return;
-    }
+    // Render history (element removed — no-op)
+    if (!rows || !rows.length) return;
 
-    const FIELD_LABELS = {
-      father:    "Father's Name (English)",
-      father_my: "Father's Name (Myanmar)",
-      mother:    "Mother's Name (English)",
-      mother_my: "Mother's Name (Myanmar)"
-    };
-
-    let html = '<div style="display:flex;flex-direction:column;gap:10px">';
-    rows.forEach(r => {
-      const sc = r.status === 'approved' ? 'var(--green)' : r.status === 'rejected' ? 'var(--crimson)' : 'var(--gold)';
-      const sl = r.status === 'approved' ? '✓ Approved' : r.status === 'rejected' ? '✗ Rejected' : '⏳ Pending';
-      const fl = FIELD_LABELS[r.field_name] || r.field_name;
-      html += `<div style="padding:12px 16px;border-radius:8px;border:1px solid var(--line);background:var(--surface)">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
-          <span style="font-size:12px;font-weight:700;color:var(--ink)">${fl}</span>
-          <span style="font-size:11px;font-weight:700;color:${sc}">${sl}</span>
-        </div>
-        <div style="font-size:12px;color:var(--ink3)">
-          <span style="color:var(--ink2)">Old:</span> ${r.old_value || '—'} &nbsp;→&nbsp;
-          <span style="color:var(--ink2)">New:</span> ${r.new_value || '—'}
-        </div>
-        ${r.reason ? `<div style="font-size:11px;color:var(--ink3);margin-top:4px;font-style:italic">${r.reason}</div>` : ''}
-        <div style="font-size:11px;color:var(--ink3);margin-top:4px">${r.submitted_at ? r.submitted_at.slice(0,10) : ''}</div>
-        ${r.note ? `<div style="font-size:11px;color:var(--crimson);margin-top:4px">Registrar note: ${r.note}</div>` : ''}
-      </div>`;
-    });
-    html += '</div>';
-    histEl.innerHTML = html;
   } catch(e) {
     console.warn('loadEditInfoSection error:', e);
   }
