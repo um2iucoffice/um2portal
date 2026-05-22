@@ -131,31 +131,39 @@ exports.handler = async function (event) {
 
     console.log(`[approve-photo] Image dimensions: ${width}x${height}`);
 
-  // ── 3. Build watermark tiles using sharp's built-in text ─────────────
+ // ── 3 & 4. Watermark using sharp native text (no system fonts needed) ──
+    console.log('[approve-photo] Applying watermark...');
+
+    const wmText = 'UM2 UM2 UM2';
+    const cols = Math.ceil(width  / WM_SPACING_X) + 4;
+    const rows = Math.ceil(height / WM_SPACING_Y) + 4;
     const tiles = [];
-    const cols = Math.ceil(width  / WM_SPACING_X) + 6;
-    const rows = Math.ceil(height / WM_SPACING_Y) + 6;
 
     for (let r = 0; r < rows; r++) {
       for (let c = 0; c < cols; c++) {
-        const x = Math.round(-Math.ceil(cols / 2) * WM_SPACING_X + c * WM_SPACING_X + width  / 2);
-        const y = Math.round(-Math.ceil(rows / 2) * WM_SPACING_Y + r * WM_SPACING_Y + height / 2);
+        const left = Math.round(-Math.ceil(cols/2) * WM_SPACING_X + c * WM_SPACING_X + width/2);
+        const top  = Math.round(-Math.ceil(rows/2) * WM_SPACING_Y + r * WM_SPACING_Y + height/2);
+        if (left < -WM_SPACING_X || top < -WM_SPACING_Y) continue;
 
-        const textSvg = Buffer.from(
-          `<svg xmlns="http://www.w3.org/2000/svg" width="120" height="24">` +
-          `<text x="60" y="18" ` +
-          `font-family="DejaVu Sans,Liberation Sans,FreeSans,Nimbus Sans,Ubuntu,sans-serif" ` +
-          `font-size="16" font-weight="bold" fill="rgba(255,255,255,0.40)" ` +
-          `text-anchor="middle">UM2 UM2 UM2</text>` +
-          `</svg>`
-        );
+        const tile = await sharp({
+          text: {
+            text:     `<span foreground="rgba(255,255,255,0.45)" font_desc="Sans Bold 16">${wmText}</span>`,
+            rgba:     true,
+            dpi:      96,
+          }
+        })
+        .rotate(WM_ANGLE, { background: { r:0, g:0, b:0, alpha:0 } })
+        .png()
+        .toBuffer();
 
-        // Rotate the tile by compositing onto a transparent canvas
-        const rotated = await sharp(textSvg)
-          .rotate(WM_ANGLE, { background: { r: 0, g: 0, b: 0, alpha: 0 } })
-          .png()
-          .toBuffer();
+        tiles.push({ input: tile, top: Math.max(0, top), left: Math.max(0, left), blend: 'over' });
+      }
+    }
 
+    const watermarkedBuffer = await sharp(imgBuffer)
+      .composite(tiles)
+      .jpeg({ quality: 90 })
+      .toBuffer();
         tiles.push({ input: rotated, top: Math.max(0, y - 12), left: Math.max(0, x - 60), blend: 'over' });
       }
     }
