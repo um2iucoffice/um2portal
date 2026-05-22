@@ -4760,7 +4760,7 @@ function printDegreeCertificate(enrollIdx) {
       font-size: 10pt;
       color: #333;
       text-align: center;
-      margin: 1.5mm 0 4mm;
+      margin: 3mm 0 3mm;
       line-height: 1.8;
     }
     .cert-parent-mm {
@@ -4773,7 +4773,7 @@ function printDegreeCertificate(enrollIdx) {
       font-size: 10.5pt;
       color: #222;
       text-align: center;
-      margin: 2mm 0 1mm;
+      margin: 3mm 0 3mm;
       line-height: 1.8;
       font-style: italic;
     }
@@ -4784,14 +4784,11 @@ function printDegreeCertificate(enrollIdx) {
       font-weight: 700;
       color: #1a1a1a;
       text-align: center;
-      margin: 2mm 0 6mm;
+      margin: 3mm 0 8mm;
     }
     /* ── Divider ── */
     .cert-divider {
-      width: 55%;
-      height: 1px;
-      background: linear-gradient(to right, transparent, #002060 30%, #002060 70%, transparent);
-      margin: 1mm 0 5mm;
+      display: none;
     }
     /* ── Signature row ── */
     .cert-sig-row {
@@ -4799,7 +4796,7 @@ function printDegreeCertificate(enrollIdx) {
       justify-content: space-between;
       align-items: flex-end;
       width: 88%;
-      margin: 0 0 4mm;
+      margin: 0 0 6mm;
     }
     .cert-sig-block {
       text-align: center;
@@ -4988,13 +4985,9 @@ function printDegreeCertificate(enrollIdx) {
       </div>
     </div>
 
-    <!-- Photo + QR + registration info -->
-    <div style="display:flex;justify-content:space-between;align-items:flex-end;width:88%;margin-top:1mm">
-
-     
-
-      <!-- Photo (centered) -->
-<div class="cert-photo-area" style="position:relative; flex:1; display:flex; flex-direction:column; align-items:center;">
+    <!-- Photo (centered above bottom strip) -->
+    <div style="display:flex;justify-content:center;width:88%;margin-top:2mm;margin-bottom:6mm;">
+      <div class="cert-photo-area" style="position:relative;">
         <div class="cert-photo-box">
           ${photo
             ? `<img src="${photo}" alt="Student Photo" onerror="this.parentElement.innerHTML='<span style=\\'font-size:7pt;color:#aaa;text-align:center;padding:4px\\'>Photo</span>'">`
@@ -5005,24 +4998,22 @@ function printDegreeCertificate(enrollIdx) {
         </div>
         <div class="cert-photo-label">Photo</div>
       </div>
+    </div>
 
-      <!-- Registration info -->
-      <div class="cert-reg-info">
-        ${gradDate ? `<div><strong>Date:</strong> ${gradDate}</div>` : ''}
+    <!-- QR + Date/Reg info side by side at bottom-left -->
+    <div style="display:flex;align-items:flex-start;gap:4mm;width:88%;margin-top:2mm;">
+      <div class="cert-qr">
+        <div id="certQR"></div>
+      </div>
+      <div style="font-family:'Roboto',sans-serif;font-size:8.5pt;color:#333;line-height:2;">
+        ${gradDate ? `<div>${gradDate}</div>` : ''}
         ${gradDateMY ? `<div style="font-family:'Padauk','Myanmar Text',sans-serif;font-size:7.5pt">${gradDateMY}</div>` : ''}
-        ${gradID ? `<div style="margin-top:1mm"><strong>Registration ID:</strong> ${gradID}</div>` : ''}
+        ${gradID ? `<div>Registration ID - ${gradID}</div>` : ''}
         ${gradIDMY ? `<div style="font-family:'Padauk','Myanmar Text',sans-serif;font-size:7.5pt">${gradIDMY}</div>` : ''}
       </div>
     </div>
 
   </div><!-- /.cert-inner -->
-
-  <!-- Remove it from inside the 3-column row, and instead add this
-     just before </div><!-- /.cert-inner --> -->
-<div class="cert-qr" style="position:absolute; bottom:18mm; left:14mm;">
-  <div id="certQR"></div>
-  <div class="cert-qr-lbl">Scan to Verify</div>
-</div>
 
   <!-- Electronically generated notice -->
   <div style="
