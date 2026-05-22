@@ -2,7 +2,7 @@
   "name": "registrar-functions",
   "version": "1.0.0",
   "engines": {
-    "node": ">=18.0.0"
+    "node": ">=20.0.0"
   },
   "scripts": {
     "postinstall": "npm rebuild sharp --platform=linux --arch=x64 --libc=glibc"
@@ -10,6 +10,7 @@
   "dependencies": {
     "@supabase/supabase-js": "^2.43.0",
     "node-fetch": "^3.3.2",
-    "sharp": "^0.33.4"
+    "sharp": "^0.33.4",
+    "ws": "^8.17.1"
   }
 }
