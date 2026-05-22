@@ -1,7 +1,6 @@
 {
   "name": "registrar-functions",
   "version": "1.0.0",
-  "description": "Netlify serverless functions for the Registrar photo workflow",
   "engines": {
     "node": ">=18.0.0"
   },
