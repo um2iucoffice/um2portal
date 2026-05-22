@@ -38,11 +38,11 @@ const SUPABASE_URL         = process.env.SUPABASE_URL;
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY;
 const BUCKET               = 'student-photos';
 
-const WM_TEXT      = 'UM2 UM2 UM2 UM2 UM2';
+const WM_LABEL     = 'UM2';
 const WM_FONT_SIZE = 18;
 const WM_ANGLE     = -30;
-const WM_SPACING_X = 140;
-const WM_SPACING_Y = 60; 
+const WM_SPACING_X = 120;
+const WM_SPACING_Y = 55;
 
 // Maximum time (ms) to wait for the upstream image fetch
 const FETCH_TIMEOUT_MS = 8_000;
@@ -131,31 +131,60 @@ exports.handler = async function (event) {
 
     console.log(`[approve-photo] Image dimensions: ${width}x${height}`);
 
- // ── 3 & 4. Watermark using sharp native text (no system fonts needed) ──
-    console.log('[approve-photo] Applying watermark...');
+// ── 3 & 4. Watermark using sharp text input (Pango — no system fonts needed) ──
+    console.log('[approve-photo] Building watermark tiles...');
 
-    const wmText = 'UM2 UM2 UM2';
-    const cols = Math.ceil(width  / WM_SPACING_X) + 4;
-    const rows = Math.ceil(height / WM_SPACING_Y) + 4;
-    const tiles = [];
+    const cols = Math.ceil(width  / WM_SPACING_X) + 6;
+    const rows = Math.ceil(height / WM_SPACING_Y) + 6;
+    const composites = [];
+
+    // Generate one text tile, rotate it, reuse the buffer for all positions
+    const textTile = await sharp({
+      text: {
+        text:    WM_LABEL,
+        font:    'sans-serif',
+        fontfile: undefined,
+        width:   80,
+        height:  24,
+        rgba:    true,
+        dpi:     144,
+      }
+    })
+    .flatten({ background: { r: 0, g: 0, b: 0 } })
+    .negate()
+    .png()
+    .toBuffer();
+
+    // Rotate the tile
+    const rotatedTile = await sharp(textTile)
+      .rotate(WM_ANGLE, { background: { r: 0, g: 0, b: 0, alpha: 0 } })
+      .png()
+      .toBuffer();
+
+    const tileMeta = await sharp(rotatedTile).metadata();
+    const tw = tileMeta.width  || 80;
+    const th = tileMeta.height || 24;
 
     for (let r = 0; r < rows; r++) {
       for (let c = 0; c < cols; c++) {
-        const left = Math.round(-Math.ceil(cols/2) * WM_SPACING_X + c * WM_SPACING_X + width/2);
-        const top  = Math.round(-Math.ceil(rows/2) * WM_SPACING_Y + r * WM_SPACING_Y + height/2);
-        if (left < -WM_SPACING_X || top < -WM_SPACING_Y) continue;
+        const left = Math.round(-Math.ceil(cols / 2) * WM_SPACING_X + c * WM_SPACING_X + width  / 2 - tw / 2);
+        const top  = Math.round(-Math.ceil(rows / 2) * WM_SPACING_Y + r * WM_SPACING_Y + height / 2 - th / 2);
+        if (left + tw < 0 || top + th < 0 || left >= width || top >= height) continue;
+        composites.push({
+          input: rotatedTile,
+          left:  Math.max(0, left),
+          top:   Math.max(0, top),
+          blend: 'soft-light',
+        });
+      }
+    }
 
-        const tile = await sharp({
-          text: {
-            text:     `<span foreground="rgba(255,255,255,0.45)" font_desc="Sans Bold 16">${wmText}</span>`,
-            rgba:     true,
-            dpi:      96,
-          }
-        })
-        .rotate(WM_ANGLE, { background: { r:0, g:0, b:0, alpha:0 } })
-        .png()
-        .toBuffer();
-
+    // ── 4. Composite watermark and export as JPEG ────────────────────────
+    console.log('[approve-photo] Applying watermark...');
+    const watermarkedBuffer = await sharp(imgBuffer)
+      .composite(composites)
+      .jpeg({ quality: 90 })
+      .toBuffer();
         tiles.push({ input: tile, top: Math.max(0, top), left: Math.max(0, left), blend: 'over' });
       }
     }
