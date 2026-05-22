@@ -58,6 +58,7 @@ function mapStudent(row, programName) {
     photo:            row.photo           || '',
     program:          row.program         || '',
     programName:      programName         || row.program || '',
+    gender:           row.gender          || '',
   };
 }
 
