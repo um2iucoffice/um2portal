@@ -5808,13 +5808,11 @@ if (photoDbErr) throw new Error('Photo DB update failed: ' + photoDbErr.message)
     toast('Error processing request: ' + e.message, '❌');
   }
 }
-</script>
 
 // ── Bulk Gender Update ──
 let _bulkGenderTargets = [];
 
 function openBulkGenderModal() {
-  // Collect currently visible student rows from the rendered table
   const rows = document.querySelectorAll('#studentTableBody tr[id^="stu-row-"]');
   _bulkGenderTargets = Array.from(rows).map(r => r.id.replace('stu-row-', ''));
   document.getElementById('bulkGenderCount').textContent = _bulkGenderTargets.length;
@@ -5828,7 +5826,6 @@ async function submitBulkGender() {
   closeModal('bulkGenderModal');
   const label = gender.charAt(0).toUpperCase() + gender.slice(1);
   toast(`Updating ${_bulkGenderTargets.length} students to ${label}…`, '⏳');
-
   const CHUNK = 100;
   let okCount = 0, errCount = 0;
   for (let i = 0; i < _bulkGenderTargets.length; i += CHUNK) {
@@ -5853,7 +5850,7 @@ function refreshGradePreview() {
   let validCount = 0, errorCount = 0;
   let body = '<tbody>';
   gradeCSVRows.forEach((row, idx) => {
-    const score = parseFloat(row.NumericScore || row.numericscore || row.numeric_score || 0);
+    const score      = parseFloat(row.NumericScore || row.numericscore || row.numeric_score || 0);
     const { gp, letter } = computeGradePoint(score);
     const sid        = (row.StudentID || row.studentid || row.student_id || '').trim();
     const cid        = (row.CourseID  || row.courseid  || row.course_id  || '').trim();
@@ -5894,5 +5891,6 @@ function refreshGradePreview() {
   if (errBadge) errBadge.textContent = errorCount + ' errors';
   toast('Preview refreshed with current Year & Attempt.', '✓');
 }
+</script>
 </body>
 </html>
