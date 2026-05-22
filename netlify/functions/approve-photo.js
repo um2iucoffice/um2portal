@@ -7,17 +7,19 @@
 //   3. Upload the watermarked JPEG to Supabase Storage (student-photos bucket)
 //   4. Return { success: true, photoUrl: "<full public URL>" }
 //
-// Runtime: Node.js 18+  (Netlify Functions / AWS Lambda)
-// Dependencies: @supabase/supabase-js, sharp
+// Runtime: Node.js 20+  (Netlify Functions / AWS Lambda)
+// Dependencies: @supabase/supabase-js, sharp, ws
 //
-// FIX SUMMARY (v2):
-//   - sharp is now imported safely with a try/catch to give a clear error if missing
-//   - node-fetch is used as a fallback if global fetch is unavailable (Node < 18)
-//   - All async operations are wrapped with explicit timeouts to avoid silent 502s
-//   - Added input sanitisation on studentId to prevent path traversal in storage keys
-//   - Improved error messages to surface the exact failing step in Netlify logs
+// FIX SUMMARY (v3):
+//   - Upgraded to Node 20 (set in netlify.toml) — fixes native WebSocket support
+//   - Added 'ws' package passed to Supabase createClient as transport fallback
+//   - sharp is imported safely with try/catch
+//   - node-fetch fallback for fetch (redundant on Node 20 but kept for safety)
+//   - Fetch timeout via AbortController
+//   - studentId sanitised to prevent storage path traversal
 
 const { createClient } = require('@supabase/supabase-js');
+const ws = require('ws');
 
 // ── sharp: native binary — must be built for the Linux runtime ────────────────
 // If this throws, your function bundle is missing the Linux sharp binary.
@@ -172,6 +174,7 @@ exports.handler = async function (event) {
     // ── 5. Upload to Supabase Storage ────────────────────────────────────
     const db = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY, {
       auth: { persistSession: false },
+      realtime: { transport: ws },
     });
 
     const timestamp   = Date.now();
