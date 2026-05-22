@@ -3570,7 +3570,7 @@ function populate(s, grades, courses, program_meta, enrollments) {
   renderCertCards(window._enrollments);
 
   // ── Render grades for the active (first) enrollment ─────────
-  renderGrades(grades, courses);
+  renderGrades(grades, s);
   if (s.photo) {
     updatePhotoInUI(s.photo);
     const preview = document.getElementById('profilePhotoPreview');
@@ -4126,27 +4126,32 @@ function getAcademicYear(row, course) {
 }
 
 function getCompletionYear(row) {
+  // Prioritise the raw SQL 'year' column (calendar year like 2024, 2025)
+  // before falling back to academicYear labels like "Foundation Year" / "M-1"
   return row.completionYear || row.CompletionYear || row.completion_year ||
+         row.year || row.Year ||
          row.academicYear || row.AcademicYear || row.academic_year ||
-         row.year || row.Year || row.completionDate || row.CompletionDate || '—';
+         row.completionDate || row.CompletionDate || '—';
 }
 
 function getNote(row) {
-  return row.note || row.Note || row.notes || row.Notes ||
-         row.comment || row.Comment || row.remarks || row.Remarks || '';
-}
-
-function getAttempt(row) {
   const attempt = String(row.attempt || row.Attempt || row.attempt_no || '').trim();
+  const note    = row.note || row.Note || row.notes || row.Notes ||
+                  row.comment || row.Comment || row.remarks || row.Remarks || '';
   const is1st = !attempt || attempt === '1' || attempt === '1st Attempt' || attempt.toLowerCase() === '1st attempt';
-  // Only show attempt if it is NOT the 1st attempt
-  return is1st ? '' : attempt;
+  if (!is1st) {
+    return note ? `${attempt} · ${note}` : attempt;
+  }
+  return note;
 }
 
 function getSheetOverallGpa(student) {
-  if (!student) return '—';
-  const raw = student['Overall GPA'] ?? student.OverallGPA ?? student.overallGPA ??
-              student.overall_gpa ?? student.gpa ?? student.GPA ?? '';
+  // Try the passed-in student object first, then fall back to the globally stored student
+  const src = student && (student.gpa || student.GPA || student['Overall GPA'] || student.OverallGPA || student.overallGPA || student.overall_gpa)
+              ? student
+              : (window._currentStudent || {});
+  const raw = src['Overall GPA'] ?? src.OverallGPA ?? src.overallGPA ??
+              src.overall_gpa ?? src.gpa ?? src.GPA ?? '';
   if (raw === null || raw === undefined || String(raw).trim() === '') return '—';
   return String(raw).trim();
 }
@@ -4219,14 +4224,13 @@ function renderGrades(grades, student) {
         <thead>
           <tr>
             <th style="width:10%">Code</th>
-            <th style="width:24%">Course Title</th>
+            <th style="width:26%">Course Title</th>
             <th style="text-align:center;width:6%">Credits</th>
-            <th style="text-align:center;width:13%">Assessment Type</th>
+            <th style="text-align:center;width:14%">Assessment Type</th>
             <th style="text-align:center;width:8%">Score</th>
             <th style="text-align:center;width:8%">Year</th>
             <th style="text-align:center;width:8%">Grade</th>
-            <th style="text-align:center;width:9%">Attempt</th>
-            <th style="width:14%">Note</th>
+            <th style="width:20%">Note</th>
           </tr>
         </thead>
         <tbody>`;
@@ -4239,7 +4243,6 @@ function renderGrades(grades, student) {
           r.score !== undefined && r.score !== '' ? r.score : '—';
         const dateStr = getCompletionYear(r);
         const typeStr = r.completionType || r.CompletionType || r.course.assessment || '—';
-        const attemptStr = getAttempt(r);
         html += `<tr>
           <td style="font-size:11px;color:var(--ink3);font-family:monospace">${escHtml(r.courseId || '—')}</td>
           <td>
@@ -4252,8 +4255,7 @@ function renderGrades(grades, student) {
           </td>
           <td style="text-align:center;font-size:11px;color:var(--ink3)">${escHtml(dateStr)}</td>
           <td style="text-align:center"><span class="gbadge ${gc(r.grade)}">${escHtml(r.grade || '—')}</span></td>
-          <td style="text-align:center;font-size:11px;color:var(--ink3);font-style:italic">${escHtml(attemptStr)}</td>
-          <td style="font-size:11px;color:var(--ink3);font-style:italic;max-width:120px">${escHtml(getNote(r))}</td>
+          <td style="font-size:11px;color:var(--ink3);font-style:italic;max-width:160px">${escHtml(getNote(r))}</td>
         </tr>`;
       });
       html += `</tbody></table>`;
@@ -4435,7 +4437,7 @@ function switchDegreeTab(idx) {
   const filtered = e
     ? (window._allGrades || []).filter(g => !g.enrollmentId || g.enrollmentId === e.id)
     : (window._allGrades || []);
-  renderGrades(filtered, window._allCourses || {});
+  renderGrades(filtered, window._currentStudent || {});
 }
 
 // ── Cert cards (degree certificate section) ───────────────────
