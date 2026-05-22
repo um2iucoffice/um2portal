@@ -4135,7 +4135,7 @@ function getNote(row) {
   const note    = row.note || row.Note || row.notes || row.Notes ||
                   row.comment || row.Comment || row.remarks || row.Remarks || '';
   if (attempt && attempt !== '1' && attempt !== 1) {
-    return note ? `Attempt ${attempt} · ${note}` : `Attempt ${attempt}`;
+   return note ? `${attempt} · ${note}` : attempt;
   }
   return note;
 }
@@ -4218,7 +4218,6 @@ function renderGrades(grades, student) {
             <th style="width:11%">Code</th>
             <th style="width:36%">Course Title</th>
             <th style="text-align:center;width:7%">Credits</th>
-            <th style="text-align:center;width:14%">Assessment</th>
             <th style="text-align:center;width:10%">Score</th>
             <th style="text-align:center;width:8%">Year</th>
             <th style="text-align:center;width:9%">Grade</th>
@@ -4239,10 +4238,8 @@ function renderGrades(grades, student) {
           <td style="font-size:11px;color:var(--ink3);font-family:monospace">${escHtml(r.courseId || '—')}</td>
           <td>
             <div class="gt-course">${escHtml(r.course.name)}</div>
-            <div class="gt-assess">${escHtml(typeStr)}</div>
           </td>
           <td style="text-align:center"><span class="gt-cr">${r.course.credits != null ? r.course.credits : '—'}</span></td>
-          <td style="text-align:center;font-size:11px;color:var(--ink3)">${escHtml(typeStr)}</td>
           <td style="text-align:center">
             <span class="sbar-num">${escHtml(scoreStr)}</span>
           </td>
@@ -5217,14 +5214,14 @@ function printDocument(type) {
         </div>
         <table style="width:100%;border-collapse:collapse;margin-bottom:14px;font-family:'DM Sans',sans-serif">
           <thead><tr>
-            <th style="${TDH}width:11%">Course Code</th>
-            <th style="${TDH}width:34%">Course Title</th>
-            <th style="${TDH}width:7%;text-align:center">Credits</th>
-            <th style="${TDH}width:12%;text-align:center">Type</th>
-            <th style="${TDH}width:8%;text-align:center">Score</th>
-            <th style="${TDH}width:14%;text-align:center">Year</th>
-            <th style="${TDH}width:14%;text-align:center">Grade</th>
-            <th style="${TDH}width:14%">Note</th>
+            <th style="${TDH}width:10%">Course Code</th>
+<th style="${TDH}width:28%">Course Title</th>
+<th style="${TDH}width:7%;text-align:center">Credits</th>
+<th style="${TDH}width:13%;text-align:center">Type</th>
+<th style="${TDH}width:8%;text-align:center">Score</th>
+<th style="${TDH}width:10%;text-align:center">Year</th>
+<th style="${TDH}width:10%;text-align:center">Grade</th>
+<th style="${TDH}width:14%">Note</th>
           </tr></thead>
           <tbody>${rows}</tbody>
         </table>
@@ -5316,9 +5313,9 @@ function printDocument(type) {
     .inst-name { font-family:'DM Sans',sans-serif; font-size:17pt; font-weight:bold; color:#0D1B2A; line-height:1.2; }
     .doc-type-badge { font-family:'DM Sans',sans-serif; font-size:13pt; font-weight:bold; color:#0D1B2A; text-transform:uppercase; letter-spacing:.5px; text-align:right; }
     .doc-meta { font-size:9pt; color:#444; text-align:right; margin-top:5px; line-height:1.7; font-family:'DM Sans',sans-serif; }
-    .transcript-student-section { border:1px solid #bbb; margin:10px 0 16px; padding:12px 14px; display:grid; grid-template-columns:1.2fr 1.2fr .8fr; gap:14px; background:#fff; page-break-inside:avoid; }
-    .transcript-student-item { border-right:1px solid #ddd; padding-right:12px; }
-    .transcript-student-item:last-child { border-right:none; padding-right:0; }
+    .transcript-student-section { margin:10px 0 16px; padding:4px 0; display:grid; grid-template-columns:1.2fr 1.2fr .8fr; gap:14px; page-break-inside:avoid; }
+.transcript-student-item { padding-right:12px; }
+.transcript-student-item:last-child { padding-right:0; }
     .transcript-student-label { font-size:7.5pt; font-weight:bold; letter-spacing:.8px; text-transform:uppercase; color:#555; margin-bottom:4px; }
     .transcript-student-value { font-size:10pt; font-weight:bold; color:#0D1B2A; line-height:1.35; }
     .section-label { font-size:8pt; font-weight:bold; letter-spacing:1.2px; text-transform:uppercase; color:#444; font-family:'DM Sans',sans-serif; margin:14px 0 6px; border-bottom:1px solid #ccc; padding-bottom:4px; }
