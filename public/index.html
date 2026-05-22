@@ -4820,10 +4820,11 @@ function printDegreeCertificate(enrollIdx) {
       display: flex;
       align-items: center;
       justify-content: center;
-      overflow: hidden;
+      overflow: visible;
       background: #f5f5f5;
+      position: relative;
     }
-    .cert-photo-box img {
+    .cert-photo-box > img:first-child {
       width: 100%;
       height: 100%;
       object-fit: cover;
@@ -4837,21 +4838,35 @@ function printDegreeCertificate(enrollIdx) {
     }
     /* ── Seal / stamp ── */
     .cert-seal {
-      width: 22mm;
-      height: 22mm;
-      border-radius: 50%;
-      background: radial-gradient(circle, #c8a800 0%, #9a7a00 100%);
+      width: 28mm;
+      height: 28mm;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-family: 'DM Sans', sans-serif;
-      font-size: 6pt;
-      font-weight: 700;
-      color: rgba(255,255,255,0.85);
-      text-align: center;
-      letter-spacing: .8px;
-      text-transform: uppercase;
-      box-shadow: 0 0 0 2px #c8a800, 0 0 0 4px rgba(200,168,0,0.3);
+    }
+    .cert-seal img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+    /* ── Photo overlay seal ── */
+    .cert-photo-box {
+      position: relative;
+    }
+    .cert-photo-seal-overlay {
+      position: absolute;
+      bottom: -6mm;
+      right: -6mm;
+      width: 18mm;
+      height: 18mm;
+      opacity: 0.95;
+      pointer-events: none;
+      z-index: 2;
+    }
+    .cert-photo-seal-overlay img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
     }
     /* ── Bottom info strip ── */
     .cert-bottom {
@@ -4968,7 +4983,7 @@ function printDegreeCertificate(enrollIdx) {
         University of Medicine -2, Yangon
       </div>
       <div style="flex:0.4;display:flex;justify-content:center;align-items:flex-end;padding-bottom:1mm">
-        <div class="cert-seal">OFFICIAL<br>SEAL</div>
+        <div class="cert-seal"><img src="/Seal.svg" alt="Official Seal" onerror="this.parentElement.innerHTML='<div style=\\'width:22mm;height:22mm;border-radius:50%;background:radial-gradient(circle,#c8a800 0%,#9a7a00 100%);display:flex;align-items:center;justify-content:center;font-size:6pt;font-weight:700;color:rgba(255,255,255,0.85);text-align:center;letter-spacing:.8px;text-transform:uppercase\\'>OFFICIAL<br>SEAL</div>'"></div>
       </div>
       <div class="cert-sig-block">
         <span class="cert-sig-line"></span>
@@ -4986,12 +5001,15 @@ function printDegreeCertificate(enrollIdx) {
         <div class="cert-qr-lbl">Scan to Verify</div>
       </div>
 
-      <!-- Photo -->
-      <div class="cert-photo-area">
+      <!-- Photo (centered) -->
+      <div class="cert-photo-area" style="position:relative;">
         <div class="cert-photo-box">
           ${photo
             ? `<img src="${photo}" alt="Student Photo" onerror="this.parentElement.innerHTML='<span style=\\'font-size:7pt;color:#aaa;text-align:center;padding:4px\\'>Photo</span>'">`
             : '<span style="font-size:7pt;color:#aaa;text-align:center;padding:4px">Photo</span>'}
+          <div class="cert-photo-seal-overlay">
+            <img src="/Seal.svg" alt="Seal" onerror="this.style.display='none'">
+          </div>
         </div>
         <div class="cert-photo-label">Photo</div>
       </div>
