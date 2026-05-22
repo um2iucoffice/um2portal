@@ -2101,6 +2101,8 @@ ALTER TABLE academic_years ADD COLUMN IF NOT EXISTS program_id text REFERENCES d
       <div class="page-sub">Manage your staff profile and visibility to students</div>
     </div>
     <div class="page-actions">
+      <button class="btn btn-outline btn-sm" onclick="printStaffConfirmation()">🖨 Confirmation of Service</button>
+      <button class="btn btn-outline btn-sm" onclick="printStaffGoodStanding()">🖨 Good Standing</button>
       <button class="btn btn-sm" id="profilePublishBtn" onclick="toggleProfilePublish()" style="display:flex;align-items:center;gap:6px;background:var(--green);color:#fff;border:none;border-radius:var(--r);padding:8px 16px;font-size:13px;font-weight:600;cursor:pointer;transition:all .2s">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
         <span id="profilePublishLabel">Publish Profile</span>
@@ -7307,7 +7309,90 @@ function confirmDeleteLectureRoom(rid, rname) {
 // ── PRINT DOCUMENTS ──
 const _LOGO_URL = 'https://github.com/um2iucoffice/um2portal/raw/refs/heads/main/public/UM2_Logo.svg';
 
-function _getStudentForPrint() {
+function _getStaffForPrint() {
+  const name     = document.getElementById('sp-realname')?.value.trim()   || document.getElementById('sp-nickname')?.value.trim() || '—';
+  const nickname = document.getElementById('sp-nickname')?.value.trim()   || '—';
+  const dept     = document.getElementById('sp-department')?.value        || '—';
+  const title    = document.getElementById('sp-title')?.value             || '—';
+  const quals    = document.getElementById('sp-qualifications')?.value.trim() || '';
+  const staffId  = (typeof currentUser !== 'undefined' && currentUser?.staff_id) ? currentUser.staff_id : '—';
+  return { name, nickname, dept, title, quals, staffId };
+}
+
+function printStaffConfirmation() {
+  const s = _getStaffForPrint();
+  const refNo = `UM2/SEC/COS/STAFF/${s.staffId}/${new Date().getFullYear()}`;
+  _printDoc(`
+    ${_letterHead()}
+    <div style="display:flex;justify-content:flex-end;margin-bottom:28px;font-size:10pt">
+      <div style="text-align:right;line-height:1.8">
+        <strong>Ref:</strong> ${refNo}<br>
+        <strong>Date:</strong> ${_todayFormatted()}
+      </div>
+    </div>
+    <div style="text-align:center;margin-bottom:28px">
+      <span style="font-size:14pt;font-weight:bold;text-decoration:underline;text-transform:uppercase;letter-spacing:1.5px">
+        Confirmation of Service
+      </span>
+    </div>
+    <p style="margin-bottom:16px">To Whom It May Concern,</p>
+    <p style="margin-bottom:16px;text-align:justify;line-height:1.9">
+      This is to confirm that <strong>${s.name}</strong> (known as <strong>${s.nickname}</strong>),
+      Staff ID <strong>${s.staffId}</strong>, is currently serving as
+      <strong>${s.title}</strong> in the <strong>Department of ${s.dept}</strong>
+      at the University of Medicine (2), Yangon, under the UM2 MBBS Programme.
+    </p>
+    ${s.quals ? `<p style="margin-bottom:16px;text-align:justify;line-height:1.9">
+      Academic qualifications on record: <strong>${s.quals}</strong>.
+    </p>` : ''}
+    <p style="margin-bottom:28px;text-align:justify;line-height:1.9">
+      This letter is issued upon the request of the staff member for official purposes.
+      The Secretariat's Office certifies the accuracy of the above information as of the date of issue.
+    </p>
+    <p style="margin-bottom:4px">Yours faithfully,</p>
+    ${_signatureBlock()}
+  `);
+}
+
+function printStaffGoodStanding() {
+  const s = _getStaffForPrint();
+  const refNo = `UM2/SEC/GSC/STAFF/${s.staffId}/${new Date().getFullYear()}`;
+  _printDoc(`
+    ${_letterHead()}
+    <div style="display:flex;justify-content:flex-end;margin-bottom:28px;font-size:10pt">
+      <div style="text-align:right;line-height:1.8">
+        <strong>Ref:</strong> ${refNo}<br>
+        <strong>Date:</strong> ${_todayFormatted()}
+      </div>
+    </div>
+    <div style="text-align:center;margin-bottom:28px">
+      <span style="font-size:14pt;font-weight:bold;text-decoration:underline;text-transform:uppercase;letter-spacing:1.5px">
+        Certificate of Good Standing
+      </span>
+    </div>
+    <p style="margin-bottom:16px">To Whom It May Concern,</p>
+    <p style="margin-bottom:16px;text-align:justify;line-height:1.9">
+      This is to certify that <strong>${s.name}</strong> (known as <strong>${s.nickname}</strong>),
+      Staff ID <strong>${s.staffId}</strong>, is currently employed as
+      <strong>${s.title}</strong> in the <strong>Department of ${s.dept}</strong>
+      at the University of Medicine (2), Yangon.
+    </p>
+    <p style="margin-bottom:16px;text-align:justify;line-height:1.9">
+      Based on the records maintained by the Secretariat's Office, the above-named staff member
+      is <strong>in good professional and institutional standing</strong> with the university
+      as of the date of this certificate. There are no outstanding disciplinary proceedings
+      or administrative sanctions recorded against this individual in the university's official registry.
+    </p>
+    <p style="margin-bottom:28px;text-align:justify;line-height:1.9">
+      This certificate is issued at the staff member's request and is valid for official purposes
+      only when accompanied by an authorised signature and the university's official stamp.
+    </p>
+    <p style="margin-bottom:4px">Yours faithfully,</p>
+    ${_signatureBlock()}
+  `);
+}
+
+
   const s = students.find(x => x.id === currentProfileId);
   if (!s) { toast('No student selected.', '⚠'); return null; }
   return s;
