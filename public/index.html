@@ -4859,8 +4859,8 @@ function printDegreeCertificate(enrollIdx) {
     }
     /* ── Seal / stamp ── */
     .cert-seal {
-      width: 28mm;
-      height: 28mm;
+      width: 38mm;
+      height: 38mm;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -4876,10 +4876,10 @@ function printDegreeCertificate(enrollIdx) {
     }
     .cert-photo-seal-overlay {
       position: absolute;
-      bottom: -6mm;
-      right: -6mm;
-      width: 18mm;
-      height: 18mm;
+      bottom: -10mm;
+      right: -10mm;
+      width: 26mm;
+      height: 26mm;
       opacity: 0.95;
       pointer-events: none;
       z-index: 2;
@@ -4960,11 +4960,11 @@ function printDegreeCertificate(enrollIdx) {
 
   <div class="cert-inner">
 
-    <!-- University name (slightly arced) -->
+    <!-- University name (arced) -->
     <div class="cert-univ">
-      <svg viewBox="0 0 680 90" xmlns="http://www.w3.org/2000/svg">
+      <svg viewBox="0 0 680 110" xmlns="http://www.w3.org/2000/svg">
         <defs>
-          <path id="univArc" d="M 40,72 Q 340,10 640,72"/>
+          <path id="univArc" d="M 20,95 Q 340,5 660,95"/>
         </defs>
         <text>
           <textPath href="#univArc" startOffset="50%" text-anchor="middle">
@@ -5013,9 +5013,6 @@ function printDegreeCertificate(enrollIdx) {
         <span class="cert-sig-line"></span>
         Interim University Council<br>
         University of Medicine -2, Yangon
-      </div>
-      <div style="flex:0.4;display:flex;justify-content:center;align-items:flex-end;padding-bottom:1mm">
-        <div class="cert-seal"><img src="/Seal.svg" alt="Official Seal" onerror="this.parentElement.innerHTML='<div style=\\'width:22mm;height:22mm;border-radius:50%;background:radial-gradient(circle,#c8a800 0%,#9a7a00 100%);display:flex;align-items:center;justify-content:center;font-size:6pt;font-weight:700;color:rgba(255,255,255,0.85);text-align:center;letter-spacing:.8px;text-transform:uppercase\\'>OFFICIAL<br>SEAL</div>'"></div>
       </div>
       <div class="cert-sig-block">
         <span class="cert-sig-line"></span>
