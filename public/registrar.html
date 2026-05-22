@@ -1365,11 +1365,11 @@ iuc125067,Anatomy Live Session,2026-05-19,09:00,10:30,Absent,No attendance recor
   </div>
   <div class="card">
     <div class="card-title">Required CSV Columns</div>
-    <div class="code-block">course_id,course_name,year,block_module,credits,assessment_type
-CRS020,Neuroscience,M-1,Integrated System Modules,8,In-block exam
-CRS021,Endocrinology,M-1,Integrated System Modules,8,In-block exam
-CRS022,Renal Medicine,M-2,Integrated System Modules,8,OSCE</div>
-    <p class="text-muted mt-2">Required: <strong>course_id, course_name, year</strong>. Existing course IDs will be <strong>updated</strong>; new IDs will be <strong>inserted</strong>. Do not change column headers.</p>
+    <div class="code-block">course_id,course_name,year,block_module,credits,assessment_type,program_id
+CRS020,Neuroscience,M-1,Integrated System Modules,8,In-block exam,MBBS
+CRS021,Endocrinology,M-1,Integrated System Modules,8,In-block exam,MBBS
+CRS022,Renal Medicine,M-2,Integrated System Modules,8,OSCE,MBBS</div>
+    <p class="text-muted mt-2">Required: <strong>course_id, course_name, year</strong>. <code>program_id</code> is optional — defaults to MBBS if omitted. Existing course IDs will be <strong>updated</strong>; new IDs will be <strong>inserted</strong>. Do not change column headers.</p>
     <div class="form-actions" style="margin-top:12px">
       <button class="btn btn-outline btn-sm" onclick="downloadCourseTemplate()">↓ Download Template CSV</button>
     </div>
@@ -1799,16 +1799,20 @@ ALTER TABLE academic_years ADD COLUMN IF NOT EXISTS program_id text REFERENCES d
       <div class="modal-title" id="courseModalTitle">Add Course</div>
       <button class="modal-close" onclick="closeModal('courseModal')">✕</button>
     </div>
+    <datalist id="cm-year-list"></datalist>
+    <datalist id="cm-program-list"></datalist>
     <div class="form-grid">
       <div class="form-group"><label>Course ID *</label><input id="cm-id" placeholder="e.g. CRS058"></div>
       <div class="form-group"><label>Academic Year</label>
-        <select id="cm-year"><option>Foundation Year</option></select>
+        <input id="cm-year" list="cm-year-list" placeholder="e.g. M-1 (or type new year)">
       </div>
       <div class="form-group full"><label>Course Name *</label><input id="cm-name" placeholder="e.g. Clinical Medicine I"></div>
       <div class="form-group full"><label>Block / Module</label><input id="cm-block" placeholder="e.g. Integrated System Modules"></div>
       <div class="form-group"><label>Credits</label><input id="cm-credits" type="number" placeholder="8"></div>
       <div class="form-group"><label>Assessment Type</label><input id="cm-assess" placeholder="e.g. In-block exam"></div>
-      <div class="form-group"><label>Degree Program</label><select id="cm-program"><option>MBBS</option></select></div>
+      <div class="form-group"><label>Degree Program</label>
+        <input id="cm-program" list="cm-program-list" placeholder="e.g. MBBS (or type new program)">
+      </div>
       <div class="form-group"><label>Status</label><select id="cm-status"><option>Active</option><option>Archived</option></select></div>
     </div>
     <div class="form-actions">
@@ -3992,13 +3996,9 @@ function openCourseModal(cid) {
   } else {
     idInput.readOnly = false;
     // Reset all fields including year select to first option
-    ['cm-id','cm-name','cm-block','cm-credits','cm-assess'].forEach(id => {
+    ['cm-id','cm-name','cm-block','cm-credits','cm-assess','cm-year','cm-program'].forEach(id => {
       const el = document.getElementById(id); if (el) el.value = '';
     });
-    const cmYear = document.getElementById('cm-year');
-    if (cmYear) cmYear.selectedIndex = 0;
-    const cmProgram = document.getElementById('cm-program');
-    if (cmProgram) cmProgram.selectedIndex = 0;
     const cmStatus = document.getElementById('cm-status');
     if (cmStatus) cmStatus.value = 'Active';
   }
@@ -4078,7 +4078,7 @@ function confirmDeleteCourse(cid, cname) {
 
 // BULK COURSE IMPORT
 function downloadCourseTemplate() {
-  downloadCSV('bulk_course_import_template.csv', 'course_id,course_name,year,block_module,credits,assessment_type\nCRS020,Neuroscience,M-1,Integrated System Modules,8,In-block exam');
+  downloadCSV('bulk_course_import_template.csv', 'course_id,course_name,year,block_module,credits,assessment_type,program_id\nCRS020,Neuroscience,M-1,Integrated System Modules,8,In-block exam,MBBS\nCRS021,Endocrinology,M-1,Integrated System Modules,8,In-block exam,MBBS');
 }
 
 function handleBulkCourseCSV(input) {
@@ -4093,16 +4093,17 @@ function handleBulkCourseCSV(input) {
       bulkCourseRows = results.data;
       let errors = 0;
       const tbl = document.getElementById('coursePreviewTable');
-      tbl.innerHTML = `<thead><tr><th>#</th><th>Course ID</th><th>Course Name</th><th>Year</th><th>Block/Module</th><th>Credits</th><th>Assessment</th><th>Status</th></tr></thead>`;
+      tbl.innerHTML = `<thead><tr><th>#</th><th>Course ID</th><th>Course Name</th><th>Year</th><th>Program</th><th>Block/Module</th><th>Credits</th><th>Assessment</th><th>Status</th></tr></thead>`;
       const tbody = document.createElement('tbody');
       bulkCourseRows.forEach((row, i) => {
         const err = !row.course_id ? 'Missing course_id' : !row.course_name ? 'Missing course_name' : !row.year ? 'Missing year' : '';
         if (err) errors++;
         const exists = courses.some(c => c[0] === row.course_id);
         const statusBadge = err ? `<span class="badge b-red">⚠ ${err}</span>` : exists ? `<span class="badge b-blue">Update</span>` : `<span class="badge b-green">Insert</span>`;
+        const progVal = (row.program_id || '').trim() || 'MBBS';
         const tr = document.createElement('tr');
         if (err) tr.className = 'bulk-row-err'; else if (exists) tr.className = 'bulk-row-ok';
-        tr.innerHTML = `<td class="text-muted">${i+1}</td><td class="text-mono text-crimson">${row.course_id||'—'}</td><td><strong>${row.course_name||'—'}</strong></td><td><span class="badge b-blue">${row.year||'—'}</span></td><td class="text-muted">${row.block_module||'—'}</td><td>${row.credits||'—'}</td><td>${row.assessment_type||'—'}</td><td>${statusBadge}</td>`;
+        tr.innerHTML = `<td class="text-muted">${i+1}</td><td class="text-mono text-crimson">${row.course_id||'—'}</td><td><strong>${row.course_name||'—'}</strong></td><td><span class="badge b-blue">${row.year||'—'}</span></td><td><span class="badge b-muted">${progVal}</span></td><td class="text-muted">${row.block_module||'—'}</td><td>${row.credits||'—'}</td><td>${row.assessment_type||'—'}</td><td>${statusBadge}</td>`;
         tbody.appendChild(tr);
       });
       tbl.appendChild(tbody);
@@ -4127,10 +4128,10 @@ async function submitBulkCourses() {
       tr.innerHTML = `<td class="text-mono">${row.course_id||'—'}</td><td>${row.course_name||'—'}</td><td>${row.year||'—'}</td><td><span class="badge b-red">Error — missing required field</span></td>`;
       tbody.appendChild(tr); continue;
     }
-    const record = { id: row.course_id, name: row.course_name, year: row.year, block_module: row.block_module||'', credits: parseInt(row.credits)||0, assessment_type: row.assessment_type||'' };
+    const record = { id: row.course_id, name: row.course_name, year: row.year, block_module: row.block_module||'', credits: parseInt(row.credits)||0, assessment_type: row.assessment_type||'', program: (row.program_id||'').trim() || 'MBBS' };
     const { error } = await db.from('courses').upsert(record, { onConflict: 'id' });
     const existIdx = courses.findIndex(c => c[0] === row.course_id);
-    const entry = [row.course_id, row.course_name, row.year, row.block_module||'', parseInt(row.credits)||0, row.assessment_type||''];
+    const entry = [row.course_id, row.course_name, row.year, row.block_module||'', parseInt(row.credits)||0, row.assessment_type||'', (row.program_id||'').trim() || 'MBBS'];
     const tr = document.createElement('tr'); tr.className = 'bulk-row-ok';
     if (error) {
       errored++;
@@ -4817,9 +4818,24 @@ function populateAllSelects() {
   // Edit Student modal
   setYearSelectForProgram('em-year', document.getElementById('em-program-hidden')?.value || document.getElementById('em-year')?.dataset?.program || (degreePrograms[0]?.id || ''));
 
-  // Course modal
-  setYearSelect('cm-year');
-  setProgramSelect('cm-program');
+  // Course modal — populate datalists so existing years/programs are suggested but any value can be typed
+  const cmYearList = document.getElementById('cm-year-list');
+  if (cmYearList) {
+    const allYears = [...new Set([
+      ...degreePrograms.flatMap(p => (p.year_sequence || '').split(',').map(s => s.trim()).filter(Boolean)),
+      ...yearNames,
+      ...courses.map(c => c[2]).filter(Boolean)
+    ])];
+    cmYearList.innerHTML = allYears.map(n => `<option value="${n}">`).join('');
+  }
+  const cmProgList = document.getElementById('cm-program-list');
+  if (cmProgList) {
+    const allProgs = [...new Set([
+      ...degreePrograms.map(p => p.id),
+      ...courses.map(c => c[6]).filter(Boolean)
+    ])];
+    cmProgList.innerHTML = allProgs.map(n => `<option value="${n}">`).join('');
+  }
 
   // Student list program filter
   const spf = document.getElementById('studentProgramFilter');
