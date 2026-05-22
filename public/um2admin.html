@@ -617,6 +617,10 @@ input[readonly] { color:var(--ink2); cursor:default; }
   <div class="nav-item registrar-only" id="nav-years" onclick="showView('years')"><span class="nav-icon"><svg class="nav-svg"><use href="#i-calendar"></use></svg></span>Academic Years</div>
   <div class="nav-item registrar-only" id="nav-bulkYears" onclick="showView('bulkYears')"><span class="nav-icon"><svg class="nav-svg"><use href="#i-package"></use></svg></span>Bulk Import Years</div>
 
+  <div class="sidebar-section registrar-only">Community</div>
+  <div class="nav-item registrar-only" id="nav-channels" onclick="showView('channels')"><span class="nav-icon"><svg class="nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span>Channels</div>
+  <div class="nav-item registrar-only" id="nav-lectureRooms" onclick="showView('lectureRooms')"><span class="nav-icon"><svg class="nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg></span>Lecture Rooms</div>
+
   <div class="sidebar-section">System</div>
   <div class="nav-item registrar-only" id="nav-editRequests" onclick="showView('editRequests')"><span class="nav-icon"><svg class="nav-svg"><use href="#i-edit"></use></svg></span>Edit Requests<span class="nav-badge" id="editRequestsBadge" style="display:none">0</span></div>
   <div class="nav-item" id="nav-notifications" onclick="showView('notifications')"><span class="nav-icon"><svg class="nav-svg"><use href="#i-mail"></use></svg></span>Email Log<span class="nav-badge">3</span></div>
@@ -1733,6 +1737,70 @@ ALTER TABLE academic_years ADD COLUMN IF NOT EXISTS program_id text REFERENCES d
   </div>
 </div>
 
+<!-- ═══════ CHANNELS ═══════ -->
+<div class="view" id="view-channels">
+  <div class="page-header">
+    <div class="page-header-left">
+      <div class="page-title">Community Channels</div>
+      <div class="page-sub">Manage WhatsApp, Telegram, and other community channels available to students</div>
+    </div>
+    <div class="page-actions">
+      <button class="btn btn-primary btn-sm" onclick="openChannelModal()">+ Add Channel</button>
+    </div>
+  </div>
+  <div class="search-row">
+    <input id="channelSearchInput" class="search-input" placeholder="Search channels…" oninput="filterChannels(this.value)">
+    <select id="channelPlatformFilter" style="width:160px" onchange="filterChannels(document.getElementById('channelSearchInput').value)">
+      <option value="">All Platforms</option>
+      <option value="whatsapp">WhatsApp</option>
+      <option value="telegram">Telegram</option>
+      <option value="discord">Discord</option>
+      <option value="other">Other</option>
+    </select>
+    <select id="channelStatusFilter" style="width:140px" onchange="filterChannels(document.getElementById('channelSearchInput').value)">
+      <option value="">All Status</option>
+      <option value="true">Active</option>
+      <option value="false">Inactive</option>
+    </select>
+  </div>
+  <div class="card" style="padding:0">
+    <div class="table-wrap"><table>
+      <thead><tr><th>Name</th><th>Platform</th><th>Description</th><th>Members</th><th>Channel Link</th><th>GP Link</th><th>Allowed Years</th><th>Sort</th><th>Status</th><th>Actions</th></tr></thead>
+      <tbody id="channelsTableBody"></tbody>
+    </table></div>
+  </div>
+</div>
+
+<!-- ═══════ LECTURE ROOMS ═══════ -->
+<div class="view" id="view-lectureRooms">
+  <div class="page-header">
+    <div class="page-header-left">
+      <div class="page-title">Lecture Rooms</div>
+      <div class="page-sub">Manage Zoom and online lecture rooms accessible to students</div>
+    </div>
+    <div class="page-actions">
+      <button class="btn btn-primary btn-sm" onclick="openLectureRoomModal()">+ Add Lecture Room</button>
+    </div>
+  </div>
+  <div class="search-row">
+    <input id="lectureRoomSearchInput" class="search-input" placeholder="Search lecture rooms…" oninput="filterLectureRooms(this.value)">
+    <select id="lectureRoomProgramFilter" style="width:160px" onchange="filterLectureRooms(document.getElementById('lectureRoomSearchInput').value)">
+      <option value="">All Programs</option>
+    </select>
+    <select id="lectureRoomStatusFilter" style="width:140px" onchange="filterLectureRooms(document.getElementById('lectureRoomSearchInput').value)">
+      <option value="">All Status</option>
+      <option value="true">Active</option>
+      <option value="false">Inactive</option>
+    </select>
+  </div>
+  <div class="card" style="padding:0">
+    <div class="table-wrap"><table>
+      <thead><tr><th>Subject</th><th>Description</th><th>Zoom Link</th><th>Meeting ID</th><th>Passcode</th><th>Year Access</th><th>Program</th><th>Status</th><th>Actions</th></tr></thead>
+      <tbody id="lectureRoomsTableBody"></tbody>
+    </table></div>
+  </div>
+</div>
+
 </main>
 </div><!-- /appShell -->
 
@@ -1842,7 +1910,7 @@ ALTER TABLE academic_years ADD COLUMN IF NOT EXISTS program_id text REFERENCES d
       <div class="form-group"><label>Program ID *</label><input id="dm-id" placeholder="e.g. MD"></div>
       <div class="form-group"><label>Duration (years)</label><input id="dm-dur" type="number" placeholder="6"></div>
       <div class="form-group full"><label>Program Name (English) *</label><input id="dm-name" placeholder="e.g. Doctor of Medicine"></div>
-      <div class="form-group full"><label>Program Name (မြန်မာဘာသာဖြင့်)</label><input id="dm-name-my" class="my-text" lang="my" placeholder="ဥပမာ ဆေးပညာဘွဲ့"></div>
+      <div class="form-group full"><label>Program Name (မြန်မာဘာသာဖြင့်)</label><input id="dm-name-my" class="my-text" lang="my" placeholder="ဥပမာ ဆေးပညာဘွဲ့"></div>
       <div class="form-group full"><label>Year Sequence (comma-separated, e.g. Foundation Year, M-1, M-2…)</label><input id="dm-years" placeholder="Foundation Year, M-1, M-2, M-3, M-4, M-5"></div>
       <div class="form-group"><label>Status</label><select id="dm-status"><option>Active</option><option>Archived</option></select></div>
     </div>
@@ -1974,7 +2042,82 @@ ALTER TABLE academic_years ADD COLUMN IF NOT EXISTS program_id text REFERENCES d
   </div>
 </div>
 
+<!-- Add/Edit Channel Modal -->
+<div class="modal-overlay" id="channelModal">
+  <div class="modal modal-lg">
+    <div class="modal-header">
+      <div class="modal-title" id="channelModalTitle">Add Channel</div>
+      <button class="modal-close" onclick="closeModal('channelModal')">✕</button>
+    </div>
+    <div class="form-grid">
+      <div class="form-group"><label>Channel Name *</label><input id="ch-name" placeholder="e.g. Alumni Network"></div>
+      <div class="form-group"><label>Platform</label>
+        <select id="ch-platform">
+          <option value="whatsapp">WhatsApp</option>
+          <option value="telegram">Telegram</option>
+          <option value="discord">Discord</option>
+          <option value="other">Other</option>
+        </select>
+      </div>
+      <div class="form-group full"><label>Description</label><input id="ch-description" placeholder="Brief description of the channel…"></div>
+      <div class="form-group"><label>Channel / Invite Link</label><input id="ch-link" type="url" placeholder="https://…"></div>
+      <div class="form-group"><label>GP / Group Link</label><input id="ch-gp-link" type="url" placeholder="https://wa.me/link/…"></div>
+      <div class="form-group"><label>Members Count</label><input id="ch-members" type="number" min="0" placeholder="e.g. 250"></div>
+      <div class="form-group"><label>Sort Order</label><input id="ch-sort-order" type="number" min="1" placeholder="e.g. 1"></div>
+      <div class="form-group full"><label>Allowed Years <span style="font-weight:400;color:var(--ink3)">(comma-separated, leave blank for all)</span></label>
+        <input id="ch-allowed-years" placeholder="e.g. Foundation Year, M-1, M-2 — or leave blank for all years">
+      </div>
+      <div class="form-group"><label>Status</label>
+        <select id="ch-status">
+          <option value="true">Active</option>
+          <option value="false">Inactive</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-actions">
+      <button class="btn btn-primary" onclick="saveChannel()">💾 Save Channel</button>
+      <button class="btn btn-outline" onclick="closeModal('channelModal')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- Add/Edit Lecture Room Modal -->
+<div class="modal-overlay" id="lectureRoomModal">
+  <div class="modal modal-lg">
+    <div class="modal-header">
+      <div class="modal-title" id="lectureRoomModalTitle">Add Lecture Room</div>
+      <button class="modal-close" onclick="closeModal('lectureRoomModal')">✕</button>
+    </div>
+    <div class="form-grid">
+      <div class="form-group full"><label>Subject / Room Name *</label><input id="lr-subject" placeholder="e.g. Theater 9"></div>
+      <div class="form-group full"><label>Description</label><input id="lr-description" placeholder="e.g. Weekly cardiovascular system module"></div>
+      <div class="form-group full"><label>Zoom Link</label><input id="lr-zoom-link" type="url" placeholder="https://zoom.us/j/…"></div>
+      <div class="form-group"><label>Zoom Meeting ID</label><input id="lr-zoom-meeting-id" placeholder="e.g. 123 456 789"></div>
+      <div class="form-group"><label>Zoom Passcode</label><input id="lr-zoom-passcode" placeholder="e.g. cv2026"></div>
+      <div class="form-group"><label>Year Access <span style="font-weight:400;color:var(--ink3)">(comma-separated or ALL)</span></label>
+        <input id="lr-year-access" placeholder='e.g. M-1, M-2 or ALL'>
+      </div>
+      <div class="form-group"><label>Program</label>
+        <select id="lr-program">
+          <option value="All">All Programs</option>
+        </select>
+      </div>
+      <div class="form-group"><label>Status</label>
+        <select id="lr-status">
+          <option value="true">Active</option>
+          <option value="false">Inactive</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-actions">
+      <button class="btn btn-primary" onclick="saveLectureRoom()">💾 Save Lecture Room</button>
+      <button class="btn btn-outline" onclick="closeModal('lectureRoomModal')">Cancel</button>
+    </div>
+  </div>
+</div>
+
 <!-- Upload Blocking Overlay -->
+
 <div id="uploadOverlay" class="upload-overlay">
   <div class="upload-overlay-box">
     <div class="upload-spinner"></div>
@@ -2602,6 +2745,8 @@ async function populateTables() {
   renderCoursesTable();
   updateDashboardStats();
   await loadAcademicYears();
+  await loadChannels();
+  await loadLectureRooms();
 }
 
 function normalizeAttRecord(r) {
@@ -4966,6 +5111,9 @@ function populateAllSelects() {
     if (savedYmProg && Array.from(ymProgSel.options).some(o => o.value === savedYmProg)) ymProgSel.value = savedYmProg;
   }
 
+  // Refresh lecture room program dropdowns
+  if (typeof populateLectureRoomPrograms === 'function') populateLectureRoomPrograms();
+
   // Course list year filter (has "All Years" blank option)
   // Build from ALL unique year values across every program's year_sequence + every course's year
   // so it works for any program, not just the default one.
@@ -6017,6 +6165,289 @@ function toggleSelectGroup(groupCb, groupKey) {
     row = row.nextElementSibling;
   }
   onStudentCheckChange();
+}
+
+// ══════════════════════════════════════════
+// CHANNELS
+// ══════════════════════════════════════════
+let channels = [];
+let _editingChannelId = null;
+
+const PLATFORM_BADGE = {
+  whatsapp: '<span class="badge" style="background:#dcf8c6;color:#128c7e">WhatsApp</span>',
+  telegram: '<span class="badge" style="background:#e3f2fd;color:#0088cc">Telegram</span>',
+  discord:  '<span class="badge" style="background:#ede7f6;color:#5865f2">Discord</span>',
+  other:    '<span class="badge b-muted">Other</span>'
+};
+
+async function loadChannels() {
+  const { data, error } = await db.from('channels').select('*').order('sort_order');
+  if (error) { toast('Failed to load channels: ' + error.message, '\u26a0'); return; }
+  channels = data || [];
+  renderChannelsTable();
+}
+
+function renderChannelsTable(data) {
+  const rows = data || channels;
+  const tb = document.getElementById('channelsTableBody');
+  if (!tb) return;
+  if (!rows.length) {
+    tb.innerHTML = '<tr><td colspan="10" style="text-align:center;padding:32px;color:var(--ink3)">No channels found. Add one with the button above.</td></tr>';
+    return;
+  }
+  tb.innerHTML = rows.map(function(c) {
+    const plat = PLATFORM_BADGE[c.platform] || PLATFORM_BADGE.other;
+    const statusBadge = c.is_active ? '<span class="badge b-green">Active</span>' : '<span class="badge b-muted">Inactive</span>';
+    const channelLinkEl = c.channel_link ? '<a href="' + c.channel_link + '" target="_blank" class="btn btn-ghost btn-sm" style="padding:2px 8px;font-size:11px">Open \u2197</a>' : '\u2014';
+    const gpLinkEl = c.gp_link ? '<a href="' + c.gp_link + '" target="_blank" class="btn btn-ghost btn-sm" style="padding:2px 8px;font-size:11px">Join \u2197</a>' : '\u2014';
+    const allowedYears = c.allowed_years ? '<span style="font-size:11px;color:var(--ink2)">' + c.allowed_years + '</span>' : '<span class="badge b-blue" style="font-size:10px">All Years</span>';
+    return '<tr>' +
+      '<td><strong>' + c.name + '</strong></td>' +
+      '<td>' + plat + '</td>' +
+      '<td style="max-width:200px;white-space:normal;font-size:12px;color:var(--ink2)">' + (c.description || '\u2014') + '</td>' +
+      '<td style="text-align:center">' + (c.members != null ? c.members : '\u2014') + '</td>' +
+      '<td>' + channelLinkEl + '</td>' +
+      '<td>' + gpLinkEl + '</td>' +
+      '<td>' + allowedYears + '</td>' +
+      '<td style="text-align:center">' + (c.sort_order != null ? c.sort_order : '\u2014') + '</td>' +
+      '<td>' + statusBadge + '</td>' +
+      '<td class="flex gap-2">' +
+        '<button class="btn btn-outline btn-sm" onclick="openChannelModal(\'' + c.id + '\')">Edit</button>' +
+        '<button class="btn btn-danger btn-sm" onclick="confirmDeleteChannel(\'' + c.id + '\',\'' + (c.name||'').replace(/'/g,"\\'") + '\')"><svg style="width:13px;height:13px;stroke:currentColor;stroke-width:1.9;fill:none;stroke-linecap:round;stroke-linejoin:round"><use href="#i-trash"></use></svg></button>' +
+      '</td></tr>';
+  }).join('');
+}
+
+function filterChannels(q) {
+  const platform = document.getElementById('channelPlatformFilter').value;
+  const status   = document.getElementById('channelStatusFilter').value;
+  const query    = (q || '').toLowerCase();
+  const filtered = channels.filter(function(c) {
+    const matchQ = !query    || (c.name + (c.description||'')).toLowerCase().includes(query);
+    const matchP = !platform || c.platform === platform;
+    const matchS = status === '' ? true : String(c.is_active) === status;
+    return matchQ && matchP && matchS;
+  });
+  renderChannelsTable(filtered);
+}
+
+function openChannelModal(cid) {
+  _editingChannelId = cid || null;
+  const c = cid ? channels.find(function(x){ return x.id === cid; }) : null;
+  document.getElementById('channelModalTitle').textContent = c ? 'Edit Channel \u2014 ' + c.name : 'Add Channel';
+  document.getElementById('ch-name').value          = c ? c.name : '';
+  document.getElementById('ch-platform').value      = c ? (c.platform || 'whatsapp') : 'whatsapp';
+  document.getElementById('ch-description').value   = c ? (c.description || '') : '';
+  document.getElementById('ch-link').value          = c ? (c.channel_link || '') : '';
+  document.getElementById('ch-gp-link').value       = c ? (c.gp_link || '') : '';
+  document.getElementById('ch-members').value       = c ? (c.members != null ? c.members : '') : '';
+  document.getElementById('ch-sort-order').value    = c ? (c.sort_order != null ? c.sort_order : '') : (channels.length + 1);
+  document.getElementById('ch-allowed-years').value = c ? (c.allowed_years || '') : '';
+  document.getElementById('ch-status').value        = c ? String(c.is_active) : 'true';
+  document.getElementById('channelModal').classList.add('open');
+}
+
+async function saveChannel() {
+  const name = document.getElementById('ch-name').value.trim();
+  if (!name) { toast('Channel name is required.', '\u26a0'); return; }
+  const record = {
+    name: name,
+    platform:      document.getElementById('ch-platform').value,
+    description:   document.getElementById('ch-description').value.trim() || null,
+    channel_link:  document.getElementById('ch-link').value.trim() || null,
+    gp_link:       document.getElementById('ch-gp-link').value.trim() || null,
+    members:       parseInt(document.getElementById('ch-members').value) || null,
+    sort_order:    parseInt(document.getElementById('ch-sort-order').value) || null,
+    allowed_years: document.getElementById('ch-allowed-years').value.trim() || null,
+    is_active:     document.getElementById('ch-status').value === 'true',
+    updated_at:    new Date().toISOString()
+  };
+  if (_editingChannelId) {
+    const { error } = await db.from('channels').update(record).eq('id', _editingChannelId);
+    if (error) { toast('Update failed: ' + error.message, '\u274c'); return; }
+    const idx = channels.findIndex(function(x){ return x.id === _editingChannelId; });
+    if (idx >= 0) channels[idx] = Object.assign({}, channels[idx], record);
+    toast('Channel updated.', '\u2713');
+  } else {
+    const { data, error } = await db.from('channels').insert(record).select().single();
+    if (error) { toast('Insert failed: ' + error.message, '\u274c'); return; }
+    channels.push(data || Object.assign({ id: 'new-' + Date.now() }, record));
+    toast('Channel added.', '\u2713');
+  }
+  closeModal('channelModal');
+  renderChannelsTable();
+}
+
+function confirmDeleteChannel(cid, cname) {
+  document.getElementById('confirmDeleteTitle').textContent = 'Delete Channel';
+  document.getElementById('confirmDeleteMsg').innerHTML =
+    'Are you sure you want to permanently delete the channel <strong>' + cname + '</strong>? This cannot be undone.';
+  document.getElementById('confirmDeleteBtn').onclick = async function() {
+    const { error } = await db.from('channels').delete().eq('id', cid);
+    if (error) { toast('Delete failed: ' + error.message, '\u274c'); return; }
+    channels = channels.filter(function(x){ return x.id !== cid; });
+    renderChannelsTable();
+    toast('Channel "' + cname + '" deleted.', '\uD83D\uDDD1');
+    closeModal('confirmDeleteModal');
+  };
+  document.getElementById('confirmDeleteModal').classList.add('open');
+}
+
+// ══════════════════════════════════════════
+// LECTURE ROOMS
+// ══════════════════════════════════════════
+let lectureRooms = [];
+let _editingLectureRoomId = null;
+
+async function loadLectureRooms() {
+  const { data, error } = await db.from('lecture_rooms').select('*').order('subject');
+  if (error) { toast('Failed to load lecture rooms: ' + error.message, '\u26a0'); return; }
+  lectureRooms = data || [];
+  renderLectureRoomsTable();
+  populateLectureRoomPrograms();
+}
+
+function populateLectureRoomPrograms() {
+  const pf = document.getElementById('lectureRoomProgramFilter');
+  if (!pf) return;
+  const saved = pf.value;
+  pf.innerHTML = '<option value="">All Programs</option><option value="All">All</option>' +
+    degreePrograms.filter(function(p){ return p.status === 'Active'; }).map(function(p){
+      return '<option value="' + p.id + '">' + p.id + ' \u2014 ' + p.name + '</option>';
+    }).join('');
+  if (saved) pf.value = saved;
+  const lrProg = document.getElementById('lr-program');
+  if (lrProg) {
+    const lrSaved = lrProg.value;
+    lrProg.innerHTML = '<option value="All">All Programs</option>' +
+      degreePrograms.filter(function(p){ return p.status === 'Active'; }).map(function(p){
+        return '<option value="' + p.id + '">' + p.id + ' \u2014 ' + p.name + '</option>';
+      }).join('');
+    if (lrSaved) lrProg.value = lrSaved;
+  }
+}
+
+function renderLectureRoomsTable(data) {
+  const rows = data || lectureRooms;
+  const tb = document.getElementById('lectureRoomsTableBody');
+  if (!tb) return;
+  if (!rows.length) {
+    tb.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:32px;color:var(--ink3)">No lecture rooms found. Add one with the button above.</td></tr>';
+    return;
+  }
+  tb.innerHTML = rows.map(function(r) {
+    const statusBadge = r.is_active ? '<span class="badge b-green">Active</span>' : '<span class="badge b-muted">Inactive</span>';
+    const zoomLinkEl = r.zoom_link
+      ? '<a href="' + r.zoom_link + '" target="_blank" class="btn btn-ghost btn-sm" style="padding:2px 8px;font-size:11px;color:var(--blue)">Join Zoom \u2197</a>'
+      : '\u2014';
+    let yearDisplay = r.year_access || '\u2014';
+    try {
+      const parsed = JSON.parse(yearDisplay);
+      if (Array.isArray(parsed)) yearDisplay = parsed.join(', ');
+    } catch(e) {}
+    const progBadge = r.program === 'All'
+      ? '<span class="badge b-blue">All</span>'
+      : '<span class="badge b-muted">' + (r.program || '\u2014') + '</span>';
+    return '<tr>' +
+      '<td><strong>' + r.subject + '</strong></td>' +
+      '<td style="max-width:180px;white-space:normal;font-size:12px;color:var(--ink2)">' + (r.description || '\u2014') + '</td>' +
+      '<td>' + zoomLinkEl + '</td>' +
+      '<td class="text-mono" style="font-size:12px">' + (r.zoom_meeting_id || '\u2014') + '</td>' +
+      '<td class="text-mono" style="font-size:12px">' + (r.zoom_passcode || '\u2014') + '</td>' +
+      '<td style="font-size:12px">' + yearDisplay + '</td>' +
+      '<td>' + progBadge + '</td>' +
+      '<td>' + statusBadge + '</td>' +
+      '<td class="flex gap-2">' +
+        '<button class="btn btn-outline btn-sm" onclick="openLectureRoomModal(\'' + r.id + '\')">Edit</button>' +
+        '<button class="btn btn-danger btn-sm" onclick="confirmDeleteLectureRoom(\'' + r.id + '\',\'' + (r.subject||'').replace(/'/g,"\\'") + '\')"><svg style="width:13px;height:13px;stroke:currentColor;stroke-width:1.9;fill:none;stroke-linecap:round;stroke-linejoin:round"><use href="#i-trash"></use></svg></button>' +
+      '</td></tr>';
+  }).join('');
+}
+
+function filterLectureRooms(q) {
+  const program = document.getElementById('lectureRoomProgramFilter').value;
+  const status  = document.getElementById('lectureRoomStatusFilter').value;
+  const query   = (q || '').toLowerCase();
+  const filtered = lectureRooms.filter(function(r) {
+    const matchQ = !query   || (r.subject + (r.description||'')).toLowerCase().includes(query);
+    const matchP = !program || r.program === program;
+    const matchS = status === '' ? true : String(r.is_active) === status;
+    return matchQ && matchP && matchS;
+  });
+  renderLectureRoomsTable(filtered);
+}
+
+function openLectureRoomModal(rid) {
+  _editingLectureRoomId = rid || null;
+  const r = rid ? lectureRooms.find(function(x){ return x.id === rid; }) : null;
+  document.getElementById('lectureRoomModalTitle').textContent = r ? 'Edit Lecture Room \u2014 ' + r.subject : 'Add Lecture Room';
+  document.getElementById('lr-subject').value          = r ? r.subject : '';
+  document.getElementById('lr-description').value      = r ? (r.description || '') : '';
+  document.getElementById('lr-zoom-link').value        = r ? (r.zoom_link || '') : '';
+  document.getElementById('lr-zoom-meeting-id').value  = r ? (r.zoom_meeting_id || '') : '';
+  document.getElementById('lr-zoom-passcode').value    = r ? (r.zoom_passcode || '') : '';
+  let yearDisplay = r ? (r.year_access || '') : '';
+  try {
+    const parsed = JSON.parse(yearDisplay);
+    if (Array.isArray(parsed)) yearDisplay = parsed.join(', ');
+  } catch(e) {}
+  document.getElementById('lr-year-access').value      = yearDisplay;
+  populateLectureRoomPrograms();
+  document.getElementById('lr-program').value          = r ? (r.program || 'All') : 'All';
+  document.getElementById('lr-status').value           = r ? String(r.is_active) : 'true';
+  document.getElementById('lectureRoomModal').classList.add('open');
+}
+
+async function saveLectureRoom() {
+  const subject = document.getElementById('lr-subject').value.trim();
+  if (!subject) { toast('Subject / Room Name is required.', '\u26a0'); return; }
+  const yearRaw = document.getElementById('lr-year-access').value.trim();
+  let yearAccess;
+  if (!yearRaw || yearRaw.toUpperCase() === 'ALL') {
+    yearAccess = JSON.stringify(['ALL']);
+  } else {
+    yearAccess = JSON.stringify(yearRaw.split(',').map(function(y){ return y.trim(); }).filter(Boolean));
+  }
+  const record = {
+    subject: subject,
+    description:     document.getElementById('lr-description').value.trim() || null,
+    zoom_link:       document.getElementById('lr-zoom-link').value.trim() || null,
+    zoom_meeting_id: document.getElementById('lr-zoom-meeting-id').value.trim() || null,
+    zoom_passcode:   document.getElementById('lr-zoom-passcode').value.trim() || null,
+    year_access:     yearAccess,
+    program:         document.getElementById('lr-program').value || 'All',
+    is_active:       document.getElementById('lr-status').value === 'true',
+    updated_at:      new Date().toISOString()
+  };
+  if (_editingLectureRoomId) {
+    const { error } = await db.from('lecture_rooms').update(record).eq('id', _editingLectureRoomId);
+    if (error) { toast('Update failed: ' + error.message, '\u274c'); return; }
+    const idx = lectureRooms.findIndex(function(x){ return x.id === _editingLectureRoomId; });
+    if (idx >= 0) lectureRooms[idx] = Object.assign({}, lectureRooms[idx], record);
+    toast('Lecture room updated.', '\u2713');
+  } else {
+    const { data, error } = await db.from('lecture_rooms').insert(record).select().single();
+    if (error) { toast('Insert failed: ' + error.message, '\u274c'); return; }
+    lectureRooms.push(data || Object.assign({ id: 'new-' + Date.now() }, record));
+    toast('Lecture room added.', '\u2713');
+  }
+  closeModal('lectureRoomModal');
+  renderLectureRoomsTable();
+}
+
+function confirmDeleteLectureRoom(rid, rname) {
+  document.getElementById('confirmDeleteTitle').textContent = 'Delete Lecture Room';
+  document.getElementById('confirmDeleteMsg').innerHTML =
+    'Are you sure you want to permanently delete lecture room <strong>' + rname + '</strong>? This cannot be undone.';
+  document.getElementById('confirmDeleteBtn').onclick = async function() {
+    const { error } = await db.from('lecture_rooms').delete().eq('id', rid);
+    if (error) { toast('Delete failed: ' + error.message, '\u274c'); return; }
+    lectureRooms = lectureRooms.filter(function(x){ return x.id !== rid; });
+    renderLectureRoomsTable();
+    toast('Lecture room "' + rname + '" deleted.', '\uD83D\uDDD1');
+    closeModal('confirmDeleteModal');
+  };
+  document.getElementById('confirmDeleteModal').classList.add('open');
 }
 </script>
 </body>
