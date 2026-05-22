@@ -977,11 +977,11 @@ input[readonly] { color:var(--ink2); cursor:default; }
   </div>
   <div class="card">
     <div class="card-title">Expected CSV Format</div>
-    <div class="code-block">student_id,year_id,enrollment_status,graduation_status,notes
-iuc125065,M-1,Active,In Progress,Promoted from Foundation Year
-iuc125066,Foundation Year,Active,In Progress,New intake 2024
-iuc125067,M-2,Inactive,In Progress,Medical leave</div>
-    <p class="text-muted mt-2">Accepted values — <strong>year_id:</strong> Foundation Year, M-1…M-5 &nbsp;·&nbsp; <strong>enrollment_status:</strong> Active, Degree Awarded, Inactive &nbsp;·&nbsp; <strong>graduation_status:</strong> In Progress, Graduated</p>
+    <div class="code-block">student_id,year_id,enrollment_status,graduation_status,gender,notes
+iuc125065,M-1,Active,In Progress,Male,Promoted from Foundation Year
+iuc125066,Foundation Year,Active,In Progress,Female,New intake 2024
+iuc125067,M-2,Inactive,In Progress,,Medical leave</div>
+    <p class="text-muted mt-2">Accepted values — <strong>year_id:</strong> Foundation Year, M-1…M-5 &nbsp;·&nbsp; <strong>enrollment_status:</strong> Active, Degree Awarded, Inactive &nbsp;·&nbsp; <strong>graduation_status:</strong> In Progress, Graduated &nbsp;·&nbsp; <strong>gender:</strong> Male, Female (optional — leave blank to keep existing)</p>
     <div class="form-actions" style="margin-top:12px">
       <button class="btn btn-outline btn-sm" onclick="downloadEnrollTemplate()">↓ Download Template CSV</button>
     </div>
@@ -1110,7 +1110,7 @@ iuc125067,M-2,Inactive,In Progress,Medical leave</div>
     <div class="code-block">student_id,full_name_en,full_name_my,father_name_en,father_name_my,mother_name_en,mother_name_my,birth_date,email,phone,address,admission_year,current_year,program_id,graduation_status,graduation_id,graduation_date,master_password
 iuc125065,Testing Student,စမ်းသပ်,U Father Name,,Daw Mother Name,,2000-01-01,student@email.com,+95912345,Yangon,1/2024,Foundation Year,MBBS,In Progress,,,SecurePass123
 iuc125066,Second Student,,U Father Two,,Daw Mother Two,,2000-05-15,second@email.com,,,1/2024,M-5,MBBS,Graduated,GRAD-2026-001,2026-05-10,AlumniKey456</div>
-    <p class="text-muted mt-2">Fields marked * are required: <strong>student_id, full_name_en, email</strong>. Others can be left blank. <code>master_password</code> if left blank will be auto-generated. <code>graduation_id</code> and <code>graduation_date</code> are only needed when <code>graduation_status</code> is Graduated.</p>
+    <p class="text-muted mt-2">Fields marked * are required: <strong>student_id, full_name_en, email</strong>. Others can be left blank. <code>gender</code> accepts Male or Female. <code>master_password</code> if left blank will be auto-generated. <code>graduation_id</code> and <code>graduation_date</code> are only needed when <code>graduation_status</code> is Graduated.</p>
     <div class="form-actions" style="margin-top:12px">
       <button class="btn btn-outline btn-sm" onclick="downloadStudentTemplate()">↓ Download Template CSV</button>
     </div>
@@ -3069,7 +3069,7 @@ function handleBulkStudentCSV(input) {
       let errors = 0;
       document.getElementById('studentPreviewCount').textContent = bulkStudentRows.length;
       const pt = document.getElementById('studentPreviewTable');
-      pt.innerHTML = `<thead><tr><th>Student ID</th><th>Full Name (EN)</th><th>Email</th><th>Program</th><th>Year</th><th>Status</th><th>Master Password</th><th>Action</th><th>Validation</th></tr></thead>`;
+      pt.innerHTML = `<thead><tr><th>Student ID</th><th>Full Name (EN)</th><th>Email</th><th>Gender</th><th>Program</th><th>Year</th><th>Status</th><th>Master Password</th><th>Action</th><th>Validation</th></tr></thead>`;
       let body = '<tbody>';
       bulkStudentRows.forEach(row => {
         const sid = (row.student_id || '').trim();
@@ -3089,10 +3089,16 @@ function handleBulkStudentCSV(input) {
         const issues = [];
         if (!hasRequired) issues.push('Missing required field');
         if (progId && !validProgram) issues.push('Unknown program');
+        const genderVal = (row.gender || '').trim();
+        const genderDisplay = genderVal === 'Male' ? '<span class="badge b-blue">Male</span>'
+          : genderVal === 'Female' ? '<span class="badge b-gold">Female</span>'
+          : genderVal ? `<span class="badge b-red">${genderVal} ✗</span>`
+          : '<span style="color:var(--ink3);font-size:11px">—</span>';
         body += `<tr class="${issues.length ? 'bulk-row-err' : ''}">
           <td class="text-mono">${sid}</td>
           <td>${row.full_name_en || '<span class="text-crimson">Missing</span>'}</td>
           <td>${row.email || '<span class="text-crimson">Missing</span>'}</td>
+          <td>${genderDisplay}</td>
           <td>${progBadge}</td>
           <td>${row.current_year || ''}</td>
           <td>${statusVal}</td>
@@ -3138,6 +3144,7 @@ async function submitBulkStudents() {
       id:         sid,
       name_en:   row.full_name_en,
       name_my:   row.full_name_my   || (existing ? existing.name_my   : ''),
+      gender:    row.gender         || (existing ? existing.gender     : '') || '',
       father:    row.father_name_en || (existing ? existing.father     : ''),
       father_my: row.father_name_my || (existing ? existing.father_my  : ''),
       mother:    row.mother_name_en || (existing ? existing.mother     : ''),
@@ -3869,16 +3876,21 @@ function handleBulkEnrollCSV(input) {
       bulkEnrollRows = results.data;
       document.getElementById('enrollPreviewCount').textContent = bulkEnrollRows.length;
       const pt = document.getElementById('enrollPreviewTable');
-      pt.innerHTML = `<thead><tr><th>Student ID</th><th>Student Name</th><th>Year</th><th>Enrollment Status</th><th>Graduation Status</th><th>Notes</th><th>Validation</th></tr></thead>`;
+      pt.innerHTML = `<thead><tr><th>Student ID</th><th>Student Name</th><th>Year</th><th>Enrollment Status</th><th>Graduation Status</th><th>Gender</th><th>Notes</th><th>Validation</th></tr></thead>`;
       let body = '<tbody>';
       bulkEnrollRows.forEach(row => {
         const sid = row.student_id || '';
         const s = students.find(x => x.id === sid);
         const valid = !!s;
+        const genderVal = (row.gender || '').trim();
+        const genderDisplay = genderVal === 'Male' ? '<span class="badge b-blue">Male</span>'
+          : genderVal === 'Female' ? '<span class="badge b-gold">Female</span>'
+          : '<span style="color:var(--ink3);font-size:11px">—</span>';
         body += `<tr class="${valid ? 'bulk-row-ok' : 'bulk-row-err'}">
           <td class="text-mono">${sid}</td><td>${s ? s.name_en : '—'}</td>
           <td><span class="badge b-blue">${row.year_id||''}</span></td>
           <td>${row.enrollment_status||'Active'}</td><td>${row.graduation_status||'In Progress'}</td>
+          <td>${genderDisplay}</td>
           <td class="text-muted">${row.notes||''}</td>
           <td>${valid ? '<span class="badge b-green">✓ Valid</span>' : '<span class="badge b-red">✗ Not found</span>'}</td>
         </tr>`;
@@ -3918,7 +3930,10 @@ async function submitBulkEnroll() {
       ok++;
       s.year = row.year_id || s.year;
       s.status = row.enrollment_status || s.status;
-      await db.from('students').update({ year: s.year, status: s.status }).eq('id', sid);
+      const enrollUpdate = { year: s.year, status: s.status };
+      const rowGender = (row.gender || '').trim();
+      if (rowGender) { s.gender = rowGender; enrollUpdate.gender = rowGender; }
+      await db.from('students').update(enrollUpdate).eq('id', sid);
       await logEmail(s.email, sid, '[UM2] Your enrollment has been updated', 'Bulk enrollment');
       body += `<tr class="bulk-row-ok"><td class="text-mono text-crimson">${sid}</td><td>${s.name_en}</td><td><span class="badge b-blue">${row.year_id}</span></td><td><span class="badge b-green">${row.enrollment_status||'Active'}</span></td><td><span class="badge b-green">✓ Queued</span></td></tr>`;
     }
@@ -5200,11 +5215,11 @@ function downloadGradeTemplate() {
 }
 
 function downloadEnrollTemplate() {
-  downloadCSV('bulk_enrollment_template.csv', 'student_id,year_id,enrollment_status,graduation_status,notes\nSTU001,M-1,Active,In Progress,Promoted from Foundation Year');
+  downloadCSV('bulk_enrollment_template.csv', 'student_id,year_id,enrollment_status,graduation_status,gender,notes\nSTU001,M-1,Active,In Progress,Male,Promoted from Foundation Year\nSTU002,Foundation Year,Active,In Progress,Female,New intake 2025');
 }
 
 function downloadStudentTemplate() {
-  downloadCSV('bulk_student_import_template.csv', 'student_id,full_name_en,full_name_my,father_name_en,father_name_my,mother_name_en,mother_name_my,birth_date,email,phone,address,admission_year,current_year,program_id,enrollment_status,graduation_status,graduation_id,graduation_date,master_password\nSTU001,New Student,,U Father Name,,Daw Mother Name,,2001-01-01,new@email.com,,Yangon,1/2025,Foundation Year,MBBS,Active,In Progress,,,MySecurePass1\nSTU002,Second Student,,U Father Two,,Daw Mother Two,,2001-06-15,second@email.com,,Mandalay,1/2025,M-1,MBBS,Active,In Progress,,,');
+  downloadCSV('bulk_student_import_template.csv', 'student_id,full_name_en,full_name_my,gender,father_name_en,father_name_my,mother_name_en,mother_name_my,birth_date,email,phone,address,admission_year,current_year,program_id,enrollment_status,graduation_status,graduation_id,graduation_date,master_password\nSTU001,New Student,,Male,U Father Name,,Daw Mother Name,,2001-01-01,new@email.com,,Yangon,1/2025,Foundation Year,MBBS,Active,In Progress,,,MySecurePass1\nSTU002,Second Student,,Female,U Father Two,,Daw Mother Two,,2001-06-15,second@email.com,,Mandalay,1/2025,M-1,MBBS,Active,In Progress,,,');
 }
 
 function exportStudentsCSV() {
