@@ -1077,7 +1077,7 @@ iuc125067,M-2,Inactive,In Progress,,Medical leave</div>
         </select>
       </div>
       <div class="form-group" id="ns-gradIdGroup" style="display:none"><label>Graduation ID</label><input id="ns-gradId" placeholder="e.g. GRAD-2026-001" style="font-family:monospace"></div>
-      <div class="form-group" id="ns-gradIdMyGroup" style="display:none"><label>Graduation ID (Myanmar)</label><input id="ns-gradIdMy" class="my-text" lang="my" placeholder="ဥပမာ GRAD-2026-001"></div>
+      <div class="form-group" id="ns-gradIdMyGroup" style="display:none"><label>Graduation ID (Myanmar)</label><input id="ns-gradIdMy" class="my-text" lang="my" placeholder="ဥပမာ ၁၂၀၀၈/၂၀၁၅"></div>
       <div class="form-group" id="ns-gradDateGroup" style="display:none"><label>Graduation Date</label><input id="ns-gradDate" type="date" oninput="autoFillBurmeseDate('ns-gradDate','ns-gradDateMy')"></div>
       <div class="form-group" id="ns-gradDateMyGroup" style="display:none"><label>Graduation Date (Myanmar)</label><input id="ns-gradDateMy" class="my-text" lang="my" placeholder="ဥပမာ ၂၀၂၆ ခုနှစ် မေလ ၁၀ ရက်"></div>
       <div class="form-group full"><label>Address</label><input id="ns-address" placeholder="Full address"></div>
@@ -1842,7 +1842,7 @@ ALTER TABLE academic_years ADD COLUMN IF NOT EXISTS program_id text REFERENCES d
       <div class="form-group"><label>Program ID *</label><input id="dm-id" placeholder="e.g. MD"></div>
       <div class="form-group"><label>Duration (years)</label><input id="dm-dur" type="number" placeholder="6"></div>
       <div class="form-group full"><label>Program Name (English) *</label><input id="dm-name" placeholder="e.g. Doctor of Medicine"></div>
-      <div class="form-group full"><label>Program Name (Myanmar / ဘာသာဖြင့်)</label><input id="dm-name-my" class="my-text" lang="my" placeholder="ဥပမာ ဆေးဘကာလားဗေဒ ဘွဲ့"></div>
+      <div class="form-group full"><label>Program Name (မြန်မာဘာသာဖြင့်)</label><input id="dm-name-my" class="my-text" lang="my" placeholder="ဥပမာ ဆေးပညာဘွဲ့"></div>
       <div class="form-group full"><label>Year Sequence (comma-separated, e.g. Foundation Year, M-1, M-2…)</label><input id="dm-years" placeholder="Foundation Year, M-1, M-2, M-3, M-4, M-5"></div>
       <div class="form-group"><label>Status</label><select id="dm-status"><option>Active</option><option>Archived</option></select></div>
     </div>
