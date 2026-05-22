@@ -562,8 +562,8 @@ input[readonly] { color:var(--ink2); cursor:default; }
     <div style="margin-bottom:16px">
       <div class="login-label">Login As</div>
       <div class="login-role-row">
-        <div class="login-role-btn sel" id="lrb-registrar" onclick="selectLoginRole('registrar')">Registrar</div>
-        <div class="login-role-btn" id="lrb-staff" onclick="selectLoginRole('staff')">Staff / Prof</div>
+        <div class="login-role-btn sel" id="lrb-registrar" onclick="selectLoginRole('registrar')">Secretariat</div>
+        <div class="login-role-btn" id="lrb-staff" onclick="selectLoginRole('staff')">Faculty</div>
       </div>
     </div>
 
@@ -591,7 +591,7 @@ input[readonly] { color:var(--ink2); cursor:default; }
 <header class="topbar">
   <div class="topbar-logo">IRIR <span></span> · UM2</div>
   <div class="sync-badge"><div class="sync-dot"></div>DB Connected</div>
-  <span class="topbar-role" id="roleLabel">Registrar · ID: 8802601</span>
+  <span class="topbar-role" id="roleLabel">Secretariat · ID: 8802601</span>
   <div class="topbar-user" id="topbarAvatar">KK</div>
   <button class="logout-btn" onclick="doLogout()">Sign Out</button>
 </header>
@@ -601,7 +601,7 @@ input[readonly] { color:var(--ink2); cursor:default; }
   <div class="sidebar-section">Overview</div>
   <div class="nav-item active" id="nav-dashboard" onclick="showView('dashboard')"><span class="nav-icon"><svg class="nav-svg"><use href="#i-dashboard"></use></svg></span>Dashboard</div>
 
-  <div class="sidebar-section registrar-section staff-visible">Registrar</div>
+  <div class="sidebar-section registrar-section staff-visible">Secretariat</div>
   <div class="nav-item staff-visible" id="nav-students" onclick="showView('students')"><span class="nav-icon"><svg class="nav-svg"><use href="#i-students"></use></svg></span>Students<span class="nav-badge" id="studentCount">3</span></div>
   <div class="nav-item registrar-only" id="nav-enroll" onclick="showView('enroll')"><span class="nav-icon"><svg class="nav-svg"><use href="#i-enroll"></use></svg></span>Enrollment</div>
   <div class="nav-item registrar-only" id="nav-bulkEnroll" onclick="showView('bulkEnroll')"><span class="nav-icon"><svg class="nav-svg"><use href="#i-package"></use></svg></span>Bulk Enrollment</div>
@@ -669,7 +669,7 @@ input[readonly] { color:var(--ink2); cursor:default; }
     <div class="table-wrap"><table>
       <thead><tr><th>Time</th><th>Action</th><th>Student</th><th>By</th><th>Status</th></tr></thead>
       <tbody id="recentActivityBody">
-        <tr><td class="text-mono">2026-05-18 00:00</td><td>Grade uploaded (18 courses)</td><td class="text-mono text-crimson">iuc125065</td><td>Registrar (8802601)</td><td><span class="badge b-green">✓ Done</span></td></tr>
+        <tr><td class="text-mono">2026-05-18 00:00</td><td>Grade uploaded (18 courses)</td><td class="text-mono text-crimson">iuc125065</td><td>Secretariat (8802601)</td><td><span class="badge b-green">✓ Done</span></td></tr>
         <tr><td class="text-mono">2026-05-18 00:01</td><td>Email notification sent</td><td>testing@gmail.com</td><td>System</td><td><span class="badge b-green">✓ Sent</span></td></tr>
         <tr><td class="text-mono">2026-05-18 00:02</td><td>SIS sync queued</td><td class="text-mono text-crimson">iuc125065</td><td>System</td><td><span class="badge b-gold">⏳ Pending</span></td></tr>
       </tbody>
@@ -825,7 +825,7 @@ input[readonly] { color:var(--ink2); cursor:default; }
           <div class="step-num"><svg style="width:16px;height:16px;stroke:currentColor;stroke-width:1.9;fill:none;stroke-linecap:round;stroke-linejoin:round"><use href="#i-user"></use></svg></div>
           <div class="step-content">
             <h4 id="docIdCardLabel">Student ID Card</h4>
-            <p>Official identification card issued by the Registrar's Office.</p>
+            <p>Official identification card issued by the Secretariat's Office.</p>
           </div>
         </div>
         <div class="step-item">
@@ -858,7 +858,7 @@ input[readonly] { color:var(--ink2); cursor:default; }
       <div class="table-wrap"><table>
         <thead><tr><th>Timestamp</th><th>Field Changed</th><th>Old Value</th><th>New Value</th><th>Changed By</th><th>Email Sent</th></tr></thead>
         <tbody id="auditBody">
-          <tr><td class="text-mono">2026-05-18 00:00</td><td>NumericScore (CRS015–CRS032)</td><td>—</td><td>81.38</td><td>Registrar (8802601)</td><td><span class="badge b-green">✓ Sent</span></td></tr>
+          <tr><td class="text-mono">2026-05-18 00:00</td><td>NumericScore (CRS015–CRS032)</td><td>—</td><td>81.38</td><td>Secretariat (8802601)</td><td><span class="badge b-green">✓ Sent</span></td></tr>
         </tbody>
       </table></div>
     </div>
@@ -1609,7 +1609,7 @@ AY006,M-5,6,MBBS</div>
     </div>
 
     <div class="form-group" style="margin-bottom:16px">
-      <label>Registrar Note (optional)</label>
+      <label>Secretariat Note (optional)</label>
       <textarea id="erReviewNote" rows="2" placeholder="Optional note to the student explaining the decision…"
         style="background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:9px 12px;font-size:13px;color:var(--ink);width:100%;outline:none;resize:vertical"></textarea>
     </div>
@@ -1745,7 +1745,7 @@ ALTER TABLE academic_years ADD COLUMN IF NOT EXISTS program_id text REFERENCES d
       <div class="page-sub">Manage WhatsApp, Telegram, and other community channels available to students</div>
     </div>
     <div class="page-actions">
-      <button class="btn btn-primary btn-sm registrar-only" onclick="openChannelModal()">+ Add Channel</button>
+      <button class="btn btn-primary btn-sm" onclick="openChannelModal()">+ Add Channel</button>
     </div>
   </div>
   <div class="search-row">
@@ -1779,7 +1779,7 @@ ALTER TABLE academic_years ADD COLUMN IF NOT EXISTS program_id text REFERENCES d
       <div class="page-sub">Manage Zoom and online lecture rooms accessible to students</div>
     </div>
     <div class="page-actions">
-      <button class="btn btn-primary btn-sm registrar-only" onclick="openLectureRoomModal()">+ Add Lecture Room</button>
+      <button class="btn btn-primary btn-sm" onclick="openLectureRoomModal()">+ Add Lecture Room</button>
     </div>
   </div>
   <div class="search-row">
@@ -2454,13 +2454,13 @@ async function doLogout() {
   document.getElementById('appShell').classList.remove('visible');
   const loginEl = document.getElementById('loginScreen');
   loginEl.innerHTML = `<div class="login-box">
-    <div class="login-logo">UM2 <span>MBBS</span> · Registrar</div>
+    <div class="login-logo">UM2 <span>MBBS</span> · Secretariat</div>
     <div class="login-sub">University of Medicine (2) — Staff Portal</div>
     <div style="margin-bottom:16px">
       <div class="login-label">Login As</div>
       <div class="login-role-row">
-        <div class="login-role-btn sel" id="lrb-registrar" onclick="selectLoginRole('registrar')">Registrar</div>
-        <div class="login-role-btn" id="lrb-staff" onclick="selectLoginRole('staff')">Staff / Prof</div>
+        <div class="login-role-btn sel" id="lrb-registrar" onclick="selectLoginRole('registrar')">Secretariat</div>
+        <div class="login-role-btn" id="lrb-staff" onclick="selectLoginRole('staff')">Faculty</div>
       </div>
     </div>
     <label class="login-label" for="loginEmail">Staff ID / Email</label>
@@ -2524,7 +2524,7 @@ async function _bootApp(session) {
     _dbg('profile fetch FAILED: ' + (pErr?.message || 'unknown'));
     await db.auth.signOut();
     loginEl.innerHTML = `<div class="login-box">
-      <div class="login-logo">UM2 <span>MBBS</span> · Registrar</div>
+      <div class="login-logo">UM2 <span>MBBS</span> · Secretariat</div>
       <div style="background:#FFF8E1;border:1px solid #F9A825;border-radius:6px;padding:12px;margin-bottom:16px;font-size:13px;color:#6d4c00">
         ⚠️ Profile not found or session expired. Please sign in again.
       </div>
@@ -2555,8 +2555,8 @@ async function _bootApp(session) {
   app.classList.add('visible');
   document.getElementById('roleLabel').textContent =
     currentRole === 'registrar'
-      ? `Registrar · ID: ${currentUser.staff_id}`
-      : `Staff / Prof · ID: ${currentUser.staff_id}`;
+      ? `Secretariat · ID: ${currentUser.staff_id}`
+      : `Faculty · ID: ${currentUser.staff_id}`;
   document.getElementById('topbarAvatar').textContent = currentUser.initials;
   const uploaderEl = document.getElementById('grade-uploader');
   if (uploaderEl) uploaderEl.value = currentUser.staff_id;
@@ -2629,7 +2629,7 @@ function applyRoleUI() {
   });
   document.querySelectorAll('.staff-visible').forEach(el => { el.style.display = ''; });
   const regSection = document.querySelector('.registrar-section');
-  if (regSection) regSection.textContent = currentRole === 'staff' ? 'Student Records' : 'Registrar';
+  if (regSection) regSection.textContent = currentRole === 'staff' ? 'Student Records' : 'Secretariat';
 }
 
 // ══════════════════════════════════════════
@@ -5921,7 +5921,7 @@ async function processEditRequest(decision) {
   const note      = (document.getElementById('erReviewNote').value || '').trim();
 
   const reviewedAt = new Date().toISOString();
-  const reviewedBy = currentUser?.staff_id || currentUser?.email || 'Registrar';
+  const reviewedBy = currentUser?.staff_id || currentUser?.email || 'Secretariat';
 
   try {
     // 1. Update the request record
@@ -6212,8 +6212,8 @@ function renderChannelsTable(data) {
       '<td style="text-align:center">' + (c.sort_order != null ? c.sort_order : '\u2014') + '</td>' +
       '<td>' + statusBadge + '</td>' +
       '<td class="flex gap-2">' +
-        (currentRole === 'registrar' ? '<button class="btn btn-outline btn-sm" onclick="openChannelModal(\'' + c.id + '\')">Edit</button>' : '') +
-        (currentRole === 'registrar' ? '<button class="btn btn-danger btn-sm" onclick="confirmDeleteChannel(\'' + c.id + '\',\'' + (c.name||'').replace(/'/g,"\\'") + '\')"><svg style="width:13px;height:13px;stroke:currentColor;stroke-width:1.9;fill:none;stroke-linecap:round;stroke-linejoin:round"><use href="#i-trash"></use></svg></button>' : '') +
+        '<button class="btn btn-outline btn-sm" onclick="openChannelModal(\'' + c.id + '\')">Edit</button>' +
+        '<button class="btn btn-danger btn-sm" onclick="confirmDeleteChannel(\'' + c.id + '\',\'' + (c.name||'').replace(/'/g,"\\'") + '\')"><svg style="width:13px;height:13px;stroke:currentColor;stroke-width:1.9;fill:none;stroke-linecap:round;stroke-linejoin:round"><use href="#i-trash"></use></svg></button>' +
       '</td></tr>';
   }).join('');
 }
@@ -6356,8 +6356,8 @@ function renderLectureRoomsTable(data) {
       '<td>' + progBadge + '</td>' +
       '<td>' + statusBadge + '</td>' +
       '<td class="flex gap-2">' +
-        (currentRole === 'registrar' ? '<button class="btn btn-outline btn-sm" onclick="openLectureRoomModal(\'' + r.id + '\')">Edit</button>' : '') +
-        (currentRole === 'registrar' ? '<button class="btn btn-danger btn-sm" onclick="confirmDeleteLectureRoom(\'' + r.id + '\',\'' + (r.subject||'').replace(/'/g,"\\'") + '\')"><svg style="width:13px;height:13px;stroke:currentColor;stroke-width:1.9;fill:none;stroke-linecap:round;stroke-linejoin:round"><use href="#i-trash"></use></svg></button>' : '') +
+        '<button class="btn btn-outline btn-sm" onclick="openLectureRoomModal(\'' + r.id + '\')">Edit</button>' +
+        '<button class="btn btn-danger btn-sm" onclick="confirmDeleteLectureRoom(\'' + r.id + '\',\'' + (r.subject||'').replace(/'/g,"\\'") + '\')"><svg style="width:13px;height:13px;stroke:currentColor;stroke-width:1.9;fill:none;stroke-linecap:round;stroke-linejoin:round"><use href="#i-trash"></use></svg></button>' +
       '</td></tr>';
   }).join('');
 }
