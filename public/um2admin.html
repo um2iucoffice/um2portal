@@ -617,9 +617,9 @@ input[readonly] { color:var(--ink2); cursor:default; }
   <div class="nav-item registrar-only" id="nav-years" onclick="showView('years')"><span class="nav-icon"><svg class="nav-svg"><use href="#i-calendar"></use></svg></span>Academic Years</div>
   <div class="nav-item registrar-only" id="nav-bulkYears" onclick="showView('bulkYears')"><span class="nav-icon"><svg class="nav-svg"><use href="#i-package"></use></svg></span>Bulk Import Years</div>
 
-  <div class="sidebar-section registrar-only">Community</div>
-  <div class="nav-item registrar-only" id="nav-channels" onclick="showView('channels')"><span class="nav-icon"><svg class="nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span>Channels</div>
-  <div class="nav-item registrar-only" id="nav-lectureRooms" onclick="showView('lectureRooms')"><span class="nav-icon"><svg class="nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg></span>Lecture Rooms</div>
+  <div class="sidebar-section staff-visible">Community</div>
+  <div class="nav-item staff-visible" id="nav-channels" onclick="showView('channels')"><span class="nav-icon"><svg class="nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span>Channels</div>
+  <div class="nav-item staff-visible" id="nav-lectureRooms" onclick="showView('lectureRooms')"><span class="nav-icon"><svg class="nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg></span>Lecture Rooms</div>
 
   <div class="sidebar-section">System</div>
   <div class="nav-item registrar-only" id="nav-editRequests" onclick="showView('editRequests')"><span class="nav-icon"><svg class="nav-svg"><use href="#i-edit"></use></svg></span>Edit Requests<span class="nav-badge" id="editRequestsBadge" style="display:none">0</span></div>
@@ -1745,7 +1745,7 @@ ALTER TABLE academic_years ADD COLUMN IF NOT EXISTS program_id text REFERENCES d
       <div class="page-sub">Manage WhatsApp, Telegram, and other community channels available to students</div>
     </div>
     <div class="page-actions">
-      <button class="btn btn-primary btn-sm" onclick="openChannelModal()">+ Add Channel</button>
+      <button class="btn btn-primary btn-sm registrar-only" onclick="openChannelModal()">+ Add Channel</button>
     </div>
   </div>
   <div class="search-row">
@@ -1779,7 +1779,7 @@ ALTER TABLE academic_years ADD COLUMN IF NOT EXISTS program_id text REFERENCES d
       <div class="page-sub">Manage Zoom and online lecture rooms accessible to students</div>
     </div>
     <div class="page-actions">
-      <button class="btn btn-primary btn-sm" onclick="openLectureRoomModal()">+ Add Lecture Room</button>
+      <button class="btn btn-primary btn-sm registrar-only" onclick="openLectureRoomModal()">+ Add Lecture Room</button>
     </div>
   </div>
   <div class="search-row">
@@ -6212,8 +6212,8 @@ function renderChannelsTable(data) {
       '<td style="text-align:center">' + (c.sort_order != null ? c.sort_order : '\u2014') + '</td>' +
       '<td>' + statusBadge + '</td>' +
       '<td class="flex gap-2">' +
-        '<button class="btn btn-outline btn-sm" onclick="openChannelModal(\'' + c.id + '\')">Edit</button>' +
-        '<button class="btn btn-danger btn-sm" onclick="confirmDeleteChannel(\'' + c.id + '\',\'' + (c.name||'').replace(/'/g,"\\'") + '\')"><svg style="width:13px;height:13px;stroke:currentColor;stroke-width:1.9;fill:none;stroke-linecap:round;stroke-linejoin:round"><use href="#i-trash"></use></svg></button>' +
+        (currentRole === 'registrar' ? '<button class="btn btn-outline btn-sm" onclick="openChannelModal(\'' + c.id + '\')">Edit</button>' : '') +
+        (currentRole === 'registrar' ? '<button class="btn btn-danger btn-sm" onclick="confirmDeleteChannel(\'' + c.id + '\',\'' + (c.name||'').replace(/'/g,"\\'") + '\')"><svg style="width:13px;height:13px;stroke:currentColor;stroke-width:1.9;fill:none;stroke-linecap:round;stroke-linejoin:round"><use href="#i-trash"></use></svg></button>' : '') +
       '</td></tr>';
   }).join('');
 }
@@ -6341,10 +6341,8 @@ function renderLectureRoomsTable(data) {
       ? '<a href="' + r.zoom_link + '" target="_blank" class="btn btn-ghost btn-sm" style="padding:2px 8px;font-size:11px;color:var(--blue)">Join Zoom \u2197</a>'
       : '\u2014';
     let yearDisplay = r.year_access || '\u2014';
-    try {
-      const parsed = JSON.parse(yearDisplay);
-      if (Array.isArray(parsed)) yearDisplay = parsed.join(', ');
-    } catch(e) {}
+    if (Array.isArray(yearDisplay)) yearDisplay = yearDisplay.join(', ');
+    else { try { const p = JSON.parse(yearDisplay); if (Array.isArray(p)) yearDisplay = p.join(', '); } catch(e) {} }
     const progBadge = r.program === 'All'
       ? '<span class="badge b-blue">All</span>'
       : '<span class="badge b-muted">' + (r.program || '\u2014') + '</span>';
@@ -6358,8 +6356,8 @@ function renderLectureRoomsTable(data) {
       '<td>' + progBadge + '</td>' +
       '<td>' + statusBadge + '</td>' +
       '<td class="flex gap-2">' +
-        '<button class="btn btn-outline btn-sm" onclick="openLectureRoomModal(\'' + r.id + '\')">Edit</button>' +
-        '<button class="btn btn-danger btn-sm" onclick="confirmDeleteLectureRoom(\'' + r.id + '\',\'' + (r.subject||'').replace(/'/g,"\\'") + '\')"><svg style="width:13px;height:13px;stroke:currentColor;stroke-width:1.9;fill:none;stroke-linecap:round;stroke-linejoin:round"><use href="#i-trash"></use></svg></button>' +
+        (currentRole === 'registrar' ? '<button class="btn btn-outline btn-sm" onclick="openLectureRoomModal(\'' + r.id + '\')">Edit</button>' : '') +
+        (currentRole === 'registrar' ? '<button class="btn btn-danger btn-sm" onclick="confirmDeleteLectureRoom(\'' + r.id + '\',\'' + (r.subject||'').replace(/'/g,"\\'") + '\')"><svg style="width:13px;height:13px;stroke:currentColor;stroke-width:1.9;fill:none;stroke-linecap:round;stroke-linejoin:round"><use href="#i-trash"></use></svg></button>' : '') +
       '</td></tr>';
   }).join('');
 }
@@ -6387,10 +6385,8 @@ function openLectureRoomModal(rid) {
   document.getElementById('lr-zoom-meeting-id').value  = r ? (r.zoom_meeting_id || '') : '';
   document.getElementById('lr-zoom-passcode').value    = r ? (r.zoom_passcode || '') : '';
   let yearDisplay = r ? (r.year_access || '') : '';
-  try {
-    const parsed = JSON.parse(yearDisplay);
-    if (Array.isArray(parsed)) yearDisplay = parsed.join(', ');
-  } catch(e) {}
+  if (Array.isArray(yearDisplay)) yearDisplay = yearDisplay.join(', ');
+  else { try { const p = JSON.parse(yearDisplay); if (Array.isArray(p)) yearDisplay = p.join(', '); } catch(e) {} }
   document.getElementById('lr-year-access').value      = yearDisplay;
   populateLectureRoomPrograms();
   document.getElementById('lr-program').value          = r ? (r.program || 'All') : 'All';
@@ -6404,9 +6400,9 @@ async function saveLectureRoom() {
   const yearRaw = document.getElementById('lr-year-access').value.trim();
   let yearAccess;
   if (!yearRaw || yearRaw.toUpperCase() === 'ALL') {
-    yearAccess = JSON.stringify(['ALL']);
+    yearAccess = ['ALL'];
   } else {
-    yearAccess = JSON.stringify(yearRaw.split(',').map(function(y){ return y.trim(); }).filter(Boolean));
+    yearAccess = yearRaw.split(',').map(function(y){ return y.trim(); }).filter(Boolean);
   }
   const record = {
     subject: subject,
