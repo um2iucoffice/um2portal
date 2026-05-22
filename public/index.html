@@ -4118,24 +4118,35 @@ function escHtml(v) {
 }
 
 function getAcademicYear(row, course) {
-  // completionYear and year are the raw SQL 'year' column (e.g. 2025)
-  // — always prefer these over course-catalogue labels like "Foundation Year" / "M-1"
-  return row.completionYear || row.CompletionYear || row.completion_year ||
-         row.year || row.Year ||
-         row.academicYear || row.AcademicYear || row.academic_year ||
-         row.academic_year_name || row.AcademicYearName || row.yearLevel ||
-         row.YearLevel || row.currentAcademicYear || row.CurrentAcademicYear ||
-         row.currentYear || row.CurrentYear || row.courseYear || row.CourseYear ||
-         course.year || 'Other';
+  // Use getCompletionYear which already enforces calendar-year-only logic
+  // with created_at fallback — so group headers show e.g. "2025" not "M-2"
+  const cy = getCompletionYear(row);
+  if (cy && cy !== '—') return cy;
+  // Last resort: fall back to the course catalogue label for grouping only
+  return course.year || 'Other';
 }
 
 function getCompletionYear(row) {
-  // Prioritise the raw SQL 'year' column (calendar year like 2024, 2025)
-  // before falling back to academicYear labels like "Foundation Year" / "M-1"
-  return row.completionYear || row.CompletionYear || row.completion_year ||
-         row.year || row.Year ||
-         row.academicYear || row.AcademicYear || row.academic_year ||
-         row.completionDate || row.CompletionDate || '—';
+  // Only accept a value that looks like a real calendar year (4-digit number)
+  // Program labels like "M-2", "Foundation Year" are NOT calendar years
+  function isCalendarYear(v) {
+    return v && /^\d{4}$/.test(String(v).trim());
+  }
+  const candidates = [
+    row.completionYear, row.CompletionYear, row.completion_year,
+    row.year, row.Year,
+    row.completionDate, row.CompletionDate
+  ];
+  for (const v of candidates) {
+    if (isCalendarYear(v)) return String(v).trim();
+  }
+  // Fall back to extracting year from created_at / updated_at timestamps
+  const ts = row.created_at || row.createdAt || row.updated_at || row.updatedAt || '';
+  if (ts) {
+    const m = String(ts).match(/^(\d{4})/);
+    if (m) return m[1];
+  }
+  return '—';
 }
 
 function getNote(row) {
