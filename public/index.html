@@ -4991,14 +4991,10 @@ function printDegreeCertificate(enrollIdx) {
     <!-- Photo + QR + registration info -->
     <div style="display:flex;justify-content:space-between;align-items:flex-end;width:88%;margin-top:1mm">
 
-      <!-- QR -->
-      <div class="cert-qr">
-        <div id="certQR"></div>
-        <div class="cert-qr-lbl">Scan to Verify</div>
-      </div>
+     
 
       <!-- Photo (centered) -->
-      <div class="cert-photo-area" style="position:relative;">
+<div class="cert-photo-area" style="position:relative; flex:1; display:flex; flex-direction:column; align-items:center;">
         <div class="cert-photo-box">
           ${photo
             ? `<img src="${photo}" alt="Student Photo" onerror="this.parentElement.innerHTML='<span style=\\'font-size:7pt;color:#aaa;text-align:center;padding:4px\\'>Photo</span>'">`
@@ -5020,6 +5016,13 @@ function printDegreeCertificate(enrollIdx) {
     </div>
 
   </div><!-- /.cert-inner -->
+
+  <!-- Remove it from inside the 3-column row, and instead add this
+     just before </div><!-- /.cert-inner --> -->
+<div class="cert-qr" style="position:absolute; bottom:18mm; left:14mm;">
+  <div id="certQR"></div>
+  <div class="cert-qr-lbl">Scan to Verify</div>
+</div>
 
   <!-- Electronically generated notice -->
   <div style="
