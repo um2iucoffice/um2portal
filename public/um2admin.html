@@ -1179,7 +1179,7 @@ input[readonly] { color:var(--ink2); cursor:default; }
       </div>
       <div class="form-group">
         <label>Admission Date</label>
-        <input type="date" id="nem-date">
+        <input type="text" id="nem-date" placeholder="DD/MM/YYYY" maxlength="10" oninput="smartDate(this)" autocomplete="off">
       </div>
       <div class="form-group full">
         <label>Thesis / Research Title (optional)</label>
@@ -1225,10 +1225,10 @@ input[readonly] { color:var(--ink2); cursor:default; }
       <div class="form-group"><label>Graduation Status</label>
         <select id="en-grad" onchange="toggleEnrollGradFields()"><option>In Progress</option><option>Graduated</option></select>
       </div>
-      <div class="form-group"><label>Effective Date</label><input type="date" id="en-date"></div>
+      <div class="form-group"><label>Effective Date</label><input type="text" id="en-date" placeholder="DD/MM/YYYY" maxlength="10" oninput="smartDate(this)" autocomplete="off"></div>
       <div class="form-group" id="en-gradIdGroup" style="display:none"><label>Graduation ID</label><input id="en-gradId" placeholder="e.g. GRAD-2026-001" style="font-family:monospace"></div>
       <div class="form-group" id="en-gradIdMyGroup" style="display:none"><label>Graduation ID (Myanmar)</label><input id="en-gradIdMy" class="my-text" lang="my" placeholder="ဥပမာ GRAD-2026-001"></div>
-      <div class="form-group" id="en-gradDateGroup" style="display:none"><label>Graduation Date</label><input id="en-gradDate" type="date" oninput="autoFillBurmeseDate('en-gradDate','en-gradDateMy')"></div>
+      <div class="form-group" id="en-gradDateGroup" style="display:none"><label>Graduation Date</label><input id="en-gradDate" type="text" placeholder="DD/MM/YYYY" maxlength="10" oninput="smartDate(this);autoFillBurmeseDate('en-gradDate','en-gradDateMy')" autocomplete="off"></div>
       <div class="form-group" id="en-gradDateMyGroup" style="display:none"><label>Graduation Date (Myanmar)</label><input id="en-gradDateMy" class="my-text" lang="my" placeholder="ဥပမာ ၂၀၂၆ ခုနှစ် မေလ ၁၀ ရက်"></div>
       <div class="form-group full"><label>Notes (internal)</label><input id="en-notes" placeholder="Optional internal note…"></div>
     </div>
@@ -1306,7 +1306,7 @@ iuc125067,M-2,Inactive,In Progress,,Medical leave</div>
       <div class="form-group"><label>Father Name (Myanmar)</label><input id="ns-fatherMM" class="my-text" lang="my"></div>
       <div class="form-group"><label>Mother Name (English)</label><input id="ns-mother" placeholder="Daw …"></div>
       <div class="form-group"><label>Mother Name (Myanmar)</label><input id="ns-motherMM" class="my-text" lang="my"></div>
-      <div class="form-group"><label>Date of Birth</label><input id="ns-dob" type="date"></div>
+      <div class="form-group"><label>Date of Birth</label><input id="ns-dob" type="text" placeholder="DD/MM/YYYY" maxlength="10" oninput="smartDate(this)" autocomplete="off"></div>
       <div class="form-group"><label>Email Address *</label><input id="ns-email" type="email" placeholder="student@university.edu"></div>
       <div class="form-group"><label>Phone Number</label><input id="ns-phone" placeholder="+95 …"></div>
       <div class="form-group"><label>Current Academic Year</label>
@@ -1348,7 +1348,7 @@ iuc125067,M-2,Inactive,In Progress,,Medical leave</div>
       </div>
       <div class="form-group" id="ns-gradIdGroup" style="display:none"><label>Graduation ID</label><input id="ns-gradId" placeholder="e.g. GRAD-2026-001" style="font-family:monospace"></div>
       <div class="form-group" id="ns-gradIdMyGroup" style="display:none"><label>Graduation ID (Myanmar)</label><input id="ns-gradIdMy" class="my-text" lang="my" placeholder="ဥပမာ ၁၂၀၀၈/၂၀၁၅"></div>
-      <div class="form-group" id="ns-gradDateGroup" style="display:none"><label>Graduation Date</label><input id="ns-gradDate" type="date" oninput="autoFillBurmeseDate('ns-gradDate','ns-gradDateMy')"></div>
+      <div class="form-group" id="ns-gradDateGroup" style="display:none"><label>Graduation Date</label><input id="ns-gradDate" type="text" placeholder="DD/MM/YYYY" maxlength="10" oninput="smartDate(this);autoFillBurmeseDate('ns-gradDate','ns-gradDateMy')" autocomplete="off"></div>
       <div class="form-group" id="ns-gradDateMyGroup" style="display:none"><label>Graduation Date (Myanmar)</label><input id="ns-gradDateMy" class="my-text" lang="my" placeholder="ဥပမာ ၂၀၂၆ ခုနှစ် မေလ ၁၀ ရက်"></div>
       <div class="form-group full"><label>Address</label><input id="ns-address" placeholder="Full address"></div>
       <div class="form-group full registrar-only">
@@ -1585,7 +1585,7 @@ iuc125067,Anatomy Live Session,2026-05-19,09:00,10:30,Absent,No attendance recor
     <div class="card-title">Attendance Records</div>
     <div class="search-row">
       <input class="search-input" id="attendanceSearchInput" placeholder="Search student, lecture, date, or status…" oninput="renderAttendanceTable()">
-      <input type="date" id="attendanceDateFilter" onchange="renderAttendanceTable()" style="width:160px">
+      <input type="text" id="attendanceDateFilter" placeholder="DD/MM/YYYY" maxlength="10" oninput="smartDate(this);renderAttendanceTable()" style="width:160px" autocomplete="off">
       <select id="attendanceStatusFilter" onchange="renderAttendanceTable()" style="width:160px">
         <option value="">All Status</option><option>Present</option><option>Late</option><option>Excused</option><option>Absent</option>
       </select>
@@ -2257,7 +2257,7 @@ ALTER TABLE academic_years ADD COLUMN IF NOT EXISTS program_id text REFERENCES d
       <div class="form-group"><label>Mother Name (Myanmar)</label><input id="em-motherMM" class="my-text" lang="my"></div>
       <div class="form-group"><label>Email Address</label><input id="em-email" type="email"></div>
       <div class="form-group"><label>Phone</label><input id="em-phone"></div>
-      <div class="form-group"><label>Date of Birth</label><input id="em-dob" type="date"></div>
+      <div class="form-group"><label>Date of Birth</label><input id="em-dob" type="text" placeholder="DD/MM/YYYY" maxlength="10" oninput="smartDate(this)" autocomplete="off"></div>
       <div class="form-group"><label>Admission Year</label><input id="em-admission"></div>
       <div class="form-group"><label>Enrollment Status</label>
         <select id="em-status"><option>Active</option><option>Degree Awarded</option><option>Inactive</option></select>
@@ -2282,7 +2282,7 @@ ALTER TABLE academic_years ADD COLUMN IF NOT EXISTS program_id text REFERENCES d
       </div>
       <div class="form-group" id="em-gradIdGroup" style="display:none"><label>Graduation ID</label><input id="em-gradId" placeholder="e.g. GRAD-2026-001" style="font-family:monospace"></div>
       <div class="form-group" id="em-gradIdMyGroup" style="display:none"><label>Graduation ID (Myanmar)</label><input id="em-gradIdMy" class="my-text" lang="my" placeholder="ဥပမာ GRAD-2026-001"></div>
-      <div class="form-group" id="em-gradDateGroup" style="display:none"><label>Graduation Date</label><input id="em-gradDate" type="date" oninput="autoFillBurmeseDate('em-gradDate','em-gradDateMy')"></div>
+      <div class="form-group" id="em-gradDateGroup" style="display:none"><label>Graduation Date</label><input id="em-gradDate" type="text" placeholder="DD/MM/YYYY" maxlength="10" oninput="smartDate(this);autoFillBurmeseDate('em-gradDate','em-gradDateMy')" autocomplete="off"></div>
       <div class="form-group" id="em-gradDateMyGroup" style="display:none"><label>Graduation Date (Myanmar)</label><input id="em-gradDateMy" class="my-text" lang="my" placeholder="ဥပမာ ၂၀၂၆ ခုနှစ် မေလ ၁၀ ရက်"></div>
       <div class="form-group full">
         <label>Master Password (Session Key)</label>
@@ -2396,7 +2396,7 @@ ALTER TABLE academic_years ADD COLUMN IF NOT EXISTS program_id text REFERENCES d
       <div class="form-group"><label>Student ID *</label><input id="am-student" placeholder="e.g. iuc125065" oninput="lookupStudentForAttendance(this.value)"></div>
       <div class="form-group"><label>Student Name</label><input id="am-studentName" readonly placeholder="Auto-filled from Student ID"></div>
       <div class="form-group full"><label>Lecture Name *</label><input id="am-lecture" placeholder="e.g. Anatomy Live Session"></div>
-      <div class="form-group"><label>Session Date *</label><input id="am-date" type="date"></div>
+      <div class="form-group"><label>Session Date *</label><input id="am-date" type="text" placeholder="DD/MM/YYYY" maxlength="10" oninput="smartDate(this)" autocomplete="off"></div>
       <div class="form-group"><label>From (Start Time) *</label><input id="am-from" type="time" placeholder="09:00"></div>
       <div class="form-group"><label>Till (End Time)</label><input id="am-till" type="time" placeholder="10:30"></div>
       <div class="form-group"><label>Status</label><select id="am-status"><option>Present</option><option>Late</option><option>Excused</option><option>Absent</option></select></div>
@@ -3160,7 +3160,7 @@ async function loadMyTimetable() {
   if (!currentUser) return;
   // Load courses + rooms for dropdowns
   const [cRes, rRes] = await Promise.all([
-    db.from('courses').select('id,name,course_name').order('name').catch(() => ({ data: [] })),
+    db.from('courses').select('id,name').order('name').catch(() => ({ data: [] })),
     db.from('lecture_rooms').select('id,subject').order('subject').catch(() => ({ data: [] }))
   ]);
   _profileCourses = cRes.data || [];
@@ -3185,7 +3185,7 @@ function renderMyTimetable() {
   list.innerHTML = _myTimetable.map(slot => {
     const course = _profileCourses.find(c => c.id === slot.course_id);
     const room   = _profileRooms.find(r => r.id === slot.room_id);
-    const cName  = course ? (course.name || course.course_name || course.id) : slot.course_id;
+    const cName  = course ? (course.name || course.id) : slot.course_id;
     const rName  = room   ? (room.subject || room.id) : slot.room_id;
     return `<div style="display:grid;grid-template-columns:1fr 1fr 80px 130px 72px;gap:8px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:10px 14px">
       <div style="font-size:13px;font-weight:500;color:var(--ink)">${cName}</div>
@@ -3208,7 +3208,7 @@ async function openTimetableModal(slotId) {
   const cSel = document.getElementById('tt-course');
   const rSel = document.getElementById('tt-room');
   cSel.innerHTML = '<option value="">Select course…</option>' +
-    _profileCourses.map(c => `<option value="${c.id}">${c.name || c.course_name || c.id}</option>`).join('');
+    _profileCourses.map(c => `<option value="${c.id}">${c.name || c.id}</option>`).join('');
   rSel.innerHTML = '<option value="">Select room…</option>' +
     _profileRooms.map(r => `<option value="${r.id}">${r.subject || r.id}</option>`).join('');
 
@@ -3873,7 +3873,7 @@ async function saveNewStudent() {
     father_my: document.getElementById('ns-fatherMM').value.trim(),
     mother:    document.getElementById('ns-mother').value.trim(),
     mother_my: document.getElementById('ns-motherMM').value.trim(),
-    dob:       document.getElementById('ns-dob').value || null,
+    dob:       getDateValue('ns-dob') || null,
     email,
     phone:     document.getElementById('ns-phone').value.trim(),
     address:   document.getElementById('ns-address').value.trim(),
@@ -3886,7 +3886,7 @@ async function saveNewStudent() {
     grad_status:     document.getElementById('ns-grad').value,
     graduation_id:   document.getElementById('ns-gradId').value.trim() || null,
     graduation_id_my: document.getElementById('ns-gradIdMy').value.trim() || null,
-    graduation_date: document.getElementById('ns-gradDate').value || null,
+    graduation_date: getDateValue('ns-gradDate') || null,
     graduation_date_my: document.getElementById('ns-gradDateMy').value.trim() || null,
     master_password: (document.getElementById('ns-masterPw').value.trim()) || generateMasterPassword(),
     gpa: 0.0
@@ -3943,7 +3943,7 @@ function openEditModal(sid) {
   document.getElementById('em-motherMM').value = s.mother_my || '';
   document.getElementById('em-email').value    = s.email;
   document.getElementById('em-phone').value    = s.phone || '';
-  document.getElementById('em-dob').value      = s.dob || '';
+  setDateValue('em-dob', s.dob || '');
   document.getElementById('em-admission').value= s.admission || '';
   document.getElementById('em-status').value   = s.status;
   const emGender = document.getElementById('em-gender');
@@ -3955,7 +3955,7 @@ function openEditModal(sid) {
   document.getElementById('em-grad').value     = s.grad_status || 'In Progress';
   document.getElementById('em-gradId').value   = s.graduation_id || '';
   document.getElementById('em-gradIdMy').value = s.graduation_id_my || '';
-  document.getElementById('em-gradDate').value = s.graduation_date || '';
+  setDateValue('em-gradDate', s.graduation_date || '');
   document.getElementById('em-gradDateMy').value = s.graduation_date_my || (s.graduation_date ? toBurmeseDate(s.graduation_date) : '');
   // Master password: show placeholder hint if one exists, blank if none
   const pwEl = document.getElementById('em-masterPw');
@@ -3981,7 +3981,7 @@ async function saveEdit() {
     mother_my: document.getElementById('em-motherMM').value,
     email:     document.getElementById('em-email').value,
     phone:     document.getElementById('em-phone').value,
-    dob:       document.getElementById('em-dob').value || null,
+    dob:       getDateValue('em-dob') || null,
     admission: document.getElementById('em-admission').value,
     status:    document.getElementById('em-status').value,
     gender:    document.getElementById('em-gender')?.value || null,
@@ -3990,7 +3990,7 @@ async function saveEdit() {
     grad_status:     document.getElementById('em-grad').value,
     graduation_id:   document.getElementById('em-gradId').value.trim() || null,
     graduation_id_my: document.getElementById('em-gradIdMy').value.trim() || null,
-    graduation_date: document.getElementById('em-gradDate').value || null,
+    graduation_date: getDateValue('em-gradDate') || null,
     graduation_date_my: document.getElementById('em-gradDateMy').value.trim() || null,
     updated_at: new Date().toISOString()
   };
@@ -4295,10 +4295,62 @@ function toBurmeseDate(iso) {
 }
 
 // Auto-fill Burmese date field when the date input changes
+// ── SMART DATE INPUT (DD/MM/YYYY → YYYY-MM-DD) ──
+// Converts user-typed DD/MM/YYYY into the YYYY-MM-DD value stored in dataset
+// so all existing code that reads .value still gets YYYY-MM-DD format
+function smartDate(el) {
+  let v = el.value.replace(/[^\d]/g, ''); // strip non-digits
+  // Auto-insert slashes
+  if (v.length > 2)  v = v.slice(0,2) + '/' + v.slice(2);
+  if (v.length > 5)  v = v.slice(0,5) + '/' + v.slice(5,9);
+  el.value = v;
+  // Parse and store ISO value in dataset for reading by other functions
+  const parts = v.split('/');
+  if (parts.length === 3 && parts[2].length === 4) {
+    const [d, m, y] = parts;
+    const iso = `${y}-${m.padStart(2,'0')}-${d.padStart(2,'0')}`;
+    const date = new Date(iso);
+    if (!isNaN(date.getTime())) {
+      el.dataset.isoValue = iso;
+      el.style.borderColor = 'var(--green)';
+    } else {
+      el.dataset.isoValue = '';
+      el.style.borderColor = 'var(--crimson)';
+    }
+  } else {
+    el.dataset.isoValue = '';
+    el.style.borderColor = '';
+  }
+}
+
+// Helper: get ISO date value from a smart date field
+function getDateValue(id) {
+  const el = document.getElementById(id);
+  if (!el) return null;
+  // If it has a dataset.isoValue (from smartDate), use that
+  if (el.dataset.isoValue) return el.dataset.isoValue;
+  // Fallback: if value looks like YYYY-MM-DD already (loaded from DB), return as-is
+  if (/^\d{4}-\d{2}-\d{2}$/.test(el.value)) return el.value;
+  return el.value || null;
+}
+
+// Helper: set a smart date field from a YYYY-MM-DD string (e.g. loading from DB)
+function setDateValue(id, isoVal) {
+  const el = document.getElementById(id);
+  if (!el || !isoVal) return;
+  const parts = isoVal.split('-'); // YYYY-MM-DD
+  if (parts.length === 3) {
+    el.value = `${parts[2]}/${parts[1]}/${parts[0]}`; // DD/MM/YYYY
+    el.dataset.isoValue = isoVal;
+  } else {
+    el.value = isoVal;
+  }
+}
+
 function autoFillBurmeseDate(dateInputId, burmeseDateInputId) {
-  const val = (document.getElementById(dateInputId) || {}).value || '';
+  const iso = getDateValue(dateInputId);
   const el  = document.getElementById(burmeseDateInputId);
-  if (el && val) el.value = toBurmeseDate(val);
+  if (el && iso) el.value = toBurmeseDate(iso);
 }
 
 function formatGradeLetter(letter) {
@@ -4798,12 +4850,12 @@ async function saveEnrollment() {
   const yearId = document.getElementById('en-year').value;
   const enrollStatus = document.getElementById('en-status').value;
   const gradStatus = document.getElementById('en-grad').value;
-  const effDate = document.getElementById('en-date').value || null;
+  const effDate = getDateValue('en-date') || null;
   const notes = document.getElementById('en-notes').value.trim();
   const programId  = (document.getElementById('en-program') || {}).value || (s.program || 'MBBS');
   const gradId     = (document.getElementById('en-gradId')    || {}).value?.trim() || null;
   const gradIdMy   = (document.getElementById('en-gradIdMy')  || {}).value?.trim() || null;
-  const gradDate   = (document.getElementById('en-gradDate')  || {}).value || null;
+  const gradDate   = getDateValue('en-gradDate') || null;
   const gradDateMy = (document.getElementById('en-gradDateMy')|| {}).value?.trim() || null;
 
   const { error: enrollErr } = await db.from('enrollments').insert({
@@ -5198,7 +5250,7 @@ function renderAttendanceTable() {
   const tb = document.getElementById('attendanceTableBody');
   if (!tb) return;
   const q = (document.getElementById('attendanceSearchInput')?.value || '').trim().toLowerCase();
-  const dateFilter   = document.getElementById('attendanceDateFilter')?.value || '';
+  const dateFilter   = getDateValue('attendanceDateFilter') || document.getElementById('attendanceDateFilter')?.value || '';
   const statusFilter = document.getElementById('attendanceStatusFilter')?.value || '';
   let rows = attendanceRecords.filter(r => {
     const hay = `${r.student_id} ${getStudentNameById(r.student_id)} ${r.lecture_name} ${r.session_date} ${r.session_from} ${r.session_till||''} ${r.status} ${r.remarks||''}`.toLowerCase();
@@ -5260,7 +5312,7 @@ function openAttendanceModal(key) {
   document.getElementById('am-student').value    = record ? record.student_id : '';
   document.getElementById('am-studentName').value= record ? getStudentNameById(record.student_id) : '';
   document.getElementById('am-lecture').value    = record ? record.lecture_name : '';
-  document.getElementById('am-date').value       = record ? record.session_date : new Date().toISOString().slice(0,10);
+  setDateValue('am-date', record ? record.session_date : new Date().toISOString().slice(0,10));
   document.getElementById('am-from').value       = record ? record.session_from : '';
   document.getElementById('am-till').value       = record ? (record.session_till||'') : '';
   document.getElementById('am-status').value     = record ? record.status : 'Present';
@@ -5272,7 +5324,7 @@ async function saveAttendanceRecord() {
   const r = {
     student_id:   document.getElementById('am-student').value.trim(),
     lecture_name: document.getElementById('am-lecture').value.trim(),
-    session_date: document.getElementById('am-date').value,
+    session_date: getDateValue('am-date'),
     session_from: document.getElementById('am-from').value,
     session_till: document.getElementById('am-till').value || null,
     status:       document.getElementById('am-status').value,
@@ -6471,7 +6523,7 @@ async function saveNewEnrollment() {
   const level      = document.getElementById('nem-level').value;
   const programId  = document.getElementById('nem-program').value;
   const year       = document.getElementById('nem-year').value;
-  const admDate    = document.getElementById('nem-date').value || null;
+  const admDate    = getDateValue('nem-date') || null;
   const thesis     = document.getElementById('nem-thesis').value.trim() || null;
   const supervisor = document.getElementById('nem-supervisor').value.trim() || null;
 
