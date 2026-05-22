@@ -3634,9 +3634,11 @@ body.theme-light .comms-ch-btn-gp { color: inherit; }
 
       <!-- Empty -->
       <div id="lrEmpty" style="display:none;text-align:center;padding:56px 24px">
-        <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.12)" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" style="margin:0 auto 14px;display:block"><path d="M15 10l4.553-2.277A1 1 0 0 1 21 8.68v6.64a1 1 0 0 1-1.447.898L15 14"/><rect x="1" y="6" width="14" height="12" rx="2"/></svg>
-        <div style="font-size:14px;font-weight:600;color:rgba(255,255,255,0.28);margin-bottom:4px">No rooms available</div>
-        <div style="font-size:12px;color:rgba(255,255,255,0.16)">Lecture rooms for your year will appear here when scheduled.</div>
+        <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="rgba(165,180,252,0.25)" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" style="margin:0 auto 14px;display:block"><path d="M15 10l4.553-2.277A1 1 0 0 1 21 8.68v6.64a1 1 0 0 1-1.447.898L15 14"/><rect x="1" y="6" width="14" height="12" rx="2"/></svg>
+        <div style="font-size:14px;font-weight:600;color:rgba(255,255,255,0.3);margin-bottom:6px">Lecture Rooms Coming Soon</div>
+        <div style="font-size:12px;color:rgba(255,255,255,0.18);line-height:1.7;max-width:320px;margin:0 auto">
+          This feature is being set up by the administration.<br>Zoom room links will appear here once configured.
+        </div>
       </div>
 
     </div><!-- /#panel-lecturerooms -->
@@ -6357,11 +6359,11 @@ async function loadCommsSection() {
 
 // ── Lecture Rooms ─────────────────────────────────────────────
 async function loadLectureRooms() {
-  const loadEl  = document.getElementById('lrLoading');
-  const errEl   = document.getElementById('lrError');
-  const gridEl  = document.getElementById('lrGrid');
-  const emptyEl = document.getElementById('lrEmpty');
-  const noticeEl= document.getElementById('lrYearNotice');
+  const loadEl    = document.getElementById('lrLoading');
+  const errEl     = document.getElementById('lrError');
+  const gridEl    = document.getElementById('lrGrid');
+  const emptyEl   = document.getElementById('lrEmpty');
+  const noticeEl  = document.getElementById('lrYearNotice');
   const noticeTxt = document.getElementById('lrYearNoticeText');
   if (!loadEl) return;
 
@@ -6375,22 +6377,63 @@ async function loadLectureRooms() {
   const studentYear = (window._currentStudent && window._currentStudent.currentStatus) || '';
 
   try {
-    const res  = await fetch('/.netlify/functions/get-lecture-rooms', {
+    const res = await fetch('/.netlify/functions/get-lecture-rooms', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ studentId, password: window._sessionPassword || '', year: studentYear })
     });
-    const data = await res.json();
+
+    // Function not deployed yet (404) or server error — show pending state
+    if (res.status === 404 || res.status === 502 || res.status === 503) {
+      loadEl.style.display  = 'none';
+      emptyEl.style.display = 'block';
+      emptyEl.innerHTML = `
+        <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="rgba(165,180,252,0.25)" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" style="margin:0 auto 14px;display:block"><path d="M15 10l4.553-2.277A1 1 0 0 1 21 8.68v6.64a1 1 0 0 1-1.447.898L15 14"/><rect x="1" y="6" width="14" height="12" rx="2"/></svg>
+        <div style="font-size:14px;font-weight:600;color:rgba(255,255,255,0.3);margin-bottom:6px">Lecture Rooms Coming Soon</div>
+        <div style="font-size:12px;color:rgba(255,255,255,0.18);line-height:1.7;max-width:320px;margin:0 auto">
+          This feature is being set up by the administration.<br>Zoom room links will appear here once configured.
+        </div>`;
+      return;
+    }
+
+    // Try parsing JSON — guard against unexpected HTML responses
+    let data;
+    try { data = await res.json(); }
+    catch(_) {
+      loadEl.style.display  = 'none';
+      emptyEl.style.display = 'block';
+      emptyEl.innerHTML = `
+        <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="rgba(165,180,252,0.25)" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" style="margin:0 auto 14px;display:block"><path d="M15 10l4.553-2.277A1 1 0 0 1 21 8.68v6.64a1 1 0 0 1-1.447.898L15 14"/><rect x="1" y="6" width="14" height="12" rx="2"/></svg>
+        <div style="font-size:14px;font-weight:600;color:rgba(255,255,255,0.3);margin-bottom:6px">Lecture Rooms Coming Soon</div>
+        <div style="font-size:12px;color:rgba(255,255,255,0.18);line-height:1.7;max-width:320px;margin:0 auto">
+          This feature is being set up by the administration.<br>Zoom room links will appear here once configured.
+        </div>`;
+      return;
+    }
 
     loadEl.style.display = 'none';
 
-    if (!data.success) throw new Error(data.message || 'Failed to load rooms.');
+    if (!data.success) {
+      // Backend explicitly says not configured — treat same as empty
+      if (/not configured|not found|no function/i.test(data.message || '')) {
+        emptyEl.style.display = 'block';
+        emptyEl.innerHTML = `
+          <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="rgba(165,180,252,0.25)" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" style="margin:0 auto 14px;display:block"><path d="M15 10l4.553-2.277A1 1 0 0 1 21 8.68v6.64a1 1 0 0 1-1.447.898L15 14"/><rect x="1" y="6" width="14" height="12" rx="2"/></svg>
+          <div style="font-size:14px;font-weight:600;color:rgba(255,255,255,0.3);margin-bottom:6px">Lecture Rooms Coming Soon</div>
+          <div style="font-size:12px;color:rgba(255,255,255,0.18);line-height:1.7;max-width:320px;margin:0 auto">
+            Zoom room links will appear here once configured by the administration.
+          </div>`;
+      } else {
+        errEl.style.display = 'block';
+        errEl.textContent   = data.message || 'Failed to load rooms.';
+      }
+      return;
+    }
 
     const rooms = data.rooms || [];
 
-    // Show year notice
     if (studentYear && noticeEl && noticeTxt) {
-      noticeTxt.textContent = `Showing rooms available for ${studentYear}.`;
+      noticeTxt.textContent  = `Showing rooms available for ${studentYear}.`;
       noticeEl.style.display = 'flex';
     }
 
@@ -6404,9 +6447,15 @@ async function loadLectureRooms() {
     gridEl.style.display = 'grid';
 
   } catch(e) {
-    loadEl.style.display = 'none';
-    errEl.style.display  = 'block';
-    errEl.textContent    = 'Unable to load lecture rooms: ' + e.message;
+    // Network failure or function completely absent
+    loadEl.style.display  = 'none';
+    emptyEl.style.display = 'block';
+    emptyEl.innerHTML = `
+      <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="rgba(165,180,252,0.25)" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" style="margin:0 auto 14px;display:block"><path d="M15 10l4.553-2.277A1 1 0 0 1 21 8.68v6.64a1 1 0 0 1-1.447.898L15 14"/><rect x="1" y="6" width="14" height="12" rx="2"/></svg>
+      <div style="font-size:14px;font-weight:600;color:rgba(255,255,255,0.3);margin-bottom:6px">Lecture Rooms Coming Soon</div>
+      <div style="font-size:12px;color:rgba(255,255,255,0.18);line-height:1.7;max-width:320px;margin:0 auto">
+        This feature is being set up by the administration.<br>Zoom room links will appear here once configured.
+      </div>`;
   }
 }
 
