@@ -562,19 +562,21 @@ table.gt tbody tr:hover { background: #F8F9FC; }
   background: var(--white);
   border: 1px solid var(--line);
   border-radius: 10px;
-  padding: 0;
+  padding: 16px 22px;
   margin-bottom: 20px;
   display: flex;
-  flex-direction: column;
+  align-items: center;
+  gap: 0;
   box-shadow: var(--shadow-sm);
   overflow: hidden;
 }
-.ts-item { display: flex; flex-direction: row; align-items: center; justify-content: space-between; padding: 14px 22px; border-bottom: 1px solid var(--line); gap: 12px; }
-.ts-item:last-child { border-bottom: none; }
-.ts-lbl { font-size: 11px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; color: var(--ink3); }
-.ts-val { font-family: 'Libre Baskerville', serif; font-size: 20px; font-weight: 700; color: var(--ink); line-height: 1.1; text-align: right; }
+.ts-item { display: flex; flex-direction: column; gap: 3px; flex: 1; padding: 0 22px; }
+.ts-item:first-child { padding-left: 0; }
+.ts-item:last-child { padding-right: 0; }
+.ts-lbl { font-size: 10px; font-weight: 700; letter-spacing: 1.3px; text-transform: uppercase; color: var(--ink3); }
+.ts-val { font-family: 'Libre Baskerville', serif; font-size: 24px; font-weight: 700; color: var(--ink); line-height: 1.1; }
 .ts-val.accent { color: var(--crimson); }
-.ts-divider { display: none; }
+.ts-divider { width: 1px; height: 40px; background: var(--line); flex-shrink: 0; }
 
 /* ── ID CARD ── */
 .idcard-wrap{display:flex;flex-direction:column;align-items:center;gap:28px;padding:20px 0}
@@ -828,13 +830,12 @@ table.gt tbody tr:hover { background: #F8F9FC; }
     border: 1px solid #ccc !important;
     box-shadow: none !important;
     margin-bottom: 12px !important;
-    padding: 0 !important;
+    padding: 12px 16px !important;
+    gap: 20px !important;
     page-break-inside: avoid;
   }
-  .ts-item { padding: 8px 16px !important; border-bottom: 1px solid #e0e0e0 !important; }
-  .ts-item:last-child { border-bottom: none !important; }
-  .ts-val { font-size: 14px !important; }
-  .ts-divider { display: none !important; }
+  .ts-val { font-size: 16px !important; }
+  .ts-divider { height: 28px !important; }
 
   /* Hide score bars in print — show number only */
   .sbar { display: none !important; }
@@ -1597,18 +1598,20 @@ body.dashboard-active {
   background: rgba(255,255,255,0.03);
   border: 1px solid rgba(255,255,255,0.07);
   border-radius: 12px;
-  padding: 0;
+  padding: 16px 22px;
   margin-bottom: 20px;
   display: flex;
-  flex-direction: column;
+  align-items: center;
+  gap: 0;
   overflow: hidden;
 }
-.ts-item { display: flex; flex-direction: row; align-items: center; justify-content: space-between; padding: 14px 22px; border-bottom: 1px solid rgba(255,255,255,0.06); gap: 12px; }
-.ts-item:last-child { border-bottom: none; }
-.ts-lbl { font-size: 11px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; color: rgba(255,255,255,0.3); }
-.ts-val { font-family: 'Libre Baskerville', serif; font-size: 20px; font-weight: 700; color: rgba(255,255,255,0.85); line-height: 1.1; text-align: right; }
+.ts-item { display: flex; flex-direction: column; gap: 3px; flex: 1; padding: 0 22px; }
+.ts-item:first-child { padding-left: 0; }
+.ts-item:last-child { padding-right: 0; }
+.ts-lbl { font-size: 10px; font-weight: 700; letter-spacing: 1.3px; text-transform: uppercase; color: rgba(255,255,255,0.3); }
+.ts-val { font-family: 'Libre Baskerville', serif; font-size: 22px; font-weight: 700; color: rgba(255,255,255,0.85); line-height: 1.1; }
 .ts-val.accent { color: #e05470; }
-.ts-divider { display: none; }
+.ts-divider { width: 1px; height: 36px; background: rgba(255,255,255,0.07); flex-shrink: 0; }
 
 /* Degree selector in grades */
 .degree-tabs { display: flex; gap: 2px; border-bottom: 1px solid rgba(255,255,255,0.07); margin-bottom: 0; overflow-x: auto; scrollbar-width: none; }
@@ -2006,10 +2009,11 @@ canvas.photo-canvas, #idcardPhoto canvas, #homeAvatar canvas, #gradesAvatar canv
   .grades-header-banner { flex-direction: column; gap: 10px; padding: 14px; border-radius: 12px; }
   .grades-hdr-gpa { text-align: left; }
   .grades-hdr-gpa-val { font-size: 28px; }
-  .transcript-summary { padding: 0; border-radius: 12px; }
-  .ts-item { padding: 12px 16px; }
-  .ts-val { font-size: 18px; }
-  .ts-lbl { font-size: 10px; }
+  .transcript-summary { flex-wrap: wrap; gap: 10px; padding: 12px 14px; border-radius: 12px; }
+  .ts-divider { display: none; }
+  .ts-item { padding: 0; flex: 0 0 calc(50% - 6px); }
+  .ts-val { font-size: 20px; }
+  .ts-lbl { font-size: 9px; }
   .degree-tabs { padding: 0 4px; }
   .degree-tab { padding: 10px 12px; font-size: 12px; }
   .g-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; border-radius: 12px; }
@@ -2437,9 +2441,10 @@ body.theme-light #photoDropZone { border-color: var(--line) !important; backgrou
   .grades-hdr-gpa-val { font-size: 26px; }
   
   /* Transcript summary */
-  .transcript-summary { padding: 0; }
-  .ts-item { padding: 13px 16px; }
-  .ts-val { font-size: 18px; }
+  .transcript-summary { flex-wrap: wrap; gap: 12px; padding: 14px 16px; }
+  .ts-divider { display: none; }
+  .ts-item { padding: 0; flex: 0 0 calc(50% - 8px); }
+  .ts-val { font-size: 20px; }
   
   /* Grade table — horizontal scroll */
   .g-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
@@ -2741,6 +2746,147 @@ body.theme-light .comms-ch-desc  { color: var(--ink3); }
 body.theme-light .comms-ch-footer { border-top-color: var(--line); }
 body.theme-light .comms-ch-members { color: var(--ink3); }
 body.theme-light .comms-loading { color: var(--ink3); }
+
+/* ── LECTURE ROOMS SECTION ── */
+.lr-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+@media(max-width:700px){ .lr-grid { grid-template-columns: 1fr; } }
+
+.lr-card {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 14px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  transition: border-color .18s, box-shadow .18s, transform .18s;
+}
+.lr-card:hover {
+  border-color: rgba(102,126,234,0.45);
+  box-shadow: 0 8px 28px rgba(102,126,234,0.12);
+  transform: translateY(-2px);
+}
+body.theme-light .lr-card {
+  background: var(--white);
+  border-color: var(--line);
+}
+body.theme-light .lr-card:hover {
+  border-color: rgba(102,126,234,0.4);
+  box-shadow: 0 6px 24px rgba(102,126,234,0.1);
+}
+
+.lr-card-accent {
+  height: 3px;
+  background: linear-gradient(90deg,#667eea,#764ba2);
+}
+
+.lr-card-body { padding: 20px 22px 16px; flex: 1; }
+
+.lr-card-icon {
+  width: 40px; height: 40px; border-radius: 10px;
+  background: rgba(102,126,234,0.12);
+  display: flex; align-items: center; justify-content: center;
+  margin-bottom: 12px; flex-shrink: 0;
+}
+
+.lr-card-subject {
+  font-size: 15px; font-weight: 700;
+  color: rgba(255,255,255,0.88);
+  margin-bottom: 5px; line-height: 1.3;
+}
+body.theme-light .lr-card-subject { color: var(--ink); }
+
+.lr-card-desc {
+  font-size: 12px; color: rgba(255,255,255,0.35);
+  line-height: 1.55; margin-bottom: 10px;
+  display: -webkit-box; -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical; overflow: hidden;
+}
+body.theme-light .lr-card-desc { color: var(--ink3); }
+
+.lr-card-meta {
+  display: flex; align-items: center; gap: 6px;
+  flex-wrap: wrap;
+}
+.lr-year-badge {
+  font-size: 9px; font-weight: 700; letter-spacing: .8px;
+  text-transform: uppercase; padding: 3px 8px; border-radius: 99px;
+  background: rgba(102,126,234,0.15); color: #a5b4fc;
+  border: 1px solid rgba(102,126,234,0.25);
+}
+body.theme-light .lr-year-badge {
+  background: rgba(102,126,234,0.08); color: #667eea;
+  border-color: rgba(102,126,234,0.2);
+}
+
+.lr-card-footer {
+  padding: 12px 22px 16px;
+  border-top: 1px solid rgba(255,255,255,0.06);
+  display: flex; gap: 10px; align-items: center;
+}
+body.theme-light .lr-card-footer { border-top-color: var(--line); }
+
+.lr-join-btn {
+  flex: 1; padding: 10px 16px;
+  background: linear-gradient(135deg,#667eea,#764ba2);
+  border: none; border-radius: 8px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px; font-weight: 600; color: #fff;
+  cursor: pointer; display: flex; align-items: center;
+  justify-content: center; gap: 8px;
+  transition: opacity .15s, transform .1s;
+  text-decoration: none;
+  box-shadow: 0 2px 12px rgba(102,126,234,0.35);
+}
+.lr-join-btn:hover { opacity: .9; transform: translateY(-1px); }
+
+.lr-copy-btn {
+  padding: 10px 13px; background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.1); border-radius: 8px;
+  cursor: pointer; color: rgba(255,255,255,0.5);
+  transition: background .15s, color .15s; flex-shrink: 0;
+  display: flex; align-items: center;
+}
+.lr-copy-btn:hover { background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.85); }
+body.theme-light .lr-copy-btn {
+  background: var(--surface); border-color: var(--line); color: var(--ink3);
+}
+body.theme-light .lr-copy-btn:hover { background: var(--line); color: var(--ink); }
+
+.lr-passcode-chip {
+  display: flex; align-items: center; gap: 5px;
+  font-size: 11px; color: rgba(255,255,255,0.28);
+  padding: 4px 10px; border-radius: 6px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.07);
+  font-family: monospace; letter-spacing: .04em;
+}
+body.theme-light .lr-passcode-chip {
+  background: var(--surface); border-color: var(--line); color: var(--ink3);
+}
+
+/* access-denied card */
+.lr-card.lr-locked {
+  opacity: 0.45; pointer-events: none;
+}
+
+.lr-locked-overlay {
+  display: flex; align-items: center; gap: 8px;
+  padding: 10px 22px 14px;
+  font-size: 12px; color: rgba(255,255,255,0.28);
+}
+body.theme-light .lr-locked-overlay { color: var(--ink3); }
+
+.lr-loading {
+  display: flex; align-items: center; gap: 10px;
+  padding: 28px 24px; color: rgba(255,255,255,0.35); font-size: 13px;
+}
+.lr-loading svg { animation: spin 1.1s linear infinite; flex-shrink: 0; }
+body.theme-light .lr-loading { color: var(--ink3); }
 body.theme-light .comms-ch-btn-channel,
 body.theme-light .comms-ch-btn-gp { color: inherit; }
 </style>
@@ -2857,6 +3003,10 @@ body.theme-light .comms-ch-btn-gp { color: inherit; }
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
       Communication
     </button>
+    <button class="mob-more-item" onclick="mobSwitchTab('lecturerooms',null);closeMobMore()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 10l4.553-2.277A1 1 0 0 1 21 8.68v6.64a1 1 0 0 1-1.447.898L15 14"/><rect x="1" y="6" width="14" height="12" rx="2"/></svg>
+      Lecture Rooms
+    </button>
     <button class="mob-more-item" onclick="toggleTheme();closeMobMore()">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/></svg>
       Toggle Theme
@@ -2934,6 +3084,11 @@ body.theme-light .comms-ch-btn-gp { color: inherit; }
       <button class="sbnav-item" data-section="comms" onclick="switchSection('comms',this)" id="navComms">
         <svg class="sbnav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
         <span class="sbnav-label">Communication</span>
+      </button>
+
+      <button class="sbnav-item" data-section="lecturerooms" onclick="switchSection('lecturerooms',this)" id="navLectureRooms">
+        <svg class="sbnav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M15 10l4.553-2.277A1 1 0 0 1 21 8.68v6.64a1 1 0 0 1-1.447.898L15 14"/><rect x="1" y="6" width="14" height="12" rx="2"/></svg>
+        <span class="sbnav-label">Lecture Rooms</span>
       </button>
 
       <div class="sb-section-lbl" style="margin-top:8px">External</div>
@@ -3450,11 +3605,41 @@ body.theme-light .comms-ch-btn-gp { color: inherit; }
         <div style="font-size:12px;color:rgba(255,255,255,0.18)">Channel links will appear here when added by the administration.</div>
       </div>
 
-    </div>
+    </div><!-- /#panel-comms -->
 
-  </div>
+    <!-- LECTURE ROOMS -->
+    <div class="section" id="panel-lecturerooms">
+      <div class="sec-head">
+        <h2>Lecture Rooms</h2>
+        <p id="lrSubtitle">Live &amp; scheduled Zoom sessions for your year — click to join directly.</p>
+      </div>
 
-    <!-- dashboard footer -->
+      <!-- Year access notice -->
+      <div id="lrYearNotice" style="display:none;margin-bottom:18px;padding:13px 18px;border-radius:10px;border:1px solid rgba(102,126,234,0.25);background:rgba(102,126,234,0.07);font-size:13px;color:rgba(255,255,255,0.6);display:flex;align-items:center;gap:10px">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#a5b4fc" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        <span id="lrYearNoticeText">Showing rooms available for your academic year.</span>
+      </div>
+
+      <!-- Loading -->
+      <div id="lrLoading" class="lr-loading">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
+        Loading lecture rooms…
+      </div>
+
+      <!-- Error -->
+      <div id="lrError" style="display:none;padding:16px 20px;border-radius:10px;border:1px solid rgba(139,26,46,0.25);background:rgba(139,26,46,0.07);font-size:13px;color:rgba(255,255,255,0.55);margin-bottom:16px"></div>
+
+      <!-- Rooms grid -->
+      <div class="lr-grid" id="lrGrid" style="display:none"></div>
+
+      <!-- Empty -->
+      <div id="lrEmpty" style="display:none;text-align:center;padding:56px 24px">
+        <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.12)" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" style="margin:0 auto 14px;display:block"><path d="M15 10l4.553-2.277A1 1 0 0 1 21 8.68v6.64a1 1 0 0 1-1.447.898L15 14"/><rect x="1" y="6" width="14" height="12" rx="2"/></svg>
+        <div style="font-size:14px;font-weight:600;color:rgba(255,255,255,0.28);margin-bottom:4px">No rooms available</div>
+        <div style="font-size:12px;color:rgba(255,255,255,0.16)">Lecture rooms for your year will appear here when scheduled.</div>
+      </div>
+
+    </div><!-- /#panel-lecturerooms -->
     <footer class="dash-footer">
       &copy; <span id="footerYear"></span> UM2 Interim University Council &nbsp;·&nbsp; University of Medicine (2), Republic of the Union of Myanmar
     </footer>
@@ -4651,13 +4836,15 @@ function renderGrades(grades, student) {
 
 // ── Section / sidebar switching ───────────────────────────────
 const SECTION_TITLES = {
-  home:     'Home',
-  profile:  'My Personal Page',
-  grades:   'Academic Record',
-  docs:     'Document Office',
-  idcard:   'ID Card',
-  photo:    'Profile Photo',
-  editinfo: 'Edit My Information'
+  home:          'Home',
+  profile:       'My Personal Page',
+  grades:        'Academic Record',
+  docs:          'Document Office',
+  idcard:        'ID Card',
+  photo:         'Profile Photo',
+  editinfo:      'Edit My Information',
+  comms:         'Communication',
+  lecturerooms:  'Lecture Rooms'
 };
 
 function switchSection(id, btn) {
@@ -4688,6 +4875,7 @@ function switchSection(id, btn) {
   // Load edit info data when navigating to that section
 if (id === 'editinfo') { try { onSwitchToEditInfo(); } catch(e) {} }
 if (id === 'comms') { try { loadCommsSection(); } catch(e) {} }
+if (id === 'lecturerooms') { try { loadLectureRooms(); } catch(e) {} }
   // Close sidebar on mobile
   closeSidebar();
 }
@@ -6165,6 +6353,114 @@ async function loadCommsSection() {
     errEl.style.display   = 'block';
     errEl.textContent     = 'Unable to load channels: ' + e.message;
   }
+}
+
+// ── Lecture Rooms ─────────────────────────────────────────────
+async function loadLectureRooms() {
+  const loadEl  = document.getElementById('lrLoading');
+  const errEl   = document.getElementById('lrError');
+  const gridEl  = document.getElementById('lrGrid');
+  const emptyEl = document.getElementById('lrEmpty');
+  const noticeEl= document.getElementById('lrYearNotice');
+  const noticeTxt = document.getElementById('lrYearNoticeText');
+  if (!loadEl) return;
+
+  loadEl.style.display  = 'flex';
+  errEl.style.display   = 'none';
+  gridEl.style.display  = 'none';
+  emptyEl.style.display = 'none';
+  if (noticeEl) noticeEl.style.display = 'none';
+
+  const studentId   = (document.getElementById('loginStudentId').value || '').trim().toLowerCase();
+  const studentYear = (window._currentStudent && window._currentStudent.currentStatus) || '';
+
+  try {
+    const res  = await fetch('/.netlify/functions/get-lecture-rooms', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ studentId, password: window._sessionPassword || '', year: studentYear })
+    });
+    const data = await res.json();
+
+    loadEl.style.display = 'none';
+
+    if (!data.success) throw new Error(data.message || 'Failed to load rooms.');
+
+    const rooms = data.rooms || [];
+
+    // Show year notice
+    if (studentYear && noticeEl && noticeTxt) {
+      noticeTxt.textContent = `Showing rooms available for ${studentYear}.`;
+      noticeEl.style.display = 'flex';
+    }
+
+    if (rooms.length === 0) {
+      emptyEl.style.display = 'block';
+      return;
+    }
+
+    gridEl.innerHTML = '';
+    rooms.forEach(room => gridEl.appendChild(buildLectureRoomCard(room)));
+    gridEl.style.display = 'grid';
+
+  } catch(e) {
+    loadEl.style.display = 'none';
+    errEl.style.display  = 'block';
+    errEl.textContent    = 'Unable to load lecture rooms: ' + e.message;
+  }
+}
+
+function buildLectureRoomCard(room) {
+  const subject   = room.subject || 'Lecture Room';
+  const desc      = room.description || '';
+  const zoomLink  = room.zoom_link || room.zoomLink || '';
+  const meetingId = room.zoom_meeting_id || room.zoomMeetingId || '';
+  const passcode  = room.zoom_passcode || room.zoomPasscode || '';
+  const years     = room.year_access || room.yearAccess || [];
+  const active    = !!zoomLink;
+
+  const card = document.createElement('div');
+  card.className = 'lr-card' + (!active ? ' lr-locked' : '');
+
+  const yearBadges = years.map(y =>
+    `<span class="lr-year-badge">${y === 'ALL' ? 'All Years' : y}</span>`
+  ).join('');
+
+  card.innerHTML = `
+    <div class="lr-card-accent"></div>
+    <div class="lr-card-body">
+      <div class="lr-card-icon">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#a5b4fc" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M15 10l4.553-2.277A1 1 0 0 1 21 8.68v6.64a1 1 0 0 1-1.447.898L15 14"/><rect x="1" y="6" width="14" height="12" rx="2"/></svg>
+      </div>
+      <div class="lr-card-subject">${subject}</div>
+      ${desc ? `<div class="lr-card-desc">${desc}</div>` : ''}
+      <div class="lr-card-meta">${yearBadges}</div>
+    </div>
+    <div class="lr-card-footer">
+      ${active
+        ? `<a href="${zoomLink}" target="_blank" rel="noopener noreferrer" class="lr-join-btn">
+             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 10l4.553-2.277A1 1 0 0 1 21 8.68v6.64a1 1 0 0 1-1.447.898L15 14"/><rect x="1" y="6" width="14" height="12" rx="2"/></svg>
+             Join Room
+           </a>`
+        : `<span style="font-size:12px;color:rgba(255,255,255,0.25);flex:1">No link assigned</span>`
+      }
+      ${meetingId ? `<button class="lr-copy-btn" title="Copy Meeting ID" onclick="lrCopyText('${meetingId}',this)">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+      </button>` : ''}
+    </div>
+    ${passcode ? `<div class="lr-passcode-chip" style="margin:0 22px 14px;width:fit-content">
+      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+      Passcode: ${passcode}
+    </div>` : ''}`;
+  return card;
+}
+
+function lrCopyText(text, btn) {
+  navigator.clipboard.writeText(text).then(() => {
+    const orig = btn.innerHTML;
+    btn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#a5b4fc" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`;
+    setTimeout(() => { btn.innerHTML = orig; }, 1600);
+  }).catch(() => {});
 }
 
 function doSignOut() {
