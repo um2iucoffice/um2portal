@@ -3349,11 +3349,14 @@ function autoGradeId() {
 // Format: {studentId}-{courseId}-{attemptNumber}
 // e.g. IUC125044-CRS002-A1  (A1=1st, A2=2nd, A3=3rd attempt)
 // Guaranteed unique per student+course+attempt — no hashing, no collisions.
-function stableGradeId(sid, cid, attempt) {
+function stableGradeId(sid, cid, attempt, year) {
   const attemptNum = { '1st Attempt':'A1','2nd Attempt':'A2','3rd Attempt':'A3',
                        '4th Attempt':'A4','5th Attempt':'A5' };
-  const aN = attemptNum[attempt] || attempt.replace(/[^0-9]/g,'') || 'A1';
-  return (sid + '-' + (cid || 'UNK') + '-' + aN).toUpperCase();
+  const aN  = attemptNum[attempt] || attempt.replace(/[^0-9]/g,'') || 'A1';
+  const yr  = (year || 'NOYEAR').toString().trim().toUpperCase();
+  const sNum = sid.replace(/^[a-zA-Z]+/, '');
+  const cNum = cid.replace(/^[a-zA-Z]+/, '');
+  return (sNum + '-' + (cNum || 'UNK') + '-' + aN + '-' + yr).toUpperCase();
 }
 
 function normalizeGradeData() {
@@ -3434,7 +3437,7 @@ function handleGradeCSV(input) {
         // Per-row Year/Attempt from CSV override the UI fields (migration support)
         const rowAttempt  = (row.Attempt || row.attempt || '').trim() || fallbackAttempt;
         const rowYear     = (row.Year    || row.year    || '').trim() || fallbackYear || '—';
-        const gid = stableGradeId(sid, cid, rowAttempt);
+        const gid = stableGradeId(sid, cid, rowAttempt, rowYear);
         const studentMatch = students.find(s => s.id.toLowerCase() === sid.toLowerCase());
         const courseMatch  = courses.find(c => c[0].toLowerCase() === cid.toLowerCase());
         const stuStatus = studentMatch
@@ -3547,7 +3550,7 @@ async function submitGrades() {
 
     // Deterministic ID: same student+course+attempt always maps to the same grade row.
     // Re-uploading the same CSV updates existing grades rather than creating duplicates.
-    const gid = 'GRD-' + stableGradeId(sid, courseId, rowAttempt);
+    const gid = 'GRD-' + stableGradeId(sid, courseId, rowAttempt, rowYear);
 
     const courseMatch = courses.find(c => c[0].toLowerCase() === courseId.toLowerCase());
     const courseName  = courseMatch ? courseMatch[1] : courseId;
