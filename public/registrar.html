@@ -229,7 +229,7 @@ input[readonly] { color:var(--ink2); cursor:default; }
 .profile-banner { background:var(--white); border:1px solid var(--line); border-radius:10px; padding:24px 28px; margin-bottom:20px; display:flex; gap:20px; align-items:flex-start; position:relative; overflow:hidden; }
 .profile-banner::after { content:''; position:absolute; left:0; top:0; bottom:0; width:4px; background:var(--crimson); }
 .profile-avatar { width:64px; height:64px; background:var(--crimson-light); border-radius:var(--r); display:flex; align-items:center; justify-content:center; font-family:'Libre Baskerville',serif; font-size:26px; color:var(--crimson); flex-shrink:0; overflow:hidden; }
-.profile-avatar img { width:100%; height:100%; object-fit:cover; border-radius:var(--r); display:block; }
+.profile-avatar img { width:100%; height:100%; object-fit:cover; border-radius:var(--r); display:block; pointer-events:none; user-select:none; -webkit-user-select:none; -webkit-touch-callout:none; }
 .profile-name { font-family:'Libre Baskerville',serif; font-size:20px; color:var(--ink); }
 .profile-id { font-size:12px; color:var(--crimson); font-family:monospace; margin-top:3px; letter-spacing:.04em; }
 .profile-meta { display:flex; gap:18px; margin-top:10px; flex-wrap:wrap; }
@@ -2709,7 +2709,7 @@ function showProfile(sid) {
   const avatarEl = document.getElementById('profAvatar');
   if (s.photo) {
     const photoUrl = `${SUPABASE_URL}/storage/v1/object/public/student-photos/${s.photo}`;
-    avatarEl.innerHTML = `<img src="${photoUrl}" alt="${s.name_en}" onerror="this.parentElement.innerHTML='${s.name_en.charAt(0)}'">`;
+    avatarEl.innerHTML = `<img src="${photoUrl}" alt="${s.name_en}" draggable="false" oncontextmenu="return false" style="pointer-events:none;user-select:none;-webkit-user-select:none" onerror="this.parentElement.innerHTML='${s.name_en.charAt(0)}'">`;
   } else {
     avatarEl.textContent = s.name_en.charAt(0);
   }
@@ -5653,7 +5653,7 @@ function openErReviewModal(reqId) {
       : '<svg width="36" height="42" viewBox="0 0 56 64" fill="none"><ellipse cx="28" cy="20" rx="13" ry="14" fill="#D1D5DB"/><path d="M2 58c0-13.255 11.64-24 26-24s26 10.745 26 24" fill="#D1D5DB"/></svg>';
     // Pending photo (from photo_url column)
     pendingPhotoWrap.innerHTML = r.photo_url
-      ? `<img src="${r.photo_url}" style="width:100%;height:100%;object-fit:cover;border-radius:6px" onerror="this.parentElement.innerHTML='<span style=\'font-size:11px;color:var(--ink3)\'>Failed to load</span>'">`
+     ? `<img src="${r.photo_url}" style="width:100%;height:100%;object-fit:cover;border-radius:6px;pointer-events:none;user-select:none;-webkit-user-select:none" draggable="false" oncontextmenu="return false" onerror="this.parentElement.innerHTML='<span style=\\'font-size:11px;color:var(--ink3)\\'>Failed to load</span>'">`
       : '<span style="font-size:11px;color:var(--ink3)">No URL</span>';
     // Hide the text value rows since they're not meaningful for photos
     document.getElementById('erReviewOldValue').closest('div').style.display = 'none';
