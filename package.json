@@ -1,8 +1,16 @@
 {
-  "name": "um2-portal",
+  "name": "registrar-functions",
   "version": "1.0.0",
+  "description": "Netlify serverless functions for the Registrar photo workflow",
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "scripts": {
+    "postinstall": "npm rebuild sharp --platform=linux --arch=x64 --libc=glibc"
+  },
   "dependencies": {
-    "@supabase/supabase-js": "^2.0.0",
-    "@napi-rs/canvas": "^0.1.44"
+    "@supabase/supabase-js": "^2.43.0",
+    "node-fetch": "^3.3.2",
+    "sharp": "^0.33.4"
   }
 }
