@@ -4691,8 +4691,8 @@ function switchSection(id, btn) {
   if (titleEl) titleEl.textContent = SECTION_TITLES[id] || id;
 
   // Load edit info data when navigating to that section
-  if (id === 'editinfo') { try { onSwitchToEditInfo(); } catch(e) {} }
-
+if (id === 'editinfo') { try { onSwitchToEditInfo(); } catch(e) {} }
+if (id === 'comms') { try { loadCommsSection(); } catch(e) {} }
   // Close sidebar on mobile
   closeSidebar();
 }
