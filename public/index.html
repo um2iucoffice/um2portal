@@ -4220,6 +4220,7 @@ function renderGrades(grades, student) {
             <th style="width:11%">Code</th>
             <th style="width:36%">Course Title</th>
             <th style="text-align:center;width:7%">Credits</th>
+            <th style="display:none">Assessment</th>
             <th style="text-align:center;width:10%">Score</th>
             <th style="text-align:center;width:8%">Year</th>
             <th style="text-align:center;width:9%">Grade</th>
@@ -4242,6 +4243,7 @@ function renderGrades(grades, student) {
             <div class="gt-course">${escHtml(r.course.name)}</div>
           </td>
           <td style="text-align:center"><span class="gt-cr">${r.course.credits != null ? r.course.credits : '—'}</span></td>
+          <td style="display:none">${escHtml(typeStr)}</td>
           <td style="text-align:center">
             <span class="sbar-num">${escHtml(scoreStr)}</span>
           </td>
