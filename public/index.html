@@ -4127,6 +4127,7 @@ function getAcademicYear(row, course) {
 
 function getCompletionYear(row) {
   return row.completionYear || row.CompletionYear || row.completion_year ||
+         row.academicYear || row.AcademicYear || row.academic_year ||
          row.year || row.Year || row.completionDate || row.CompletionDate || '—';
 }
 
@@ -4217,10 +4218,10 @@ function renderGrades(grades, student) {
       html += `<table class="gt">
         <thead>
           <tr>
-            <th style="width:11%">Code</th>
-            <th style="width:36%">Course Title</th>
+          <th style="width:11%">Code</th>
+            <th style="width:28%">Course Title</th>
             <th style="text-align:center;width:7%">Credits</th>
-            <th style="display:none">Assessment</th>
+            <th style="text-align:center;width:13%">Assessment</th>
             <th style="text-align:center;width:10%">Score</th>
             <th style="text-align:center;width:8%">Year</th>
             <th style="text-align:center;width:9%">Grade</th>
