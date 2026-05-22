@@ -5524,7 +5524,7 @@ function updateEditRequestsBadge() {
 }
 
 function renderEditRequestsTable() {
-  const statusFilter = (document.getElementById('erStatusFilter')?.value || 'pending').toLowerCase();
+  const statusFilter = (document.getElementById('erStatusFilter')?.value ?? '').toLowerCase();
   const searchVal    = (document.getElementById('erSearchInput')?.value  || '').toLowerCase();
   const tbody        = document.getElementById('editRequestsBody');
   if (!tbody) return;
