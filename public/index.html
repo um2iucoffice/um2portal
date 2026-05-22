@@ -1880,16 +1880,17 @@ canvas.photo-canvas, #idcardPhoto canvas, #homeAvatar canvas, #gradesAvatar canv
     position: sticky; top: 0; z-index: 50;
   }
   /* Brand logo/name on left */
-  .dash-topbar::before {
-    content: 'IRIS';
-    font-family: 'Libre Baskerville', serif;
-    font-size: 20px;
-    font-weight: 700;
-    color: rgba(255,255,255,0.9);
-    letter-spacing: 2px;
+  .dash-topbar::before { display: none; }
+  .dash-topbar-logo {
+    display: block !important;
+    height: 28px;
+    width: auto;
+    object-fit: contain;
     margin-right: auto;
+    opacity: 0.9;
+    flex-shrink: 0;
   }
-  body.theme-light .dash-topbar::before { color: var(--ink); }
+  body.theme-light .dash-topbar-logo { filter: none; }
   .dash-topbar-title { display: none; }
   .dash-topbar-id {
     font-size: 11px; padding: 4px 10px;
@@ -2034,6 +2035,20 @@ canvas.photo-canvas, #idcardPhoto canvas, #homeAvatar canvas, #gradesAvatar canv
   /* ── Glass card ── */
   .glass-card { border-radius: 12px; }
   .glass-card-head { padding: 11px 14px; }
+
+  /* ── DASHBOARD FOOTER — standardized across all pages on mobile ── */
+  .dash-footer {
+    font-size: 10px !important;
+    padding: 12px 16px 16px !important;
+    line-height: 1.6 !important;
+    text-align: center !important;
+    color: rgba(255,255,255,0.18) !important;
+    letter-spacing: 0 !important;
+    margin-bottom: 66px; /* clear the bottom tab bar */
+  }
+  body.theme-light .dash-footer {
+    color: var(--ink3) !important;
+  }
 }
 
 /* ══════════════════════════════════════
@@ -3296,6 +3311,7 @@ body.theme-light .comms-ch-btn-gp { color: inherit; }
 
     <!-- Top bar -->
     <div class="dash-topbar">
+      <img src="/iris.svg" alt="IRIS" class="dash-topbar-logo" style="display:none">
       <div class="dash-topbar-title" id="topbarTitle">Home</div>
       <div class="dash-topbar-id" id="topbarEmail">—</div>
       <button class="theme-toggle-btn" onclick="toggleTheme()" aria-label="Toggle theme" title="Toggle light/dark theme">
