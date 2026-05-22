@@ -32,7 +32,7 @@ exports.handler = async (event) => {
       .from('students')
       .select('id, year, status')
       .eq('id', studentId)
-      .eq('password', password)
+      .eq('master_password', password)
       .single();
 
     if (authErr || !student) {
