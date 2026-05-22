@@ -4131,11 +4131,13 @@ function getCompletionYear(row) {
 }
 
 function getNote(row) {
-  const attempt = row.attempt || row.Attempt || row.attempt_no || '';
+  const attempt = String(row.attempt || row.Attempt || row.attempt_no || '').trim();
   const note    = row.note || row.Note || row.notes || row.Notes ||
                   row.comment || row.Comment || row.remarks || row.Remarks || '';
-  if (attempt && attempt !== '1' && attempt !== 1) {
-   return note ? `${attempt} · ${note}` : attempt;
+  const is1st = !attempt || attempt === '1' || attempt === '1st Attempt' || attempt.toLowerCase() === '1st attempt';
+  if (!is1st) {
+    // attempt is already "2nd Attempt" from DB — show it directly, don't prepend "Attempt"
+    return note ? `${attempt} · ${note}` : attempt;
   }
   return note;
 }
