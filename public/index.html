@@ -1983,26 +1983,71 @@ body.theme-light .theme-toggle-btn:hover {
   color: var(--crimson);
 }
 
-/* Login page theme toggle */
-.login-theme-btn {
+/* ── LOGIN PAGE THEME TOGGLE PILL ── */
+.login-theme-pill {
   position: fixed;
-  top: 16px; right: 16px;
+  top: 18px; right: 18px;
   z-index: 200;
-  width: 40px; height: 40px;
-  border-radius: 10px;
-  border: 1.5px solid var(--line);
-  background: var(--white);
-  color: var(--ink2);
+  display: flex; align-items: center;
+  background: rgba(13,27,42,0.55);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 99px;
+  padding: 3px;
+  gap: 2px;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: 0 2px 12px rgba(0,0,0,0.25);
+  transition: background .2s, border-color .2s;
+}
+body.theme-light .login-theme-pill {
+  background: rgba(255,255,255,0.92);
+  border-color: rgba(13,27,42,0.12);
+  box-shadow: 0 2px 12px rgba(13,27,42,0.12);
+}
+.login-theme-opt {
+  display: flex; align-items: center; gap: 5px;
+  padding: 6px 13px;
+  border-radius: 99px;
+  border: none; background: none;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 12px; font-weight: 500;
+  color: rgba(255,255,255,0.45);
   cursor: pointer;
-  display: flex; align-items: center; justify-content: center;
-  box-shadow: 0 2px 8px rgba(13,27,42,0.08);
-  transition: all .2s;
+  transition: all .18s;
+  white-space: nowrap;
+  -webkit-tap-highlight-color: transparent;
 }
-.login-theme-btn:hover {
-  border-color: rgba(139,26,46,0.25);
-  color: var(--crimson);
+body.theme-light .login-theme-opt { color: var(--ink3); }
+.login-theme-opt svg { flex-shrink: 0; transition: color .18s; }
+.login-theme-opt.active {
+  background: rgba(255,255,255,0.13);
+  color: rgba(255,255,255,0.92);
+  font-weight: 600;
+}
+body.theme-light .login-theme-opt.active {
+  background: var(--white);
+  color: var(--ink);
+  box-shadow: 0 1px 4px rgba(13,27,42,0.10);
+}
+body.theme-light .login-theme-opt[data-theme="light"].active {
   background: var(--crimson-light);
+  color: var(--crimson);
 }
+
+/* Light theme overrides for login page */
+body.theme-light #loginScreen { background: #f0f2f7; }
+body.theme-light .login-left {
+  background: linear-gradient(160deg, #1a2540 0%, #8B1A2E 100%);
+}
+body.theme-light .login-right { background-color: #f0f2f7; }
+body.theme-light .login-form-wrap {
+  background: rgba(255,255,255,0.97);
+  border-color: rgba(13,27,42,0.08);
+  box-shadow: 0 8px 40px rgba(13,27,42,0.10), 0 1px 4px rgba(13,27,42,0.06);
+}
+
+/* Hide old bare icon button */
+.login-theme-btn { display: none !important; }
 
 /* ══════════════════════════════════════
    LIGHT THEME — DASHBOARD OVERRIDES
@@ -2247,6 +2292,14 @@ body.theme-light #photoDropZone { border-color: var(--line) !important; backgrou
    IMPROVED MOBILE STYLES
    ══════════════════════════════════════ */
 @media(max-width:700px){
+  /* Shrink copyright footer on mobile */
+  .dash-footer {
+    font-size: 9px !important;
+    padding: 10px 14px !important;
+    line-height: 1.5;
+    margin-bottom: env(safe-area-inset-bottom);
+  }
+
   /* Better touch targets for nav items */
   .sbnav-item {
     padding: 13px 14px 13px 18px;
@@ -2456,10 +2509,17 @@ body.theme-light .mob-more-item.danger svg { color: var(--crimson); }
 </head>
 <body>
 
-<!-- Theme Toggle Button (always visible) -->
-<button class="login-theme-btn" id="loginThemeBtn" onclick="toggleTheme()" aria-label="Toggle theme" title="Toggle light/dark theme">
-  <svg id="themeIconLogin" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
-</button>
+<!-- Login page theme toggle pill -->
+<div class="login-theme-pill" id="loginThemePill" role="group" aria-label="Theme selector">
+  <button class="login-theme-opt" data-theme="dark" id="loginThemeDark" onclick="applyTheme('dark')" aria-label="Dark mode">
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+    Dark
+  </button>
+  <button class="login-theme-opt" data-theme="light" id="loginThemeLight" onclick="applyTheme('light')" aria-label="Light mode">
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+    Light
+  </button>
+</div>
 
 <!-- ═══════════════════ LOGIN ═══════════════════ -->
 <div id="loginScreen">
@@ -2545,6 +2605,10 @@ body.theme-light .mob-more-item.danger svg { color: var(--crimson); }
     <button class="mob-more-item" onclick="mobSwitchTab('photo',null);closeMobMore()">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
       Profile Photo
+    </button>
+    <button class="mob-more-item" id="mobMoreEditInfo" onclick="mobSwitchTab('editinfo',null);closeMobMore()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+      Edit Info
     </button>
     <button class="mob-more-item" onclick="toggleTheme();closeMobMore()">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/></svg>
