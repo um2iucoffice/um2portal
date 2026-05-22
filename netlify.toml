@@ -1,24 +1,11 @@
-# netlify.toml
-# Place this file at the ROOT of your repository.
-#
-# Key fixes applied here:
-#   1. NODE_VERSION = "18" — ensures global fetch is available
-#   2. AWS_LAMBDA_JS_RUNTIME = "nodejs18.x" — locks the Lambda runtime
-#   3. functions timeout = 30 — prevents 502s from slow image processing
-#   4. NPM_FLAGS / sharp rebuild — ensures the Linux binary is present at deploy time
-
 [build]
   functions = "netlify/functions"
 
-  [build.environment]
-    NODE_VERSION            = "18"
-    AWS_LAMBDA_JS_RUNTIME   = "nodejs18.x"
-    # Force sharp to download/build the correct Linux x64 binary during CI install
-    SHARP_IGNORE_GLOBAL_LIBVIPS = "1"
-    NPM_FLAGS               = "--platform=linux --arch=x64"
+[build.environment]
+  NODE_VERSION = "18"
+  AWS_LAMBDA_JS_RUNTIME = "nodejs18.x"
+  SHARP_IGNORE_GLOBAL_LIBVIPS = "1"
 
 [functions]
-  # Increase timeout from the default 10s → 30s
-  # (image fetch + sharp processing + Supabase upload can exceed 10s)
-  timeout       = 30
-  node_bundler  = "esbuild"
+  timeout = 30
+  node_bundler = "esbuild"
