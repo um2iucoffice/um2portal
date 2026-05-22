@@ -1,5 +1,6 @@
 [build]
   functions = "netlify/functions"
+  command = "fc-list && npm install"
 
 [build.environment]
   NODE_VERSION = "20"
@@ -10,6 +11,3 @@
 [functions]
   node_bundler = "esbuild"
   external_node_modules = ["sharp"]
-
-[build]
-  command = "fc-list && npm install"
