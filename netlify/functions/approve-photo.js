@@ -150,7 +150,7 @@ exports.handler = async function (event) {
       <svg width="${width}" height="${height}" xmlns="http://www.w3.org/2000/svg">
         <style>
           text {
-            font-family: sans-serif;
+            font-family: Arial, Helvetica, Liberation Sans, sans-serif;
             font-size: ${WM_FONT_SIZE}px;
             font-weight: bold;
             fill: rgba(255,255,255,0.30);
