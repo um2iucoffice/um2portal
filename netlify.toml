@@ -5,7 +5,7 @@
   NODE_VERSION = "18"
   AWS_LAMBDA_JS_RUNTIME = "nodejs18.x"
   SHARP_IGNORE_GLOBAL_LIBVIPS = "1"
+  AWS_LAMBDA_FUNCTION_TIMEOUT = "30"
 
 [functions]
-  timeout = 30
   node_bundler = "esbuild"
