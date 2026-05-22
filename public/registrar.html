@@ -5713,7 +5713,7 @@ async function processEditRequest(decision) {
         let storedPath = wmData.photoUrl || '';
         if (storedPath.startsWith(STORAGE_PFX)) storedPath = storedPath.slice(STORAGE_PFX.length);
 
-        cconst s = students.find(x => x.id === studentId);
+        const s = students.find(x => x.id === studentId);
 if (s) s.photo = storedPath;
 
 const { error: photoDbErr } = await db
