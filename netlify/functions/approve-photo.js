@@ -38,11 +38,11 @@ const SUPABASE_URL         = process.env.SUPABASE_URL;
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY;
 const BUCKET               = 'student-photos';
 
-const WM_TEXT      = 'UM2UM2UM2UM2UM2';
+const WM_TEXT      = 'UM2 UM2 UM2 UM2 UM2';
 const WM_FONT_SIZE = 18;
 const WM_ANGLE     = -30;
 const WM_SPACING_X = 140;
-const WM_SPACING_Y = 60;
+const WM_SPACING_Y = 60; 
 
 // Maximum time (ms) to wait for the upstream image fetch
 const FETCH_TIMEOUT_MS = 8_000;
@@ -150,10 +150,10 @@ exports.handler = async function (event) {
       <svg width="${width}" height="${height}" xmlns="http://www.w3.org/2000/svg">
         <style>
           text {
-            font-family: Arial, Helvetica, Liberation Sans, sans-serif;
+            font-family: "Liberation Sans", "DejaVu Sans", FreeSans, sans-serif;
             font-size: ${WM_FONT_SIZE}px;
             font-weight: bold;
-            fill: rgba(255,255,255,0.30);
+            fill: rgba(255,255,255,0.35);
             text-anchor: middle;
             dominant-baseline: middle;
           }
