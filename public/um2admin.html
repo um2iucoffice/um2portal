@@ -57,8 +57,20 @@
 }
 .schedule-row-del:hover { background:var(--crimson-light); }
 
-/* ── ROOM OCCUPIED BADGE ── */
-.room-occupied { background:var(--crimson-light); color:var(--crimson); font-size:10px; font-weight:700; padding:2px 7px; border-radius:4px; }
+/* ── PRINT STYLES ── */
+@media print {
+  body * { visibility: hidden !important; }
+  #printArea, #printArea * { visibility: visible !important; }
+  #printArea {
+    position: fixed !important; inset: 0 !important;
+    width: 210mm !important; margin: 0 auto !important;
+    padding: 18mm 20mm !important;
+    font-family: 'Times New Roman', Times, serif !important;
+    color: #000 !important; background: #fff !important;
+    font-size: 12pt !important; line-height: 1.6 !important;
+  }
+}
+#printArea { display: none; }
 </style>
 <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
 <style>
@@ -1096,9 +1108,22 @@ input[readonly] { color:var(--ink2); cursor:default; }
         </div>
         <div class="step-item">
           <div class="step-num"><svg style="width:16px;height:16px;stroke:currentColor;stroke-width:1.9;fill:none;stroke-linecap:round;stroke-linejoin:round"><use href="#i-file"></use></svg></div>
-          <div class="step-content">
-            <h4 id="docConfirmationLabel">Confirmation of Study</h4>
-            <p id="docConfirmationDesc">Official letter confirming active enrollment status at University of Medicine (2).</p>
+          <div class="step-content" style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px">
+            <div>
+              <h4 id="docConfirmationLabel">Confirmation of Study</h4>
+              <p id="docConfirmationDesc">Official letter confirming active enrollment status at University of Medicine (2).</p>
+            </div>
+            <button class="btn btn-outline btn-sm registrar-only" style="white-space:nowrap;flex-shrink:0" onclick="printConfirmationOfStudy()">🖨 Print</button>
+          </div>
+        </div>
+        <div class="step-item">
+          <div class="step-num"><svg style="width:16px;height:16px;stroke:currentColor;stroke-width:1.9;fill:none;stroke-linecap:round;stroke-linejoin:round"><use href="#i-award"></use></svg></div>
+          <div class="step-content" style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px">
+            <div>
+              <h4>Good Standing Certificate</h4>
+              <p>Certifies that the student is in good academic and disciplinary standing at the university.</p>
+            </div>
+            <button class="btn btn-outline btn-sm registrar-only" style="white-space:nowrap;flex-shrink:0" onclick="printGoodStanding()">🖨 Print</button>
           </div>
         </div>
         <div class="step-item" id="docTranscriptItem">
@@ -7273,6 +7298,148 @@ function confirmDeleteLectureRoom(rid, rname) {
     closeModal('confirmDeleteModal');
   };
   document.getElementById('confirmDeleteModal').classList.add('open');
+}
+</script>
+<!-- Hidden print area -->
+<div id="printArea"></div>
+
+<script>
+// ── PRINT DOCUMENTS ──
+const _LOGO_URL = 'https://github.com/um2iucoffice/um2portal/raw/refs/heads/main/public/UM2_Logo.svg';
+
+function _getStudentForPrint() {
+  const s = students.find(x => x.id === currentProfileId);
+  if (!s) { toast('No student selected.', '⚠'); return null; }
+  return s;
+}
+
+function _todayFormatted() {
+  return new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+}
+
+function _letterHead() {
+  return `
+    <div style="display:flex;align-items:center;gap:20px;border-bottom:2.5px solid #8B1A2E;padding-bottom:16px;margin-bottom:24px">
+      <img src="${_LOGO_URL}" alt="UM2 Logo" style="height:72px;width:auto;flex-shrink:0" onerror="this.style.display='none'">
+      <div>
+        <div style="font-size:9pt;letter-spacing:2px;text-transform:uppercase;color:#555;margin-bottom:2px">University of Medicine (2), Yangon</div>
+        <div style="font-size:17pt;font-weight:bold;font-family:'Times New Roman',serif;color:#8B1A2E">UM2 MBBS Programme</div>
+        <div style="font-size:8.5pt;color:#777;margin-top:2px">Secretariat's Office &nbsp;·&nbsp; sisportal.um2campus.edu.mm</div>
+      </div>
+    </div>`;
+}
+
+function _signatureBlock() {
+  return `
+    <div style="margin-top:64px;display:flex;justify-content:space-between">
+      <div style="text-align:center;width:200px">
+        <div style="border-top:1px solid #000;padding-top:6px;font-size:10pt">Prepared by</div>
+        <div style="font-size:9pt;color:#444">Secretariat's Office</div>
+      </div>
+      <div style="text-align:center">
+        <div style="width:60px;height:60px;border:1px dashed #aaa;border-radius:50%;margin:0 auto 6px;display:flex;align-items:center;justify-content:center;font-size:8pt;color:#aaa">STAMP</div>
+      </div>
+      <div style="text-align:center;width:200px">
+        <div style="border-top:1px solid #000;padding-top:6px;font-size:10pt">Authorised by</div>
+        <div style="font-size:9pt;color:#444">Registrar / Head of Secretariat</div>
+      </div>
+    </div>
+    <div style="margin-top:36px;font-size:7.5pt;color:#999;text-align:center;border-top:1px solid #ddd;padding-top:8px">
+      Generated by UM2 IRIR System on ${_todayFormatted()}. Valid only with official stamp and authorised signature.
+    </div>`;
+}
+
+function _printDoc(html) {
+  const area = document.getElementById('printArea');
+  area.innerHTML = html;
+  area.style.display = 'block';
+  setTimeout(() => {
+    window.print();
+    setTimeout(() => { area.style.display = 'none'; area.innerHTML = ''; }, 800);
+  }, 200);
+}
+
+function printConfirmationOfStudy() {
+  const s = _getStudentForPrint();
+  if (!s) return;
+  const refNo = `UM2/SEC/COS/${s.id}/${new Date().getFullYear()}`;
+  _printDoc(`
+    ${_letterHead()}
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:28px;font-size:10pt">
+      <div></div>
+      <div style="text-align:right;line-height:1.8">
+        <strong>Ref:</strong> ${refNo}<br>
+        <strong>Date:</strong> ${_todayFormatted()}
+      </div>
+    </div>
+    <div style="text-align:center;margin-bottom:28px">
+      <span style="font-size:14pt;font-weight:bold;text-decoration:underline;text-transform:uppercase;letter-spacing:1.5px">
+        Confirmation of Study
+      </span>
+    </div>
+    <p style="margin-bottom:16px">To Whom It May Concern,</p>
+    <p style="margin-bottom:16px;text-align:justify;line-height:1.9">
+      This is to confirm that <strong>${s.name_en}${s.name_my ? ' (' + s.name_my + ')' : ''}</strong>,
+      bearing Student ID <strong>${s.id}</strong>${s.dob ? ', date of birth <strong>' + s.dob + '</strong>' : ''},
+      is currently enrolled as a <strong>${s.status || 'Active'}</strong> student in the
+      <strong>${s.program || 'MBBS'} Programme</strong> at the University of Medicine (2), Yangon.
+    </p>
+    <p style="margin-bottom:16px;text-align:justify;line-height:1.9">
+      The student is presently in <strong>${s.year || '—'}</strong> of the programme,
+      having been admitted in <strong>${s.admission || '—'}</strong>.
+      ${s.gpa ? 'Their current cumulative GPA is <strong>' + Number(s.gpa).toFixed(2) + ' / 4.00</strong>.' : ''}
+    </p>
+    <p style="margin-bottom:28px;text-align:justify;line-height:1.9">
+      This letter is issued upon the request of the student for official purposes. The Secretariat's Office
+      certifies the accuracy of the above information as of the date of issue.
+    </p>
+    <p style="margin-bottom:4px">Yours faithfully,</p>
+    ${_signatureBlock()}
+  `);
+}
+
+function printGoodStanding() {
+  const s = _getStudentForPrint();
+  if (!s) return;
+  const refNo = `UM2/SEC/GSC/${s.id}/${new Date().getFullYear()}`;
+  _printDoc(`
+    ${_letterHead()}
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:28px;font-size:10pt">
+      <div></div>
+      <div style="text-align:right;line-height:1.8">
+        <strong>Ref:</strong> ${refNo}<br>
+        <strong>Date:</strong> ${_todayFormatted()}
+      </div>
+    </div>
+    <div style="text-align:center;margin-bottom:28px">
+      <span style="font-size:14pt;font-weight:bold;text-decoration:underline;text-transform:uppercase;letter-spacing:1.5px">
+        Certificate of Good Standing
+      </span>
+    </div>
+    <p style="margin-bottom:16px">To Whom It May Concern,</p>
+    <p style="margin-bottom:16px;text-align:justify;line-height:1.9">
+      This is to certify that <strong>${s.name_en}${s.name_my ? ' (' + s.name_my + ')' : ''}</strong>,
+      Student ID <strong>${s.id}</strong>${s.dob ? ', date of birth <strong>' + s.dob + '</strong>' : ''},
+      is a registered student of the <strong>${s.program || 'MBBS'} Programme</strong>
+      at the University of Medicine (2), Yangon, currently in <strong>${s.year || '—'}</strong>,
+      admitted in <strong>${s.admission || '—'}</strong>.
+    </p>
+    <p style="margin-bottom:16px;text-align:justify;line-height:1.9">
+      Based on the records maintained by the Secretariat's Office, the above-named student is
+      <strong>in good academic and disciplinary standing</strong> with the university as of the date of this certificate.
+      ${s.gpa ? 'The student maintains a cumulative GPA of <strong>' + Number(s.gpa).toFixed(2) + ' / 4.00</strong>.' : ''}
+    </p>
+    <p style="margin-bottom:16px;text-align:justify;line-height:1.9">
+      There are no outstanding disciplinary proceedings, academic sanctions, or administrative holds
+      recorded against this student in the university's official registry.
+    </p>
+    <p style="margin-bottom:28px;text-align:justify;line-height:1.9">
+      This certificate is issued at the student's request and is valid for official purposes only when
+      accompanied by an authorised signature and the university's official stamp.
+    </p>
+    <p style="margin-bottom:4px">Yours faithfully,</p>
+    ${_signatureBlock()}
+  `);
 }
 </script>
 </body>
