@@ -2217,6 +2217,9 @@ ALTER TABLE academic_years ADD COLUMN IF NOT EXISTS program_id text REFERENCES d
 </main>
 </div><!-- /appShell -->
 
+<!-- Hidden print area — must be inside body -->
+<div id="printArea" style="display:none"></div>
+
 <!-- ════════════════════════════════════════ -->
 <!-- MODALS -->
 <!-- ════════════════════════════════════════ -->
@@ -7302,9 +7305,6 @@ function confirmDeleteLectureRoom(rid, rname) {
   document.getElementById('confirmDeleteModal').classList.add('open');
 }
 </script>
-<!-- Hidden print area -->
-<div id="printArea"></div>
-
 <script>
 // ── PRINT DOCUMENTS ──
 const _LOGO_URL = 'https://github.com/um2iucoffice/um2portal/raw/refs/heads/main/public/UM2_Logo.svg';
