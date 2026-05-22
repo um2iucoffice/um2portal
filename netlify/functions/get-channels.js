@@ -2,7 +2,11 @@ const { createClient } = require('@supabase/supabase-js');
 
 const supabase = createClient(
   process.env.SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_KEY
+  process.env.SUPABASE_SERVICE_KEY,
+  {
+    realtime: { enabled: false },   // ← fixes the WebSocket crash
+    global: { fetch: fetch }
+  }
 );
 
 exports.handler = async () => {
@@ -23,7 +27,7 @@ exports.handler = async () => {
 
   } catch (err) {
     return {
-      statusCode: 200, // keep 200 so the frontend catch block reads the message
+      statusCode: 200,
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ success: false, message: err.message })
     };
