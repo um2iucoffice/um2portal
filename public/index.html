@@ -5057,7 +5057,7 @@ function printDegreeCertificate(enrollIdx) {
   const pw = 900, ph = 1160;
   const pl = Math.round((screen.width - pw) / 2);
   const pt = Math.round((screen.height - ph) / 2);
-  const win = window.open('', '_blank', \`width=\${pw},height=\${ph},left=\${pl},top=\${pt},scrollbars=yes\`);
+  const win = window.open('', '_blank', 'width=' + pw + ',height=' + ph + ',left=' + pl + ',top=' + pt + ',scrollbars=yes');
   if (!win) { alert('Please allow popups to print the certificate.'); return; }
   win.document.write(html);
   win.document.close();
