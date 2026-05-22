@@ -138,6 +138,7 @@ body{
   font-size:14px;
 }
 
+.login-mobile-brand { display: none; }
 /* ── LOGIN ── */
 #loginScreen{position:fixed;inset:0;z-index:100;display:flex;background:var(--white);transition:opacity .4s,visibility .4s}
 #loginScreen.hidden{opacity:0;visibility:hidden;pointer-events:none}
@@ -1771,19 +1772,105 @@ canvas.photo-canvas, #idcardPhoto canvas, #homeAvatar canvas, #gradesAvatar canv
 
   /* ── Login ── */
   .login-left { display: none; }
-  .login-right { padding: 0; min-height: 100vh; display: flex; align-items: center; justify-content: center; background: none; }
-  .login-form-wrap {
-    width: 100%; max-width: 100%; border-radius: 0;
-    padding: 40px 24px 40px;
-    min-height: 100vh;
-    display: flex; flex-direction: column; justify-content: center;
-    border: none; box-shadow: none;
-    background: transparent;
+
+  /* Full-screen dark gradient background matching desktop left panel */
+  #loginScreen {
+    background:
+      radial-gradient(ellipse at 20% 15%, rgba(139,26,46,0.45) 0%, transparent 55%),
+      radial-gradient(ellipse at 85% 80%, rgba(154,123,47,0.18) 0%, transparent 50%),
+      var(--ink);
   }
-  body.theme-light .login-form-wrap { background: transparent; }
-  .login-form-wrap h2 { font-size: 22px; }
-  .field input { padding: 14px 16px; font-size: 15px; border-radius: 10px; }
-  .btn-login { padding: 15px; font-size: 15px; border-radius: 10px; }
+
+  /* SVG medical pattern overlay on the screen itself */
+  #loginScreen::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='900' height='900' viewBox='0 0 900 900'%3E%3Cg stroke='%23ffffff' stroke-width='1' fill='none' opacity='0.035'%3E%3Ccircle cx='80' cy='80' r='18'/%3E%3Ccircle cx='80' cy='80' r='10'/%3E%3Cpath d='M80 62 Q80 30 110 30 Q140 30 140 60 L140 110 Q140 150 110 165 Q80 180 70 210'/%3E%3Cpolyline points='200,120 230,120 245,90 255,150 270,80 285,160 300,120 340,120'/%3E%3Crect x='438' y='310' width='8' height='40' rx='2'/%3E%3Crect x='422' y='326' width='40' height='8' rx='2'/%3E%3Ccircle cx='820' cy='700' r='40'/%3E%3Ccircle cx='820' cy='700' r='28'/%3E%3Ccircle cx='820' cy='700' r='14'/%3E%3Ccircle cx='820' cy='700' r='4'/%3E%3C/g%3E%3C/svg%3E");
+    background-repeat: repeat;
+    background-size: 600px 600px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .login-right {
+    padding: 0;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: none;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* Mobile branded header strip (replaces hidden .login-left) */
+  .login-right::before {
+    content: '';
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--crimson), rgba(154,123,47,0.8));
+    z-index: 10;
+  }
+
+  /* Branding block above the form card */
+  .login-mobile-brand {
+    display: flex !important;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 28px;
+    position: relative;
+    z-index: 2;
+  }
+  .login-mobile-brand .mob-brand-abbr {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 13px;
+    letter-spacing: 4px;
+    color: rgba(255,255,255,0.38);
+    text-transform: uppercase;
+  }
+  .login-mobile-brand .mob-brand-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 28px;
+    color: rgba(255,255,255,0.92);
+    letter-spacing: 0.5px;
+    line-height: 1;
+  }
+
+  .login-form-wrap {
+    width: calc(100% - 40px);
+    max-width: 400px;
+    border-radius: 18px;
+    padding: 36px 28px 32px;
+    min-height: unset;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    background: rgba(255,255,255,0.93);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255,255,255,0.95);
+    box-shadow: 0 24px 60px rgba(0,0,0,0.35), 0 2px 8px rgba(0,0,0,0.15);
+    position: relative;
+    z-index: 2;
+    margin-bottom: 24px;
+  }
+  body.theme-light #loginScreen {
+    background:
+      radial-gradient(ellipse at 20% 15%, rgba(139,26,46,0.25) 0%, transparent 55%),
+      radial-gradient(ellipse at 85% 80%, rgba(154,123,47,0.1) 0%, transparent 50%),
+      #1a2540;
+  }
+  body.theme-light .login-form-wrap {
+    background: rgba(255,255,255,0.97);
+    box-shadow: 0 24px 60px rgba(0,0,0,0.28), 0 2px 8px rgba(0,0,0,0.10);
+  }
+  .login-form-wrap h2 { font-size: 21px; }
+  .field input { padding: 13px 15px; font-size: 15px; border-radius: 10px; }
+  .btn-login { padding: 14px; font-size: 15px; border-radius: 10px; }
 
   /* ── Main layout: no left margin, full width ── */
   .dash-main { margin-left: 0 !important; }
@@ -2048,9 +2135,6 @@ body.theme-light .login-form-wrap {
 
 /* Hide old bare icon button */
 .login-theme-btn { display: none !important; }
-
-/* Hide login theme pill when dashboard is active */
-body.dashboard-active .login-theme-pill { display: none !important; }
 
 /* ══════════════════════════════════════
    LIGHT THEME — DASHBOARD OVERRIDES
@@ -2381,10 +2465,7 @@ body.theme-light #photoDropZone { border-color: var(--line) !important; backgrou
   .idcard-actions { flex-direction: column; }
   .btn-idcard { justify-content: center; }
   
-  /* Login */
-  .login-right { padding: 24px 20px; }
-  .login-form-wrap { padding: 28px 22px; border-radius: 14px; }
-  .login-form-wrap h2 { font-size: 20px; }
+  /* Login — handled in first mobile block above */
 }
 
 @media(max-width:380px){
@@ -2691,6 +2772,11 @@ body.theme-light .comms-ch-btn-gp { color: inherit; }
     <div class="login-footer-txt">Academic Year 2026-2027<br>© 2026 UM2IUC. All rights reserved.</div>
   </div>
   <div class="login-right">
+    <!-- Mobile only: branding shown above the form card (hidden on desktop via CSS) -->
+    <div class="login-mobile-brand" style="display:none">
+      <span class="mob-brand-abbr">UM2IUC</span>
+      <span class="mob-brand-title">IRIS System</span>
+    </div>
     <div class="login-form-wrap">
      <img src="/iris.svg" alt="IRIS Logo" style="height:52px;width:auto;object-fit:contain;margin-bottom:20px;opacity:.85;display:block">
       <h2>Welcome to IRIS!</h2>
