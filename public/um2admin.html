@@ -2135,26 +2135,7 @@ ALTER TABLE academic_years ADD COLUMN IF NOT EXISTS program_id text REFERENCES d
           <div class="form-group">
             <label class="form-label">Department <span style="color:var(--crimson)">*</span></label>
             <select class="form-input" id="sp-department">
-              <option value="">Select department…</option>
-              <option>Anatomy</option>
-              <option>Physiology</option>
-              <option>Biochemistry</option>
-              <option>Pharmacology</option>
-              <option>Pathology</option>
-              <option>Microbiology</option>
-              <option>Community Medicine</option>
-              <option>Forensic Medicine</option>
-              <option>Internal Medicine</option>
-              <option>Surgery</option>
-              <option>Obstetrics & Gynaecology</option>
-              <option>Paediatrics</option>
-              <option>Psychiatry</option>
-              <option>Ophthalmology</option>
-              <option>ENT</option>
-              <option>Orthopaedics</option>
-              <option>Radiology</option>
-              <option>Anaesthesiology</option>
-              <option>Administration</option>
+              <option value="">Loading departments…</option>
             </select>
           </div>
           <div class="form-group">
@@ -2192,15 +2173,15 @@ ALTER TABLE academic_years ADD COLUMN IF NOT EXISTS program_id text REFERENCES d
         </div>
       </div>
 
-      <!-- Schedule / Room Booking -->
+      <!-- Timetable / Room Booking -->
       <div class="card" style="margin-top:16px">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
           <div class="card-title" style="margin-bottom:0">Teaching Schedule & Room Booking</div>
-          <button class="btn btn-outline btn-sm" onclick="addScheduleRow()">+ Add Slot</button>
+          <button class="btn btn-primary btn-sm" onclick="openTimetableModal()">+ Add Slot</button>
         </div>
-        <p style="font-size:12px;color:var(--ink3);margin-bottom:14px">Select your courses, lecture times and rooms. Occupied slots are shown system-wide in the Lecture Rooms timetable.</p>
-        <div id="scheduleRows" style="display:flex;flex-direction:column;gap:10px"></div>
-        <div id="scheduleEmpty" style="text-align:center;padding:24px;color:var(--ink3);font-size:13px">No schedule added yet. Click "+ Add Slot" to start.</div>
+        <p style="font-size:12px;color:var(--ink3);margin-bottom:14px">Book a course, room and time slot. Conflicts are checked live — a room cannot be double-booked.</p>
+        <div id="myTimetableList" style="display:flex;flex-direction:column;gap:8px"></div>
+        <div id="myTimetableEmpty" style="text-align:center;padding:24px;color:var(--ink3);font-size:13px">No slots booked yet. Click "+ Add Slot" to start.</div>
       </div>
     </div>
   </div>
@@ -2212,6 +2193,53 @@ ALTER TABLE academic_years ADD COLUMN IF NOT EXISTS program_id text REFERENCES d
 <!-- ════════════════════════════════════════ -->
 <!-- MODALS -->
 <!-- ════════════════════════════════════════ -->
+
+<!-- Timetable Slot Modal -->
+<div class="modal-overlay" id="timetableModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="timetableModalTitle">Add Timetable Slot</div>
+      <button class="modal-close" onclick="closeModal('timetableModal')">✕</button>
+    </div>
+    <div class="form-grid">
+      <div class="form-group full">
+        <label>Course <span style="color:var(--crimson)">*</span></label>
+        <select id="tt-course" class="form-input">
+          <option value="">Loading courses…</option>
+        </select>
+      </div>
+      <div class="form-group full">
+        <label>Lecture Room <span style="color:var(--crimson)">*</span></label>
+        <select id="tt-room" class="form-input">
+          <option value="">Loading rooms…</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Day <span style="color:var(--crimson)">*</span></label>
+        <select id="tt-day" class="form-input">
+          <option value="">Select day…</option>
+          <option>Mon</option><option>Tue</option><option>Wed</option>
+          <option>Thu</option><option>Fri</option><option>Sat</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Start Time <span style="color:var(--crimson)">*</span></label>
+        <input type="time" id="tt-start" class="form-input">
+      </div>
+      <div class="form-group">
+        <label>End Time <span style="color:var(--crimson)">*</span></label>
+        <input type="time" id="tt-end" class="form-input">
+      </div>
+      <div class="form-group full">
+        <div id="tt-conflict-msg" style="display:none;background:#FEF2F4;border:1px solid #FACDD3;border-radius:var(--r);padding:10px 14px;font-size:12px;color:var(--crimson)"></div>
+      </div>
+    </div>
+    <div class="form-actions">
+      <button class="btn btn-primary" onclick="saveTimetableSlot()">💾 Save Slot</button>
+      <button class="btn btn-outline" onclick="closeModal('timetableModal')">Cancel</button>
+    </div>
+  </div>
+</div>
 
 <!-- Edit Student Modal -->
 <div class="modal-overlay" id="editModal">
@@ -3063,119 +3091,46 @@ function showViewTitled(viewId) {
 
 // ── STAFF PROFILE ──
 let staffProfilePublished = false;
-let scheduleRowCount = 0;
-// Courses from system (populated dynamically)
 let _profileCourses = [];
 let _profileRooms = [];
+let _myTimetable = [];   // slots from lecture_timetable for current user
+let _editingTimetableId = null;
+
+// ── Load departments from DB into dropdown ──
+async function loadDepartments() {
+  const sel = document.getElementById('sp-department');
+  if (!sel) return;
+  const { data } = await db.from('departments').select('name').eq('is_active', true).order('name').catch(() => ({ data: null }));
+  if (!data) { sel.innerHTML = '<option value="">Could not load departments</option>'; return; }
+  const cur = sel.dataset.current || '';
+  sel.innerHTML = '<option value="">Select department…</option>' +
+    data.map(d => `<option value="${d.name}" ${d.name === cur ? 'selected' : ''}>${d.name}</option>`).join('');
+}
 
 async function loadStaffProfile() {
   if (!currentUser) return;
-  // Load from supabase staff_profiles table if exists, else show blank
+  await loadDepartments();
   const { data } = await db.from('staff_profiles').select('*').eq('user_id', currentUser.id).single().catch(() => ({ data: null }));
-  if (!data) { populateScheduleRoomOptions(); return; }
-  document.getElementById('sp-nickname').value = data.nickname || '';
-  document.getElementById('sp-realname').value = data.real_name || '';
-  document.getElementById('sp-department').value = data.department || '';
-  document.getElementById('sp-title').value = data.title || '';
-  document.getElementById('sp-qualifications').value = data.qualifications || '';
-  document.getElementById('sp-capacity').value = data.capacity || '';
-  document.getElementById('sp-bio').value = data.bio || '';
-  document.getElementById('sp-guestLecturer').checked = !!data.guest_lecturer;
-  staffProfilePublished = !!data.published;
-  updatePublishUI();
-  if (data.photo_url) setStaffPhoto(data.photo_url);
-  if (data.schedule && Array.isArray(data.schedule)) {
-    document.getElementById('scheduleRows').innerHTML = '';
-    scheduleRowCount = 0;
-    data.schedule.forEach(row => addScheduleRow(row));
+  if (data) {
+    document.getElementById('sp-nickname').value       = data.nickname || '';
+    document.getElementById('sp-realname').value       = data.real_name || '';
+    document.getElementById('sp-title').value          = data.title || '';
+    document.getElementById('sp-qualifications').value = data.qualifications || '';
+    document.getElementById('sp-capacity').value       = data.capacity || '';
+    document.getElementById('sp-bio').value            = data.bio || '';
+    document.getElementById('sp-guestLecturer').checked = !!data.guest_lecturer;
+    staffProfilePublished = !!data.published;
+    updatePublishUI();
+    if (data.photo_url) setStaffPhoto(data.photo_url);
+    // Set department after options are loaded
+    const depSel = document.getElementById('sp-department');
+    if (depSel && data.department) {
+      depSel.dataset.current = data.department;
+      // Try setting immediately; loadDepartments may already have rendered options
+      depSel.value = data.department;
+    }
   }
-  populateScheduleRoomOptions();
-}
-
-async function populateScheduleRoomOptions() {
-  // Populate course options from loaded courses array
-  _profileCourses = (typeof courses !== 'undefined' && courses.length) ? courses : [];
-  // Populate room options from Supabase if not cached
-  if (!_profileRooms.length) {
-    const { data } = await db.from('lecture_rooms').select('id,name,capacity').catch(() => ({ data: [] }));
-    _profileRooms = data || [];
-  }
-  // Refresh all existing rows' selects
-  document.querySelectorAll('.schedule-course-sel').forEach(sel => {
-    const cur = sel.value;
-    sel.innerHTML = '<option value="">Select course…</option>' + _profileCourses.map(c => `<option value="${c.id}" ${c.id==cur?'selected':''}>${c.name||c.course_name||c.id}</option>`).join('');
-  });
-  document.querySelectorAll('.schedule-room-sel').forEach(sel => {
-    const cur = sel.value;
-    sel.innerHTML = '<option value="">Select room…</option>' + _profileRooms.map(r => `<option value="${r.id}" ${r.id==cur?'selected':''}>${r.name}</option>`).join('');
-  });
-}
-
-function addScheduleRow(data) {
-  scheduleRowCount++;
-  const rowId = 'sr_' + scheduleRowCount;
-  const courseOpts = '<option value="">Select course…</option>' + _profileCourses.map(c => `<option value="${c.id}" ${data&&c.id==data.course_id?'selected':''}>${c.name||c.course_name||c.id}</option>`).join('');
-  const roomOpts = '<option value="">Select room…</option>' + _profileRooms.map(r => `<option value="${r.id}" ${data&&r.id==data.room_id?'selected':''}>${r.name}</option>`).join('');
-  const days = ['Mon','Tue','Wed','Thu','Fri','Sat'];
-  const dayOpts = days.map(d => `<option value="${d}" ${data&&data.day==d?'selected':''}>${d}</option>`).join('');
-  const row = document.createElement('div');
-  row.className = 'schedule-row';
-  row.id = rowId;
-  row.innerHTML = `
-    <select class="schedule-course-sel" title="Course">${courseOpts}</select>
-    <select class="schedule-room-sel" title="Room" onchange="checkRoomOccupied(this)">${roomOpts}</select>
-    <div style="display:flex;gap:4px">
-      <select style="flex:1;background:var(--white);border:1px solid var(--line);border-radius:var(--r);padding:7px 6px;font-size:11px;color:var(--ink);outline:none;font-family:'DM Sans',sans-serif" title="Day">${dayOpts}</select>
-    </div>
-    <div style="display:flex;gap:4px;align-items:center">
-      <input type="time" value="${data&&data.time_start||''}" title="Start" style="flex:1;background:var(--white);border:1px solid var(--line);border-radius:var(--r);padding:6px;font-size:11px;color:var(--ink);outline:none">
-      <span style="font-size:10px;color:var(--ink3)">–</span>
-      <input type="time" value="${data&&data.time_end||''}" title="End" style="flex:1;background:var(--white);border:1px solid var(--line);border-radius:var(--r);padding:6px;font-size:11px;color:var(--ink);outline:none">
-    </div>
-    <button class="schedule-row-del" onclick="document.getElementById('${rowId}').remove();updateScheduleEmpty()" title="Remove">
-      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-    </button>`;
-  document.getElementById('scheduleRows').appendChild(row);
-  updateScheduleEmpty();
-}
-
-function updateScheduleEmpty() {
-  const rows = document.getElementById('scheduleRows');
-  const empty = document.getElementById('scheduleEmpty');
-  if (rows && empty) empty.style.display = rows.children.length ? 'none' : 'block';
-}
-
-async function checkRoomOccupied(sel) {
-  const roomId = sel.value;
-  if (!roomId) return;
-  // Check if any other staff has booked this room at overlapping time
-  // (simplified: just show a note — full conflict check would need time comparison)
-  const { data } = await db.from('staff_profiles').select('nickname,schedule').neq('user_id', currentUser.id).catch(() => ({ data: [] }));
-  if (!data) return;
-  const conflicts = [];
-  (data || []).forEach(sp => {
-    (sp.schedule || []).forEach(slot => {
-      if (slot.room_id == roomId) conflicts.push(sp.nickname + ' (' + slot.day + ' ' + slot.time_start + '–' + slot.time_end + ')');
-    });
-  });
-  if (conflicts.length) {
-    toast('⚠ Room occupied: ' + conflicts.join(', '), '!');
-  }
-}
-
-function getScheduleData() {
-  const rows = document.getElementById('scheduleRows').children;
-  return Array.from(rows).map(row => {
-    const sels = row.querySelectorAll('select');
-    const times = row.querySelectorAll('input[type=time]');
-    return {
-      course_id: sels[0]?.value || '',
-      room_id: sels[1]?.value || '',
-      day: sels[2]?.value || '',
-      time_start: times[0]?.value || '',
-      time_end: times[1]?.value || '',
-    };
-  });
+  await loadMyTimetable();
 }
 
 async function saveStaffProfile() {
@@ -3183,22 +3138,166 @@ async function saveStaffProfile() {
   const nickname = document.getElementById('sp-nickname').value.trim();
   if (!nickname) { toast('Nickname is required.', '!'); return; }
   const payload = {
-    user_id: currentUser.id,
+    user_id:        currentUser.id,
     nickname,
-    real_name: document.getElementById('sp-realname').value.trim(),
-    department: document.getElementById('sp-department').value,
-    title: document.getElementById('sp-title').value,
+    real_name:      document.getElementById('sp-realname').value.trim(),
+    department:     document.getElementById('sp-department').value,
+    title:          document.getElementById('sp-title').value,
     qualifications: document.getElementById('sp-qualifications').value.trim(),
-    capacity: document.getElementById('sp-capacity').value.trim(),
-    bio: document.getElementById('sp-bio').value.trim(),
+    capacity:       document.getElementById('sp-capacity').value.trim(),
+    bio:            document.getElementById('sp-bio').value.trim(),
     guest_lecturer: document.getElementById('sp-guestLecturer').checked,
-    published: staffProfilePublished,
-    schedule: getScheduleData(),
-    updated_at: new Date().toISOString(),
+    published:      staffProfilePublished,
+    updated_at:     new Date().toISOString(),
   };
   const { error } = await db.from('staff_profiles').upsert(payload, { onConflict: 'user_id' });
   if (error) { toast('Save failed: ' + error.message, '✗'); return; }
   toast('Profile saved!', '✓');
+}
+
+// ── TIMETABLE ──
+async function loadMyTimetable() {
+  if (!currentUser) return;
+  // Load courses + rooms for dropdowns
+  const [cRes, rRes] = await Promise.all([
+    db.from('courses').select('id,name,course_name').order('name').catch(() => ({ data: [] })),
+    db.from('lecture_rooms').select('id,subject').order('subject').catch(() => ({ data: [] }))
+  ]);
+  _profileCourses = cRes.data || [];
+  _profileRooms   = rRes.data || [];
+
+  // Load this user's timetable slots
+  const { data } = await db.from('lecture_timetable').select('*').eq('staff_id', currentUser.id).order('day').order('time_start').catch(() => ({ data: [] }));
+  _myTimetable = data || [];
+  renderMyTimetable();
+}
+
+function renderMyTimetable() {
+  const list  = document.getElementById('myTimetableList');
+  const empty = document.getElementById('myTimetableEmpty');
+  if (!list) return;
+  if (!_myTimetable.length) {
+    list.innerHTML = '';
+    if (empty) empty.style.display = 'block';
+    return;
+  }
+  if (empty) empty.style.display = 'none';
+  list.innerHTML = _myTimetable.map(slot => {
+    const course = _profileCourses.find(c => c.id === slot.course_id);
+    const room   = _profileRooms.find(r => r.id === slot.room_id);
+    const cName  = course ? (course.name || course.course_name || course.id) : slot.course_id;
+    const rName  = room   ? (room.subject || room.id) : slot.room_id;
+    return `<div style="display:grid;grid-template-columns:1fr 1fr 80px 130px 72px;gap:8px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:10px 14px">
+      <div style="font-size:13px;font-weight:500;color:var(--ink)">${cName}</div>
+      <div style="font-size:12px;color:var(--ink2)">${rName}</div>
+      <div style="font-size:12px;font-weight:600;color:var(--blue)">${slot.day}</div>
+      <div style="font-size:12px;color:var(--ink3);font-family:monospace">${slot.time_start} – ${slot.time_end}</div>
+      <div style="display:flex;gap:6px">
+        <button class="btn btn-outline btn-sm" onclick="openTimetableModal('${slot.id}')">Edit</button>
+        <button class="btn btn-danger btn-sm" onclick="deleteTimetableSlot('${slot.id}')">
+          <svg style="width:12px;height:12px;stroke:currentColor;stroke-width:2;fill:none;stroke-linecap:round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+async function openTimetableModal(slotId) {
+  _editingTimetableId = slotId || null;
+  // Populate course dropdown
+  const cSel = document.getElementById('tt-course');
+  const rSel = document.getElementById('tt-room');
+  cSel.innerHTML = '<option value="">Select course…</option>' +
+    _profileCourses.map(c => `<option value="${c.id}">${c.name || c.course_name || c.id}</option>`).join('');
+  rSel.innerHTML = '<option value="">Select room…</option>' +
+    _profileRooms.map(r => `<option value="${r.id}">${r.subject || r.id}</option>`).join('');
+
+  document.getElementById('tt-conflict-msg').style.display = 'none';
+
+  if (slotId) {
+    const slot = _myTimetable.find(s => s.id === slotId);
+    if (slot) {
+      cSel.value = slot.course_id;
+      rSel.value = slot.room_id;
+      document.getElementById('tt-day').value   = slot.day;
+      document.getElementById('tt-start').value = slot.time_start;
+      document.getElementById('tt-end').value   = slot.time_end;
+    }
+    document.getElementById('timetableModalTitle').textContent = 'Edit Timetable Slot';
+  } else {
+    cSel.value = ''; rSel.value = '';
+    document.getElementById('tt-day').value   = '';
+    document.getElementById('tt-start').value = '';
+    document.getElementById('tt-end').value   = '';
+    document.getElementById('timetableModalTitle').textContent = 'Add Timetable Slot';
+  }
+  document.getElementById('timetableModal').classList.add('open');
+}
+
+async function saveTimetableSlot() {
+  const course_id   = document.getElementById('tt-course').value;
+  const room_id     = document.getElementById('tt-room').value;
+  const day         = document.getElementById('tt-day').value;
+  const time_start  = document.getElementById('tt-start').value;
+  const time_end    = document.getElementById('tt-end').value;
+  const conflictEl  = document.getElementById('tt-conflict-msg');
+
+  if (!course_id || !room_id || !day || !time_start || !time_end) {
+    toast('Please fill in all fields.', '⚠'); return;
+  }
+  if (time_end <= time_start) {
+    toast('End time must be after start time.', '⚠'); return;
+  }
+
+  // ── Overlap check: query all slots for same room + day ──
+  conflictEl.style.display = 'none';
+  const { data: existing } = await db.from('lecture_timetable')
+    .select('id,time_start,time_end,staff_id')
+    .eq('room_id', room_id)
+    .eq('day', day)
+    .catch(() => ({ data: [] }));
+
+  const conflicts = (existing || []).filter(s => {
+    if (_editingTimetableId && s.id === _editingTimetableId) return false; // skip self
+    // Overlap: new slot starts before existing ends AND new slot ends after existing starts
+    return time_start < s.time_end && time_end > s.time_start;
+  });
+
+  if (conflicts.length) {
+    conflictEl.textContent = '⚠ This room is already booked during that time by another staff member. Please choose a different room, day, or time.';
+    conflictEl.style.display = 'block';
+    return;
+  }
+
+  const payload = {
+    staff_id: currentUser.id,
+    course_id, room_id, day, time_start, time_end,
+    updated_at: new Date().toISOString(),
+  };
+
+  if (_editingTimetableId) {
+    const { error } = await db.from('lecture_timetable').update(payload).eq('id', _editingTimetableId);
+    if (error) { toast('Update failed: ' + error.message, '✗'); return; }
+    const idx = _myTimetable.findIndex(s => s.id === _editingTimetableId);
+    if (idx >= 0) _myTimetable[idx] = Object.assign({}, _myTimetable[idx], payload);
+    toast('Slot updated.', '✓');
+  } else {
+    const { data, error } = await db.from('lecture_timetable').insert(payload).select().single();
+    if (error) { toast('Save failed: ' + error.message, '✗'); return; }
+    _myTimetable.push(data);
+    toast('Slot added.', '✓');
+  }
+  closeModal('timetableModal');
+  renderMyTimetable();
+}
+
+async function deleteTimetableSlot(slotId) {
+  if (!confirm('Delete this timetable slot?')) return;
+  const { error } = await db.from('lecture_timetable').delete().eq('id', slotId);
+  if (error) { toast('Delete failed: ' + error.message, '✗'); return; }
+  _myTimetable = _myTimetable.filter(s => s.id !== slotId);
+  renderMyTimetable();
+  toast('Slot removed.', '🗑');
 }
 
 function toggleProfilePublish() {
