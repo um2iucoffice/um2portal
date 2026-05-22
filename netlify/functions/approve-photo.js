@@ -131,44 +131,41 @@ exports.handler = async function (event) {
 
     console.log(`[approve-photo] Image dimensions: ${width}x${height}`);
 
-    // ── 3. Build SVG watermark overlay ───────────────────────────────────
+  // ── 3. Build watermark tiles using sharp's built-in text ─────────────
+    const tiles = [];
     const cols = Math.ceil(width  / WM_SPACING_X) + 6;
     const rows = Math.ceil(height / WM_SPACING_Y) + 6;
 
-    let textElements = '';
     for (let r = 0; r < rows; r++) {
       for (let c = 0; c < cols; c++) {
-        const x = -Math.ceil(cols / 2) * WM_SPACING_X + c * WM_SPACING_X + width  / 2;
-        const y = -Math.ceil(rows / 2) * WM_SPACING_Y + r * WM_SPACING_Y + height / 2;
-        // Escape WM_TEXT to be safe inside SVG XML
-        const safeText = WM_TEXT.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-        textElements += `<text x="${x}" y="${y}" transform="rotate(${WM_ANGLE}, ${x}, ${y})">${safeText}</text>\n`;
+        const x = Math.round(-Math.ceil(cols / 2) * WM_SPACING_X + c * WM_SPACING_X + width  / 2);
+        const y = Math.round(-Math.ceil(rows / 2) * WM_SPACING_Y + r * WM_SPACING_Y + height / 2);
+
+        const textSvg = Buffer.from(
+          `<svg xmlns="http://www.w3.org/2000/svg" width="120" height="24">` +
+          `<text x="60" y="18" ` +
+          `font-family="DejaVu Sans,Liberation Sans,FreeSans,Nimbus Sans,Ubuntu,sans-serif" ` +
+          `font-size="16" font-weight="bold" fill="rgba(255,255,255,0.40)" ` +
+          `text-anchor="middle">UM2 UM2 UM2</text>` +
+          `</svg>`
+        );
+
+        // Rotate the tile by compositing onto a transparent canvas
+        const rotated = await sharp(textSvg)
+          .rotate(WM_ANGLE, { background: { r: 0, g: 0, b: 0, alpha: 0 } })
+          .png()
+          .toBuffer();
+
+        tiles.push({ input: rotated, top: Math.max(0, y - 12), left: Math.max(0, x - 60), blend: 'over' });
       }
     }
 
-    const svgOverlay = Buffer.from(`
-      <svg width="${width}" height="${height}" xmlns="http://www.w3.org/2000/svg">
-        <style>
-          text {
-            font-family: "Liberation Sans", "DejaVu Sans", FreeSans, sans-serif;
-            font-size: ${WM_FONT_SIZE}px;
-            font-weight: bold;
-            fill: rgba(255,255,255,0.35);
-            text-anchor: middle;
-            dominant-baseline: middle;
-          }
-        </style>
-        ${textElements}
-      </svg>
-    `);
-
-    // ── 4. Composite watermark and export as JPEG ────────────────────────
+    // ── 4. Composite all tiles and export as JPEG ─────────────────────────
     console.log('[approve-photo] Applying watermark...');
     const watermarkedBuffer = await sharp(imgBuffer)
-      .composite([{ input: svgOverlay, blend: 'over' }])
+      .composite(tiles)
       .jpeg({ quality: 90 })
       .toBuffer();
-
     console.log(`[approve-photo] Watermarked buffer: ${watermarkedBuffer.length} bytes`);
 
     // ── 5. Upload to Supabase Storage ────────────────────────────────────
