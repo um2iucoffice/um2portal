@@ -2505,6 +2505,162 @@ body.theme-light .mob-more-item.danger { color: var(--crimson); }
 body.theme-light .mob-more-item.danger svg { color: var(--crimson); }
 .mob-more-overlay { display:none; position:fixed; inset:0; z-index:65; }
 .mob-more-overlay.open { display:block; }
+
+/* ── COMMUNICATION SECTION ── */
+.comms-loading {
+  display: flex; align-items: center; gap: 10px;
+  padding: 28px 24px; color: rgba(255,255,255,0.35);
+  font-size: 13px;
+}
+.comms-loading svg { animation: spin 1.1s linear infinite; flex-shrink: 0; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.comms-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin-bottom: 24px;
+}
+@media(max-width:700px){ .comms-grid { grid-template-columns: 1fr; } }
+
+.comms-channel-card {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 14px;
+  overflow: hidden;
+  transition: border-color .18s, box-shadow .18s, transform .18s;
+  display: flex; flex-direction: column;
+  text-decoration: none;
+  cursor: pointer;
+  position: relative;
+}
+.comms-channel-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 28px rgba(0,0,0,0.25);
+}
+.comms-channel-card.telegram  { border-color: rgba(38,167,224,0.2); }
+.comms-channel-card.telegram:hover { border-color: rgba(38,167,224,0.45); box-shadow: 0 8px 28px rgba(38,167,224,0.12); }
+.comms-channel-card.whatsapp  { border-color: rgba(37,211,102,0.2); }
+.comms-channel-card.whatsapp:hover { border-color: rgba(37,211,102,0.45); box-shadow: 0 8px 28px rgba(37,211,102,0.12); }
+.comms-channel-card.facebook  { border-color: rgba(66,103,178,0.2); }
+.comms-channel-card.facebook:hover { border-color: rgba(66,103,178,0.45); box-shadow: 0 8px 28px rgba(66,103,178,0.12); }
+.comms-channel-card.viber     { border-color: rgba(123,101,191,0.2); }
+.comms-channel-card.viber:hover { border-color: rgba(123,101,191,0.45); box-shadow: 0 8px 28px rgba(123,101,191,0.12); }
+.comms-channel-card.other     { border-color: rgba(255,255,255,0.1); }
+.comms-channel-card.other:hover { border-color: rgba(255,255,255,0.22); }
+
+.comms-channel-card.disabled  {
+  opacity: 0.48; cursor: default; pointer-events: none;
+}
+
+.comms-ch-accent {
+  height: 3px; width: 100%;
+}
+.telegram  .comms-ch-accent { background: linear-gradient(90deg,#229ED9,#4FC5E8); }
+.whatsapp  .comms-ch-accent { background: linear-gradient(90deg,#25D366,#5BE078); }
+.facebook  .comms-ch-accent { background: linear-gradient(90deg,#4267B2,#6A85D1); }
+.viber     .comms-ch-accent { background: linear-gradient(90deg,#7B65BF,#A993D9); }
+.other     .comms-ch-accent { background: linear-gradient(90deg,var(--crimson),var(--crimson-mid)); }
+
+.comms-ch-body {
+  padding: 20px 22px 18px;
+  display: flex; gap: 16px; align-items: flex-start; flex: 1;
+}
+.comms-ch-icon {
+  width: 44px; height: 44px; border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.telegram  .comms-ch-icon { background: rgba(38,167,224,0.12); }
+.whatsapp  .comms-ch-icon { background: rgba(37,211,102,0.12); }
+.facebook  .comms-ch-icon { background: rgba(66,103,178,0.12); }
+.viber     .comms-ch-icon { background: rgba(123,101,191,0.12); }
+.other     .comms-ch-icon { background: rgba(139,26,46,0.12); }
+
+.comms-ch-info { flex: 1; min-width: 0; }
+.comms-ch-type {
+  font-size: 10px; font-weight: 700; letter-spacing: 1.2px;
+  text-transform: uppercase; margin-bottom: 3px;
+}
+.telegram  .comms-ch-type { color: #4FC5E8; }
+.whatsapp  .comms-ch-type { color: #5BE078; }
+.facebook  .comms-ch-type { color: #6A85D1; }
+.viber     .comms-ch-type { color: #A993D9; }
+.other     .comms-ch-type { color: rgba(255,255,255,0.5); }
+
+.comms-ch-name {
+  font-size: 15px; font-weight: 700;
+  color: rgba(255,255,255,0.88); margin-bottom: 5px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.comms-ch-desc {
+  font-size: 12px; color: rgba(255,255,255,0.35);
+  line-height: 1.55; display: -webkit-box;
+  -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+}
+.comms-ch-footer {
+  padding: 10px 22px 14px;
+  display: flex; align-items: center; justify-content: space-between;
+  border-top: 1px solid rgba(255,255,255,0.05);
+}
+.comms-ch-members {
+  font-size: 11px; color: rgba(255,255,255,0.28);
+  display: flex; align-items: center; gap: 5px;
+}
+.comms-ch-join {
+  font-size: 11px; font-weight: 700; letter-spacing: .5px;
+  padding: 5px 13px; border-radius: 99px;
+  transition: opacity .15s;
+}
+.telegram  .comms-ch-join { background: rgba(38,167,224,0.18); color: #4FC5E8; border: 1px solid rgba(38,167,224,0.25); }
+.whatsapp  .comms-ch-join { background: rgba(37,211,102,0.18); color: #5BE078; border: 1px solid rgba(37,211,102,0.25); }
+.facebook  .comms-ch-join { background: rgba(66,103,178,0.18); color: #6A85D1; border: 1px solid rgba(66,103,178,0.25); }
+.viber     .comms-ch-join { background: rgba(123,101,191,0.18); color: #A993D9; border: 1px solid rgba(123,101,191,0.25); }
+.other     .comms-ch-join { background: rgba(139,26,46,0.18); color: #e05470; border: 1px solid rgba(139,26,46,0.25); }
+
+/* ── Comms action buttons ── */
+.comms-ch-actions { display: flex; gap: 7px; flex-wrap: wrap; }
+.comms-ch-btn {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-size: 11px; font-weight: 700; letter-spacing: .4px;
+  padding: 5px 12px; border-radius: 99px;
+  text-decoration: none; border: 1px solid transparent;
+  transition: opacity .15s, transform .12s;
+  white-space: nowrap;
+}
+.comms-ch-btn:hover { opacity: .82; transform: translateY(-1px); }
+.comms-ch-btn svg { flex-shrink: 0; }
+
+/* Channel button — platform tint */
+.telegram  .comms-ch-btn-channel { background: rgba(38,167,224,0.18); color: #4FC5E8; border-color: rgba(38,167,224,0.3); }
+.whatsapp  .comms-ch-btn-channel { background: rgba(37,211,102,0.18); color: #5BE078; border-color: rgba(37,211,102,0.3); }
+.facebook  .comms-ch-btn-channel { background: rgba(66,103,178,0.18); color: #6A85D1; border-color: rgba(66,103,178,0.3); }
+.viber     .comms-ch-btn-channel { background: rgba(123,101,191,0.18); color: #A993D9; border-color: rgba(123,101,191,0.3); }
+.other     .comms-ch-btn-channel { background: rgba(139,26,46,0.18); color: #e05470; border-color: rgba(139,26,46,0.3); }
+
+/* GP / Group button — slightly brighter fill */
+.telegram  .comms-ch-btn-gp { background: rgba(38,167,224,0.28); color: #fff; border-color: rgba(38,167,224,0.4); }
+.whatsapp  .comms-ch-btn-gp { background: rgba(37,211,102,0.28); color: #fff; border-color: rgba(37,211,102,0.4); }
+.facebook  .comms-ch-btn-gp { background: rgba(66,103,178,0.28); color: #fff; border-color: rgba(66,103,178,0.4); }
+.viber     .comms-ch-btn-gp { background: rgba(123,101,191,0.28); color: #fff; border-color: rgba(123,101,191,0.4); }
+.other     .comms-ch-btn-gp { background: rgba(139,26,46,0.28); color: #fff; border-color: rgba(139,26,46,0.4); }
+
+/* Light theme overrides for comms */
+body.theme-light .comms-channel-card {
+  background: var(--white); border-color: var(--line);
+}
+body.theme-light .comms-channel-card.telegram:hover  { border-color: rgba(38,167,224,0.4); }
+body.theme-light .comms-channel-card.whatsapp:hover  { border-color: rgba(37,211,102,0.4); }
+body.theme-light .comms-channel-card.facebook:hover  { border-color: rgba(66,103,178,0.4); }
+body.theme-light .comms-channel-card.viber:hover     { border-color: rgba(123,101,191,0.4); }
+body.theme-light .comms-channel-card.other:hover     { border-color: rgba(139,26,46,0.3); }
+body.theme-light .comms-ch-name  { color: var(--ink); }
+body.theme-light .comms-ch-desc  { color: var(--ink3); }
+body.theme-light .comms-ch-footer { border-top-color: var(--line); }
+body.theme-light .comms-ch-members { color: var(--ink3); }
+body.theme-light .comms-loading { color: var(--ink3); }
+body.theme-light .comms-ch-btn-channel,
+body.theme-light .comms-ch-btn-gp { color: inherit; }
 </style>
 </head>
 <body>
@@ -2610,6 +2766,10 @@ body.theme-light .mob-more-item.danger svg { color: var(--crimson); }
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
       Edit Info
     </button>
+    <button class="mob-more-item" onclick="mobSwitchTab('comms',null);closeMobMore()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+      Communication
+    </button>
     <button class="mob-more-item" onclick="toggleTheme();closeMobMore()">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/></svg>
       Toggle Theme
@@ -2682,6 +2842,11 @@ body.theme-light .mob-more-item.danger svg { color: var(--crimson); }
       <button class="sbnav-item" data-section="editinfo" onclick="switchSection('editinfo',this)" id="navEditInfo">
         <svg class="sbnav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
         <span class="sbnav-label">Edit My Info <span id="editInfoBadge" style="display:none;background:var(--crimson);color:#fff;font-size:9px;font-weight:700;padding:1px 6px;border-radius:99px;margin-left:4px">Pending</span></span>
+      </button>
+
+      <button class="sbnav-item" data-section="comms" onclick="switchSection('comms',this)" id="navComms">
+        <svg class="sbnav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        <span class="sbnav-label">Communication</span>
       </button>
 
       <div class="sb-section-lbl" style="margin-top:8px">External</div>
@@ -3032,10 +3197,7 @@ body.theme-light .mob-more-item.danger svg { color: var(--crimson); }
 
         <!-- Pending request notice -->
         <div id="editInfoPendingNotice" style="display:none;margin-bottom:20px;padding:14px 18px;border-radius:10px;border:1px solid rgba(154,123,47,0.35);background:rgba(154,123,47,0.1)">
-          <div style="font-size:13px;font-weight:700;color:var(--gold);margin-bottom:4px<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-  <circle cx="12" cy="12" r="10"/>
-  <polyline points="12 6 12 12 16 14"/>
-</svg> Pending Approval</div>
+          <div style="font-size:13px;font-weight:700;color:var(--gold);margin-bottom:4px">⏳ Pending Approval</div>
           <div id="editInfoPendingText" style="font-size:12px;color:var(--ink3);line-height:1.6"></div>
         </div>
 
@@ -3091,9 +3253,12 @@ body.theme-light .mob-more-item.danger svg { color: var(--crimson); }
                 onblur="this.style.borderColor='var(--line)';this.style.boxShadow='none'"></textarea>
             </div>
 
-            <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+            <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding-top:4px;border-top:1px solid rgba(255,255,255,0.06)">
               <button id="submitEditInfoBtn" onclick="submitInfoEditRequest()"
-                style="padding:11px 28px;background:var(--crimson);color:#fff;border:none;border-radius:var(--r);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:background .15s;box-shadow:0 2px 8px rgba(139,26,46,.22)">
+                style="padding:11px 32px;background:var(--crimson);color:#fff;border:none;border-radius:var(--r);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:background .15s,transform .1s;box-shadow:0 2px 8px rgba(139,26,46,.28);display:flex;align-items:center;gap:8px"
+                onmouseover="this.style.background='var(--crimson-mid)';this.style.transform='translateY(-1px)'"
+                onmouseout="this.style.background='var(--crimson)';this.style.transform=''">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22,2 15,22 11,13 2,9"/></svg>
                 Submit Request
               </button>
               <span id="editInfoStatus" style="font-size:13px;color:var(--ink3)"></span>
@@ -3170,6 +3335,34 @@ body.theme-light .mob-more-item.danger svg { color: var(--crimson); }
           </div>
         </div>
       </div>
+    </div>
+
+    <!-- COMMUNICATION -->
+    <div class="section" id="panel-comms">
+      <div class="sec-head">
+        <h2>Communication</h2>
+        <p>Official UM2IUC channels &amp; group links — stay connected with your university community.</p>
+      </div>
+
+      <!-- Loading state -->
+      <div id="commsLoading" class="comms-loading">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
+        Loading channels…
+      </div>
+
+      <!-- Error state -->
+      <div id="commsError" style="display:none;padding:20px 24px;border-radius:12px;border:1px solid rgba(139,26,46,0.25);background:rgba(139,26,46,0.07);font-size:13px;color:rgba(255,255,255,0.55);margin-bottom:20px"></div>
+
+      <!-- Channel cards grid -->
+      <div class="comms-grid" id="commsGrid" style="display:none"></div>
+
+      <!-- Empty state -->
+      <div id="commsEmpty" style="display:none;text-align:center;padding:56px 24px">
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.15)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="margin:0 auto 14px;display:block"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        <div style="font-size:14px;font-weight:600;color:rgba(255,255,255,0.3);margin-bottom:4px">No channels available</div>
+        <div style="font-size:12px;color:rgba(255,255,255,0.18)">Channel links will appear here when added by the administration.</div>
+      </div>
+
     </div>
 
   </div>
@@ -5611,12 +5804,16 @@ function applyTheme(theme) {
   } else {
     document.body.classList.remove('theme-light');
   }
-  // Update all toggle button icons
+  // Update dashboard toggle icon
   const isLight = theme === 'light';
-  const iconHtml = isLight ? MOON_SVG : SUN_SVG;
   document.querySelectorAll('#themeIconLogin, #themeIconDash').forEach(el => {
     el.outerHTML = (isLight ? MOON_SVG : SUN_SVG).replace('width="16"','id="' + el.id + '" width="16"').replace('width="18"','id="' + el.id + '" width="18"');
   });
+  // Update login pill active state
+  const darkBtn  = document.getElementById('loginThemeDark');
+  const lightBtn = document.getElementById('loginThemeLight');
+  if (darkBtn)  darkBtn.classList.toggle('active',  !isLight);
+  if (lightBtn) lightBtn.classList.toggle('active',  isLight);
   try { localStorage.setItem('iris_theme', theme); } catch(e) {}
 }
 
@@ -5755,6 +5952,132 @@ async function submitInfoEditRequest() {
 // Hook into switchSection to load edit info data on demand
 function onSwitchToEditInfo() {
   loadEditInfoSection();
+}
+
+// ── Communication section ────────────────────────────────────
+const COMMS_PLATFORM_META = {
+  telegram:  { label: 'Telegram',  colorClass: 'telegram',
+    /* Official Telegram paper-plane logo */
+    icon: `<svg width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="12" fill="#229ED9"/><path d="M5.33 11.9 17.9 7.05c.6-.22 1.12.15.92.94l-2.1 9.9c-.16.72-.58.9-1.17.56l-3.26-2.4-1.57 1.51c-.17.17-.32.32-.66.32l.23-3.33 6.02-5.43c.26-.23-.06-.36-.4-.13l-7.44 4.68-3.2-1c-.7-.22-.71-.7.15-1.03z" fill="#fff"/></svg>` },
+  whatsapp:  { label: 'WhatsApp',  colorClass: 'whatsapp',
+    /* Official WhatsApp brand logo */
+    icon: `<svg width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="12" fill="#25D366"/><path d="M17.47 6.51A7.24 7.24 0 0 0 12.01 4C8.2 4 5.1 7.1 5.1 10.9c0 1.21.32 2.4.92 3.44L5 19l4.76-1.25a7.3 7.3 0 0 0 3.25.77h.01c3.8 0 6.9-3.1 6.9-6.9 0-1.84-.72-3.57-2.02-4.87l-.43-.24zm-5.46 10.6h-.01a6.06 6.06 0 0 1-3.09-.84l-.22-.13-2.28.6.61-2.22-.15-.23a6.04 6.04 0 0 1-.92-3.2 6.07 6.07 0 0 1 6.06-6.06 6.07 6.07 0 0 1 6.07 6.07 6.07 6.07 0 0 1-6.07 6.01zm3.33-4.54c-.18-.09-1.08-.53-1.25-.59-.16-.06-.28-.09-.4.09-.12.18-.47.59-.57.71-.1.12-.21.13-.39.04a4.97 4.97 0 0 1-1.47-.9 5.5 5.5 0 0 1-1.01-1.27c-.11-.18-.01-.28.08-.37.08-.08.18-.21.27-.32.09-.11.12-.18.18-.3.06-.12.03-.23-.01-.32-.05-.09-.41-1-.57-1.37-.15-.36-.3-.31-.41-.31h-.35c-.12 0-.32.04-.48.23-.17.18-.63.62-.63 1.5 0 .89.65 1.74.74 1.86.09.12 1.28 1.95 3.1 2.74.43.19.77.3 1.03.38.43.14.82.12 1.13.07.35-.05 1.08-.44 1.23-.87.15-.43.15-.79.11-.87-.05-.08-.17-.12-.35-.21z" fill="#fff"/></svg>` },
+  facebook:  { label: 'Facebook',  colorClass: 'facebook',
+    /* Official Facebook "f" logo */
+    icon: `<svg width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="12" fill="#1877F2"/><path d="M16.5 8H14a.5.5 0 0 0-.5.5V10H16l-.5 2.5H13.5V19h-3v-6.5H9V10h1.5V8.5A3.5 3.5 0 0 1 14 5H16.5v3z" fill="#fff"/></svg>` },
+  viber:     { label: 'Viber',     colorClass: 'viber',
+    /* Viber speech-bubble style */
+    icon: `<svg width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="12" fill="#7B65BF"/><path d="M17.1 7.1C15.5 5.6 13.3 4.8 11 4.9c-4.5.2-8 3.9-8 8.4 0 1.4.4 2.8 1 4l-1.1 4 4.2-1.1c1.1.6 2.4.9 3.6.9 4.6 0 8.3-3.7 8.3-8.3 0-2.2-.9-4.3-2.4-5.7h.5zm-5.6 12.7c-1.2 0-2.4-.3-3.4-.9l-.2-.1-2.5.7.7-2.4-.2-.2c-.7-1.1-1.1-2.4-1.1-3.7 0-3.8 3.1-6.9 6.9-6.9 1.8 0 3.5.7 4.8 2 1.3 1.3 2 3 2 4.8-.1 3.8-3.2 6.9-7 6.7zm3.8-5.1c-.2-.1-1.3-.6-1.5-.7-.2-.1-.3-.1-.5.1l-.7.8c-.1.1-.2.1-.4 0-.2-.1-1-.4-1.8-1.1-.7-.6-1.1-1.3-1.2-1.5-.1-.2 0-.3.1-.4l.3-.3.2-.3c0-.1.1-.2 0-.4-.1-.1-.5-1.1-.7-1.5-.2-.4-.4-.3-.5-.3h-.4c-.1 0-.4.1-.6.3-.2.2-.8.8-.8 1.9s.8 2.2.9 2.4c.1.1 1.5 2.4 3.7 3.3.5.2.9.3 1.2.4.5.2 1 .1 1.3.1.4-.1 1.2-.5 1.4-1 .2-.5.2-.9.1-1-.1-.1-.2-.2-.4-.3z" fill="#fff"/></svg>` },
+  other:     { label: 'Link',      colorClass: 'other',
+    icon: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#e05470" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>` }
+};
+
+function getPlatformKey(url, platform) {
+  if (platform) return platform.toLowerCase();
+  if (!url) return 'other';
+  if (/t\.me|telegram/i.test(url))   return 'telegram';
+  if (/wa\.me|whatsapp/i.test(url))  return 'whatsapp';
+  if (/facebook\.com|fb\.com/i.test(url)) return 'facebook';
+  if (/viber\.com/i.test(url))       return 'viber';
+  return 'other';
+}
+
+function buildCommsCard(ch) {
+  // Support both channel link and GP (group) link
+  const channelUrl = ch.channel_link || ch.channel_url || ch.url || ch.link || '';
+  const gpUrl      = ch.gp_link || ch.group_link || ch.gp_url || '';
+  const anyUrl     = channelUrl || gpUrl;
+  const pKey       = getPlatformKey(anyUrl, ch.platform);
+  const meta       = COMMS_PLATFORM_META[pKey] || COMMS_PLATFORM_META.other;
+  const name       = ch.name || ch.title || 'Channel';
+  const desc       = ch.description || ch.desc || '';
+  const members    = ch.members || ch.member_count || '';
+
+  // Card is a div so we can have multiple links inside
+  const card = document.createElement('div');
+  card.className = `comms-channel-card ${meta.colorClass}${!anyUrl ? ' disabled' : ''}`;
+
+  // Platform-branded mini icons for buttons
+  const PLATFORM_BTN_ICONS = {
+    telegram: `<svg width="13" height="13" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="12" fill="#229ED9"/><path d="M5.33 11.9 17.9 7.05c.6-.22 1.12.15.92.94l-2.1 9.9c-.16.72-.58.9-1.17.56l-3.26-2.4-1.57 1.51c-.17.17-.32.32-.66.32l.23-3.33 6.02-5.43c.26-.23-.06-.36-.4-.13l-7.44 4.68-3.2-1c-.7-.22-.71-.7.15-1.03z" fill="#fff"/></svg>`,
+    whatsapp: `<svg width="13" height="13" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="12" fill="#25D366"/><path d="M17.47 6.51A7.24 7.24 0 0 0 12.01 4C8.2 4 5.1 7.1 5.1 10.9c0 1.21.32 2.4.92 3.44L5 19l4.76-1.25a7.3 7.3 0 0 0 3.25.77h.01c3.8 0 6.9-3.1 6.9-6.9 0-1.84-.72-3.57-2.02-4.87l-.43-.24zm-5.46 10.6h-.01a6.06 6.06 0 0 1-3.09-.84l-.22-.13-2.28.6.61-2.22-.15-.23a6.04 6.04 0 0 1-.92-3.2 6.07 6.07 0 0 1 6.06-6.06 6.07 6.07 0 0 1 6.07 6.07 6.07 6.07 0 0 1-6.07 6.01zm3.33-4.54c-.18-.09-1.08-.53-1.25-.59-.16-.06-.28-.09-.4.09-.12.18-.47.59-.57.71-.1.12-.21.13-.39.04a4.97 4.97 0 0 1-1.47-.9 5.5 5.5 0 0 1-1.01-1.27c-.11-.18-.01-.28.08-.37.08-.08.18-.21.27-.32.09-.11.12-.18.18-.3.06-.12.03-.23-.01-.32-.05-.09-.41-1-.57-1.37-.15-.36-.3-.31-.41-.31h-.35c-.12 0-.32.04-.48.23-.17.18-.63.62-.63 1.5 0 .89.65 1.74.74 1.86.09.12 1.28 1.95 3.1 2.74.43.19.77.3 1.03.38.43.14.82.12 1.13.07.35-.05 1.08-.44 1.23-.87.15-.43.15-.79.11-.87-.05-.08-.17-.12-.35-.21z" fill="#fff"/></svg>`,
+    facebook: `<svg width="13" height="13" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="12" fill="#1877F2"/><path d="M16.5 8H14a.5.5 0 0 0-.5.5V10H16l-.5 2.5H13.5V19h-3v-6.5H9V10h1.5V8.5A3.5 3.5 0 0 1 14 5H16.5v3z" fill="#fff"/></svg>`,
+    viber:    `<svg width="13" height="13" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="12" fill="#7B65BF"/><path d="M17.1 7.1C15.5 5.6 13.3 4.8 11 4.9c-4.5.2-8 3.9-8 8.4 0 1.4.4 2.8 1 4l-1.1 4 4.2-1.1c1.1.6 2.4.9 3.6.9 4.6 0 8.3-3.7 8.3-8.3 0-2.2-.9-4.3-2.4-5.7h.5zm-5.6 12.7c-1.2 0-2.4-.3-3.4-.9l-.2-.1-2.5.7.7-2.4-.2-.2c-.7-1.1-1.1-2.4-1.1-3.7 0-3.8 3.1-6.9 6.9-6.9 1.8 0 3.5.7 4.8 2 1.3 1.3 2 3 2 4.8-.1 3.8-3.2 6.9-7 6.7zm3.8-5.1c-.2-.1-1.3-.6-1.5-.7-.2-.1-.3-.1-.5.1l-.7.8c-.1.1-.2.1-.4 0-.2-.1-1-.4-1.8-1.1-.7-.6-1.1-1.3-1.2-1.5-.1-.2 0-.3.1-.4l.3-.3.2-.3c0-.1.1-.2 0-.4-.1-.1-.5-1.1-.7-1.5-.2-.4-.4-.3-.5-.3h-.4c-.1 0-.4.1-.6.3-.2.2-.8.8-.8 1.9s.8 2.2.9 2.4c.1.1 1.5 2.4 3.7 3.3.5.2.9.3 1.2.4.5.2 1 .1 1.3.1.4-.1 1.2-.5 1.4-1 .2-.5.2-.9.1-1-.1-.1-.2-.2-.4-.3z" fill="#fff"/></svg>`,
+    other:    `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>`
+  };
+  const btnIcon = PLATFORM_BTN_ICONS[pKey] || PLATFORM_BTN_ICONS.other;
+
+  // GP group icon (people)
+  const gpIcon = `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>`;
+
+  // Build the action buttons row
+  let actionsHtml = '';
+  if (channelUrl) {
+    actionsHtml += `<a href="${channelUrl}" target="_blank" rel="noopener noreferrer" class="comms-ch-btn comms-ch-btn-channel" onclick="event.stopPropagation()">${btnIcon} Channel</a>`;
+  }
+  if (gpUrl) {
+    actionsHtml += `<a href="${gpUrl}" target="_blank" rel="noopener noreferrer" class="comms-ch-btn comms-ch-btn-gp" onclick="event.stopPropagation()">${gpIcon} Join Group</a>`;
+  }
+  if (!anyUrl) {
+    actionsHtml = `<span class="comms-ch-join">Coming soon</span>`;
+  }
+
+  card.innerHTML = `
+    <div class="comms-ch-accent"></div>
+    <div class="comms-ch-body">
+      <div class="comms-ch-icon">${meta.icon}</div>
+      <div class="comms-ch-info">
+        <div class="comms-ch-type">${meta.label}</div>
+        <div class="comms-ch-name">${name}</div>
+        ${desc ? `<div class="comms-ch-desc">${desc}</div>` : ''}
+      </div>
+    </div>
+    <div class="comms-ch-footer">
+      <span class="comms-ch-members">
+        ${members ? `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg> ${members} members` : ''}
+      </span>
+      <div class="comms-ch-actions">${actionsHtml}</div>
+    </div>`;
+  return card;
+}
+
+async function loadCommsSection() {
+  const loadEl  = document.getElementById('commsLoading');
+  const errEl   = document.getElementById('commsError');
+  const gridEl  = document.getElementById('commsGrid');
+  const emptyEl = document.getElementById('commsEmpty');
+
+  if (!loadEl) return;
+
+  // Show loading, hide others
+  loadEl.style.display  = 'flex';
+  errEl.style.display   = 'none';
+  gridEl.style.display  = 'none';
+  emptyEl.style.display = 'none';
+
+  try {
+    const res  = await fetch('/.netlify/functions/get-channels');
+    const data = await res.json();
+
+    loadEl.style.display = 'none';
+
+    if (!data.success) throw new Error(data.message || 'Failed to load channels.');
+
+    const channels = data.channels || [];
+    if (channels.length === 0) {
+      emptyEl.style.display = 'block';
+      return;
+    }
+
+    gridEl.innerHTML = '';
+    channels.forEach(ch => gridEl.appendChild(buildCommsCard(ch)));
+    gridEl.style.display = 'grid';
+
+  } catch(e) {
+    loadEl.style.display  = 'none';
+    errEl.style.display   = 'block';
+    errEl.textContent     = 'Unable to load channels: ' + e.message;
+  }
 }
 
 function doSignOut() {
