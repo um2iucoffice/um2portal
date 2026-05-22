@@ -682,6 +682,7 @@ input[readonly] { color:var(--ink2); cursor:default; }
     <div class="page-actions">
       <button class="btn btn-outline btn-sm registrar-only" onclick="showView('addStudent')">Add Student</button>
       <button class="btn btn-outline btn-sm registrar-only" onclick="showView('bulkStudent')">Bulk Import</button>
+      <button class="btn btn-outline btn-sm registrar-only" onclick="openBulkGenderModal()">⚥ Set Gender</button>
       <button class="btn btn-outline btn-sm" onclick="exportStudentsCSV()">Export CSV</button>
     </div>
   </div>
@@ -1238,6 +1239,7 @@ iuc125066,CRS015,90.00,2024,1st Attempt</div>
         </div>
         <div style="display:flex;gap:8px;flex-shrink:0">
           <button class="btn btn-primary" onclick="submitGrades()">Submit &amp; Upload Grades</button>
+          <button class="btn btn-outline" onclick="refreshGradePreview()" title="Re-render preview using current Year &amp; Attempt values">↻ Refresh Preview</button>
           <button class="btn btn-outline" onclick="document.getElementById('csvPreviewArea').style.display='none'">Cancel</button>
         </div>
       </div>
@@ -1935,6 +1937,32 @@ ALTER TABLE academic_years ADD COLUMN IF NOT EXISTS program_id text REFERENCES d
     <div class="form-actions">
       <button class="btn btn-primary" onclick="saveYear()">Save Year</button>
       <button class="btn btn-outline" onclick="closeModal('yearModal')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- Bulk Gender Modal -->
+<div class="modal-overlay" id="bulkGenderModal">
+  <div class="modal" style="max-width:460px">
+    <div class="modal-header">
+      <div class="modal-title">Set Gender — Bulk Update</div>
+      <button class="modal-close" onclick="closeModal('bulkGenderModal')">✕</button>
+    </div>
+    <p style="font-size:13px;color:var(--ink2);margin-bottom:16px">Applies to all students currently visible in the table (respects active search &amp; filter). Unfiltered = all students.</p>
+    <div style="background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:12px 16px;margin-bottom:16px">
+      <span style="font-size:12px;color:var(--ink3)">Students to update:</span>
+      <strong id="bulkGenderCount" style="font-size:14px;color:var(--ink);margin-left:6px">0</strong>
+    </div>
+    <div class="form-group" style="margin-bottom:18px">
+      <label>Set Gender To</label>
+      <select id="bulkGenderValue" style="margin-top:5px">
+        <option value="male">♂ Male</option>
+        <option value="female">♀ Female</option>
+      </select>
+    </div>
+    <div class="form-actions">
+      <button class="btn btn-primary" onclick="submitBulkGender()">Apply to All Listed</button>
+      <button class="btn btn-outline" onclick="closeModal('bulkGenderModal')">Cancel</button>
     </div>
   </div>
 </div>
@@ -5781,5 +5809,90 @@ if (photoDbErr) throw new Error('Photo DB update failed: ' + photoDbErr.message)
   }
 }
 </script>
+
+// ── Bulk Gender Update ──
+let _bulkGenderTargets = [];
+
+function openBulkGenderModal() {
+  // Collect currently visible student rows from the rendered table
+  const rows = document.querySelectorAll('#studentTableBody tr[id^="stu-row-"]');
+  _bulkGenderTargets = Array.from(rows).map(r => r.id.replace('stu-row-', ''));
+  document.getElementById('bulkGenderCount').textContent = _bulkGenderTargets.length;
+  if (!_bulkGenderTargets.length) { toast('No students visible in the table to update.', '⚠'); return; }
+  document.getElementById('bulkGenderModal').classList.add('open');
+}
+
+async function submitBulkGender() {
+  const gender = document.getElementById('bulkGenderValue').value;
+  if (!gender || !_bulkGenderTargets.length) return;
+  closeModal('bulkGenderModal');
+  const label = gender.charAt(0).toUpperCase() + gender.slice(1);
+  toast(`Updating ${_bulkGenderTargets.length} students to ${label}…`, '⏳');
+
+  const CHUNK = 100;
+  let okCount = 0, errCount = 0;
+  for (let i = 0; i < _bulkGenderTargets.length; i += CHUNK) {
+    const chunk = _bulkGenderTargets.slice(i, i + CHUNK);
+    const { error } = await db.from('students').update({ gender }).in('id', chunk);
+    if (error) { errCount += chunk.length; }
+    else {
+      chunk.forEach(id => { const s = students.find(x => x.id === id); if (s) s.gender = gender; });
+      okCount += chunk.length;
+    }
+  }
+  renderStudentTable(students);
+  toast(`✓ ${okCount} student${okCount !== 1 ? 's' : ''} set to ${label}${errCount ? ' · ' + errCount + ' failed' : ''}.`, '✓');
+}
+
+// ── Refresh Grade Preview ──
+function refreshGradePreview() {
+  if (!gradeCSVRows || !gradeCSVRows.length) { toast('No CSV loaded yet.', '⚠'); return; }
+  const fallbackAttempt = document.getElementById('grade-attempt').value;
+  const fallbackYear    = (document.getElementById('grade-year').value || '').trim();
+  const preview = document.getElementById('csvPreviewTable');
+  let validCount = 0, errorCount = 0;
+  let body = '<tbody>';
+  gradeCSVRows.forEach((row, idx) => {
+    const score = parseFloat(row.NumericScore || row.numericscore || row.numeric_score || 0);
+    const { gp, letter } = computeGradePoint(score);
+    const sid        = (row.StudentID || row.studentid || row.student_id || '').trim();
+    const cid        = (row.CourseID  || row.courseid  || row.course_id  || '').trim();
+    const rowAttempt = (row.Attempt   || row.attempt   || '').trim() || fallbackAttempt;
+    const rowYear    = (row.Year      || row.year      || '').trim() || fallbackYear || '—';
+    const gid        = stableGradeId(sid, cid, rowAttempt, rowYear);
+    const studentMatch = students.find(s => s.id.toLowerCase() === sid.toLowerCase());
+    const courseMatch  = courses.find(c => c[0].toLowerCase() === cid.toLowerCase());
+    const stuStatus = studentMatch
+      ? '<span class="badge b-green">✓ Valid</span>'
+      : '<span class="badge b-red">✗ Student not found</span>';
+    const crsWarn = cid && !courseMatch
+      ? ' <span class="badge b-gold" title="Course not in catalogue — grade will still save">⚠ Course unknown</span>'
+      : '';
+    if (studentMatch) validCount++; else errorCount++;
+    body += `<tr class="${studentMatch ? '' : 'bulk-row-err'}">
+      <td style="color:var(--ink3);font-size:11px">${idx+1}</td>
+      <td class="text-mono">${sid||'<span class="text-crimson">(blank)</span>'}</td>
+      <td class="text-mono">${cid||'—'}</td>
+      <td>${score}</td>
+      <td><span class="badge b-blue">${rowAttempt}</span></td>
+      <td class="text-mono" style="font-size:11px;color:var(--ink3)">${rowYear}</td>
+      <td class="text-mono text-crimson" style="font-size:11px">${'GRD-' + gid}</td>
+      <td><span class="badge ${gradeBadgeClass(letter)}">${formatGradeLetter(letter)}</span></td>
+      <td><strong class="text-green">${gp.toFixed(1)}</strong></td>
+      <td>${stuStatus}${crsWarn}</td>
+    </tr>`;
+  });
+  body += '</tbody>';
+  preview.innerHTML = `<thead><tr>
+    <th>#</th><th>Student ID</th><th>Course ID</th><th>Score</th>
+    <th>Attempt</th><th>Year</th><th>Grade ID (auto)</th><th>Letter</th><th>GP</th><th>Status</th>
+  </tr></thead>` + body;
+  document.getElementById('gradePreviewCount').textContent = gradeCSVRows.length;
+  const okBadge  = document.getElementById('gradePreviewOk');
+  const errBadge = document.getElementById('gradePreviewErr');
+  if (okBadge)  okBadge.textContent  = validCount  + ' ready';
+  if (errBadge) errBadge.textContent = errorCount + ' errors';
+  toast('Preview refreshed with current Year & Attempt.', '✓');
+}
 </body>
 </html>
