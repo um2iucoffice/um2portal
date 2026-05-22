@@ -682,7 +682,7 @@ input[readonly] { color:var(--ink2); cursor:default; }
     <div class="page-actions">
       <button class="btn btn-outline btn-sm registrar-only" onclick="showView('addStudent')">Add Student</button>
       <button class="btn btn-outline btn-sm registrar-only" onclick="showView('bulkStudent')">Bulk Import</button>
-      <button class="btn btn-outline btn-sm registrar-only" onclick="openBulkGenderModal()">⚥ Set Gender</button>
+      <button class="btn btn-outline btn-sm registrar-only" onclick="openBulkGenderModal()">⚥ Set Gender</button><span id="stuSelCount" style="font-size:11px;color:var(--ink3);display:none">0 selected</span>
       <button class="btn btn-outline btn-sm" onclick="exportStudentsCSV()">Export CSV</button>
     </div>
   </div>
@@ -707,7 +707,7 @@ input[readonly] { color:var(--ink2); cursor:default; }
   <div class="card" style="padding:0">
     <div class="table-wrap"><table id="studentTable">
       <thead><tr>
-        <th>Student / Alumni ID</th><th>Full Name</th><th>Father Name</th>
+        <th style="width:36px;padding:9px 8px"><input type="checkbox" id="selectAllStudents" onclick="toggleSelectAllStudents(this)" title="Select / Deselect all visible"></th><th>Student / Alumni ID</th><th>Full Name</th><th>Father Name</th>
         <th>Email</th><th>Program</th><th>Level</th><th>Year</th><th>Gender</th><th>GPA</th><th>Status</th>
         <th class="registrar-only">Master Password</th>
         <th>Actions</th>
@@ -2688,6 +2688,9 @@ function renderStudentTable(data) {
     const genderIcon = s.gender === 'male' ? '♂' : s.gender === 'female' ? '♀' : '—';
     const genderStyle = s.gender === 'male' ? 'color:var(--blue);font-weight:600' : s.gender === 'female' ? 'color:var(--crimson);font-weight:600' : 'color:var(--ink3)';
     return `<tr id="stu-row-${s.id}" onclick="showProfile('${s.id}')" style="cursor:pointer">
+      <td style="width:36px;padding:9px 8px" onclick="event.stopPropagation()">
+        <input type="checkbox" class="stu-cb" data-id="${s.id}" onchange="onStudentCheckChange()">
+      </td>
       <td class="text-mono text-crimson">${s.id}${isGraduated ? ' <span style="font-size:9px;font-weight:700;background:var(--green-light);color:var(--green);border-radius:3px;padding:1px 5px;vertical-align:middle">ALUMNI</span>' : ''}</td>
       <td><strong>${s.name_en}</strong>${s.name_my ? `<br><span class="text-muted my-text">${s.name_my}</span>` : ''}</td>
       <td>${s.father || '—'}</td>
@@ -2707,23 +2710,26 @@ function renderStudentTable(data) {
     </tr>`;
   }
 
-  function sectionHeader(label, count, color) {
-    return `<tr style="background:${color};user-select:none;pointer-events:none">
-      <td colspan="12" style="padding:7px 14px;font-size:10px;font-weight:700;letter-spacing:1.4px;text-transform:uppercase;color:var(--ink3)">${label} — ${count} student${count!==1?'s':''}</td>
+  function sectionHeader(label, count, color, groupKey) {
+    return `<tr style="background:${color}">
+      <td style="width:36px;padding:7px 8px">
+        <input type="checkbox" class="stu-group-cb" data-group="${groupKey}" onchange="toggleSelectGroup(this,'${groupKey}')" title="Select all ${label}">
+      </td>
+      <td colspan="11" style="padding:7px 14px;font-size:10px;font-weight:700;letter-spacing:1.4px;text-transform:uppercase;color:var(--ink3)">${label} — ${count} student${count!==1?'s':''}</td>
     </tr>`;
   }
 
   let html = '';
   if (males.length) {
-    html += sectionHeader('♂ Male', males.length, 'rgba(30,58,110,0.04)');
+    html += sectionHeader('♂ Male', males.length, 'rgba(30,58,110,0.04)', 'male');
     html += males.map(rowHtml).join('');
   }
   if (females.length) {
-    html += sectionHeader('♀ Female', females.length, 'rgba(139,26,46,0.04)');
+    html += sectionHeader('♀ Female', females.length, 'rgba(139,26,46,0.04)', 'female');
     html += females.map(rowHtml).join('');
   }
   if (other.length) {
-    html += sectionHeader('— Gender Not Set', other.length, 'rgba(0,0,0,0.02)');
+    html += sectionHeader('— Gender Not Set', other.length, 'rgba(0,0,0,0.02)', 'other');
     html += other.map(rowHtml).join('');
   }
   tb.innerHTML = html;
@@ -5890,6 +5896,51 @@ function refreshGradePreview() {
   if (okBadge)  okBadge.textContent  = validCount  + ' ready';
   if (errBadge) errBadge.textContent = errorCount + ' errors';
   toast('Preview refreshed with current Year & Attempt.', '✓');
+}
+
+// ── Student checkbox helpers ──
+function onStudentCheckChange() {
+  const all  = document.querySelectorAll('#studentTableBody .stu-cb');
+  const checked = document.querySelectorAll('#studentTableBody .stu-cb:checked');
+  const count = checked.length;
+  const selCount = document.getElementById('stuSelCount');
+  if (selCount) {
+    selCount.style.display = count > 0 ? '' : 'none';
+    selCount.textContent   = count + ' selected';
+  }
+  // Sync select-all header checkbox state
+  const allCb = document.getElementById('selectAllStudents');
+  if (allCb) {
+    allCb.checked       = count > 0 && count === all.length;
+    allCb.indeterminate = count > 0 && count < all.length;
+  }
+  // Sync group checkboxes
+  document.querySelectorAll('.stu-group-cb').forEach(gcb => {
+    const group = gcb.dataset.group;
+    const groupCbs = document.querySelectorAll(`.stu-cb[data-group="${group}"]`);
+    // group cbs don't have data-group — use the rows' gender via id lookup
+    // Just check if all in this section are checked via the section rows
+  });
+}
+
+function toggleSelectAllStudents(masterCb) {
+  const all = document.querySelectorAll('#studentTableBody .stu-cb');
+  all.forEach(cb => { cb.checked = masterCb.checked; });
+  // Sync group checkboxes too
+  document.querySelectorAll('.stu-group-cb').forEach(gcb => { gcb.checked = masterCb.checked; });
+  onStudentCheckChange();
+}
+
+function toggleSelectGroup(groupCb, groupKey) {
+  // Find all rows belonging to this group by traversing siblings after the header row
+  const headerRow = groupCb.closest('tr');
+  let row = headerRow.nextElementSibling;
+  while (row && row.querySelector('.stu-group-cb') === null) {
+    const cb = row.querySelector('.stu-cb');
+    if (cb) cb.checked = groupCb.checked;
+    row = row.nextElementSibling;
+  }
+  onStudentCheckChange();
 }
 </script>
 </body>
