@@ -3348,7 +3348,7 @@ function normaliseGradeRow(raw) {
     grade:         firstValue(g, ['grade', 'Grade', 'letter', 'letter_grade', 'LetterGrade']),
     gradePoint:    firstValue(g, ['gradePoint', 'grade_point', 'gp', 'GP', 'GradePoint', 'gradepoint']),
     attempt:       firstValue(g, ['attempt', 'Attempt', 'attemptNo', 'attempt_no']),
-    completionType: firstValue(g, ['completionType', 'CompletionType', 'completion_type', 'type_of_completion', 'assessment']),
+    completionType: firstValue(g, ['assessment_type', 'assessmentType', 'AssessmentType', 'completionType', 'CompletionType', 'completion_type', 'type_of_completion', 'assessment']),
     completionYear: firstValue(g, ['completionYear', 'CompletionYear', 'completion_year', 'year', 'Year']),
     academicYear:  firstValue(g, ['academicYear', 'AcademicYear', 'academic_year', 'yearLevel', 'YearLevel', 'course_year']),
     note:          firstValue(g, ['note', 'Note', 'notes', 'Notes', 'comment', 'Comment', 'remarks', 'Remarks'])
@@ -4132,15 +4132,15 @@ function getCompletionYear(row) {
 }
 
 function getNote(row) {
+  return row.note || row.Note || row.notes || row.Notes ||
+         row.comment || row.Comment || row.remarks || row.Remarks || '';
+}
+
+function getAttempt(row) {
   const attempt = String(row.attempt || row.Attempt || row.attempt_no || '').trim();
-  const note    = row.note || row.Note || row.notes || row.Notes ||
-                  row.comment || row.Comment || row.remarks || row.Remarks || '';
   const is1st = !attempt || attempt === '1' || attempt === '1st Attempt' || attempt.toLowerCase() === '1st attempt';
-  if (!is1st) {
-    // attempt is already "2nd Attempt" from DB — show it directly, don't prepend "Attempt"
-    return note ? `${attempt} · ${note}` : attempt;
-  }
-  return note;
+  // Only show attempt if it is NOT the 1st attempt
+  return is1st ? '' : attempt;
 }
 
 function getSheetOverallGpa(student) {
@@ -4218,13 +4218,14 @@ function renderGrades(grades, student) {
       html += `<table class="gt">
         <thead>
           <tr>
-          <th style="width:11%">Code</th>
-            <th style="width:28%">Course Title</th>
-            <th style="text-align:center;width:7%">Credits</th>
-            <th style="text-align:center;width:13%">Assessment</th>
-            <th style="text-align:center;width:10%">Score</th>
+            <th style="width:10%">Code</th>
+            <th style="width:24%">Course Title</th>
+            <th style="text-align:center;width:6%">Credits</th>
+            <th style="text-align:center;width:13%">Assessment Type</th>
+            <th style="text-align:center;width:8%">Score</th>
             <th style="text-align:center;width:8%">Year</th>
-            <th style="text-align:center;width:9%">Grade</th>
+            <th style="text-align:center;width:8%">Grade</th>
+            <th style="text-align:center;width:9%">Attempt</th>
             <th style="width:14%">Note</th>
           </tr>
         </thead>
@@ -4238,19 +4239,21 @@ function renderGrades(grades, student) {
           r.score !== undefined && r.score !== '' ? r.score : '—';
         const dateStr = getCompletionYear(r);
         const typeStr = r.completionType || r.CompletionType || r.course.assessment || '—';
+        const attemptStr = getAttempt(r);
         html += `<tr>
           <td style="font-size:11px;color:var(--ink3);font-family:monospace">${escHtml(r.courseId || '—')}</td>
           <td>
             <div class="gt-course">${escHtml(r.course.name)}</div>
           </td>
           <td style="text-align:center"><span class="gt-cr">${r.course.credits != null ? r.course.credits : '—'}</span></td>
-          <td style="display:none">${escHtml(typeStr)}</td>
+          <td style="text-align:center;font-size:11px;color:var(--gt-assess-color,var(--ink3))">${escHtml(typeStr)}</td>
           <td style="text-align:center">
             <span class="sbar-num">${escHtml(scoreStr)}</span>
           </td>
           <td style="text-align:center;font-size:11px;color:var(--ink3)">${escHtml(dateStr)}</td>
           <td style="text-align:center"><span class="gbadge ${gc(r.grade)}">${escHtml(r.grade || '—')}</span></td>
-          <td style="font-size:11px;color:var(--ink3);font-style:italic;max-width:140px">${escHtml(getNote(r))}</td>
+          <td style="text-align:center;font-size:11px;color:var(--ink3);font-style:italic">${escHtml(attemptStr)}</td>
+          <td style="font-size:11px;color:var(--ink3);font-style:italic;max-width:120px">${escHtml(getNote(r))}</td>
         </tr>`;
       });
       html += `</tbody></table>`;
