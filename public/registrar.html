@@ -5713,8 +5713,14 @@ async function processEditRequest(decision) {
         let storedPath = wmData.photoUrl || '';
         if (storedPath.startsWith(STORAGE_PFX)) storedPath = storedPath.slice(STORAGE_PFX.length);
 
-        const s = students.find(x => x.id === studentId);
-        if (s) s.photo = storedPath;
+        cconst s = students.find(x => x.id === studentId);
+if (s) s.photo = storedPath;
+
+const { error: photoDbErr } = await db
+  .from('students')
+  .update({ photo: storedPath, updated_at: reviewedAt })
+  .eq('id', studentId);
+if (photoDbErr) throw new Error('Photo DB update failed: ' + photoDbErr.message);
 
         const student = students.find(x => x.id === studentId);
         if (student) {
