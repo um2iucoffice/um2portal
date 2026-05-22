@@ -4118,7 +4118,11 @@ function escHtml(v) {
 }
 
 function getAcademicYear(row, course) {
-  return row.academicYear || row.AcademicYear || row.academic_year ||
+  // completionYear and year are the raw SQL 'year' column (e.g. 2025)
+  // — always prefer these over course-catalogue labels like "Foundation Year" / "M-1"
+  return row.completionYear || row.CompletionYear || row.completion_year ||
+         row.year || row.Year ||
+         row.academicYear || row.AcademicYear || row.academic_year ||
          row.academic_year_name || row.AcademicYearName || row.yearLevel ||
          row.YearLevel || row.currentAcademicYear || row.CurrentAcademicYear ||
          row.currentYear || row.CurrentYear || row.courseYear || row.CourseYear ||
@@ -5183,7 +5187,7 @@ function printDocument(type) {
       const rows = [];
       wrap.querySelectorAll('tbody tr').forEach(el => {
         const tds = el.querySelectorAll('td');
-        if (tds.length < 7) return;
+        if (tds.length < 8) return;
         rows.push({
           courseId: tds[0].textContent.trim(),
           course:   tds[1].querySelector('.gt-course')?.textContent?.trim() || tds[1].textContent.trim(),
