@@ -4118,11 +4118,8 @@ function escHtml(v) {
 }
 
 function getAcademicYear(row, course) {
-  // Use getCompletionYear which already enforces calendar-year-only logic
-  // with created_at fallback — so group headers show e.g. "2025" not "M-2"
-  const cy = getCompletionYear(row);
-  if (cy && cy !== '—') return cy;
-  // Last resort: fall back to the course catalogue label for grouping only
+  // Group by the course's academic year label (e.g. "Foundation Year", "M-1")
+  // The grade row's year/created_at is only for the "Year" column (when exam was taken)
   return course.year || 'Other';
 }
 
@@ -4189,11 +4186,21 @@ function renderGrades(grades, student) {
     groups[academicYear][block].push({ ...g, course, academicYear });
   });
 
-  // Use program-aware year ordering from PROGRAM_META (set by populate())
-  const preferredOrder = PROGRAM_META.yearOrder;
+  // Build year order from the active course catalogue (preserves DB insertion order),
+  // falling back to PROGRAM_META.yearOrder for any years not in the catalogue.
+  const catalogYearOrder = [];
+  Object.values(COURSES).forEach(c => {
+    if (c.year && !catalogYearOrder.includes(c.year)) catalogYearOrder.push(c.year);
+  });
+  const metaOrder = PROGRAM_META.yearOrder || [];
+  // Merge: catalogue order first (reflects DB), then any extra from meta, then unknowns
+  const mergedOrder = [
+    ...catalogYearOrder,
+    ...metaOrder.filter(y => !catalogYearOrder.includes(y))
+  ];
   const order = [
-    ...preferredOrder.filter(y => groups[y]),
-    ...Object.keys(groups).filter(y => !preferredOrder.includes(y)).sort()
+    ...mergedOrder.filter(y => groups[y]),
+    ...Object.keys(groups).filter(y => !mergedOrder.includes(y)).sort()
   ];
 
   // Summary stats: GPA is not calculated here.
@@ -4234,6 +4241,18 @@ function renderGrades(grades, student) {
 
     // Render by block
     Object.entries(blockMap).forEach(([blockName, rows]) => {
+      // Sort rows by course code ascending (CRS001 < CRS002 < TCRS001 etc.)
+      rows.sort((a, b) => {
+        const codeA = String(a.courseId || '').toUpperCase();
+        const codeB = String(b.courseId || '').toUpperCase();
+        // Extract numeric part for natural sort
+        const numA = parseInt((codeA.match(/(\d+)$/) || ['0','0'])[1], 10);
+        const numB = parseInt((codeB.match(/(\d+)$/) || ['0','0'])[1], 10);
+        const prefA = codeA.replace(/\d+$/, '');
+        const prefB = codeB.replace(/\d+$/, '');
+        if (prefA !== prefB) return prefA < prefB ? -1 : 1;
+        return numA - numB;
+      });
       html += `<div class="g-block-head">${escHtml(blockName)}</div>`;
       html += `<table class="gt">
         <thead>
@@ -5218,16 +5237,36 @@ function printDocument(type) {
       groups[yr][block].push({ ...g, course });
     });
 
-    // Same year ordering as renderGrades
-    const pref = (typeof PROGRAM_META !== 'undefined' && PROGRAM_META.yearOrder) || [];
+    // Same year ordering as renderGrades — derive from course catalogue
+    const tCatalogOrder = [];
+    const tCourses = rawCourses || (typeof COURSES !== 'undefined' ? COURSES : {});
+    Object.values(tCourses).forEach(c => {
+      if (c.year && !tCatalogOrder.includes(c.year)) tCatalogOrder.push(c.year);
+    });
+    const tMetaOrder = (typeof PROGRAM_META !== 'undefined' && PROGRAM_META.yearOrder) || [];
+    const tMergedOrder = [
+      ...tCatalogOrder,
+      ...tMetaOrder.filter(y => !tCatalogOrder.includes(y))
+    ];
     const orderedYears = [
-      ...pref.filter(y => groups[y]),
-      ...Object.keys(groups).filter(y => !pref.includes(y)).sort()
+      ...tMergedOrder.filter(y => groups[y]),
+      ...Object.keys(groups).filter(y => !tMergedOrder.includes(y)).sort()
     ];
 
     orderedYears.forEach(yr => {
       const rows = [];
       Object.values(groups[yr]).forEach(blockRows => {
+        // Sort by course code ascending
+        blockRows.sort((a, b) => {
+          const codeA = String(a.courseId || '').toUpperCase();
+          const codeB = String(b.courseId || '').toUpperCase();
+          const numA = parseInt((codeA.match(/(\d+)$/) || ['0','0'])[1], 10);
+          const numB = parseInt((codeB.match(/(\d+)$/) || ['0','0'])[1], 10);
+          const prefA = codeA.replace(/\d+$/, '');
+          const prefB = codeB.replace(/\d+$/, '');
+          if (prefA !== prefB) return prefA < prefB ? -1 : 1;
+          return numA - numB;
+        });
         blockRows.forEach(r => {
           const scoreStr =
             r.numericScore !== undefined && r.numericScore !== '' ? String(r.numericScore) :
