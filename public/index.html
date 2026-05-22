@@ -5176,30 +5176,65 @@ function printDocument(type) {
     || 'Degree Program';
 
   // ── Collect grade data grouped by Academic Year ──────────────
+  // Build directly from window._allGrades (source of truth) — no DOM scraping
   const yearGroups = [];
   if (type === 'transcript') {
-    const gradeContainer = document.getElementById('gradesContent');
-    gradeContainer.querySelectorAll('.g-wrap').forEach(wrap => {
-      const head = wrap.querySelector('.g-year-head');
-      let yearText = head?.textContent || '';
-      yearText = yearText.replace(/\s*·\s*.+$/, '').replace(/^—\s*/, '').trim();
-      const year = head?.dataset?.year || yearText || 'Academic Year';
+    const rawGrades  = window._allGrades  || [];
+    const rawCourses = window._allCourses || COURSES || {};
+    const eIdx2      = window._docEnrollmentIndex || 0;
+    const enrollments2 = window._enrollments || [];
+
+    // Filter grades to the chosen enrollment if multiple enrollments exist
+    const chosenEnrollment = enrollments2[eIdx2] || null;
+    const filteredGrades = chosenEnrollment && chosenEnrollment.id
+      ? rawGrades.filter(g => g.enrollment_id === chosenEnrollment.id || !g.enrollment_id)
+      : rawGrades;
+
+    // Group by academic year (same logic as renderGrades)
+    const groups = {};
+    filteredGrades.forEach(g => {
+      const course = rawCourses[g.courseId] || {
+        name: g.course || g.courseId || '—',
+        year: 'Other',
+        block: g.block || 'General',
+        credits: g.credits ?? null,
+        assessment: g.completionType || g.assessment || '—'
+      };
+      const yr    = getAcademicYear(g, course);
+      const block = course.block || 'General';
+      if (!groups[yr]) groups[yr] = {};
+      if (!groups[yr][block]) groups[yr][block] = [];
+      groups[yr][block].push({ ...g, course });
+    });
+
+    // Same year ordering as renderGrades
+    const pref = (typeof PROGRAM_META !== 'undefined' && PROGRAM_META.yearOrder) || [];
+    const orderedYears = [
+      ...pref.filter(y => groups[y]),
+      ...Object.keys(groups).filter(y => !pref.includes(y)).sort()
+    ];
+
+    orderedYears.forEach(yr => {
       const rows = [];
-      wrap.querySelectorAll('tbody tr').forEach(el => {
-        const tds = el.querySelectorAll('td');
-        if (tds.length < 8) return;
-        rows.push({
-          courseId: tds[0].textContent.trim(),
-          course:   tds[1].querySelector('.gt-course')?.textContent?.trim() || tds[1].textContent.trim(),
-          credits:  tds[2].textContent.trim(),
-          assess:   tds[3].textContent.trim(),
-          score:    tds[4].textContent.trim(),
-          date:     tds[5].textContent.trim(),
-          grade:    tds[6].textContent.trim(),
-          note:     tds[7]?.textContent?.trim() || '',
+      Object.values(groups[yr]).forEach(blockRows => {
+        blockRows.forEach(r => {
+          const scoreStr =
+            r.numericScore !== undefined && r.numericScore !== '' ? String(r.numericScore) :
+            r.score        !== undefined && r.score        !== '' ? String(r.score)        : '—';
+          const typeStr = r.completionType || r.course.assessment || '—';
+          rows.push({
+            courseId: r.courseId || '—',
+            course:   r.course.name || r.course || '—',
+            credits:  r.course.credits != null ? String(r.course.credits) : '—',
+            assess:   typeStr,
+            score:    scoreStr,
+            date:     getCompletionYear(r),
+            grade:    r.grade || '—',
+            note:     getNote(r),
+          });
         });
       });
-      if (rows.length) yearGroups.push({ year, rows });
+      if (rows.length) yearGroups.push({ year: yr, rows });
     });
   }
 
@@ -5217,7 +5252,7 @@ function printDocument(type) {
         <td style="${TD}${bg}text-align:center;color:#444;font-size:6.5pt">${r.assess || '—'}</td>
         <td style="${TD}${bg}text-align:center;color:#333;font-size:7.5pt">${r.score || '—'}</td>
         <td style="${TD}${bg}text-align:center;color:#444">${r.date || '—'}</td>
-        <td style="${TD}${bg}text-align:center;font-weight:bold;font-size:7.5pt">${r.grade}</td>
+        <td style="${TD}${bg}text-align:center;font-weight:bold;font-size:7.5pt">${r.grade || '—'}</td>
         <td style="${TD}${bg}font-size:6.5pt;color:#555;font-style:italic">${r.note || ''}</td>
       </tr>`;
     });
@@ -5229,13 +5264,13 @@ function printDocument(type) {
         <table style="width:100%;border-collapse:collapse;margin-bottom:14px;font-family:'DM Sans',sans-serif">
           <thead><tr>
             <th style="${TDH}width:10%">Course Code</th>
-<th style="${TDH}width:28%">Course Title</th>
-<th style="${TDH}width:7%;text-align:center">Credits</th>
-<th style="${TDH}width:13%;text-align:center">Type</th>
-<th style="${TDH}width:8%;text-align:center">Score</th>
-<th style="${TDH}width:10%;text-align:center">Year</th>
-<th style="${TDH}width:10%;text-align:center">Grade</th>
-<th style="${TDH}width:14%">Note</th>
+            <th style="${TDH}width:24%">Course Title</th>
+            <th style="${TDH}width:6%;text-align:center">Credits</th>
+            <th style="${TDH}width:14%;text-align:center">Assessment Type</th>
+            <th style="${TDH}width:8%;text-align:center">Score</th>
+            <th style="${TDH}width:8%;text-align:center">Year</th>
+            <th style="${TDH}width:8%;text-align:center">Grade</th>
+            <th style="${TDH}width:22%">Note</th>
           </tr></thead>
           <tbody>${rows}</tbody>
         </table>
@@ -5327,11 +5362,9 @@ function printDocument(type) {
     .inst-name { font-family:'DM Sans',sans-serif; font-size:17pt; font-weight:bold; color:#0D1B2A; line-height:1.2; }
     .doc-type-badge { font-family:'DM Sans',sans-serif; font-size:13pt; font-weight:bold; color:#0D1B2A; text-transform:uppercase; letter-spacing:.5px; text-align:right; }
     .doc-meta { font-size:9pt; color:#444; text-align:right; margin-top:5px; line-height:1.7; font-family:'DM Sans',sans-serif; }
-    .transcript-student-section { margin:10px 0 16px; padding:4px 0; display:grid; grid-template-columns:1.2fr 1.2fr .8fr; gap:14px; page-break-inside:avoid; }
-.transcript-student-item { padding-right:12px; }
-.transcript-student-item:last-child { padding-right:0; }
-    .transcript-student-label { font-size:7.5pt; font-weight:bold; letter-spacing:.8px; text-transform:uppercase; color:#555; margin-bottom:4px; }
-    .transcript-student-value { font-size:10pt; font-weight:bold; color:#0D1B2A; line-height:1.35; }
+    .transcript-student-para { margin:10px 0 16px; padding:8px 12px; background:#f9f9f9; border-left:3px solid #0D1B2A; font-size:9.5pt; color:#0D1B2A; line-height:2; page-break-inside:avoid; font-family:'DM Sans',sans-serif; }
+    .transcript-student-para .lbl { font-weight:700; color:#555; font-size:8pt; letter-spacing:.5px; text-transform:uppercase; }
+    .transcript-student-para .val { font-weight:600; color:#0D1B2A; }
     .section-label { font-size:8pt; font-weight:bold; letter-spacing:1.2px; text-transform:uppercase; color:#444; font-family:'DM Sans',sans-serif; margin:14px 0 6px; border-bottom:1px solid #ccc; padding-bottom:4px; }
   </style>
 </head>
@@ -5367,43 +5400,18 @@ function printDocument(type) {
 
       ${type === 'transcript' ? `
       <div class="section-label">Student Details</div>
-      <div class="transcript-student-section" style="grid-template-columns:1.2fr 1.2fr .8fr${program && program !== '—' ? ' .8fr' : ''}${isGraduated && gradID ? ' .8fr' : ''}">
-        <div class="transcript-student-item">
-          <div class="transcript-student-label">Name</div>
-          <div class="transcript-student-value">${name}</div>
-        </div>
-        <div class="transcript-student-item">
-          <div class="transcript-student-label">Father's Name</div>
-          <div class="transcript-student-value">${father}</div>
-        </div>
-        <div class="transcript-student-item">
-          <div class="transcript-student-label">Date of Birth</div>
-          <div class="transcript-student-value">${birth}</div>
-        </div>
-        ${program && program !== '—' ? `
-        <div class="transcript-student-item">
-          <div class="transcript-student-label">Degree Program</div>
-          <div class="transcript-student-value">${program}</div>
-        </div>` : ''}
-        ${isGraduated && gradID ? `
-        <div class="transcript-student-item">
-          <div class="transcript-student-label">Graduation ID</div>
-          <div class="transcript-student-value">${gradID}</div>
-        </div>` : ''}
+      <div class="transcript-student-para">
+        <span class="lbl">Full Name</span>&nbsp;&nbsp;<span class="val">${name}</span>
+        &emsp;·&emsp;
+        <span class="lbl">Father's Name</span>&nbsp;&nbsp;<span class="val">${father}</span>
+        &emsp;·&emsp;
+        <span class="lbl">Date of Birth</span>&nbsp;&nbsp;<span class="val">${birth}</span>
+        ${program && program !== '—' ? `&emsp;·&emsp;<span class="lbl">Degree Program</span>&nbsp;&nbsp;<span class="val">${program}</span>` : ''}
+        ${admission && admission !== '—' ? `&emsp;·&emsp;<span class="lbl">Admitted</span>&nbsp;&nbsp;<span class="val">${admission}</span>` : ''}
+        ${isGraduated && grad && grad !== '—' ? `&emsp;·&emsp;<span class="lbl">Graduation Status</span>&nbsp;&nbsp;<span class="val">${grad}</span>` : ''}
+        ${isGraduated && gradDate ? `&emsp;·&emsp;<span class="lbl">Date of Graduation</span>&nbsp;&nbsp;<span class="val">${gradDate}</span>` : ''}
+        ${isGraduated && gradID ? `&emsp;·&emsp;<span class="lbl">Graduation ID</span>&nbsp;&nbsp;<span class="val">${gradID}</span>` : ''}
       </div>
-      ${isGraduated ? `
-      <div class="section-label">Graduation Information</div>
-      <div class="transcript-student-section" style="grid-template-columns:1fr 1fr">
-        <div class="transcript-student-item">
-          <div class="transcript-student-label">Status</div>
-          <div class="transcript-student-value">${grad}</div>
-        </div>
-        ${gradDate ? `
-        <div class="transcript-student-item">
-          <div class="transcript-student-label">Date of Graduation</div>
-          <div class="transcript-student-value">${gradDate}</div>
-        </div>` : ''}
-      </div>` : ''}
       <div class="section-label">Academic Record — ${programLabel}</div>
       ${academicRecord}` : ''}
 
