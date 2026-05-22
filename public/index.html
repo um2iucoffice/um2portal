@@ -4602,13 +4602,25 @@ function printDegreeCertificate(enrollIdx) {
   const sid       = document.getElementById('infoID')?.textContent?.trim()        || s.id         || '—';
   const fatherEN  = document.getElementById('infoFather')?.textContent?.trim()    || s.fatherName  || '';
   const fatherMM  = document.getElementById('infoFatherMM')?.textContent?.trim()  || s.fatherNameMM|| '';
+  const motherEN  = document.getElementById('infoMother')?.textContent?.trim()    || s.motherName  || '';
+  const motherMM  = document.getElementById('infoMotherMM')?.textContent?.trim()  || s.motherNameMM|| '';
   const photo     = s.photo || '';
 
-  // Determine gender prefix and parent line
-  // We'll derive gender from MM name conventions; fallback to 'Son/Daughter'
-  const gender   = ''; // leave for cert to show "of" only
-  const parentEN = fatherEN ? fatherEN : '';
-  const parentMM = fatherMM ? fatherMM : '';
+  // Gender-aware Son/Daughter
+  const genderRaw = (s.gender || '').toLowerCase();
+  const isFemale  = /f|female|woman|girl/i.test(genderRaw);
+  const isMale    = /m|male|man|boy/i.test(genderRaw);
+  const sonDaughter = isFemale ? 'Daughter' : isMale ? 'Son' : 'Son / Daughter';
+  const sonDaughterMM = isFemale ? 'သမီး' : isMale ? 'သား' : 'သား / သမီး';
+
+  // Build parent line: Father Name and Mother Name
+  const parentParts = [fatherEN, motherEN].filter(Boolean);
+  const parentEN = parentParts.join(' and ');
+  const parentMMParts = [fatherMM, motherMM].filter(Boolean);
+  const parentMM = parentMMParts.join(' နှင့် ');
+
+  // Today's date for electronic generation notice
+  const todayDate = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
 
   const gradID   = e.graduationId   || s.graduationId   || '';
   const gradDate = e.graduationDate || s.graduationDate || '';
@@ -4630,7 +4642,7 @@ function printDegreeCertificate(enrollIdx) {
 <head>
   <meta charset="UTF-8">
   <title>Degree Certificate — ${name}</title>
-  <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=DM+Sans:opsz,wght@9..40,400;9..40,600;9..40,700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=DM+Sans:opsz,wght@9..40,400;9..40,600;9..40,700&family=Roboto:ital,wght@0,300;0,400;0,500;0,700;1,400&display=swap" rel="stylesheet">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"><\/script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -4641,7 +4653,7 @@ function printDegreeCertificate(enrollIdx) {
       html, body { width: 210mm; height: 297mm; }
     }
     body {
-      font-family: 'Libre Baskerville', Georgia, serif;
+      font-family: 'Roboto', 'DM Sans', sans-serif;
       color: #1a1a1a;
       display: flex;
       justify-content: center;
@@ -4685,16 +4697,24 @@ function printDegreeCertificate(enrollIdx) {
       align-items: center;
       gap: 0;
     }
-    /* ── University name header ── */
+    /* ── University name header (arced) ── */
     .cert-univ {
-      font-family: 'DM Sans', sans-serif;
-      font-size: 19pt;
-      font-weight: 700;
-      color: #002060;
+      width: 100%;
       text-align: center;
-      letter-spacing: .5px;
       margin-top: 6mm;
-      line-height: 1.2;
+      line-height: 1;
+    }
+    .cert-univ svg {
+      width: 180mm;
+      height: 24mm;
+      overflow: visible;
+    }
+    .cert-univ text {
+      font-family: 'Roboto', 'DM Sans', sans-serif;
+      font-size: 17pt;
+      font-weight: 700;
+      fill: #002060;
+      letter-spacing: 1.5px;
     }
     /* ── Logo ── */
     .cert-logo {
@@ -4748,12 +4768,12 @@ function printDegreeCertificate(enrollIdx) {
     }
     /* ── Parent line ── */
     .cert-parent {
-      font-family: 'Libre Baskerville', serif;
+      font-family: 'Roboto', sans-serif;
       font-size: 10pt;
       color: #333;
       text-align: center;
       margin: 1.5mm 0 4mm;
-      line-height: 1.6;
+      line-height: 1.8;
     }
     .cert-parent-mm {
       font-family: 'Padauk','Myanmar Text','Pyidaungsu',sans-serif;
@@ -4761,12 +4781,13 @@ function printDegreeCertificate(enrollIdx) {
     }
     /* ── Conferral text ── */
     .cert-body {
-      font-family: 'Libre Baskerville', serif;
-      font-size: 10pt;
+      font-family: 'Roboto', sans-serif;
+      font-size: 10.5pt;
       color: #222;
       text-align: center;
       margin: 2mm 0 1mm;
       line-height: 1.8;
+      font-style: italic;
     }
     /* ── Degree name ── */
     .cert-degree {
@@ -4794,7 +4815,7 @@ function printDegreeCertificate(enrollIdx) {
     }
     .cert-sig-block {
       text-align: center;
-      font-family: 'DM Sans', sans-serif;
+      font-family: 'Roboto', sans-serif;
       font-size: 8.5pt;
       color: #333;
       line-height: 1.6;
@@ -4880,8 +4901,8 @@ function printDegreeCertificate(enrollIdx) {
       color: #555;
     }
     .cert-qr { display: flex; flex-direction: column; align-items: center; gap: 1.5mm; }
-    .cert-qr-lbl { font-size: 6.5pt; letter-spacing: .5px; text-transform: uppercase; color: #888; }
-    .cert-reg-info { text-align: right; line-height: 1.8; }
+    .cert-qr-lbl { font-family: 'Roboto', sans-serif; font-size: 6.5pt; letter-spacing: .5px; text-transform: uppercase; color: #888; }
+    .cert-reg-info { text-align: right; line-height: 1.8; font-family: 'Roboto', sans-serif; font-size: 8pt; color: #555; }
     /* ── Gold ornamental corners ── */
     .corner {
       position: absolute;
@@ -4939,8 +4960,19 @@ function printDegreeCertificate(enrollIdx) {
 
   <div class="cert-inner">
 
-    <!-- University name -->
-    <div class="cert-univ">UNIVERSITY OF MEDICINE -2, YANGON</div>
+    <!-- University name (slightly arced) -->
+    <div class="cert-univ">
+      <svg viewBox="0 0 680 90" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <path id="univArc" d="M 40,72 Q 340,10 640,72"/>
+        </defs>
+        <text>
+          <textPath href="#univArc" startOffset="50%" text-anchor="middle">
+            UNIVERSITY OF MEDICINE (2), YANGON
+          </textPath>
+        </text>
+      </svg>
+    </div>
 
     <!-- Logo -->
     <img class="cert-logo"
@@ -4963,8 +4995,8 @@ function printDegreeCertificate(enrollIdx) {
     <!-- Parent line -->
     ${parentEN ? `
     <div class="cert-parent">
-      Son / Daughter of &nbsp;<strong>${parentEN}</strong>
-      ${parentMM ? `<br><span class="cert-parent-mm">${parentMM} ၏ သား / သမီး</span>` : ''}
+      ${sonDaughter} of &nbsp;<strong>${parentEN}</strong>
+      ${parentMM ? `<br><span class="cert-parent-mm">${parentMM} ၏ ${sonDaughterMM}</span>` : ''}
     </div>` : '<div style="height:4mm"></div>'}
 
     <!-- Conferral body -->
@@ -5024,6 +5056,20 @@ function printDegreeCertificate(enrollIdx) {
     </div>
 
   </div><!-- /.cert-inner -->
+
+  <!-- Electronically generated notice -->
+  <div style="
+    position: absolute;
+    bottom: 12mm;
+    left: 0; right: 0;
+    text-align: center;
+    font-family: 'Roboto', sans-serif;
+    font-size: 6.5pt;
+    color: #888;
+    letter-spacing: 0.4px;
+  ">
+    Electronically generated on ${todayDate} &nbsp;·&nbsp; This document is system-generated and does not require a physical signature for verification.
+  </div>
 </div><!-- /.cert-page -->
 
 <script>
