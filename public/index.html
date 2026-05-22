@@ -3802,31 +3802,24 @@ function updatePhotoInUI(photoUrl) {
     avatarPhoto.style.display = '';
     if (avatarInitials) avatarInitials.style.display = 'none';
   }
-  // Sidebar avatar
   const sbAv = document.getElementById('sidebarAvatar');
   if (sbAv) {
     sbAv.innerHTML = '';
-    const si = document.createElement('img');
-    si.src = photoUrl;
-    si.style.cssText = 'width:100%;height:100%;object-fit:cover;border-radius:7px;display:block';
+    const si = makeProtectedPhoto(photoUrl, 'width:100%;height:100%;object-fit:cover;border-radius:7px;display:block;pointer-events:none;user-select:none;-webkit-user-select:none');
     sbAv.appendChild(si);
   }
   // Home hero avatar
   const homeAvatar = document.getElementById('homeAvatar');
   if (homeAvatar) {
     homeAvatar.innerHTML = '';
-    const img = document.createElement('img');
-    img.src = photoUrl;
-    img.style.cssText = 'width:100%;height:100%;object-fit:cover;border-radius:10px;display:block';
+    const img = makeProtectedPhoto(photoUrl, 'width:100%;height:100%;object-fit:cover;border-radius:10px;display:block;pointer-events:none;user-select:none;-webkit-user-select:none');
     homeAvatar.appendChild(img);
   }
   // Grades banner avatar
   const gradesAvatar = document.getElementById('gradesAvatar');
   if (gradesAvatar) {
     gradesAvatar.innerHTML = '';
-    const img2 = document.createElement('img');
-    img2.src = photoUrl;
-    img2.style.cssText = 'width:100%;height:100%;object-fit:cover;border-radius:8px;display:block';
+    const img2 = makeProtectedPhoto(photoUrl, 'width:100%;height:100%;object-fit:cover;border-radius:8px;display:block;pointer-events:none;user-select:none;-webkit-user-select:none');
     gradesAvatar.appendChild(img2);
   }
 }
