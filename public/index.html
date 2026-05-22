@@ -579,68 +579,80 @@ table.gt tbody tr:hover { background: #F8F9FC; }
 
 /* ── ID CARD ── */
 .idcard-wrap{display:flex;flex-direction:column;align-items:center;gap:28px;padding:20px 0}
-.idcard{width:354px;border-radius:12px;overflow:hidden;box-shadow:0 24px 64px rgba(13,27,42,.22),0 4px 16px rgba(13,27,42,.12),0 0 0 1px rgba(13,27,42,.08);position:relative;user-select:none;font-family:'DM Sans',sans-serif}
 
-/* ── FRONT ── */
-.idcard-front{background:linear-gradient(160deg,#0a1628 0%,#132040 40%,#0e1d38 70%,#0a1628 100%);padding:0;min-height:220px;position:relative;overflow:hidden}
-.idcard-front::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 15% 15%,rgba(139,26,46,.5) 0%,transparent 50%),radial-gradient(ellipse at 90% 85%,rgba(154,123,47,.25) 0%,transparent 45%);pointer-events:none}
-/* Holographic shimmer strip */
-.idcard-front::after{content:'';position:absolute;top:0;right:0;width:6px;height:100%;background:linear-gradient(180deg,rgba(255,215,0,.4),rgba(139,26,46,.6),rgba(255,255,255,.3),rgba(154,123,47,.5),rgba(255,215,0,.4));pointer-events:none}
-/* Subtle dot-pattern overlay */
-.idcard-chip-row{position:absolute;top:0;left:0;right:6px;bottom:0;background-image:radial-gradient(circle,rgba(255,255,255,.04) 1px,transparent 1px);background-size:18px 18px;pointer-events:none}
+/* ── ISIC-style landscape card: 85.6 × 54mm ratio ── */
+.idcard{width:460px;border-radius:10px;overflow:hidden;box-shadow:0 20px 60px rgba(13,27,42,.25),0 4px 16px rgba(13,27,42,.12),0 0 0 1px rgba(13,27,42,.1);position:relative;user-select:none;font-family:'DM Sans',sans-serif}
 
-.idcard-top{padding:16px 20px 10px;display:flex;align-items:center;justify-content:space-between;position:relative;z-index:1}
-.idcard-logo-wrap{display:flex;align-items:center;gap:9px}
-.idcard-logo{width:34px;height:42px;object-fit:contain;filter:drop-shadow(0 1px 3px rgba(0,0,0,.4))}
-.idcard-uni{display:flex;flex-direction:column}
-.idcard-uni-name{font-size:10.5px;font-weight:700;color:rgba(255,255,255,.97);letter-spacing:.4px;line-height:1.25}
-.idcard-uni-sub{font-size:8px;color:rgba(255,255,255,.4);letter-spacing:.2px;line-height:1.4}
-.idcard-type-badge{font-size:7.5px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,.9);background:var(--crimson);padding:3px 9px;border-radius:2px;box-shadow:0 1px 4px rgba(0,0,0,.3)}
+/* ── FRONT (landscape, flex-row) ── */
+.idcard-front{display:flex;flex-direction:row;background:#fff;min-height:290px;position:relative;overflow:hidden}
 
-/* Gold stripe under header */
-.idcard-gold-stripe{height:2px;background:linear-gradient(90deg,transparent 0%,rgba(154,123,47,.6) 20%,rgba(220,180,80,.9) 50%,rgba(154,123,47,.6) 80%,transparent 100%);margin:0 0}
+/* Left bold colour band — like ISIC's blue/crimson stripe */
+.idcard-left-band{width:110px;flex-shrink:0;background:linear-gradient(180deg,#8B1A2E 0%,#6b1222 60%,#4a0d18 100%);display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding:18px 10px 14px;position:relative;overflow:hidden}
+.idcard-left-band::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 50% 0%,rgba(255,255,255,.12) 0%,transparent 65%);pointer-events:none}
+/* Diagonal pattern like ISIC */
+.idcard-left-band::after{content:'';position:absolute;inset:0;background:repeating-linear-gradient(45deg,rgba(255,255,255,.03) 0px,rgba(255,255,255,.03) 1px,transparent 1px,transparent 12px);pointer-events:none}
 
-.idcard-body{padding:14px 20px 16px;display:flex;gap:14px;align-items:flex-start;position:relative;z-index:1}
-
-/* Photo with proper ID-card border */
-.idcard-photo{width:78px;height:96px;border-radius:4px;background:rgba(255,255,255,.1);border:2px solid rgba(255,255,255,.25);display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden;font-size:28px;font-weight:700;color:rgba(255,255,255,.6);letter-spacing:-1px;box-shadow:0 2px 12px rgba(0,0,0,.4)}
+.idcard-band-logo{width:52px;height:auto;object-fit:contain;filter:brightness(0) invert(1) drop-shadow(0 1px 3px rgba(0,0,0,.3));margin-bottom:12px;position:relative;z-index:1}
+.idcard-band-title{font-size:7.5px;font-weight:800;letter-spacing:1.8px;text-transform:uppercase;color:rgba(255,255,255,.7);text-align:center;line-height:1.5;position:relative;z-index:1;margin-bottom:14px}
+/* Photo sits in the left band */
+.idcard-photo{width:80px;height:98px;border-radius:4px;background:rgba(255,255,255,.15);border:2px solid rgba(255,255,255,.4);display:flex;align-items:center;justify-content:center;overflow:hidden;font-size:26px;font-weight:700;color:rgba(255,255,255,.7);letter-spacing:-1px;box-shadow:0 3px 12px rgba(0,0,0,.35);position:relative;z-index:1;flex-shrink:0}
 .idcard-photo img,.idcard-photo canvas{width:100%;height:100%;object-fit:cover;display:block}
+/* Type badge at bottom of band */
+.idcard-band-badge{margin-top:auto;font-size:7px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:#fff;background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.3);padding:3px 8px;border-radius:2px;position:relative;z-index:1;text-align:center;backdrop-filter:blur(4px)}
 
-.idcard-info{flex:1;min-width:0;padding-top:2px}
-.idcard-name{font-size:14.5px;font-weight:700;color:#fff;line-height:1.2;margin-bottom:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-shadow:0 1px 3px rgba(0,0,0,.4)}
-.idcard-name-mm{font-size:10.5px;color:rgba(255,255,255,.5);margin-bottom:10px;line-height:1.4}
-.idcard-fields{display:flex;flex-direction:column;gap:6px}
+/* Right content area */
+.idcard-right{flex:1;display:flex;flex-direction:column;background:#fff;position:relative;overflow:hidden;min-width:0}
+/* Subtle grid/dot watermark on right */
+.idcard-right::before{content:'';position:absolute;inset:0;background-image:radial-gradient(circle,rgba(139,26,46,.06) 1px,transparent 1px);background-size:16px 16px;pointer-events:none}
+
+/* Top header bar on the right */
+.idcard-right-header{padding:12px 16px 10px;border-bottom:2px solid #8B1A2E;position:relative;z-index:1;display:flex;align-items:center;justify-content:space-between;gap:8px}
+.idcard-uni-block{flex:1;min-width:0}
+.idcard-uni-name{font-size:10px;font-weight:800;color:#0D1B2A;letter-spacing:.3px;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.idcard-uni-sub{font-size:7.5px;color:#7A8599;letter-spacing:.2px;line-height:1.4}
+.idcard-right-badge{font-size:7px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;background:#8B1A2E;color:#fff;padding:3px 8px;border-radius:2px;white-space:nowrap;flex-shrink:0}
+
+/* Main info area */
+.idcard-right-body{flex:1;padding:12px 16px 10px;position:relative;z-index:1;display:flex;flex-direction:column;gap:8px}
+.idcard-name{font-size:15px;font-weight:800;color:#0D1B2A;line-height:1.2;letter-spacing:-.2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.idcard-name-mm{font-size:10px;color:#7A8599;line-height:1.4;margin-top:-4px;margin-bottom:4px}
+
+.idcard-fields{display:grid;grid-template-columns:1fr 1fr;gap:7px 12px}
 .idcard-field{display:flex;flex-direction:column;gap:1px}
-.idcard-field-lbl{font-size:7px;font-weight:700;letter-spacing:1.4px;text-transform:uppercase;color:rgba(255,200,100,.6)}
-.idcard-field-val{font-size:11.5px;font-weight:500;color:rgba(255,255,255,.92)}
+.idcard-field-lbl{font-size:6.5px;font-weight:700;letter-spacing:1.3px;text-transform:uppercase;color:#9A7B2F}
+.idcard-field-val{font-size:11px;font-weight:600;color:#0D1B2A;line-height:1.3}
 
-/* Bottom bar with ID number — looks like a real card */
-.idcard-bottom{background:var(--crimson);padding:0;display:flex;align-items:stretch;position:relative;z-index:1;border-top:1.5px solid rgba(255,255,255,.08)}
-.idcard-bottom-left{padding:10px 16px;flex:1;border-right:1px solid rgba(255,255,255,.12)}
-.idcard-bottom-right{padding:10px 16px;text-align:right}
-.idcard-id-label{font-size:7px;font-weight:700;letter-spacing:1.8px;text-transform:uppercase;color:rgba(255,255,255,.55);margin-bottom:2px}
-.idcard-id-value{font-family:monospace;font-size:16px;font-weight:700;color:#fff;letter-spacing:2px;text-shadow:0 1px 2px rgba(0,0,0,.3)}
-.idcard-validity{font-size:7px;color:rgba(255,255,255,.55);letter-spacing:.5px;text-transform:uppercase;margin-bottom:2px}
-.idcard-validity strong{display:block;font-size:11px;color:rgba(255,255,255,.9);letter-spacing:.5px;font-weight:700}
+/* Gold holographic strip at bottom — like real ISIC */
+.idcard-holo-strip{height:5px;background:linear-gradient(90deg,#c8a84b,#f5d98a,#9A7B2F,#e8c96a,#c8a84b,#f0d080,#9A7B2F,#c8a84b);position:relative;z-index:1}
+
+/* Bottom bar */
+.idcard-bottom{background:#0D1B2A;padding:8px 16px;display:flex;align-items:center;justify-content:space-between;position:relative;z-index:1}
+.idcard-id-label{font-size:6.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,.45);margin-bottom:1px}
+.idcard-id-value{font-family:monospace;font-size:15px;font-weight:700;color:#fff;letter-spacing:2.5px}
+.idcard-validity{text-align:right}
+.idcard-validity span{font-size:6.5px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:rgba(255,255,255,.45);display:block}
+.idcard-validity strong{font-size:11px;color:rgba(255,255,255,.9);letter-spacing:.5px;font-weight:700;display:block}
 
 /* ── BACK ── */
-.idcard-back{background:#fff;padding:0;border-top:none}
-.idcard-back-crimson-bar{height:4px;background:var(--crimson)}
-.idcard-back-content{padding:16px 20px 14px}
-.idcard-back-header{font-size:8px;font-weight:700;letter-spacing:1.8px;text-transform:uppercase;color:var(--ink3);margin-bottom:12px;padding-bottom:6px;border-bottom:1px solid var(--line)}
-.idcard-back-fields{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
-.idcard-back-field .lbl{font-size:7.5px;font-weight:600;letter-spacing:.8px;text-transform:uppercase;color:var(--ink3);margin-bottom:2px}
-.idcard-back-field .val{font-size:12px;color:var(--ink);font-weight:500}
-.idcard-back-bottom{display:flex;align-items:flex-end;gap:14px}
-.idcard-qr-wrap{display:flex;flex-direction:column;align-items:center;gap:4px;flex-shrink:0}
-.idcard-qr-wrap canvas,.idcard-qr-wrap img{border:1px solid var(--line);border-radius:3px;display:block}
-.idcard-qr-lbl{font-size:6.5px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--ink3)}
-.idcard-back-right{flex:1;display:flex;flex-direction:column;gap:0}
-.idcard-sid-block{margin-bottom:8px}
-.idcard-sid-block .lbl{font-size:7px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:var(--ink3);margin-bottom:2px}
-.idcard-sid-block .val{font-size:15px;font-weight:700;color:var(--ink);letter-spacing:2px;font-family:monospace}
-.idcard-sig-area{border-top:1px solid #bbb;margin-top:12px;padding-top:4px;font-size:7px;color:var(--ink3);text-align:center;letter-spacing:.5px;text-transform:uppercase}
-.idcard-notice{font-size:7.5px;color:var(--ink3);line-height:1.6;border-top:1px solid var(--line);padding-top:8px;margin-top:10px;font-style:italic}
+.idcard-back{display:flex;flex-direction:row;background:#fff;position:relative;overflow:hidden;border-top:3px solid #8B1A2E}
+.idcard-back::before{content:'';position:absolute;inset:0;background-image:radial-gradient(circle,rgba(139,26,46,.05) 1px,transparent 1px);background-size:16px 16px;pointer-events:none}
+
+.idcard-back-left{width:110px;flex-shrink:0;background:#f7eef0;border-right:1px solid #e8d4d8;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:16px 10px;gap:12px;position:relative;z-index:1}
+.idcard-qr-wrap{display:flex;flex-direction:column;align-items:center;gap:4px}
+.idcard-qr-wrap canvas,.idcard-qr-wrap img{border:1px solid #ddd;border-radius:2px;display:block}
+.idcard-qr-lbl{font-size:6px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#9A7B2F;text-align:center}
+.idcard-sig-area{border-top:1px solid #ccc;padding-top:6px;width:100%;text-align:center;font-size:6.5px;color:#7A8599;letter-spacing:.4px;text-transform:uppercase}
+
+.idcard-back-right{flex:1;padding:14px 16px;display:flex;flex-direction:column;gap:10px;position:relative;z-index:1}
+.idcard-back-header{font-size:7.5px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:#8B1A2E;padding-bottom:6px;border-bottom:1px solid #e8d4d8}
+.idcard-back-fields{display:grid;grid-template-columns:1fr 1fr;gap:8px;flex:1}
+.idcard-back-field .lbl{font-size:6.5px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:#7A8599;margin-bottom:2px}
+.idcard-back-field .val{font-size:11.5px;font-weight:600;color:#0D1B2A}
+.idcard-back-bottom{display:flex;flex-direction:column;gap:2px}
+.idcard-sid-block .lbl{font-size:6.5px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#7A8599;margin-bottom:2px}
+.idcard-sid-block .val{font-size:13px;font-weight:700;color:#0D1B2A;letter-spacing:2px;font-family:monospace}
+.idcard-notice{font-size:6.5px;color:#9A9A9A;line-height:1.6;font-style:italic}
+
 .idcard-actions{display:flex;gap:10px}
 .btn-idcard{padding:10px 20px;border-radius:var(--r);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:8px}
 .btn-idcard-primary{background:var(--crimson);color:#fff;border:none;box-shadow:0 2px 8px rgba(139,26,46,.25)}
