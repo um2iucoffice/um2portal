@@ -579,46 +579,68 @@ table.gt tbody tr:hover { background: #F8F9FC; }
 
 /* ── ID CARD ── */
 .idcard-wrap{display:flex;flex-direction:column;align-items:center;gap:28px;padding:20px 0}
-.idcard{width:340px;border-radius:16px;overflow:hidden;box-shadow:0 20px 60px rgba(13,27,42,.18),0 4px 16px rgba(13,27,42,.1);position:relative;user-select:none}
-.idcard-front{background:linear-gradient(145deg,#0D1B2A 0%,#1a2e45 60%,#0D1B2A 100%);padding:0;min-height:210px;position:relative;overflow:hidden}
-.idcard-front::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 20% 20%,rgba(139,26,46,.4) 0%,transparent 55%),radial-gradient(ellipse at 85% 80%,rgba(154,123,47,.2) 0%,transparent 45%);pointer-events:none}
-.idcard-top{padding:20px 22px 14px;display:flex;align-items:center;justify-content:space-between;position:relative;z-index:1}
-.idcard-logo-wrap{display:flex;align-items:center;gap:10px}
-.idcard-logo{width:36px;height:44px;object-fit:contain}
+.idcard{width:354px;border-radius:12px;overflow:hidden;box-shadow:0 24px 64px rgba(13,27,42,.22),0 4px 16px rgba(13,27,42,.12),0 0 0 1px rgba(13,27,42,.08);position:relative;user-select:none;font-family:'DM Sans',sans-serif}
+
+/* ── FRONT ── */
+.idcard-front{background:linear-gradient(160deg,#0a1628 0%,#132040 40%,#0e1d38 70%,#0a1628 100%);padding:0;min-height:220px;position:relative;overflow:hidden}
+.idcard-front::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 15% 15%,rgba(139,26,46,.5) 0%,transparent 50%),radial-gradient(ellipse at 90% 85%,rgba(154,123,47,.25) 0%,transparent 45%);pointer-events:none}
+/* Holographic shimmer strip */
+.idcard-front::after{content:'';position:absolute;top:0;right:0;width:6px;height:100%;background:linear-gradient(180deg,rgba(255,215,0,.4),rgba(139,26,46,.6),rgba(255,255,255,.3),rgba(154,123,47,.5),rgba(255,215,0,.4));pointer-events:none}
+/* Subtle dot-pattern overlay */
+.idcard-chip-row{position:absolute;top:0;left:0;right:6px;bottom:0;background-image:radial-gradient(circle,rgba(255,255,255,.04) 1px,transparent 1px);background-size:18px 18px;pointer-events:none}
+
+.idcard-top{padding:16px 20px 10px;display:flex;align-items:center;justify-content:space-between;position:relative;z-index:1}
+.idcard-logo-wrap{display:flex;align-items:center;gap:9px}
+.idcard-logo{width:34px;height:42px;object-fit:contain;filter:drop-shadow(0 1px 3px rgba(0,0,0,.4))}
 .idcard-uni{display:flex;flex-direction:column}
-.idcard-uni-name{font-family:'DM Sans',sans-serif;font-size:11px;font-weight:700;color:rgba(255,255,255,.95);letter-spacing:.5px;line-height:1.2}
-.idcard-uni-sub{font-size:9px;color:rgba(255,255,255,.45);letter-spacing:.3px;line-height:1.4}
-.idcard-type-badge{font-size:8px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,.5);border:1px solid rgba(255,255,255,.15);padding:3px 8px;border-radius:3px}
-.idcard-divider-line{height:1px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.12),transparent);margin:0 22px}
-.idcard-body{padding:16px 22px 20px;display:flex;gap:16px;align-items:flex-start;position:relative;z-index:1}
-.idcard-photo{width:72px;height:86px;border-radius:8px;background:rgba(255,255,255,.08);border:1.5px solid rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden;font-size:26px;font-weight:700;color:rgba(255,255,255,.6);font-family:'DM Sans',sans-serif;letter-spacing:-1px}
-.idcard-info{flex:1;min-width:0}
-.idcard-name{font-family:'DM Sans',sans-serif;font-size:15px;font-weight:700;color:#fff;line-height:1.2;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.idcard-name-mm{font-size:11px;color:rgba(255,255,255,.45);margin-bottom:10px;line-height:1.4}
-.idcard-fields{display:flex;flex-direction:column;gap:5px}
+.idcard-uni-name{font-size:10.5px;font-weight:700;color:rgba(255,255,255,.97);letter-spacing:.4px;line-height:1.25}
+.idcard-uni-sub{font-size:8px;color:rgba(255,255,255,.4);letter-spacing:.2px;line-height:1.4}
+.idcard-type-badge{font-size:7.5px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,.9);background:var(--crimson);padding:3px 9px;border-radius:2px;box-shadow:0 1px 4px rgba(0,0,0,.3)}
+
+/* Gold stripe under header */
+.idcard-gold-stripe{height:2px;background:linear-gradient(90deg,transparent 0%,rgba(154,123,47,.6) 20%,rgba(220,180,80,.9) 50%,rgba(154,123,47,.6) 80%,transparent 100%);margin:0 0}
+
+.idcard-body{padding:14px 20px 16px;display:flex;gap:14px;align-items:flex-start;position:relative;z-index:1}
+
+/* Photo with proper ID-card border */
+.idcard-photo{width:78px;height:96px;border-radius:4px;background:rgba(255,255,255,.1);border:2px solid rgba(255,255,255,.25);display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden;font-size:28px;font-weight:700;color:rgba(255,255,255,.6);letter-spacing:-1px;box-shadow:0 2px 12px rgba(0,0,0,.4)}
+.idcard-photo img,.idcard-photo canvas{width:100%;height:100%;object-fit:cover;display:block}
+
+.idcard-info{flex:1;min-width:0;padding-top:2px}
+.idcard-name{font-size:14.5px;font-weight:700;color:#fff;line-height:1.2;margin-bottom:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-shadow:0 1px 3px rgba(0,0,0,.4)}
+.idcard-name-mm{font-size:10.5px;color:rgba(255,255,255,.5);margin-bottom:10px;line-height:1.4}
+.idcard-fields{display:flex;flex-direction:column;gap:6px}
 .idcard-field{display:flex;flex-direction:column;gap:1px}
-.idcard-field-lbl{font-size:7.5px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:rgba(255,255,255,.35)}
-.idcard-field-val{font-size:12px;font-weight:500;color:rgba(255,255,255,.9);font-family:'DM Sans',sans-serif}
-.idcard-bottom{background:var(--crimson);padding:10px 22px;display:flex;align-items:center;justify-content:space-between;position:relative;z-index:1}
-.idcard-id-label{font-size:8px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,.6)}
-.idcard-id-value{font-family:'DM Sans',sans-serif;font-size:15px;font-weight:700;color:#fff;letter-spacing:1px}
-.idcard-validity{font-size:9px;color:rgba(255,255,255,.6);text-align:right}
-.idcard-validity strong{display:block;font-size:10px;color:rgba(255,255,255,.85)}
-.idcard-back{background:var(--white);padding:18px 22px;border-top:3px solid var(--crimson)}
-.idcard-back-header{font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--ink3);margin-bottom:12px}
+.idcard-field-lbl{font-size:7px;font-weight:700;letter-spacing:1.4px;text-transform:uppercase;color:rgba(255,200,100,.6)}
+.idcard-field-val{font-size:11.5px;font-weight:500;color:rgba(255,255,255,.92)}
+
+/* Bottom bar with ID number — looks like a real card */
+.idcard-bottom{background:var(--crimson);padding:0;display:flex;align-items:stretch;position:relative;z-index:1;border-top:1.5px solid rgba(255,255,255,.08)}
+.idcard-bottom-left{padding:10px 16px;flex:1;border-right:1px solid rgba(255,255,255,.12)}
+.idcard-bottom-right{padding:10px 16px;text-align:right}
+.idcard-id-label{font-size:7px;font-weight:700;letter-spacing:1.8px;text-transform:uppercase;color:rgba(255,255,255,.55);margin-bottom:2px}
+.idcard-id-value{font-family:monospace;font-size:16px;font-weight:700;color:#fff;letter-spacing:2px;text-shadow:0 1px 2px rgba(0,0,0,.3)}
+.idcard-validity{font-size:7px;color:rgba(255,255,255,.55);letter-spacing:.5px;text-transform:uppercase;margin-bottom:2px}
+.idcard-validity strong{display:block;font-size:11px;color:rgba(255,255,255,.9);letter-spacing:.5px;font-weight:700}
+
+/* ── BACK ── */
+.idcard-back{background:#fff;padding:0;border-top:none}
+.idcard-back-crimson-bar{height:4px;background:var(--crimson)}
+.idcard-back-content{padding:16px 20px 14px}
+.idcard-back-header{font-size:8px;font-weight:700;letter-spacing:1.8px;text-transform:uppercase;color:var(--ink3);margin-bottom:12px;padding-bottom:6px;border-bottom:1px solid var(--line)}
 .idcard-back-fields{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
-.idcard-back-field .lbl{font-size:9px;font-weight:600;letter-spacing:.8px;text-transform:uppercase;color:var(--ink3);margin-bottom:2px}
-.idcard-back-field .val{font-size:12px;color:var(--ink);font-family:'DM Sans',sans-serif}
-.idcard-back-bottom{display:flex;align-items:flex-start;gap:14px;margin-top:2px}
-.idcard-qr-wrap{display:flex;flex-direction:column;align-items:center;gap:5px;flex-shrink:0}
-.idcard-qr-wrap canvas,.idcard-qr-wrap img{border:1.5px solid var(--line);border-radius:4px;display:block}
-.idcard-qr-lbl{font-size:7px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--ink3)}
+.idcard-back-field .lbl{font-size:7.5px;font-weight:600;letter-spacing:.8px;text-transform:uppercase;color:var(--ink3);margin-bottom:2px}
+.idcard-back-field .val{font-size:12px;color:var(--ink);font-weight:500}
+.idcard-back-bottom{display:flex;align-items:flex-end;gap:14px}
+.idcard-qr-wrap{display:flex;flex-direction:column;align-items:center;gap:4px;flex-shrink:0}
+.idcard-qr-wrap canvas,.idcard-qr-wrap img{border:1px solid var(--line);border-radius:3px;display:block}
+.idcard-qr-lbl{font-size:6.5px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--ink3)}
 .idcard-back-right{flex:1;display:flex;flex-direction:column;gap:0}
-.idcard-sid-block{margin-bottom:10px}
-.idcard-sid-block .lbl{font-size:8px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--ink3);margin-bottom:2px}
-.idcard-sid-block .val{font-size:14px;font-weight:700;color:var(--ink);letter-spacing:1.5px;font-family:monospace}
-.idcard-sig-area{border-top:1px solid #bbb;margin-top:16px;padding-top:4px;font-size:7.5px;color:var(--ink3);text-align:center;letter-spacing:.3px}
-.idcard-notice{font-size:8.5px;color:var(--ink3);line-height:1.6;border-top:1px solid var(--line);padding-top:8px;margin-top:10px}
+.idcard-sid-block{margin-bottom:8px}
+.idcard-sid-block .lbl{font-size:7px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:var(--ink3);margin-bottom:2px}
+.idcard-sid-block .val{font-size:15px;font-weight:700;color:var(--ink);letter-spacing:2px;font-family:monospace}
+.idcard-sig-area{border-top:1px solid #bbb;margin-top:12px;padding-top:4px;font-size:7px;color:var(--ink3);text-align:center;letter-spacing:.5px;text-transform:uppercase}
+.idcard-notice{font-size:7.5px;color:var(--ink3);line-height:1.6;border-top:1px solid var(--line);padding-top:8px;margin-top:10px;font-style:italic}
 .idcard-actions{display:flex;gap:10px}
 .btn-idcard{padding:10px 20px;border-radius:var(--r);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:8px}
 .btn-idcard-primary{background:var(--crimson);color:#fff;border:none;box-shadow:0 2px 8px rgba(139,26,46,.25)}
@@ -1646,36 +1668,42 @@ table.gt tbody tr:hover { background: rgba(255,255,255,0.03); }
 
 /* ── ID CARD SECTION ── */
 .idcard-wrap { display: flex; flex-direction: column; align-items: center; gap: 24px; padding: 12px 0; }
-.idcard { width: 340px; border-radius: 16px; overflow: hidden; box-shadow: 0 24px 64px rgba(0,0,0,0.5), 0 4px 16px rgba(0,0,0,0.3); position: relative; user-select: none; }
-.idcard-front { background: linear-gradient(145deg,#0D1B2A 0%,#1a2e45 60%,#0D1B2A 100%); padding: 0; min-height: 210px; position: relative; overflow: hidden; }
-.idcard-front::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse at 20% 20%,rgba(139,26,46,.4) 0%,transparent 55%),radial-gradient(ellipse at 85% 80%,rgba(154,123,47,.2) 0%,transparent 45%); pointer-events: none; }
-.idcard-top { padding: 20px 22px 14px; display: flex; align-items: center; justify-content: space-between; position: relative; z-index: 1; }
-.idcard-logo-wrap { display: flex; align-items: center; gap: 10px; }
-.idcard-logo { width: 36px; height: 44px; object-fit: contain; }
+.idcard { width: 354px; border-radius: 12px; overflow: hidden; box-shadow: 0 24px 64px rgba(0,0,0,0.55), 0 4px 16px rgba(0,0,0,0.35), 0 0 0 1px rgba(0,0,0,0.2); position: relative; user-select: none; font-family: 'DM Sans', sans-serif; }
+.idcard-front { background: linear-gradient(160deg,#0a1628 0%,#132040 40%,#0e1d38 70%,#0a1628 100%); padding: 0; min-height: 220px; position: relative; overflow: hidden; }
+.idcard-front::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse at 15% 15%,rgba(139,26,46,.5) 0%,transparent 50%),radial-gradient(ellipse at 90% 85%,rgba(154,123,47,.25) 0%,transparent 45%); pointer-events: none; }
+.idcard-front::after { content: ''; position: absolute; top: 0; right: 0; width: 6px; height: 100%; background: linear-gradient(180deg,rgba(255,215,0,.4),rgba(139,26,46,.6),rgba(255,255,255,.3),rgba(154,123,47,.5),rgba(255,215,0,.4)); pointer-events: none; }
+.idcard-chip-row { position: absolute; top: 0; left: 0; right: 6px; bottom: 0; background-image: radial-gradient(circle,rgba(255,255,255,.04) 1px,transparent 1px); background-size: 18px 18px; pointer-events: none; }
+.idcard-top { padding: 16px 20px 10px; display: flex; align-items: center; justify-content: space-between; position: relative; z-index: 1; }
+.idcard-logo-wrap { display: flex; align-items: center; gap: 9px; }
+.idcard-logo { width: 34px; height: 42px; object-fit: contain; filter: drop-shadow(0 1px 3px rgba(0,0,0,.4)); }
 .idcard-uni { display: flex; flex-direction: column; }
-.idcard-uni-name { font-family: 'DM Sans', sans-serif; font-size: 11px; font-weight: 700; color: rgba(255,255,255,.95); letter-spacing: .5px; line-height: 1.2; }
-.idcard-uni-sub { font-size: 9px; color: rgba(255,255,255,.45); letter-spacing: .3px; line-height: 1.4; }
-.idcard-type-badge { font-size: 8px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: rgba(255,255,255,.5); border: 1px solid rgba(255,255,255,.15); padding: 3px 8px; border-radius: 3px; }
-.idcard-divider-line { height: 1px; background: linear-gradient(90deg,transparent,rgba(255,255,255,.12),transparent); margin: 0 22px; }
-.idcard-body { padding: 16px 22px 20px; display: flex; gap: 16px; align-items: flex-start; position: relative; z-index: 1; }
-.idcard-photo { width: 72px; height: 86px; border-radius: 8px; background: rgba(255,255,255,.08); border: 1.5px solid rgba(255,255,255,.15); display: flex; align-items: center; justify-content: center; flex-shrink: 0; overflow: hidden; font-size: 26px; font-weight: 700; color: rgba(255,255,255,.6); font-family: 'DM Sans', sans-serif; letter-spacing: -1px; }
-.idcard-info { flex: 1; min-width: 0; }
-.idcard-name { font-family: 'DM Sans', sans-serif; font-size: 15px; font-weight: 700; color: #fff; line-height: 1.2; margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.idcard-name-mm { font-size: 11px; color: rgba(255,255,255,.45); margin-bottom: 10px; line-height: 1.4; }
-.idcard-fields { display: flex; flex-direction: column; gap: 5px; }
+.idcard-uni-name { font-size: 10.5px; font-weight: 700; color: rgba(255,255,255,.97); letter-spacing: .4px; line-height: 1.25; }
+.idcard-uni-sub { font-size: 8px; color: rgba(255,255,255,.4); letter-spacing: .2px; line-height: 1.4; }
+.idcard-type-badge { font-size: 7.5px; font-weight: 800; letter-spacing: 2px; text-transform: uppercase; color: rgba(255,255,255,.9); background: var(--crimson); padding: 3px 9px; border-radius: 2px; box-shadow: 0 1px 4px rgba(0,0,0,.3); }
+.idcard-gold-stripe { height: 2px; background: linear-gradient(90deg,transparent 0%,rgba(154,123,47,.6) 20%,rgba(220,180,80,.9) 50%,rgba(154,123,47,.6) 80%,transparent 100%); }
+.idcard-body { padding: 14px 20px 16px; display: flex; gap: 14px; align-items: flex-start; position: relative; z-index: 1; }
+.idcard-photo { width: 78px; height: 96px; border-radius: 4px; background: rgba(255,255,255,.1); border: 2px solid rgba(255,255,255,.25); display: flex; align-items: center; justify-content: center; flex-shrink: 0; overflow: hidden; font-size: 28px; font-weight: 700; color: rgba(255,255,255,.6); letter-spacing: -1px; box-shadow: 0 2px 12px rgba(0,0,0,.4); }
+.idcard-info { flex: 1; min-width: 0; padding-top: 2px; }
+.idcard-name { font-size: 14.5px; font-weight: 700; color: #fff; line-height: 1.2; margin-bottom: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-shadow: 0 1px 3px rgba(0,0,0,.4); }
+.idcard-name-mm { font-size: 10.5px; color: rgba(255,255,255,.5); margin-bottom: 10px; line-height: 1.4; }
+.idcard-fields { display: flex; flex-direction: column; gap: 6px; }
 .idcard-field { display: flex; flex-direction: column; gap: 1px; }
-.idcard-field-lbl { font-size: 7.5px; font-weight: 700; letter-spacing: 1.2px; text-transform: uppercase; color: rgba(255,255,255,.35); }
-.idcard-field-val { font-size: 12px; font-weight: 500; color: rgba(255,255,255,.9); font-family: 'DM Sans', sans-serif; }
-.idcard-bottom { background: var(--crimson); padding: 10px 22px; display: flex; align-items: center; justify-content: space-between; position: relative; z-index: 1; }
-.idcard-id-label { font-size: 8px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: rgba(255,255,255,.6); }
-.idcard-id-value { font-family: 'DM Sans', sans-serif; font-size: 15px; font-weight: 700; color: #fff; letter-spacing: 1px; }
-.idcard-validity { font-size: 9px; color: rgba(255,255,255,.6); text-align: right; }
-.idcard-validity strong { display: block; font-size: 10px; color: rgba(255,255,255,.85); }
-.idcard-back { background: #fff; padding: 18px 22px; border-top: 3px solid var(--crimson); }
-.idcard-back-header { font-size: 9px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: var(--ink3); margin-bottom: 12px; }
+.idcard-field-lbl { font-size: 7px; font-weight: 700; letter-spacing: 1.4px; text-transform: uppercase; color: rgba(255,200,100,.6); }
+.idcard-field-val { font-size: 11.5px; font-weight: 500; color: rgba(255,255,255,.92); }
+.idcard-bottom { background: var(--crimson); padding: 0; display: flex; align-items: stretch; position: relative; z-index: 1; border-top: 1.5px solid rgba(255,255,255,.08); }
+.idcard-bottom-left { padding: 10px 16px; flex: 1; border-right: 1px solid rgba(255,255,255,.12); }
+.idcard-bottom-right { padding: 10px 16px; text-align: right; }
+.idcard-id-label { font-size: 7px; font-weight: 700; letter-spacing: 1.8px; text-transform: uppercase; color: rgba(255,255,255,.55); margin-bottom: 2px; }
+.idcard-id-value { font-family: monospace; font-size: 16px; font-weight: 700; color: #fff; letter-spacing: 2px; text-shadow: 0 1px 2px rgba(0,0,0,.3); }
+.idcard-validity { font-size: 7px; color: rgba(255,255,255,.55); letter-spacing: .5px; text-transform: uppercase; margin-bottom: 2px; }
+.idcard-validity strong { display: block; font-size: 11px; color: rgba(255,255,255,.9); letter-spacing: .5px; font-weight: 700; }
+.idcard-back { background: #fff; padding: 0; border-top: none; }
+.idcard-back-crimson-bar { height: 4px; background: var(--crimson); }
+.idcard-back-content { padding: 16px 20px 14px; }
+.idcard-back-header { font-size: 8px; font-weight: 700; letter-spacing: 1.8px; text-transform: uppercase; color: var(--ink3); margin-bottom: 12px; padding-bottom: 6px; border-bottom: 1px solid var(--line); }
 .idcard-back-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
-.idcard-back-field .lbl { font-size: 9px; font-weight: 600; letter-spacing: .8px; text-transform: uppercase; color: var(--ink3); margin-bottom: 2px; }
-.idcard-back-field .val { font-size: 12px; color: var(--ink); font-family: 'DM Sans', sans-serif; }
+.idcard-back-field .lbl { font-size: 7.5px; font-weight: 600; letter-spacing: .8px; text-transform: uppercase; color: var(--ink3); margin-bottom: 2px; }
+.idcard-back-field .val { font-size: 12px; color: var(--ink); font-weight: 500; }
 .idcard-back-bottom { display: flex; align-items: flex-start; gap: 14px; margin-top: 2px; }
 .idcard-qr-wrap { display: flex; flex-direction: column; align-items: center; gap: 5px; flex-shrink: 0; }
 .idcard-qr-wrap canvas,.idcard-qr-wrap img { border: 1.5px solid var(--line); border-radius: 4px; display: block; }
@@ -2758,6 +2786,7 @@ body.theme-light .mob-more-item.danger svg { color: var(--crimson); }
         <div class="idcard">
           <!-- FRONT -->
           <div class="idcard-front">
+            <div class="idcard-chip-row"></div>
             <div class="idcard-top">
               <div class="idcard-logo-wrap">
                 <img src="https://raw.githubusercontent.com/um2iucoffice/um2portal/cddfb252ec6cf6cecc25c53a8630d92b08c2aaa8/public/UM2_Logo.svg" alt="UM2" class="idcard-logo">
@@ -2768,7 +2797,7 @@ body.theme-light .mob-more-item.danger svg { color: var(--crimson); }
               </div>
               <div class="idcard-type-badge" id="idcardTypeBadge">Student</div>
             </div>
-            <div class="idcard-divider-line"></div>
+            <div class="idcard-gold-stripe"></div>
             <div class="idcard-body">
               <div class="idcard-photo" id="idcardPhoto"></div>
               <div class="idcard-info">
@@ -2776,7 +2805,7 @@ body.theme-light .mob-more-item.danger svg { color: var(--crimson); }
                 <div class="idcard-name-mm" id="idcardNameMM"></div>
                 <div class="idcard-fields">
                   <div class="idcard-field">
-                    <span class="idcard-field-lbl">Year</span>
+                    <span class="idcard-field-lbl">Year of Study</span>
                     <span class="idcard-field-val" id="idcardStatus">—</span>
                   </div>
                   <div class="idcard-field">
@@ -2788,63 +2817,74 @@ body.theme-light .mob-more-item.danger svg { color: var(--crimson); }
                     <span class="idcard-field-val" id="idcardSupervisor">—</span>
                   </div>
                   <div class="idcard-field">
-                    <span class="idcard-field-lbl">Admission Year</span>
-                    <span class="idcard-field-val" id="idcardAdmission">—</span>
+                    <span class="idcard-field-lbl">Gender</span>
+                    <span class="idcard-field-val" id="idcardGender">—</span>
                   </div>
                   <div class="idcard-field">
-                    <span class="idcard-field-lbl">Enrollment Status</span>
-                    <span class="idcard-field-val" id="idcardEnroll">—</span>
+                    <span class="idcard-field-lbl">Enrolled</span>
+                    <span class="idcard-field-val" id="idcardAdmission">—</span>
                   </div>
                 </div>
               </div>
             </div>
             <div class="idcard-bottom">
-              <div>
+              <div class="idcard-bottom-left">
                 <div class="idcard-id-label" id="idcardIDLabel">Student ID</div>
                 <div class="idcard-id-value" id="idcardID">—</div>
               </div>
-              <div class="idcard-validity" id="idcardValidityBlock">
-                <span id="idcardValidityLabel">Valid</span>
-                <strong id="idcardValidityYear" style="display:block;font-size:10px;color:rgba(255,255,255,.85)">—</strong>
+              <div class="idcard-bottom-right" id="idcardValidityBlock">
+                <div class="idcard-validity" id="idcardValidityLabel">Valid until</div>
+                <strong id="idcardValidityYear" style="display:block;font-size:11px;color:rgba(255,255,255,.9)">—</strong>
               </div>
             </div>
           </div>
           <!-- BACK -->
           <div class="idcard-back">
-            <div class="idcard-back-header">Additional Information</div>
-            <div class="idcard-back-fields">
-              <div class="idcard-back-field">
-                <div class="lbl">Date of Birth</div>
-                <div class="val" id="idcardBirth">—</div>
-              </div>
-              <div class="idcard-back-field">
-                <div class="lbl">Phone</div>
-                <div class="val" id="idcardPhone">—</div>
-              </div>
-              <div class="idcard-back-field">
-                <div class="lbl">Father's Name</div>
-                <div class="val" id="idcardFather">—</div>
-              </div>
-              <div class="idcard-back-field">
-                <div class="lbl">Admission Year</div>
-                <div class="val" id="idcardAdmissionBack">—</div>
-              </div>
-            </div>
-            <div class="idcard-back-bottom">
-              <div class="idcard-qr-wrap">
-                <div id="idcardQR"></div>
-                <div class="idcard-qr-lbl">Scan to Verify</div>
-              </div>
-              <div class="idcard-back-right">
-                <div class="idcard-sid-block">
-                  <div class="lbl"></div>
-                  <div class="val" id="idcardBarcodeNum">—</div>
+            <div class="idcard-back-crimson-bar"></div>
+            <div class="idcard-back-content">
+              <div class="idcard-back-header">Student Identification — University of Medicine (2)</div>
+              <div class="idcard-back-fields">
+                <div class="idcard-back-field">
+                  <div class="lbl">Date of Birth</div>
+                  <div class="val" id="idcardBirth">—</div>
                 </div>
-                <div class="idcard-sig-area">Authorised by · Registrar</div>
+                <div class="idcard-back-field">
+                  <div class="lbl">Gender</div>
+                  <div class="val" id="idcardGenderBack">—</div>
+                </div>
+                <div class="idcard-back-field">
+                  <div class="lbl">Phone</div>
+                  <div class="val" id="idcardPhone">—</div>
+                </div>
+                <div class="idcard-back-field">
+                  <div class="lbl">Father's Name</div>
+                  <div class="val" id="idcardFather">—</div>
+                </div>
+                <div class="idcard-back-field">
+                  <div class="lbl">Enrollment Status</div>
+                  <div class="val" id="idcardEnroll">—</div>
+                </div>
+                <div class="idcard-back-field">
+                  <div class="lbl">Admission Year</div>
+                  <div class="val" id="idcardAdmissionBack">—</div>
+                </div>
               </div>
-            </div>
-            <div class="idcard-notice">
-              This card is the property of University of Medicine (2) - IUC. Misuse is subject to disciplinary action.
+              <div class="idcard-back-bottom">
+                <div class="idcard-qr-wrap">
+                  <div id="idcardQR"></div>
+                  <div class="idcard-qr-lbl">Scan to Verify</div>
+                </div>
+                <div class="idcard-back-right">
+                  <div class="idcard-sid-block">
+                    <div class="lbl">Student ID</div>
+                    <div class="val" id="idcardBarcodeNum">—</div>
+                  </div>
+                  <div class="idcard-sig-area">Authorised · Registrar's Office</div>
+                </div>
+              </div>
+              <div class="idcard-notice">
+                This card is the property of University of Medicine (2) — IUC. If found, please return to the Registrar's Office. Misuse is subject to disciplinary action.
+              </div>
             </div>
           </div>
         </div>
@@ -3275,7 +3315,8 @@ function normaliseStudent(raw) {
     graduationDate: firstValue(s, ['graduation_date', 'graduationDate']),
     graduationIdMY: firstValue(s, ['graduation_id_my', 'graduationIdMY']),
     graduationDateMY: firstValue(s, ['graduation_date_my', 'graduationDateMY']),
-    gpa: firstValue(s, ['Overall GPA', 'overall_gpa', 'OverallGPA', 'overallGPA', 'gpa', 'GPA'])
+    gpa: firstValue(s, ['Overall GPA', 'overall_gpa', 'OverallGPA', 'overallGPA', 'gpa', 'GPA']),
+    gender: firstValue(s, ['gender', 'Gender', 'sex', 'Sex'])
   };
 }
 
@@ -3798,6 +3839,12 @@ function populateIDCard(s, isGraduated, gradID, gradDate) {
   document.getElementById('idcardAdmission').textContent= s.admissionYear || '—';
   document.getElementById('idcardAdmissionBack').textContent = s.admissionYear || '—';
   document.getElementById('idcardEnroll').textContent   = s.enrollmentStatus || '—';
+  // Gender — capitalise first letter
+  const genderVal = s.gender ? (s.gender.charAt(0).toUpperCase() + s.gender.slice(1).toLowerCase()) : '—';
+  const idcardGenderEl     = document.getElementById('idcardGender');
+  const idcardGenderBackEl = document.getElementById('idcardGenderBack');
+  if (idcardGenderEl)     idcardGenderEl.textContent     = genderVal;
+  if (idcardGenderBackEl) idcardGenderBackEl.textContent = genderVal;
   const idcardProgramEl = document.getElementById('idcardProgram');
   if (idcardProgramEl) idcardProgramEl.textContent = s.programName || s.program || '—';
 
@@ -4063,8 +4110,13 @@ function getCompletionYear(row) {
 }
 
 function getNote(row) {
-  return row.note || row.Note || row.notes || row.Notes ||
-         row.comment || row.Comment || row.remarks || row.Remarks || '';
+  const attempt = row.attempt || row.Attempt || row.attempt_no || '';
+  const note    = row.note || row.Note || row.notes || row.Notes ||
+                  row.comment || row.Comment || row.remarks || row.Remarks || '';
+  if (attempt && attempt !== '1' && attempt !== 1) {
+    return note ? `Attempt ${attempt} · ${note}` : `Attempt ${attempt}`;
+  }
+  return note;
 }
 
 function getSheetOverallGpa(student) {
