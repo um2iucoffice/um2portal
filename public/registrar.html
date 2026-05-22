@@ -1192,11 +1192,12 @@ alter table grades add column if not exists updated_at  timestamptz default now(
 
   <div class="card mt-4">
     <div class="card-title">Expected CSV Format</div>
-    <div class="code-block">StudentID,CourseID,NumericScore
-iuc125065,CRS015,81.38
-iuc125065,CRS016,75.50
-iuc125066,CRS015,90.00</div>
+    <div class="code-block">StudentID,CourseID,NumericScore,Year,Attempt
+iuc125065,CRS015,81.38,2025,1st Attempt
+iuc125065,CRS016,75.50,2025,2nd Attempt
+iuc125066,CRS015,90.00,2024,1st Attempt</div>
     <p class="text-muted mt-2">GradeID, GradePoint (4.0 scale), and Grade Letter (A<sup>+</sup>/A/A<sup>−</sup>/B<sup>+</sup>/B/B<sup>−</sup>/F) are <strong class="text-crimson">auto-computed</strong>. Do not include them in CSV.</p>
+    <p class="text-muted mt-1"><strong>Year</strong> and <strong>Attempt</strong> columns are optional — if omitted, the values set in the upload form below will be used for all rows. When present in the CSV they override the form values per-row (useful for migration imports with mixed years/attempts).</p>
     <div class="form-actions" style="margin-top:12px">
       <button class="btn btn-outline btn-sm" onclick="downloadGradeTemplate()">↓ Download Template CSV</button>
     </div>
@@ -3408,7 +3409,8 @@ function handleGradeCSV(input) {
     complete: (results) => {
       gradeCSVRows = results.data;
       const preview = document.getElementById('csvPreviewTable');
-      const attemptLabel = document.getElementById('grade-attempt').value;
+      const fallbackAttempt = document.getElementById('grade-attempt').value;
+      const fallbackYear    = (document.getElementById('grade-year').value || '').trim();
 
       // Validate every row up-front
       let validCount = 0, errorCount = 0;
@@ -3416,9 +3418,12 @@ function handleGradeCSV(input) {
       gradeCSVRows.forEach((row, idx) => {
         const score = parseFloat(row.NumericScore || row.numericscore || row.numeric_score || 0);
         const { gp, letter } = computeGradePoint(score);
-        const sid = (row.StudentID || row.studentid || row.student_id || '').trim();
-        const cid = (row.CourseID  || row.courseid  || row.course_id  || '').trim();
-        const gid = stableGradeId(sid, cid, attemptLabel);
+        const sid         = (row.StudentID || row.studentid || row.student_id || '').trim();
+        const cid         = (row.CourseID  || row.courseid  || row.course_id  || '').trim();
+        // Per-row Year/Attempt from CSV override the UI fields (migration support)
+        const rowAttempt  = (row.Attempt || row.attempt || '').trim() || fallbackAttempt;
+        const rowYear     = (row.Year    || row.year    || '').trim() || fallbackYear || '—';
+        const gid = stableGradeId(sid, cid, rowAttempt);
         const studentMatch = students.find(s => s.id.toLowerCase() === sid.toLowerCase());
         const courseMatch  = courses.find(c => c[0].toLowerCase() === cid.toLowerCase());
         const stuStatus = studentMatch
@@ -3433,7 +3438,8 @@ function handleGradeCSV(input) {
           <td class="text-mono">${sid||'<span class=\"text-crimson\">(blank)</span>'}</td>
           <td class="text-mono">${cid||'—'}</td>
           <td>${score}</td>
-          <td><span class="badge b-blue">${attemptLabel}</span></td>
+          <td><span class="badge b-blue">${rowAttempt}</span></td>
+          <td class="text-mono" style="font-size:11px;color:var(--ink3)">${rowYear}</td>
           <td class="text-mono text-crimson" style="font-size:11px">${gid}</td>
           <td><span class="badge ${gradeBadgeClass(letter)}">${formatGradeLetter(letter)}</span></td>
           <td><strong class="text-green">${gp.toFixed(1)}</strong></td>
@@ -3450,7 +3456,7 @@ function handleGradeCSV(input) {
 
       preview.innerHTML = `<thead><tr>
         <th>#</th><th>Student ID</th><th>Course ID</th><th>Score</th>
-        <th>Attempt</th><th>Grade ID (auto)</th><th>Letter</th><th>GP</th><th>Status</th>
+        <th>Attempt</th><th>Year</th><th>Grade ID (auto)</th><th>Letter</th><th>GP</th><th>Status</th>
       </tr></thead>`;
       preview.innerHTML += body + '</tbody>';
       document.getElementById('csvPreviewArea').style.display = 'block';
@@ -3479,7 +3485,7 @@ async function submitGrades() {
 
   const rc = document.getElementById('gradeResultCard');
   const rt = document.getElementById('gradeResultTable');
-  rt.innerHTML = `<thead><tr><th>Row</th><th>Student</th><th>Course</th><th>Score</th><th>Attempt</th><th>GradeID</th><th>Letter</th><th>GradePoint</th><th>DB</th></tr></thead>`;
+  rt.innerHTML = `<thead><tr><th>Row</th><th>Student</th><th>Course</th><th>Score</th><th>Attempt</th><th>Year</th><th>GradeID</th><th>Letter</th><th>GradePoint</th><th>DB</th></tr></thead>`;
   let body = '<tbody>';
   let okCount = 0, errCount = 0;
   const notifiedStudents = new Set();
@@ -3524,17 +3530,18 @@ async function submitGrades() {
     const score    = parseFloat(row.NumericScore || row.numericscore || row.score || 0);
     const { gp, letter } = computeGradePoint(score);
 
+    // Per-row Year/Attempt from CSV override the UI form values (migration support)
+    const rowAttempt = (row.Attempt || row.attempt || '').trim() || uploadAttempt;
+    const rowYear    = (row.Year    || row.year    || '').trim() || gradeYear;
+
     // Deterministic ID: same student+course+attempt always maps to the same grade row.
     // Re-uploading the same CSV updates existing grades rather than creating duplicates.
-    const gid = 'GRD-' + stableGradeId(sid, courseId, uploadAttempt);
+    const gid = 'GRD-' + stableGradeId(sid, courseId, rowAttempt);
 
     const courseMatch = courses.find(c => c[0].toLowerCase() === courseId.toLowerCase());
     const courseName  = courseMatch ? courseMatch[1] : courseId;
 
     // Use snake_case column names that match the actual Supabase schema.
-    // Sending camelCase keys (StudentID, CourseID, NumericScore) causes Postgres to
-    // silently ignore them — which means the 'id' field never lands and Postgres
-    // auto-generates its own, breaking the stableGradeId deduplication entirely.
     const record = {
       id:          gid,
       student_id:  sid,
@@ -3543,7 +3550,8 @@ async function submitGrades() {
       letter,
       gp,
       course:      courseName,
-      attempt:     uploadAttempt,
+      attempt:     rowAttempt,
+      year:        rowYear,
       uploaded_by: uploadedBy,
       created_at:  new Date().toISOString(),
     };
@@ -3551,9 +3559,9 @@ async function submitGrades() {
     const gradeRecord = {
       id: gid, student_id: sid, course_id: courseId,
       score, letter, gp, course: courseName,
-      attempt: uploadAttempt, uploaded_by: uploadedBy,
+      attempt: rowAttempt, year: rowYear, uploaded_by: uploadedBy,
     };
-    validRecords.push({ record, gradeRecord, gid, score, gp, letter, sid, courseId, i });
+    validRecords.push({ record, gradeRecord, gid, score, gp, letter, sid, courseId, rowAttempt, rowYear, i });
   }
 
 
@@ -3585,6 +3593,7 @@ async function submitGrades() {
             course_id:   item.courseId,
             course:      item.record.course,
             attempt:     item.record.attempt,
+            year:        item.record.year,
             uploaded_by: item.record.uploaded_by,
             updated_at:  new Date().toISOString(),
           };
@@ -3601,19 +3610,19 @@ async function submitGrades() {
     const errMsg = batchErrors.get(item.gid);
     if (errMsg) {
       errCount++;
-      body += `<tr class="bulk-row-err"><td>${item.i+1}</td><td class="text-mono">${item.sid}</td><td>${item.courseId}</td><td>${item.score}</td><td>${uploadAttempt}</td><td class="text-mono">${item.gid}</td><td>—</td><td>—</td><td><span class="badge b-red" title="${errMsg.replace(/"/g,"'")}">✗ ${errMsg.length > 40 ? errMsg.slice(0,40)+'…' : errMsg}</span></td></tr>`;
+      body += `<tr class="bulk-row-err"><td>${item.i+1}</td><td class="text-mono">${item.sid}</td><td>${item.courseId}</td><td>${item.score}</td><td>${item.rowAttempt}</td><td>${item.rowYear||'—'}</td><td class="text-mono">${item.gid}</td><td>—</td><td>—</td><td><span class="badge b-red" title="${errMsg.replace(/"/g,"'")}">✗ ${errMsg.length > 40 ? errMsg.slice(0,40)+'…' : errMsg}</span></td></tr>`;
     } else {
       okCount++;
       notifiedStudents.add(item.sid);
       if (!gradeData[item.sid]) gradeData[item.sid] = [];
       const existingIdx = gradeData[item.sid].findIndex(g =>
         (g.course_id || g.CourseID || g.courseid || '') === item.courseId &&
-        (g.attempt || '1st Attempt') === uploadAttempt
+        (g.attempt || '1st Attempt') === item.rowAttempt
       );
       if (existingIdx >= 0) gradeData[item.sid][existingIdx] = item.gradeRecord || item.record;
       else gradeData[item.sid].push(item.gradeRecord || item.record);
       recalcStudentGpa(item.sid);
-      body += `<tr class="bulk-row-ok"><td>${item.i+1}</td><td class="text-mono">${item.sid}</td><td>${item.courseId}</td><td>${item.score}</td><td><span class="badge b-blue">${uploadAttempt}</span></td><td class="text-mono text-crimson">${item.gid}</td><td><span class="badge ${gradeBadgeClass(item.letter)}">${formatGradeLetter(item.letter)}</span></td><td><strong class="text-green">${item.gp.toFixed(1)}</strong></td><td><span class="badge b-green">✓ Saved</span></td></tr>`;
+      body += `<tr class="bulk-row-ok"><td>${item.i+1}</td><td class="text-mono">${item.sid}</td><td>${item.courseId}</td><td>${item.score}</td><td><span class="badge b-blue">${item.rowAttempt}</span></td><td style="font-size:11px;color:var(--ink3)">${item.rowYear||'—'}</td><td class="text-mono text-crimson">${item.gid}</td><td><span class="badge ${gradeBadgeClass(item.letter)}">${formatGradeLetter(item.letter)}</span></td><td><strong class="text-green">${item.gp.toFixed(1)}</strong></td><td><span class="badge b-green">✓ Saved</span></td></tr>`;
     }
   }
 
@@ -4830,7 +4839,20 @@ function populateAllSelects() {
   }
 
   // Course list year filter (has "All Years" blank option)
-  setYearSelect('courseYearFilter', true);
+  // Build from ALL unique year values across every program's year_sequence + every course's year
+  // so it works for any program, not just the default one.
+  const courseFilterYears = [...new Set([
+    ...degreePrograms.flatMap(p => (p.year_sequence || '').split(',').map(s => s.trim()).filter(Boolean)),
+    ...yearNames,
+    ...courses.map(c => c[2]).filter(Boolean)
+  ])];
+  const cyf = document.getElementById('courseYearFilter');
+  if (cyf) {
+    const savedCyf = cyf.value;
+    cyf.innerHTML = '<option value="">All Years</option>' +
+      courseFilterYears.map(n => `<option value="${n}">${n}</option>`).join('');
+    if (savedCyf && Array.from(cyf.options).some(o => o.value === savedCyf)) cyf.value = savedCyf;
+  }
 }
 
 function updateYearsForProgram(yearSelectId, programId) {
@@ -5174,7 +5196,7 @@ function downloadCSV(filename, content) {
 }
 
 function downloadGradeTemplate() {
-  downloadCSV('grade_upload_template.csv', 'StudentID,CourseID,NumericScore\nSTU001,CRS015,81.38\nSTU001,CRS016,75.50');
+  downloadCSV('grade_upload_template.csv', 'StudentID,CourseID,NumericScore,Year,Attempt\nSTU001,CRS015,81.38,2025,1st Attempt\nSTU001,CRS016,75.50,2025,2nd Attempt');
 }
 
 function downloadEnrollTemplate() {
