@@ -1390,9 +1390,15 @@ CRS022,Renal Medicine,M-2,Integrated System Modules,8,OSCE,MBBS</div>
       <div class="table-wrap" style="max-height:420px;overflow-y:auto;border:1px solid var(--line);border-radius:var(--r)">
         <table id="coursePreviewTable" style="font-size:12px"></table>
       </div>
-      <div class="form-actions" style="margin-top:14px">
-        <button class="btn btn-primary" onclick="submitBulkCourses()">Import All Courses</button>
-        <button class="btn btn-outline" onclick="document.getElementById('coursePreviewArea').style.display='none'">Cancel</button>
+      <div style="display:flex;gap:14px;align-items:flex-end;margin-top:18px;flex-wrap:wrap;padding:16px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r)">
+        <div class="form-group" style="margin:0;flex:1;min-width:180px">
+          <label>Fallback Program <span style="font-weight:400;color:var(--ink3)">(used when CSV row has no program_id)</span></label>
+          <select id="course-fallback-program" style="margin-top:5px"></select>
+        </div>
+        <div style="display:flex;gap:8px;flex-shrink:0">
+          <button class="btn btn-primary" onclick="submitBulkCourses()">Import All Courses</button>
+          <button class="btn btn-outline" onclick="document.getElementById('coursePreviewArea').style.display='none'">Cancel</button>
+        </div>
       </div>
     </div>
   </div>
@@ -1812,8 +1818,8 @@ ALTER TABLE academic_years ADD COLUMN IF NOT EXISTS program_id text REFERENCES d
       <div class="form-group full"><label>Block / Module</label><input id="cm-block" placeholder="e.g. Integrated System Modules"></div>
       <div class="form-group"><label>Credits</label><input id="cm-credits" type="number" placeholder="8"></div>
       <div class="form-group"><label>Assessment Type</label><input id="cm-assess" placeholder="e.g. In-block exam"></div>
-      <div class="form-group"><label>Degree Program</label>
-        <input id="cm-program" list="cm-program-list" placeholder="e.g. MBBS (or type new program)">
+      <div class="form-group full"><label>Degree Programs <span style="font-weight:400;color:var(--ink3)">(select one or more)</span></label>
+        <div id="cm-programs-list" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:6px;padding:10px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);min-height:38px"></div>
       </div>
       <div class="form-group"><label>Status</label><select id="cm-status"><option>Active</option><option>Archived</option></select></div>
     </div>
@@ -2015,6 +2021,7 @@ let students        = [];
 let gradeData       = {};     // { student_id: [grade, …] }
 let enrollHistory   = {};     // { student_id: [enrollment, …] }
 let courses         = [];     // [[id, name, year, block, credits, assess], …]
+let coursePrograms  = {};     // { course_id: [program_id, …] }
 let attendanceRecords = [];
 let _gradesColumns  = null;   // detected live columns in the grades table
 
@@ -2507,6 +2514,7 @@ async function populateTables() {
     { data: gradeRows,      error: gErr },
     { data: enrollData,     error: eErr },
     { data: degreeData,     error: dErr },
+    { data: cpData,         error: cpErr },
   ] = await Promise.all([
     db.from('students').select('id,name_en,name_my,father,father_my,mother,mother_my,dob,email,phone,address,admission,year,program,degree_level,supervisor,thesis_title,status,gpa,grad_status,graduation_id,graduation_id_my,graduation_date,graduation_date_my,master_password,photo,gender').order('id'),
     db.from('attendance').select('*').order('session_date', { ascending: false }),
@@ -2514,6 +2522,7 @@ async function populateTables() {
     fetchAllGrades(),
     db.from('enrollments').select('*').order('created_at'),
     db.from('degree_programs').select('*').order('id'),
+    db.from('course_programs').select('course_id,program_id'),
   ]);
 
   if (sErr) {
@@ -2568,6 +2577,15 @@ async function populateTables() {
   // Load degree programs from Supabase (merge with in-memory defaults)
   if (!dErr && degreeData && degreeData.length) {
     degreePrograms = degreeData;
+  }
+
+  // Build coursePrograms map from junction table
+  coursePrograms = {};
+  if (!cpErr && cpData) {
+    cpData.forEach(r => {
+      if (!coursePrograms[r.course_id]) coursePrograms[r.course_id] = [];
+      coursePrograms[r.course_id].push(r.program_id);
+    });
   }
 
   // Load email log
@@ -4026,16 +4044,16 @@ function openCourseModal(cid) {
       document.getElementById('cm-block').value   = c[3] || '';
       document.getElementById('cm-credits').value = c[4] || '';
       document.getElementById('cm-assess').value  = c[5] || '';
-      // program stored at index 6 if available
-      const cmProgram = document.getElementById('cm-program');
-      if (cmProgram && c[6]) cmProgram.value = c[6];
+      // Load program checkboxes for this course
+      renderCourseProgramCheckboxes(cid);
     }
   } else {
     idInput.readOnly = false;
     // Reset all fields including year select to first option
-    ['cm-id','cm-name','cm-block','cm-credits','cm-assess','cm-year','cm-program'].forEach(id => {
+    ['cm-id','cm-name','cm-block','cm-credits','cm-assess','cm-year'].forEach(id => {
       const el = document.getElementById(id); if (el) el.value = '';
     });
+    renderCourseProgramCheckboxes(null);
     const cmStatus = document.getElementById('cm-status');
     if (cmStatus) cmStatus.value = 'Active';
   }
@@ -4050,17 +4068,24 @@ async function saveCourse() {
   const block   = document.getElementById('cm-block').value;
   const cr      = parseInt(document.getElementById('cm-credits').value) || 0;
   const ass     = document.getElementById('cm-assess').value;
-  const program = document.getElementById('cm-program').value || 'MBBS';
+  const selectedPrograms = Array.from(document.querySelectorAll('#cm-programs-list input[type=checkbox]:checked')).map(cb => cb.value);
   const status  = document.getElementById('cm-status').value || 'Active';
 
-  const record = { id, name, year, block_module: block, credits: cr, assessment_type: ass, program, status };
+  const record = { id, name, year, block_module: block, credits: cr, assessment_type: ass, status };
   const existIdx = courses.findIndex(c => c[0] === id);
 
   const { error } = await db.from('courses').upsert(record, { onConflict: 'id' });
   if (error) { toast('Save failed: ' + error.message, 'DB Error'); return; }
 
-  // courses array: [id, name, year, block, cr, ass, program, status]
-  const entry = [id, name, year, block, cr, ass, program, status];
+  // Sync course_programs junction table
+  await db.from('course_programs').delete().eq('course_id', id);
+  if (selectedPrograms.length) {
+    await db.from('course_programs').insert(selectedPrograms.map(pid => ({ course_id: id, program_id: pid })));
+  }
+  coursePrograms[id] = selectedPrograms;
+
+  // courses array: [id, name, year, block, cr, ass, status]
+  const entry = [id, name, year, block, cr, ass, status];
   if (existIdx >= 0) {
     courses[existIdx] = entry;
     const row = document.getElementById('course-row-' + id);
@@ -4093,6 +4118,24 @@ function buildCourseRowHtml(id, name, year, block, cr, ass) {
       <button class="btn btn-outline btn-sm" onclick="openCourseModal('${id}')">Edit</button>
       <button class="btn btn-danger btn-sm" onclick="confirmDeleteCourse('${id}','${name.replace(/'/g,"\\'")}')">Delete</button>
     </td>`;
+}
+
+
+function renderCourseProgramCheckboxes(cid) {
+  const container = document.getElementById('cm-programs-list');
+  if (!container) return;
+  const selected = cid ? (coursePrograms[cid] || []) : [];
+  if (!degreePrograms.length) {
+    container.innerHTML = '<span style="font-size:12px;color:var(--ink3)">No programs loaded yet.</span>';
+    return;
+  }
+  container.innerHTML = degreePrograms.map(p => {
+    const checked = selected.includes(p.id) ? 'checked' : '';
+    return `<label style="display:inline-flex;align-items:center;gap:5px;padding:5px 10px;border:1px solid var(--line);border-radius:var(--r);background:var(--white);cursor:pointer;font-size:12px;font-weight:500">
+      <input type="checkbox" value="${p.id}" ${checked} style="accent-color:var(--crimson)">
+      ${p.id}${p.name ? ' <span style="color:var(--ink3);font-weight:400">— ' + p.name + '</span>' : ''}
+    </label>`;
+  }).join('');
 }
 
 function confirmDeleteCourse(cid, cname) {
@@ -4148,6 +4191,14 @@ function handleBulkCourseCSV(input) {
       document.getElementById('coursePreviewErrors').textContent = errors + ' errors';
       document.getElementById('coursePreviewArea').style.display = '';
       document.getElementById('courseResultCard').style.display  = 'none';
+      // Populate fallback program dropdown from degreePrograms
+      const fpSel = document.getElementById('course-fallback-program');
+      if (fpSel) {
+        fpSel.innerHTML = degreePrograms.map(p =>
+          `<option value="${p.id}"${p.id === 'MBBS' ? ' selected' : ''}>${p.id}${p.name ? ' — ' + p.name : ''}</option>`
+        ).join('');
+        if (!fpSel.value && degreePrograms.length) fpSel.value = degreePrograms[0].id;
+      }
     }
   });
 }
@@ -4165,10 +4216,18 @@ async function submitBulkCourses() {
       tr.innerHTML = `<td class="text-mono">${row.course_id||'—'}</td><td>${row.course_name||'—'}</td><td>${row.year||'—'}</td><td><span class="badge b-red">Error — missing required field</span></td>`;
       tbody.appendChild(tr); continue;
     }
-    const record = { id: row.course_id, name: row.course_name, year: row.year, block_module: row.block_module||'', credits: parseInt(row.credits)||0, assessment_type: row.assessment_type||'', program: (row.program_id||'').trim() || 'MBBS' };
+    const fallbackProg = (document.getElementById('course-fallback-program')?.value || 'MBBS');
+    const fallbackProgVal = (row.program_id||'').trim() || fallbackProg;
+    const record = { id: row.course_id, name: row.course_name, year: row.year, block_module: row.block_module||'', credits: parseInt(row.credits)||0, assessment_type: row.assessment_type||'' };
     const { error } = await db.from('courses').upsert(record, { onConflict: 'id' });
+    // Sync junction table for bulk import (single program per row)
+    if (!error) {
+      await db.from('course_programs').delete().eq('course_id', row.course_id);
+      await db.from('course_programs').insert({ course_id: row.course_id, program_id: fallbackProgVal });
+      coursePrograms[row.course_id] = [fallbackProgVal];
+    }
     const existIdx = courses.findIndex(c => c[0] === row.course_id);
-    const entry = [row.course_id, row.course_name, row.year, row.block_module||'', parseInt(row.credits)||0, row.assessment_type||'', (row.program_id||'').trim() || 'MBBS'];
+    const entry = [row.course_id, row.course_name, row.year, row.block_module||'', parseInt(row.credits)||0, row.assessment_type||'', (row.program_id||'').trim() || fallbackProg];
     const tr = document.createElement('tr'); tr.className = 'bulk-row-ok';
     if (error) {
       errored++;
