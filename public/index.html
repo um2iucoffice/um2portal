@@ -5131,7 +5131,7 @@ body.theme-light .comms-ch-btn-gp { color: inherit; }
         </div>
         <div class="ts-divider"></div>
         <div class="ts-item">
-          <span class="ts-lbl">Years on Record</span>
+          <span class="ts-lbl">Programme Duration</span>
           <span class="ts-val" id="tsYears">—</span>
         </div>
         <div class="ts-divider"></div>
@@ -6591,7 +6591,22 @@ function renderGrades(grades, student) {
     summaryEl.style.display = 'flex';
     document.getElementById('tsCredits').textContent = creditsKnown ? totalCredits : (totalCredits > 0 ? totalCredits + '+' : 'TBD');
     document.getElementById('tsCourses').textContent = totalCourses;
-    document.getElementById('tsYears').textContent   = order.length;
+
+    // Calculate total programme duration from academic year duration_months
+    const ayList = window._academicYears || [];
+    let totalMonths = 0;
+    let anyDuration = false;
+    order.forEach(function(yearName) {
+      const ay = ayList.find(function(a) { return a.name === yearName; });
+      const m = ay && ay.duration_months ? parseInt(ay.duration_months) : 12;
+      if (ay && ay.duration_months) anyDuration = true;
+      totalMonths += m;
+    });
+    const durYears = totalMonths / 12;
+    const durLabel = totalMonths % 12 === 0
+      ? durYears + ' yr' + (durYears !== 1 ? 's' : '')
+      : Math.floor(durYears) + '½ yrs';
+    document.getElementById('tsYears').textContent = order.length > 0 ? durLabel : '—';
     const tsGpa = document.getElementById('tsGpa');
     if (tsGpa) tsGpa.textContent = overallGpa;
   }
