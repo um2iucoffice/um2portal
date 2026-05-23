@@ -483,8 +483,9 @@ table.gt th:nth-child(3),
 table.gt th:nth-child(4),
 table.gt th:nth-child(5),
 table.gt th:nth-child(6),
-table.gt th:nth-child(7) { text-align: center; }
-table.gt th:nth-child(8) { text-align: left; }
+table.gt th:nth-child(7),
+table.gt th:nth-child(8) { text-align: center; }
+table.gt th:nth-child(9) { text-align: left; }
 table.gt td {
   padding: 10px 14px;
   border-bottom: 1px solid var(--line);
@@ -495,8 +496,19 @@ table.gt td:nth-child(3),
 table.gt td:nth-child(4),
 table.gt td:nth-child(5),
 table.gt td:nth-child(6),
-table.gt td:nth-child(7) { text-align: center; }
-table.gt td:nth-child(8) { font-size: 11px; color: var(--ink3); font-style: italic; }
+table.gt td:nth-child(7),
+table.gt td:nth-child(8) { text-align: center; }
+/* Grade column — force all badges into one locked column width */
+table.gt th:nth-child(8),
+table.gt td:nth-child(8) {
+  text-align: center;
+  width: 66px;
+  min-width: 66px;
+  max-width: 66px;
+  padding-left: 4px;
+  padding-right: 4px;
+}
+table.gt td:nth-child(9) { font-size: 11px; color: var(--ink3); font-style: italic; }
 table.gt tr:last-child td { border-bottom: none; }
 table.gt tbody tr { transition: background .1s; }
 table.gt tbody tr:hover { background: #F8F9FC; }
@@ -535,11 +547,13 @@ table.gt tbody tr:hover { background: #F8F9FC; }
   font-family: 'DM Sans', sans-serif;
   font-size: 12px;
   font-weight: 700;
-  min-width: 36px;
+  width: 42px;
+  min-width: 42px;
   height: 26px;
   border-radius: 5px;
-  padding: 0 8px;
+  padding: 0;
   letter-spacing: .2px;
+  text-align: center;
 }
 .gAp { background: #D1FAE5; color: #065F46; border: 1px solid #6EE7B7; }
 .gA  { background: #D1FAE5; color: #065F46; border: 1px solid #A7F3D0; }
@@ -2431,9 +2445,12 @@ body.theme-light #photoDropZone { border-color: var(--line) !important; backgrou
   /* Theme toggle in topbar on mobile */
   .theme-toggle-btn { width: 32px; height: 32px; }
   
-  /* Content padding */
-  .dash-content { padding: 16px 14px 80px; }
+  /* Content padding — extra bottom room for tab bar */
+  .dash-content { padding: 16px 14px 100px; overflow-y: auto; -webkit-overflow-scrolling: touch; }
   
+  /* Ensure the main column itself scrolls properly on iOS */
+  .dash-main { overflow-y: auto; -webkit-overflow-scrolling: touch; }
+
   /* Hero responsive */
   .home-hero { padding: 20px 18px; gap: 16px; flex-direction: column; text-align: center; border-radius: 12px; }
   .home-hero-avatar { width: 60px; height: 60px; font-size: 22px; }
@@ -2694,16 +2711,16 @@ body.theme-light .cs-progress-track { background: var(--line); }
   transition: width .5s ease;
 }
 .cs-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
 }
-@media(max-width:700px) { .cs-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 8px; } }
+@media(max-width:700px) { .cs-grid { gap: 5px; } }
 .cs-card {
   position: relative;
-  border-radius: 10px;
-  padding: 14px 14px 12px;
-  display: flex; flex-direction: column; gap: 6px;
+  border-radius: 8px;
+  padding: 10px 14px 10px 16px;
+  display: flex; flex-direction: row; align-items: center; gap: 12px;
   border: 1px solid rgba(255,255,255,0.07);
   background: rgba(255,255,255,0.03);
   transition: border-color .18s, background .18s;
@@ -2724,8 +2741,12 @@ body.theme-light .cs-card.completed {
   border-color: rgba(255,255,255,0.07);
 }
 .cs-card-top {
-  display: flex; align-items: flex-start; justify-content: space-between; gap: 6px;
+  display: flex; align-items: center; gap: 6px; flex-shrink: 0;
 }
+.cs-card-body {
+  flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px;
+}
+.cs-card-right { flex-shrink: 0; }
 .cs-card-code {
   font-size: 9px; font-weight: 700; letter-spacing: 1px;
   text-transform: uppercase;
@@ -3907,7 +3928,11 @@ body.theme-light .comms-ch-btn-gp { color: inherit; }
           <div class="grades-hdr-name" id="gradesStudentName">—</div>
           <div class="grades-hdr-id"><span id="gradesIdLabel">Student ID</span>: <span id="gradesStudentId">—</span> &nbsp;·&nbsp; University of Medicine (2)</div>
         </div>
-        
+        <div class="grades-hdr-gpa">
+          <div class="grades-hdr-gpa-label">Overall GPA</div>
+          <div class="grades-hdr-gpa-val" id="gradesGpa">—</div>
+          <div class="grades-hdr-gpa-den">/ 4.00</div>
+        </div>
       </div>
 
       <div id="transcriptSummary" style="display:none" class="transcript-summary">
@@ -5366,9 +5391,8 @@ function renderGrades(grades, student) {
         const typeStr = r.completionType || r.CompletionType || r.course.assessment || '—';
         // Session: the academic year label for this course
         const sessionStr = r.course.year || yr;
-        // Green mark if this row has a real grade
-        const hasGrade = r.grade && String(r.grade).trim() && String(r.grade).trim() !== '—';
-        const gradedIcon = hasGrade ? `<svg class="gt-graded-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>` : '';
+        // No green mark in academic record table
+        const gradedIcon = '';
         // Superscript + and - in grade
         const gradeDisplay = escHtml(r.grade || '—')
           .replace(/\+/g, '<sup>+</sup>')
@@ -5522,20 +5546,18 @@ function renderCourseSession(student, grades, academicYears) {
         : `<span class="cs-status-icon todo"><svg width="8" height="8" viewBox="0 0 8 8"><circle cx="4" cy="4" r="3" fill="currentColor" opacity=".4"/></svg></span>`;
 
       const gradeBadge = isDone && grade
-        ? `<div class="cs-card-grade">
-             <span class="gbadge ${gradeClass}">${gradeDisplay}</span>
-             <span style="font-size:9px;opacity:.7">Completed</span>
-           </div>`
-        : `<div style="font-size:9px;color:rgba(255,255,255,0.28);margin-top:2px">${escHtml(c.credits != null ? c.credits + ' credits' : '')}</div>`;
+        ? `<span class="gbadge ${gradeClass}">${gradeDisplay}</span>`
+        : `<span style="font-size:9px;color:rgba(255,255,255,0.28)">${escHtml(c.credits != null ? c.credits + ' cr' : '')}</span>`;
 
       return `<div class="cs-card ${isDone ? 'completed' : 'pending'}">
         <div class="cs-card-top">
-          <span class="cs-card-code">${escHtml(c.id)}</span>
           ${statusIcon}
         </div>
-        <div class="cs-card-name">${escHtml(c.name)}</div>
-        <div class="cs-card-meta">${escHtml(c.assessment || '')}${c.credits != null ? ' · ' + c.credits + ' cr' : ''}</div>
-        ${gradeBadge}
+        <div class="cs-card-body">
+          <div class="cs-card-name">${escHtml(c.name)}</div>
+          <div class="cs-card-meta">${escHtml(c.id)}${c.credits != null ? ' · ' + c.credits + ' cr' : ''}${c.assessment ? ' · ' + escHtml(c.assessment) : ''}</div>
+        </div>
+        <div class="cs-card-right">${gradeBadge}</div>
       </div>`;
     }).join('');
 
