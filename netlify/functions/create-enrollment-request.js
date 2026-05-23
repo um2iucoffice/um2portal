@@ -69,14 +69,14 @@ exports.handler = async (event) => {
       };
     }
 
-    // 3. Resolve from_year_id and to_year_id → year label text from academic_years
+    // 3. Resolve from_year_id and to_year_id → name from academic_years
     const yearIds = [period.from_year_id, period.to_year_id].filter(Boolean);
     const academicYears = await supabase(
-      `academic_years?id=in.(${yearIds.join(',')})&select=id,year`,
+      `academic_years?id=in.(${yearIds.join(',')})&select=id,name`,
       { method: 'GET' }
     );
     const yearMap = {};
-    (academicYears || []).forEach(ay => { yearMap[ay.id] = ay.year; });
+    (academicYears || []).forEach(ay => { yearMap[ay.id] = ay.name; });
 
     const from_year = yearMap[period.from_year_id] || student.year;
     const to_year   = yearMap[period.to_year_id];
