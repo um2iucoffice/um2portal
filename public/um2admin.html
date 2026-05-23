@@ -347,6 +347,10 @@ body.theme-light .nav-icon { color: var(--ink3); }
 body.theme-light .nav-item:hover .nav-icon { color: var(--ink2); }
 body.theme-light .nav-item.active .nav-icon { color: var(--crimson); }
 .nav-badge { margin-left: auto; background: var(--crimson); color: #fff; font-size: 10px; padding: 1px 7px; border-radius: 99px; font-weight: 700; }
+#ep-minPass::-webkit-slider-thumb { -webkit-appearance:none; width:18px; height:18px; border-radius:50%; background:var(--crimson); border:2px solid #fff; box-shadow:0 1px 4px rgba(0,0,0,.25); cursor:pointer; margin-top:0; }
+#ep-minPass::-moz-range-thumb { width:16px; height:16px; border-radius:50%; background:var(--crimson); border:2px solid #fff; box-shadow:0 1px 4px rgba(0,0,0,.25); cursor:pointer; }
+#ep-minPass::-webkit-slider-runnable-track { background:transparent; height:6px; }
+#ep-minPass::-moz-range-track { background:transparent; height:6px; }
 
 /* Sidebar footer */
 .sb-sidebar-footer {
@@ -2046,22 +2050,28 @@ iuc125066,Second Student,,U Father Two,,Daw Mother Two,,2000-05-15,second@email.
         </select>
       </div>
 
+      <div class="form-group"></div><!-- spacer to push dates to next row -->
+
       <div class="form-group">
         <label>Open Date *</label>
-        <input type="date" id="ep-openAt">
+        <input type="date" id="ep-openAt" placeholder="yyyy-mm-dd">
       </div>
 
       <div class="form-group">
         <label>Close Date *</label>
-        <input type="date" id="ep-closeAt">
+        <input type="date" id="ep-closeAt" placeholder="yyyy-mm-dd">
       </div>
 
       <div class="form-group full">
         <label>Minimum Pass Rate — <span id="ep-minPassLabel">80</span>%</label>
-        <input type="range" id="ep-minPass" min="0" max="100" value="80"
-               oninput="document.getElementById('ep-minPassLabel').textContent = this.value"
-               style="width:100%;accent-color:var(--crimson)">
-        <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--ink3);margin-top:2px"><span>0%</span><span>50%</span><span>100%</span></div>
+        <div style="position:relative;height:22px;display:flex;align-items:center;margin:4px 0 2px">
+          <div style="position:absolute;left:0;right:0;height:6px;border-radius:3px;background:var(--line);pointer-events:none"></div>
+          <div id="ep-minPassFill" style="position:absolute;left:0;width:80%;height:6px;border-radius:3px;background:var(--crimson);pointer-events:none"></div>
+          <input type="range" id="ep-minPass" min="0" max="100" value="80"
+                 oninput="document.getElementById('ep-minPassLabel').textContent=this.value;document.getElementById('ep-minPassFill').style.width=this.value+'%'"
+                 style="position:relative;width:100%;margin:0;-webkit-appearance:none;appearance:none;background:transparent;outline:none;cursor:pointer;height:22px;z-index:1">
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--ink3)"><span>0%</span><span>50%</span><span>100%</span></div>
       </div>
 
       <div class="form-group">
@@ -2818,7 +2828,7 @@ ALTER TABLE academic_years ADD COLUMN IF NOT EXISTS program_id text REFERENCES d
 -- Upload-photo Netlify function: deploy netlify/functions/upload-photo.js
 -- This function handles student photo submissions and creates pending edit requests.</pre>
       <button class="btn btn-outline btn-sm" style="margin-top:8px" onclick="navigator.clipboard.writeText(document.querySelector('#migrationSQL').textContent).then(()=>toast('SQL copied.','📋'))" style="display:flex;align-items:center;gap:5px"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> Copy SQL</button>
-      <div id="migrationSQL" style="display:none">ALTER TABLE student_edit_requests ADD COLUMN IF NOT EXISTS photo_url text;\nALTER TABLE students ADD COLUMN IF NOT EXISTS gender text;\nALTER TABLE degree_programs ADD COLUMN IF NOT EXISTS name_my text;\nALTER TABLE academic_years ADD COLUMN IF NOT EXISTS program_id text REFERENCES degree_programs(id) ON DELETE SET NULL;</div>
+      <div id="migrationSQL" style="display:none">ALTER TABLE student_edit_requests ADD COLUMN IF NOT EXISTS photo_url text;\nALTER TABLE students ADD COLUMN IF NOT EXISTS gender text;\nALTER TABLE degree_programs ADD COLUMN IF NOT EXISTS name_my text;\nALTER TABLE academic_years ADD COLUMN IF NOT EXISTS program_id text REFERENCES degree_programs(id) ON DELETE SET NULL;\nCREATE TABLE IF NOT EXISTS enrollment_periods (id uuid PRIMARY KEY DEFAULT gen_random_uuid(), program_id text REFERENCES degree_programs(id) ON DELETE CASCADE, from_year_id text REFERENCES academic_years(id) ON DELETE CASCADE, to_year_id text REFERENCES academic_years(id) ON DELETE CASCADE, open_at date NOT NULL, close_at date NOT NULL, min_pass_rate numeric(5,4) DEFAULT 0.8, require_core boolean DEFAULT false, auto_promote boolean DEFAULT false, created_at timestamptz DEFAULT now());\nALTER TABLE enrollment_periods ENABLE ROW LEVEL SECURITY;\nCREATE POLICY IF NOT EXISTS "Registrar manage enrollment_periods" ON enrollment_periods FOR ALL USING ((SELECT role FROM profiles WHERE id = auth.uid()) = 'registrar');\nCREATE TABLE IF NOT EXISTS enrollment_requests (id uuid PRIMARY KEY DEFAULT gen_random_uuid(), period_id uuid REFERENCES enrollment_periods(id) ON DELETE CASCADE, student_id text REFERENCES students(id) ON DELETE CASCADE, status text DEFAULT 'requested', eligibility_snapshot jsonb, override_reason text, reviewed_at timestamptz, created_at timestamptz DEFAULT now(), UNIQUE(period_id, student_id));\nALTER TABLE enrollment_requests ENABLE ROW LEVEL SECURITY;\nCREATE POLICY IF NOT EXISTS "Registrar manage enrollment_requests" ON enrollment_requests FOR ALL USING ((SELECT role FROM profiles WHERE id = auth.uid()) = 'registrar');\nCREATE POLICY IF NOT EXISTS "Student read own enrollment_requests" ON enrollment_requests FOR SELECT USING (student_id = (SELECT id FROM students WHERE id = auth.uid()::text));</div>
     </div></div>
   </div>
   <div class="card mt-4">
@@ -3945,7 +3955,45 @@ alter table email_log enable row level security;
 create policy "Registrar read email log" on email_log for select using (
   (select role from profiles where id = auth.uid()) = 'registrar'
 );
-create policy "System insert email log" on email_log for insert with check (auth.role() = 'authenticated');`;
+create policy "System insert email log" on email_log for insert with check (auth.role() = 'authenticated');
+
+-- 10. Enrollment Periods
+create table if not exists enrollment_periods (
+  id            uuid primary key default gen_random_uuid(),
+  program_id    text references degree_programs(id) on delete cascade,
+  from_year_id  text references academic_years(id) on delete cascade,
+  to_year_id    text references academic_years(id) on delete cascade,
+  open_at       date not null,
+  close_at      date not null,
+  min_pass_rate numeric(5,4) default 0.8,
+  require_core  boolean default false,
+  auto_promote  boolean default false,
+  created_at    timestamptz default now()
+);
+alter table enrollment_periods enable row level security;
+create policy "Registrar manage enrollment_periods" on enrollment_periods for all using (
+  (select role from profiles where id = auth.uid()) = 'registrar'
+);
+
+-- 11. Enrollment Requests
+create table if not exists enrollment_requests (
+  id                   uuid primary key default gen_random_uuid(),
+  period_id            uuid references enrollment_periods(id) on delete cascade,
+  student_id           text references students(id) on delete cascade,
+  status               text default 'requested',
+  eligibility_snapshot jsonb,
+  override_reason      text,
+  reviewed_at          timestamptz,
+  created_at           timestamptz default now(),
+  unique(period_id, student_id)
+);
+alter table enrollment_requests enable row level security;
+create policy "Registrar manage enrollment_requests" on enrollment_requests for all using (
+  (select role from profiles where id = auth.uid()) = 'registrar'
+);
+create policy "Student read own enrollment_requests" on enrollment_requests for select using (
+  student_id = (select id from students where id = auth.uid()::text)
+);`;
 
 // ══════════════════════════════════════════
 // AUTH
@@ -8990,11 +9038,11 @@ function epStatus(period) {
 
 // ── Enrollment Periods view ───────────────
 function initEnrollPeriodsView() {
-  // Populate program dropdown from global programs array
+  // Populate program dropdown from degreePrograms array
   const prog = document.getElementById('ep-program');
   const cur = prog.value;
   prog.innerHTML = '<option value="">— select program —</option>';
-  (window.programs || []).forEach(p => {
+  (degreePrograms || []).forEach(p => {
     const o = document.createElement('option');
     o.value = p.id;
     o.textContent = p.name || p.id;
@@ -9011,13 +9059,13 @@ function loadEpYears() {
   fromSel.innerHTML = '<option value="">— select year —</option>';
   toSel.innerHTML   = '<option value="">— select From Year first —</option>';
   if (!programId) return;
-  const years = (window.academicYears || [])
+  const years = (academicYears || [])
     .filter(y => !y.program_id || y.program_id === programId)
     .sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0));
   years.forEach(y => {
     const o = document.createElement('option');
     o.value = y.id;
-    o.textContent = y.year_name || y.id;
+    o.textContent = y.name || y.year_name || y.id;
     fromSel.appendChild(o);
   });
 }
@@ -9028,17 +9076,17 @@ function populateEpToYear() {
   const toSel      = document.getElementById('ep-toYear');
   toSel.innerHTML  = '<option value="">— select year —</option>';
   if (!fromVal) return;
-  const years = (window.academicYears || [])
+  const years = (academicYears || [])
     .filter(y => !y.program_id || y.program_id === programId)
     .sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0));
   const fromIdx = years.findIndex(y => y.id === fromVal);
   years.slice(fromIdx + 1).forEach(y => {
     const o = document.createElement('option');
     o.value = y.id;
-    o.textContent = y.year_name || y.id;
+    o.textContent = y.name || y.year_name || y.id;
     toSel.appendChild(o);
   });
-  if (toSel.options.length === 2) toSel.selectedIndex = 1; // auto-select next year
+  if (toSel.options.length === 2) toSel.selectedIndex = 1;
 }
 
 function resetEpForm() {
@@ -9048,6 +9096,7 @@ function resetEpForm() {
   document.getElementById('ep-openAt').value  = '';
   document.getElementById('ep-closeAt').value = '';
   document.getElementById('ep-minPass').value = 80;
+  document.getElementById('ep-minPassFill').style.width = '80%';
   document.getElementById('ep-minPassLabel').textContent = '80';
   ['ep-requireCore', 'ep-autoPromote'].forEach(id => {
     const cb = document.getElementById(id);
@@ -9124,9 +9173,9 @@ async function renderEpTable() {
   }
 
   const yearMap = {};
-  (window.academicYears || []).forEach(y => { yearMap[y.id] = y.year_name || y.id; });
+  (academicYears || []).forEach(y => { yearMap[y.id] = y.name || y.year_name || y.id; });
   const progMap = {};
-  (window.programs || []).forEach(p => { progMap[p.id] = p.name || p.id; });
+  (degreePrograms || []).forEach(p => { progMap[p.id] = p.name || p.id; });
 
   tbody.innerHTML = periods.map(p => {
     const st = epStatus(p);
@@ -9175,9 +9224,9 @@ async function populateErPeriodSelect() {
   if (!sel) return;
   const cur = sel.value;
   const yearMap = {};
-  (window.academicYears || []).forEach(y => { yearMap[y.id] = y.year_name || y.id; });
+  (academicYears || []).forEach(y => { yearMap[y.id] = y.name || y.year_name || y.id; });
   const progMap = {};
-  (window.programs || []).forEach(p => { progMap[p.id] = p.name || p.id; });
+  (degreePrograms || []).forEach(p => { progMap[p.id] = p.name || p.id; });
   sel.innerHTML = '<option value="">— select enrollment period —</option>';
   (window._enrollmentPeriods || []).forEach(p => {
     const o = document.createElement('option');
@@ -9239,7 +9288,7 @@ async function loadEnrollRequests() {
     if (stats) stats.style.display = 'flex';
 
     const yearMap = {};
-    (window.academicYears || []).forEach(y => { yearMap[y.id] = y.year_name || y.id; });
+    (academicYears || []).forEach(y => { yearMap[y.id] = y.name || y.year_name || y.id; });
 
     tbody.innerHTML = requests.map(r => {
       const s    = r.student || {};
