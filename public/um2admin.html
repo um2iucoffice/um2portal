@@ -634,12 +634,97 @@ input[readonly] { color:var(--ink2); cursor:default; }
 /* ── ADD ENROLLMENT MODAL ── */
 #newEnrollmentModal .info-box{margin-bottom:14px}
 
+/* ── MOBILE HAMBURGER BUTTON ── */
+.mob-menu-btn {
+  display:none; background:none; border:none; cursor:pointer;
+  color:rgba(255,255,255,.7); padding:6px; margin-right:4px;
+  border-radius:var(--r); transition:background .15s;
+}
+body.theme-light .mob-menu-btn { color:var(--ink2); }
+.mob-menu-btn:hover { background:rgba(255,255,255,.08); }
+.mob-menu-btn svg { width:20px; height:20px; stroke:currentColor; stroke-width:2; fill:none; stroke-linecap:round; }
+.sidebar-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,.45); z-index:55; }
+.sidebar-overlay.open { display:block; }
+
+/* ── DOCUMENT OFFICE SPECIFIC ── */
+.doc-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; margin-bottom:20px; }
+.doc-card {
+  background:var(--white); border:1px solid var(--line); border-radius:10px;
+  padding:20px; cursor:pointer; transition:all .2s; position:relative; overflow:hidden;
+  display:flex; flex-direction:column; gap:10px;
+}
+.doc-card:hover { border-color:var(--crimson); box-shadow:0 4px 20px rgba(139,26,46,.10); transform:translateY(-2px); }
+.doc-card::before { content:''; position:absolute; left:0; top:0; bottom:0; width:4px; background:var(--crimson); }
+.doc-card-icon { width:44px; height:44px; background:var(--crimson-light); border-radius:10px; display:flex; align-items:center; justify-content:center; }
+.doc-card-icon svg { width:22px; height:22px; stroke:var(--crimson); stroke-width:1.9; fill:none; stroke-linecap:round; stroke-linejoin:round; }
+.doc-card-name { font-size:14px; font-weight:600; color:var(--ink); }
+.doc-card-desc { font-size:11px; color:var(--ink3); line-height:1.5; }
+.doc-card-badge { display:inline-block; font-size:9px; font-weight:700; letter-spacing:.6px; text-transform:uppercase; padding:2px 8px; border-radius:3px; margin-top:auto; }
+
+.doc-preview-modal .modal { max-width:680px; }
+.doc-letterhead { display:flex; align-items:center; gap:16px; border-bottom:2.5px solid var(--crimson); padding-bottom:14px; margin-bottom:20px; }
+.doc-letterhead-logo { background:var(--crimson); color:#fff; font-family:'Libre Baskerville',serif; font-weight:700; font-size:14px; padding:8px 14px; border-radius:6px; flex-shrink:0; }
+.doc-letterhead-info { line-height:1.6; }
+.doc-letterhead-uni { font-size:9px; letter-spacing:1.5px; text-transform:uppercase; color:var(--ink3); }
+.doc-letterhead-name { font-family:'Libre Baskerville',serif; font-size:15px; color:var(--crimson); font-weight:700; }
+.doc-letterhead-sub { font-size:10px; color:var(--ink3); }
+.doc-body { font-size:13px; line-height:1.9; color:var(--ink); margin-bottom:20px; }
+.doc-sig-row { display:flex; justify-content:space-between; margin-top:40px; }
+.doc-sig { text-align:center; width:180px; }
+.doc-sig-stamp { width:56px; height:56px; border:1.5px dashed var(--line); border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:8px; color:var(--ink3); margin:0 auto 8px; }
+.doc-sig-line { border-top:1px solid var(--ink); padding-top:6px; font-size:11px; color:var(--ink2); }
+.doc-print-bar { display:flex; gap:10px; margin-top:20px; border-top:1px solid var(--line); padding-top:18px; }
+
+/* ── MY PROFILE CARD ── */
+.profile-hero-card {
+  background:var(--white); border:1px solid var(--line); border-radius:12px;
+  padding:28px; margin-bottom:20px; display:flex; gap:24px; align-items:flex-start;
+  position:relative; overflow:hidden;
+}
+.profile-hero-card::after { content:''; position:absolute; left:0; top:0; bottom:0; width:4px; background:var(--crimson); }
+.profile-info-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+.profile-info-item { background:var(--surface); border:1px solid var(--line); border-radius:var(--r); padding:12px 14px; }
+.profile-info-label { font-size:9px; font-weight:700; letter-spacing:1px; text-transform:uppercase; color:var(--ink3); margin-bottom:4px; }
+.profile-info-value { font-size:13px; color:var(--ink); font-weight:500; }
+
+/* ── MOBILE BOTTOM NAV (admin) ── */
+.mob-bottom-nav {
+  display:none; position:fixed; bottom:0; left:0; right:0; z-index:50;
+  height:56px; background:rgba(10,15,26,.97); border-top:1px solid rgba(255,255,255,.08);
+  justify-content:space-around; align-items:center;
+}
+body.theme-light .mob-bottom-nav { background:var(--white); border-top-color:var(--line); }
+.mob-nav-btn {
+  flex:1; display:flex; flex-direction:column; align-items:center; gap:3px;
+  background:none; border:none; cursor:pointer; padding:6px 0;
+  color:rgba(255,255,255,.35); font-size:9px; font-weight:600; letter-spacing:.5px; text-transform:uppercase;
+  transition:color .15s;
+}
+body.theme-light .mob-nav-btn { color:var(--ink3); }
+.mob-nav-btn.active, .mob-nav-btn:hover { color:var(--crimson); }
+.mob-nav-btn svg { width:20px; height:20px; stroke:currentColor; stroke-width:1.9; fill:none; stroke-linecap:round; stroke-linejoin:round; }
+
 @media (max-width:900px) {
-  #appShell.visible { grid-template-columns:1fr; }
-  .sidebar { display:none; }
+  #appShell.visible { display:block; }
+  .topbar { left:0; }
+  .sidebar { transform:translateX(-100%); transition:transform .25s ease; z-index:58; }
+  .sidebar.mob-open { transform:translateX(0); }
+  .main { margin-left:0 !important; padding: 76px 14px 72px; }
   .stat-grid { grid-template-columns:1fr 1fr; }
   .sis-panel { grid-template-columns:1fr; }
   .form-grid { grid-template-columns:1fr; }
+  .doc-grid { grid-template-columns:1fr 1fr; }
+  .profile-hero-card { flex-direction:column; gap:16px; }
+  .profile-info-grid { grid-template-columns:1fr; }
+  .mob-menu-btn { display:flex; align-items:center; justify-content:center; }
+  .mob-bottom-nav { display:flex; }
+  .sync-badge { display:none; }
+}
+@media (max-width:480px) {
+  .doc-grid { grid-template-columns:1fr; }
+  .stat-grid { grid-template-columns:1fr 1fr; }
+  .modal { padding:20px 16px; }
+  .doc-sig-row { flex-direction:column; align-items:center; gap:20px; }
 }
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
@@ -832,6 +917,9 @@ input[readonly] { color:var(--ink2); cursor:default; }
 
 <!-- ── TOPBAR ── -->
 <header class="topbar">
+  <button class="mob-menu-btn" onclick="toggleMobSidebar()" aria-label="Open menu">
+    <svg viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+  </button>
   <div class="topbar-logo" id="topbarTitle">Dashboard</div>
   <div class="sync-badge"><div class="sync-dot"></div>Live</div>
   <span class="topbar-role" id="roleLabel">Secretariat</span>
@@ -841,6 +929,32 @@ input[readonly] { color:var(--ink2); cursor:default; }
   <div class="topbar-user" id="topbarAvatar">—</div>
   <button class="logout-btn" onclick="doLogout()">Sign Out</button>
 </header>
+
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleMobSidebar()"></div>
+
+<!-- ── MOBILE BOTTOM NAV ── -->
+<nav class="mob-bottom-nav" id="mobBottomNav">
+  <button class="mob-nav-btn active" id="mbn-dashboard" onclick="showView('dashboard');setMobNav('dashboard')">
+    <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
+    Home
+  </button>
+  <button class="mob-nav-btn" id="mbn-students" onclick="showView('students');setMobNav('students')">
+    <svg viewBox="0 0 24 24"><circle cx="9" cy="7" r="3.5"/><path d="M2 21c0-3.866 3.134-7 7-7s7 3.134 7 7"/><circle cx="18" cy="8" r="2.5"/><path d="M22 21c0-2.761-1.79-5-4-5"/></svg>
+    Students
+  </button>
+  <button class="mob-nav-btn" id="mbn-myProfile" onclick="showView('myProfile');setMobNav('myProfile')">
+    <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+    Profile
+  </button>
+  <button class="mob-nav-btn" id="mbn-docOffice" onclick="showView('docOffice');setMobNav('docOffice')">
+    <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="13" y2="17"/></svg>
+    Docs
+  </button>
+  <button class="mob-nav-btn" id="mbn-more" onclick="toggleMobSidebar()">
+    <svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/></svg>
+    More
+  </button>
+</nav>
 
 <!-- ── SIDEBAR ── -->
 <nav class="sidebar" id="sidebar">
@@ -888,6 +1002,7 @@ input[readonly] { color:var(--ink2); cursor:default; }
 
   <div class="sidebar-section">System</div>
   <div class="nav-item registrar-only" id="nav-userList" onclick="showView('userList')"><span class="nav-icon"><svg class="nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></span>User List</div>
+  <div class="nav-item" id="nav-docOffice" onclick="showView('docOffice')"><span class="nav-icon"><svg class="nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="13" y2="17"/></svg></span>Document Office</div>
   <div class="nav-item registrar-only" id="nav-editRequests" onclick="showView('editRequests')"><span class="nav-icon"><svg class="nav-svg"><use href="#i-edit"></use></svg></span>Edit Requests<span class="nav-badge" id="editRequestsBadge" style="display:none">0</span></div>
   <div class="nav-item" id="nav-notifications" onclick="showView('notifications')"><span class="nav-icon"><svg class="nav-svg"><use href="#i-mail"></use></svg></span>Email Log<span class="nav-badge">3</span></div>
   <div id="emailToggleNav" style="margin:6px 14px 2px;padding:8px 10px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);display:flex;align-items:center;gap:8px;cursor:pointer" onclick="toggleEmailSending()" title="Enable or disable all outbound email notifications">
