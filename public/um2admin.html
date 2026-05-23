@@ -1391,6 +1391,8 @@ button, .btn, .nav-item, .tab, .mob-nav-btn, .login-role-btn, .tt-tab {
   <div class="nav-item registrar-only" id="nav-bulkEnroll" onclick="showView('bulkEnroll')"><span class="nav-icon"><svg class="nav-svg"><use href="#i-package"></use></svg></span>Bulk Enrollment</div>
   <div class="nav-item registrar-only" id="nav-addStudent" onclick="showView('addStudent')"><span class="nav-icon"><svg class="nav-svg"><use href="#i-user-plus"></use></svg></span>Add Student</div>
   <div class="nav-item registrar-only" id="nav-bulkStudent" onclick="showView('bulkStudent')"><span class="nav-icon"><svg class="nav-svg"><use href="#i-students"></use></svg></span>Bulk Import Students</div>
+  <div class="nav-item registrar-only" id="nav-enrollPeriods" onclick="showView('enrollPeriods')"><span class="nav-icon"><svg class="nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></span>Enrollment Periods</div>
+  <div class="nav-item registrar-only" id="nav-enrollRequests" onclick="showView('enrollRequests')"><span class="nav-icon"><svg class="nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><polyline points="16 11 18 13 22 9"/></svg></span>Enrollment Requests<span class="nav-badge" id="enrollRequestsBadge" style="display:none">0</span></div>
 
   <div class="sidebar-section">Academics</div>
   <div class="nav-item" id="nav-grades" onclick="showView('grades')"><span class="nav-icon"><svg class="nav-svg"><use href="#i-grades"></use></svg></span>Grade Upload</div>
@@ -2003,6 +2005,207 @@ iuc125066,Second Student,,U Father Two,,Daw Mother Two,,2000-05-15,second@email.
       <span class="badge b-red" id="studentErrorCount">0 errors</span>
     </div>
     <div class="table-wrap"><table id="studentResultTable"></table></div>
+  </div>
+</div>
+
+<!-- ═══════ ENROLLMENT PERIODS ═══════ -->
+<div class="view" id="view-enrollPeriods">
+  <div class="page-header">
+    <div class="page-header-left">
+      <div class="page-title">Enrollment Periods</div>
+      <div class="page-sub">Define year-progression enrollment windows for each degree program</div>
+    </div>
+    <div class="page-actions">
+      <button class="btn btn-outline btn-sm" onclick="showView('enrollRequests')">View Requests</button>
+    </div>
+  </div>
+
+  <!-- Create Period form -->
+  <div class="card">
+    <div class="card-title">Create Enrollment Period</div>
+    <div class="form-grid">
+
+      <div class="form-group">
+        <label>Degree Program *</label>
+        <select id="ep-program" onchange="loadEpYears()">
+          <option value="">— select program —</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>From Year (current) *</label>
+        <select id="ep-fromYear" onchange="populateEpToYear()">
+          <option value="">— select program first —</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>To Year (next) *</label>
+        <select id="ep-toYear">
+          <option value="">— select From Year first —</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Open Date *</label>
+        <input type="date" id="ep-openAt">
+      </div>
+
+      <div class="form-group">
+        <label>Close Date *</label>
+        <input type="date" id="ep-closeAt">
+      </div>
+
+      <div class="form-group full">
+        <label>Minimum Pass Rate — <span id="ep-minPassLabel">80</span>%</label>
+        <input type="range" id="ep-minPass" min="0" max="100" value="80"
+               oninput="document.getElementById('ep-minPassLabel').textContent = this.value"
+               style="width:100%;accent-color:var(--crimson)">
+        <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--ink3);margin-top:2px"><span>0%</span><span>50%</span><span>100%</span></div>
+      </div>
+
+      <div class="form-group">
+        <label>Require Core Courses Passed</label>
+        <div style="display:flex;align-items:center;gap:10px;height:36px">
+          <label class="toggle-wrap" style="display:flex;align-items:center;gap:8px;cursor:pointer">
+            <input type="checkbox" id="ep-requireCore" style="display:none" onchange="this.nextElementSibling.textContent=this.checked?'Yes':'No'">
+            <span id="ep-requireCoreTrack" onclick="epToggle('ep-requireCore','ep-requireCoreTrack')"
+              style="display:inline-flex;width:40px;height:22px;border-radius:11px;background:var(--line);border:1px solid var(--line);align-items:center;cursor:pointer;transition:background .2s;padding:2px">
+              <span style="width:16px;height:16px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.2);transition:transform .2s;transform:translateX(0)"></span>
+            </span>
+            <span id="ep-requireCoreLabel" style="font-size:12px;color:var(--ink2)">No</span>
+          </label>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Auto-Promote After Close</label>
+        <div style="display:flex;align-items:center;gap:10px;height:36px">
+          <label class="toggle-wrap" style="display:flex;align-items:center;gap:8px;cursor:pointer">
+            <input type="checkbox" id="ep-autoPromote" style="display:none" onchange="this.nextElementSibling.textContent=this.checked?'Yes':'No'">
+            <span id="ep-autoPromoteTrack" onclick="epToggle('ep-autoPromote','ep-autoPromoteTrack')"
+              style="display:inline-flex;width:40px;height:22px;border-radius:11px;background:var(--line);border:1px solid var(--line);align-items:center;cursor:pointer;transition:background .2s;padding:2px">
+              <span style="width:16px;height:16px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.2);transition:transform .2s;transform:translateX(0)"></span>
+            </span>
+            <span id="ep-autoPromoteLabel" style="font-size:12px;color:var(--ink2)">No</span>
+          </label>
+        </div>
+      </div>
+
+    </div>
+    <div class="form-actions">
+      <button class="btn btn-primary" onclick="saveEnrollmentPeriod()">Create Period</button>
+      <button class="btn btn-outline" onclick="resetEpForm()">Reset</button>
+    </div>
+    <div id="ep-msg" style="display:none;margin-top:12px;font-size:13px"></div>
+  </div>
+
+  <!-- Existing periods table -->
+  <div class="card mt-4" style="padding:0">
+    <div style="padding:16px 20px 0"><div class="card-title">Active &amp; Upcoming Periods</div></div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Program</th>
+            <th>From → To</th>
+            <th>Open</th>
+            <th>Close</th>
+            <th>Min Pass</th>
+            <th>Core Req.</th>
+            <th>Auto-Promote</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="epTableBody">
+          <tr><td colspan="9" style="text-align:center;color:var(--ink3);padding:24px">No periods yet</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════ ENROLLMENT REQUESTS ═══════ -->
+<div class="view" id="view-enrollRequests">
+  <div class="page-header">
+    <div class="page-header-left">
+      <div class="page-title">Enrollment Requests</div>
+      <div class="page-sub">Review and action student year-progression requests</div>
+    </div>
+    <div class="page-actions">
+      <button class="btn btn-primary" id="promoteAllBtn" onclick="promoteAllApproved()" disabled
+        title="Available after enrollment period closes">
+        Promote All Approved
+      </button>
+    </div>
+  </div>
+
+  <!-- Period selector -->
+  <div class="search-row">
+    <select id="er-periodSelect" onchange="loadEnrollRequests()" style="min-width:280px">
+      <option value="">— select enrollment period —</option>
+    </select>
+    <span id="er-periodStatus" style="font-size:12px;color:var(--ink3)"></span>
+  </div>
+
+  <!-- Stats bar -->
+  <div id="er-stats" style="display:none;display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap">
+    <span class="badge b-blue" id="er-statTotal">0 total</span>
+    <span class="badge b-green" id="er-statApproved">0 approved</span>
+    <span class="badge b-gold" id="er-statPending">0 pending</span>
+    <span class="badge b-red" id="er-statRejected">0 rejected</span>
+    <span class="badge" style="background:var(--surface);border:1px solid var(--line);color:var(--ink3)" id="er-statIneligible">0 ineligible</span>
+  </div>
+
+  <!-- Requests table -->
+  <div class="card" style="padding:0">
+    <div class="table-wrap">
+      <table id="er-table">
+        <thead>
+          <tr>
+            <th>Student</th>
+            <th>ID</th>
+            <th>Current Year</th>
+            <th>GPA</th>
+            <th>Pass Rate</th>
+            <th>Core Courses</th>
+            <th>Eligibility</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="er-tableBody">
+          <tr><td colspan="9" style="text-align:center;color:var(--ink3);padding:24px">Select an enrollment period above</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Override modal -->
+  <div class="modal-overlay" id="overrideModal" style="display:none" onclick="if(event.target===this)closeOverrideModal()">
+    <div class="modal" style="max-width:440px">
+      <div class="modal-header">
+        <div class="modal-title">Override Ineligible Student</div>
+        <button class="modal-close" onclick="closeOverrideModal()">✕</button>
+      </div>
+      <div class="modal-body">
+        <p style="font-size:13px;color:var(--ink2);margin-bottom:14px">
+          You are approving <strong id="overrideStudentName"></strong> despite not meeting eligibility criteria.
+          Please provide a reason for the record.
+        </p>
+        <div class="form-group">
+          <label>Override Reason *</label>
+          <textarea id="overrideReason" rows="3" placeholder="e.g. Dean's exemption — medical grounds"
+            style="width:100%;resize:vertical;background:var(--surface);border:1.5px solid var(--line);border-radius:var(--r);padding:8px 10px;font-size:13px;color:var(--ink);outline:none;font-family:inherit"
+            onfocus="this.style.borderColor='var(--crimson)'" onblur="this.style.borderColor='var(--line)'"></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-primary" onclick="confirmOverride()">Confirm Override</button>
+        <button class="btn btn-outline" onclick="closeOverrideModal()">Cancel</button>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -7684,6 +7887,8 @@ function showView(id) {
   if (id === 'myProfile') loadStaffProfile();
   if (id === 'userList') loadUserList();
   if (id === 'teachingSchedule') { loadStaffProfile(); renderTimetableList(); renderBookedSchedule(); }
+  if (id === 'enrollPeriods') initEnrollPeriodsView();
+  if (id === 'enrollRequests') initEnrollRequestsView();
   window.scrollTo(0, 0);
 }
 
@@ -8746,6 +8951,407 @@ function confirmDeleteLectureRoom(rid, rname) {
   };
   document.getElementById('confirmDeleteModal').classList.add('open');
 }
+    closeModal('confirmDeleteModal');
+  };
+  document.getElementById('confirmDeleteModal').classList.add('open');
+}
+
+// ══════════════════════════════════════════
+// ENROLLMENT PERIODS & REQUESTS
+// ══════════════════════════════════════════
+
+// ── Helpers ───────────────────────────────
+function epToggle(checkId, trackId) {
+  const cb = document.getElementById(checkId);
+  const track = document.getElementById(trackId);
+  const knob = track.querySelector('span');
+  const label = document.getElementById(checkId + 'Label');
+  cb.checked = !cb.checked;
+  if (cb.checked) {
+    track.style.background = 'var(--green)';
+    knob.style.transform = 'translateX(18px)';
+    if (label) label.textContent = 'Yes';
+  } else {
+    track.style.background = 'var(--line)';
+    knob.style.transform = 'translateX(0)';
+    if (label) label.textContent = 'No';
+  }
+}
+
+function epFmt(dateStr) {
+  if (!dateStr) return '—';
+  return new Date(dateStr).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+}
+
+function epStatus(period) {
+  const now = new Date();
+  const open  = new Date(period.open_at);
+  const close = new Date(period.close_at);
+  if (now < open)  return { label: 'Upcoming', cls: 'b-blue' };
+  if (now > close) return { label: 'Closed',   cls: 'b-red' };
+  return { label: 'Open', cls: 'b-green' };
+}
+
+// ── Enrollment Periods view ───────────────
+function initEnrollPeriodsView() {
+  // Populate program dropdown from global programs array
+  const prog = document.getElementById('ep-program');
+  const cur = prog.value;
+  prog.innerHTML = '<option value="">— select program —</option>';
+  (window.programs || []).forEach(p => {
+    const o = document.createElement('option');
+    o.value = p.id;
+    o.textContent = p.name || p.id;
+    prog.appendChild(o);
+  });
+  if (cur) prog.value = cur;
+  renderEpTable();
+}
+
+function loadEpYears() {
+  const programId = document.getElementById('ep-program').value;
+  const fromSel = document.getElementById('ep-fromYear');
+  const toSel   = document.getElementById('ep-toYear');
+  fromSel.innerHTML = '<option value="">— select year —</option>';
+  toSel.innerHTML   = '<option value="">— select From Year first —</option>';
+  if (!programId) return;
+  const years = (window.academicYears || [])
+    .filter(y => !y.program_id || y.program_id === programId)
+    .sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0));
+  years.forEach(y => {
+    const o = document.createElement('option');
+    o.value = y.id;
+    o.textContent = y.year_name || y.id;
+    fromSel.appendChild(o);
+  });
+}
+
+function populateEpToYear() {
+  const programId  = document.getElementById('ep-program').value;
+  const fromVal    = document.getElementById('ep-fromYear').value;
+  const toSel      = document.getElementById('ep-toYear');
+  toSel.innerHTML  = '<option value="">— select year —</option>';
+  if (!fromVal) return;
+  const years = (window.academicYears || [])
+    .filter(y => !y.program_id || y.program_id === programId)
+    .sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0));
+  const fromIdx = years.findIndex(y => y.id === fromVal);
+  years.slice(fromIdx + 1).forEach(y => {
+    const o = document.createElement('option');
+    o.value = y.id;
+    o.textContent = y.year_name || y.id;
+    toSel.appendChild(o);
+  });
+  if (toSel.options.length === 2) toSel.selectedIndex = 1; // auto-select next year
+}
+
+function resetEpForm() {
+  document.getElementById('ep-program').value  = '';
+  document.getElementById('ep-fromYear').innerHTML = '<option value="">— select program first —</option>';
+  document.getElementById('ep-toYear').innerHTML   = '<option value="">— select From Year first —</option>';
+  document.getElementById('ep-openAt').value  = '';
+  document.getElementById('ep-closeAt').value = '';
+  document.getElementById('ep-minPass').value = 80;
+  document.getElementById('ep-minPassLabel').textContent = '80';
+  ['ep-requireCore', 'ep-autoPromote'].forEach(id => {
+    const cb = document.getElementById(id);
+    if (cb && cb.checked) epToggle(id, id + 'Track');
+  });
+  const msg = document.getElementById('ep-msg');
+  if (msg) msg.style.display = 'none';
+}
+
+async function saveEnrollmentPeriod() {
+  const programId  = document.getElementById('ep-program').value;
+  const fromYear   = document.getElementById('ep-fromYear').value;
+  const toYear     = document.getElementById('ep-toYear').value;
+  const openAt     = document.getElementById('ep-openAt').value;
+  const closeAt    = document.getElementById('ep-closeAt').value;
+  const minPass    = parseInt(document.getElementById('ep-minPass').value, 10);
+  const reqCore    = document.getElementById('ep-requireCore').checked;
+  const autoPromote= document.getElementById('ep-autoPromote').checked;
+  const msg        = document.getElementById('ep-msg');
+
+  if (!programId || !fromYear || !toYear || !openAt || !closeAt) {
+    msg.style.cssText = 'display:block;color:var(--crimson);font-size:13px;margin-top:12px';
+    msg.textContent = 'Please fill in all required fields.';
+    return;
+  }
+  if (new Date(openAt) >= new Date(closeAt)) {
+    msg.style.cssText = 'display:block;color:var(--crimson);font-size:13px;margin-top:12px';
+    msg.textContent = 'Close date must be after open date.';
+    return;
+  }
+
+  const payload = {
+    program_id:    programId,
+    from_year_id:  fromYear,
+    to_year_id:    toYear,
+    open_at:       openAt,
+    close_at:      closeAt,
+    min_pass_rate: minPass / 100,
+    require_core:  reqCore,
+    auto_promote:  autoPromote
+  };
+
+  try {
+    const { data, error } = await db.from('enrollment_periods').insert(payload).select().single();
+    if (error) throw error;
+    toast('Enrollment period created.', '✅');
+    resetEpForm();
+    // Cache locally and re-render table
+    window._enrollmentPeriods = window._enrollmentPeriods || [];
+    window._enrollmentPeriods.push(data);
+    renderEpTable();
+    // Refresh period selector in requests view
+    populateErPeriodSelect();
+  } catch(e) {
+    msg.style.cssText = 'display:block;color:var(--crimson);font-size:13px;margin-top:12px';
+    msg.textContent = 'Error: ' + e.message;
+  }
+}
+
+async function renderEpTable() {
+  const tbody = document.getElementById('epTableBody');
+  if (!tbody) return;
+
+  // Fetch periods if not cached
+  if (!window._enrollmentPeriods) {
+    const { data } = await db.from('enrollment_periods').select('*').order('close_at', { ascending: false });
+    window._enrollmentPeriods = data || [];
+  }
+
+  const periods = window._enrollmentPeriods;
+  if (!periods.length) {
+    tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;color:var(--ink3);padding:24px">No periods yet</td></tr>';
+    return;
+  }
+
+  const yearMap = {};
+  (window.academicYears || []).forEach(y => { yearMap[y.id] = y.year_name || y.id; });
+  const progMap = {};
+  (window.programs || []).forEach(p => { progMap[p.id] = p.name || p.id; });
+
+  tbody.innerHTML = periods.map(p => {
+    const st = epStatus(p);
+    return `<tr>
+      <td>${progMap[p.program_id] || p.program_id}</td>
+      <td>${yearMap[p.from_year_id] || p.from_year_id} → ${yearMap[p.to_year_id] || p.to_year_id}</td>
+      <td>${epFmt(p.open_at)}</td>
+      <td>${epFmt(p.close_at)}</td>
+      <td>${Math.round((p.min_pass_rate || 0) * 100)}%</td>
+      <td>${p.require_core ? '✓' : '—'}</td>
+      <td>${p.auto_promote ? '✓' : '—'}</td>
+      <td><span class="badge ${st.cls}">${st.label}</span></td>
+      <td>
+        <button class="btn btn-outline btn-sm" onclick="deleteEnrollmentPeriod('${p.id}')">Delete</button>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+async function deleteEnrollmentPeriod(id) {
+  if (!confirm('Delete this enrollment period? This cannot be undone.')) return;
+  const { error } = await db.from('enrollment_periods').delete().eq('id', id);
+  if (error) { toast('Delete failed: ' + error.message, '❌'); return; }
+  window._enrollmentPeriods = (window._enrollmentPeriods || []).filter(p => p.id !== id);
+  renderEpTable();
+  populateErPeriodSelect();
+  toast('Period deleted.', '🗑');
+}
+
+// ── Enrollment Requests view ──────────────
+async function initEnrollRequestsView() {
+  await populateErPeriodSelect();
+  const sel = document.getElementById('er-periodSelect');
+  if (sel.options.length > 1) {
+    sel.selectedIndex = 1;
+    await loadEnrollRequests();
+  }
+}
+
+async function populateErPeriodSelect() {
+  if (!window._enrollmentPeriods) {
+    const { data } = await db.from('enrollment_periods').select('*').order('close_at', { ascending: false });
+    window._enrollmentPeriods = data || [];
+  }
+  const sel = document.getElementById('er-periodSelect');
+  if (!sel) return;
+  const cur = sel.value;
+  const yearMap = {};
+  (window.academicYears || []).forEach(y => { yearMap[y.id] = y.year_name || y.id; });
+  const progMap = {};
+  (window.programs || []).forEach(p => { progMap[p.id] = p.name || p.id; });
+  sel.innerHTML = '<option value="">— select enrollment period —</option>';
+  (window._enrollmentPeriods || []).forEach(p => {
+    const o = document.createElement('option');
+    o.value = p.id;
+    o.textContent = `${progMap[p.program_id] || p.program_id}: ${yearMap[p.from_year_id] || p.from_year_id} → ${yearMap[p.to_year_id] || p.to_year_id} (closes ${epFmt(p.close_at)})`;
+    sel.appendChild(o);
+  });
+  if (cur) sel.value = cur;
+}
+
+async function loadEnrollRequests() {
+  const periodId = document.getElementById('er-periodSelect').value;
+  const tbody    = document.getElementById('er-tableBody');
+  const stats    = document.getElementById('er-stats');
+  const statusEl = document.getElementById('er-periodStatus');
+  const promBtn  = document.getElementById('promoteAllBtn');
+
+  if (!periodId) {
+    tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;color:var(--ink3);padding:24px">Select an enrollment period above</td></tr>';
+    if (stats) stats.style.display = 'none';
+    if (statusEl) statusEl.textContent = '';
+    if (promBtn) promBtn.disabled = true;
+    return;
+  }
+
+  // Period metadata
+  const period = (window._enrollmentPeriods || []).find(p => p.id === periodId);
+  const isClosed = period && new Date() > new Date(period.close_at);
+  if (statusEl) statusEl.textContent = isClosed ? '· Period closed' : `· Closes ${epFmt(period?.close_at)}`;
+  if (promBtn) promBtn.disabled = !isClosed;
+
+  tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;color:var(--ink3);padding:24px">Loading…</td></tr>';
+
+  try {
+    const { data: requests, error } = await db
+      .from('enrollment_requests')
+      .select('*, student:student_id(id, name, current_year_id, gpa), eligibility_snapshot')
+      .eq('period_id', periodId)
+      .order('created_at', { ascending: true });
+    if (error) throw error;
+
+    if (!requests || !requests.length) {
+      tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;color:var(--ink3);padding:24px">No requests for this period</td></tr>';
+      if (stats) stats.style.display = 'none';
+      return;
+    }
+
+    // Stats
+    const total    = requests.length;
+    const approved = requests.filter(r => r.status === 'approved').length;
+    const pending  = requests.filter(r => r.status === 'requested').length;
+    const rejected = requests.filter(r => r.status === 'rejected').length;
+    const inelig   = requests.filter(r => r.status === 'ineligible').length;
+    document.getElementById('er-statTotal').textContent     = total    + ' total';
+    document.getElementById('er-statApproved').textContent  = approved + ' approved';
+    document.getElementById('er-statPending').textContent   = pending  + ' pending';
+    document.getElementById('er-statRejected').textContent  = rejected + ' rejected';
+    document.getElementById('er-statIneligible').textContent= inelig   + ' ineligible';
+    if (stats) stats.style.display = 'flex';
+
+    const yearMap = {};
+    (window.academicYears || []).forEach(y => { yearMap[y.id] = y.year_name || y.id; });
+
+    tbody.innerHTML = requests.map(r => {
+      const s    = r.student || {};
+      const snap = r.eligibility_snapshot || {};
+      const reasons = (snap.reasons || []);
+      const reasonTip = reasons.length
+        ? `<div style="font-size:11px;color:var(--crimson);margin-top:3px">${reasons.map(x => '· ' + x).join('<br>')}</div>`
+        : '';
+      const eligBadge = snap.eligible
+        ? `<span class="badge b-green">Eligible</span>`
+        : `<span class="badge b-red">Ineligible</span>${reasonTip}`;
+      const statusBadge = {
+        requested:  `<span class="badge b-gold">Pending</span>`,
+        approved:   `<span class="badge b-green">Approved</span>`,
+        rejected:   `<span class="badge b-red">Rejected</span>`,
+        ineligible: `<span class="badge" style="background:var(--surface);border:1px solid var(--line);color:var(--ink3)">Ineligible</span>`,
+        promoted:   `<span class="badge b-blue">Promoted</span>`
+      }[r.status] || `<span class="badge">${r.status}</span>`;
+
+      const canApprove = r.status !== 'approved' && r.status !== 'promoted';
+      const canReject  = r.status !== 'rejected'  && r.status !== 'promoted';
+      const isInelig   = !snap.eligible;
+
+      return `<tr>
+        <td style="font-weight:600">${s.name || '—'}</td>
+        <td style="font-family:monospace;font-size:12px">${s.id || r.student_id}</td>
+        <td>${yearMap[s.current_year_id] || s.current_year_id || '—'}</td>
+        <td>${s.gpa != null ? Number(s.gpa).toFixed(2) : '—'}</td>
+        <td>${snap.pass_rate != null ? Math.round(snap.pass_rate * 100) + '%' : '—'}</td>
+        <td>${snap.core_passed != null ? (snap.core_passed ? '✓' : '✗') : '—'}</td>
+        <td>${eligBadge}</td>
+        <td>${statusBadge}</td>
+        <td style="white-space:nowrap">
+          ${canApprove && !isInelig ? `<button class="btn btn-outline btn-sm" style="margin-right:4px" onclick="actionEnrollRequest('${r.id}','approved')">Approve</button>` : ''}
+          ${canApprove && isInelig  ? `<button class="btn btn-outline btn-sm" style="margin-right:4px;border-color:var(--gold);color:var(--gold)" onclick="openOverrideModal('${r.id}','${(s.name||'').replace(/'/g,"\\'")}')">Override</button>` : ''}
+          ${canReject  ? `<button class="btn btn-outline btn-sm" style="border-color:var(--crimson);color:var(--crimson)" onclick="actionEnrollRequest('${r.id}','rejected')">Reject</button>` : ''}
+        </td>
+      </tr>`;
+    }).join('');
+
+  } catch(e) {
+    tbody.innerHTML = `<tr><td colspan="9" style="text-align:center;color:var(--crimson);padding:24px">Error: ${e.message}</td></tr>`;
+  }
+}
+
+async function actionEnrollRequest(requestId, newStatus) {
+  const { error } = await db.from('enrollment_requests')
+    .update({ status: newStatus, reviewed_at: new Date().toISOString() })
+    .eq('id', requestId);
+  if (error) { toast('Update failed: ' + error.message, '❌'); return; }
+  toast(newStatus === 'approved' ? 'Request approved.' : 'Request rejected.', newStatus === 'approved' ? '✅' : '🚫');
+  loadEnrollRequests();
+}
+
+// Override modal
+let _overrideRequestId = null;
+function openOverrideModal(requestId, studentName) {
+  _overrideRequestId = requestId;
+  document.getElementById('overrideStudentName').textContent = studentName;
+  document.getElementById('overrideReason').value = '';
+  document.getElementById('overrideModal').style.display = 'flex';
+}
+function closeOverrideModal() {
+  document.getElementById('overrideModal').style.display = 'none';
+  _overrideRequestId = null;
+}
+async function confirmOverride() {
+  const reason = document.getElementById('overrideReason').value.trim();
+  if (!reason) { toast('Please enter an override reason.', '⚠️'); return; }
+  const { error } = await db.from('enrollment_requests')
+    .update({ status: 'approved', override_reason: reason, reviewed_at: new Date().toISOString() })
+    .eq('id', _overrideRequestId);
+  if (error) { toast('Override failed: ' + error.message, '❌'); return; }
+  closeOverrideModal();
+  toast('Override approved.', '✅');
+  loadEnrollRequests();
+}
+
+// Promote All Approved
+async function promoteAllApproved() {
+  const periodId = document.getElementById('er-periodSelect').value;
+  if (!periodId) return;
+  const period = (window._enrollmentPeriods || []).find(p => p.id === periodId);
+  if (!period) return;
+
+  if (!confirm('Promote all approved students to the next year? This will update their enrollment records.')) return;
+
+  const btn = document.getElementById('promoteAllBtn');
+  if (btn) btn.disabled = true;
+
+  try {
+    const res = await fetch('/.netlify/functions/promote-enrolled-students', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ period_id: periodId })
+    });
+    const data = await res.json();
+    if (data.error) throw new Error(data.error);
+    toast(`Promoted ${data.promoted || 0} student(s) to next year.`, '🎓');
+    // Invalidate cache and reload
+    window._enrollmentPeriods = null;
+    loadEnrollRequests();
+  } catch(e) {
+    toast('Promotion failed: ' + e.message, '❌');
+    if (btn) btn.disabled = false;
+  }
+}
+// ══ END ENROLLMENT PERIODS & REQUESTS ══
 </script>
 <script>
 // ── PRINT DOCUMENTS ──
