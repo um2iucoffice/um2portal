@@ -2464,16 +2464,6 @@ ALTER TABLE academic_years ADD COLUMN IF NOT EXISTS program_id text REFERENCES d
     </div>
     <div class="form-grid">
       <div class="form-group full">
-        <label>Academic Year / Session <span style="color:var(--crimson)">*</span></label>
-        <select id="tt-academic-year" class="form-input">
-          <option value="">Select academic year…</option>
-        </select>
-      </div>
-      <div class="form-group full">
-        <label>Session Date <span style="color:var(--crimson)">*</span></label>
-        <input type="date" id="tt-session-date" class="form-input">
-      </div>
-      <div class="form-group full">
         <label>Course <span style="color:var(--crimson)">*</span></label>
         <select id="tt-course" class="form-input">
           <option value="">Loading courses…</option>
@@ -3442,12 +3432,6 @@ async function loadAcademicYearsForModal() {
   _academicYears = res.data || [];
 }
 
-function populateAcademicYearDropdown() {
-  const sel = document.getElementById('tt-academic-year');
-  if (!sel) return;
-  sel.innerHTML = '<option value="">Select academic year…</option>' +
-    _academicYears.map(y => `<option value="${y.id}">${y.name}</option>`).join('');
-}
 
 // ══════════════════════════════════════════
 // BOOKED SCHEDULE — render overview panel
@@ -3469,14 +3453,8 @@ function renderBookedSchedule() {
     byDay[d].push(s);
   });
 
-  // Build label for academic year + date if available
   const ayLabel = document.getElementById('bookedScheduleAcYear');
-  const uniqueAYs = [...new Set(_myTimetable.map(s => s.academic_year_id).filter(Boolean))];
-  const ayNames = uniqueAYs.map(id => {
-    const y = _academicYears.find(a => a.id === id);
-    return y ? y.name : id;
-  });
-  if (ayLabel) ayLabel.textContent = ayNames.length ? ayNames.join(', ') : 'All Sessions';
+  if (ayLabel) ayLabel.textContent = 'All Sessions';
 
   const days = [...dayOrder.filter(d => byDay[d]), ...Object.keys(byDay).filter(d => !dayOrder.includes(d))];
   grid.innerHTML = days.map(day => {
@@ -3487,17 +3465,11 @@ function renderBookedSchedule() {
         ${slots.map(s => {
           const course = _profileCourses.find(c => c.id === s.course_id);
           const room   = _profileRooms.find(r => r.id === s.room_id);
-          const acYear = _academicYears.find(a => a.id === s.academic_year_id);
           const cName  = course ? (course.name || course.id) : s.course_id;
           const rName  = room   ? (room.subject || room.id) : s.room_id;
-          const dateStr= s.session_date ? `<span style="color:var(--ink3);font-size:11px">${s.session_date}</span>` : '';
-          const ayBadge= acYear ? `<span style="font-size:10px;background:var(--blue-light);color:var(--blue);border-radius:3px;padding:1px 6px;font-weight:600">${acYear.name}</span>` : '';
           return `<div style="background:var(--white);border:1px solid var(--line);border-radius:6px;padding:9px 12px">
             <div style="font-size:13px;font-weight:600;color:var(--ink);margin-bottom:3px">${cName}</div>
-            <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:4px">
-              ${ayBadge}
-              ${dateStr}
-            </div>
+
             <div style="font-size:12px;color:var(--ink2)">📍 ${rName}</div>
             <div style="font-size:12px;color:var(--ink3);font-family:monospace;margin-top:2px">${s.time_start||''} – ${s.time_end||''}</div>
           </div>`;
@@ -3626,15 +3598,11 @@ function renderMyTimetable() {
   list.innerHTML = _myTimetable.map(slot => {
     const course = _profileCourses.find(c => c.id === slot.course_id);
     const room   = _profileRooms.find(r => r.id === slot.room_id);
-    const acYear = _academicYears.find(a => a.id === slot.academic_year_id);
     const cName  = course ? (course.name || course.id) : slot.course_id;
     const rName  = room   ? (room.subject || room.id) : slot.room_id;
-    const ayBadge= acYear ? `<span style="font-size:10px;background:var(--blue-light);color:var(--blue);border-radius:3px;padding:1px 6px;font-weight:600;margin-right:4px">${acYear.name}</span>` : '';
-    const dateStr= slot.session_date ? `<span style="font-size:11px;color:var(--ink3);font-family:monospace">${slot.session_date}</span>` : '';
     return `<div style="display:grid;grid-template-columns:1fr 1fr 80px 130px 72px;gap:8px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:10px 14px">
       <div>
         <div style="font-size:13px;font-weight:500;color:var(--ink)">${cName}</div>
-        <div style="margin-top:3px">${ayBadge}${dateStr}</div>
       </div>
       <div style="font-size:12px;color:var(--ink2)">${rName}</div>
       <div style="font-size:12px;font-weight:600;color:var(--blue)">${slot.day}</div>
@@ -3662,10 +3630,6 @@ async function openTimetableModal(slotId) {
     _profileRooms   = rR.data || [];
   }
 
-  // Load academic years
-  await loadAcademicYearsForModal();
-  populateAcademicYearDropdown();
-
   // Populate course dropdown
   const cSel = document.getElementById('tt-course');
   const rSel = document.getElementById('tt-room');
@@ -3684,8 +3648,7 @@ async function openTimetableModal(slotId) {
       document.getElementById('tt-day').value   = slot.day;
       document.getElementById('tt-start').value = slot.time_start;
       document.getElementById('tt-end').value   = slot.time_end;
-      document.getElementById('tt-academic-year').value  = slot.academic_year_id || '';
-      document.getElementById('tt-session-date').value   = slot.session_date || '';
+
     }
     document.getElementById('timetableModalTitle').textContent = 'Edit Timetable Slot';
   } else {
@@ -3693,8 +3656,7 @@ async function openTimetableModal(slotId) {
     document.getElementById('tt-day').value   = '';
     document.getElementById('tt-start').value = '';
     document.getElementById('tt-end').value   = '';
-    document.getElementById('tt-academic-year').value  = '';
-    document.getElementById('tt-session-date').value   = '';
+
     document.getElementById('timetableModalTitle').textContent = 'Add Timetable Slot';
   }
   document.getElementById('timetableModal').classList.add('open');
@@ -3706,8 +3668,6 @@ async function saveTimetableSlot() {
   const day         = document.getElementById('tt-day').value;
   const time_start  = document.getElementById('tt-start').value;
   const time_end    = document.getElementById('tt-end').value;
-  const academic_year_id = document.getElementById('tt-academic-year').value || null;
-  const session_date     = document.getElementById('tt-session-date').value   || null;
   const conflictEl  = document.getElementById('tt-conflict-msg');
 
   if (!course_id || !room_id || !day || !time_start || !time_end) {
@@ -3740,7 +3700,6 @@ async function saveTimetableSlot() {
   const payload = {
     staff_id: currentUser.id,
     course_id, room_id, day, time_start, time_end,
-    academic_year_id, session_date,
     updated_at: new Date().toISOString(),
   };
 
