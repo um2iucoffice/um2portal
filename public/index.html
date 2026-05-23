@@ -954,9 +954,12 @@ table.gt tbody tr:hover { background: #F8F9FC; }
     font-size: 0.65em !important;
     line-height: 0 !important;
     position: relative !important;
-    top: -0.5em !important;
+    top: -0.4em !important;
     vertical-align: baseline !important;
   }
+  /* Prevent sup from expanding the row height */
+  table.gt td { line-height: 1.2 !important; overflow: visible !important; }
+  table.gt td span.gbadge { line-height: 1 !important; display: inline-block !important; vertical-align: middle !important; }
 
   /* Grade points */
   .gt-pts {
@@ -2612,7 +2615,8 @@ body.theme-light .mob-more-item.danger svg { color: var(--crimson); }
 .mob-more-overlay.open { display:block; }
 
 /* Grade badge + and - as superscript */
-.gbadge sup { font-size: 0.65em; line-height: 0; position: relative; top: -0.5em; }
+.gbadge sup { font-size: 0.65em; line-height: 0; position: relative; top: -0.4em; vertical-align: baseline; }
+table.gt td span.gbadge { vertical-align: middle; }
 
 /* Green completion icon for courses with grades */
 .gt-course-graded {
@@ -5593,9 +5597,8 @@ function switchSection(id, btn) {
 if (id === 'editinfo') { try { onSwitchToEditInfo(); } catch(e) {} }
 if (id === 'comms') { try { loadCommsSection(); } catch(e) {} }
 if (id === 'lecturerooms') { try { loadLectureRooms(); } catch(e) {} }
-  // Scroll content area back to top
-  const _sc = document.querySelector('.dash-content');
-  if (_sc) _sc.scrollTo(0, 0);
+  // Scroll to top
+  window.scrollTo(0, 0);
   // Close sidebar on mobile
   closeSidebar();
 }
@@ -5740,13 +5743,7 @@ function renderMarkbook(student, markbook, grades) {
   });
   const avgPct = pctCount > 0 ? (sumPct / pctCount).toFixed(1) + '%' : '—';
 
-  let html = `<div class="ts-wrap" style="margin-bottom:16px;display:flex;gap:16px;flex-wrap:wrap">
-    <div class="ts-stat"><span class="ts-val">${totalAssessments}</span><span class="ts-lbl">Assessments</span></div>
-    <div class="ts-stat"><div class="ts-divider"></div></div>
-    <div class="ts-stat"><span class="ts-val">${order.length}</span><span class="ts-lbl">Academic Years</span></div>
-    <div class="ts-stat"><div class="ts-divider"></div></div>
-    <div class="ts-stat"><span class="ts-val">${avgPct}</span><span class="ts-lbl">Avg Score</span></div>
-  </div>`;
+  let html = '';
 
   order.forEach(yr => {
     const blockMap       = groups[yr] || {};
@@ -6882,8 +6879,7 @@ function mobSwitchTab(section, btn) {
     if (t) t.classList.add('active');
   }
   // Scroll to top
-  const content = document.querySelector('.dash-content');
-  if (content) content.scrollTo(0, 0);
+  window.scrollTo(0, 0);
 }
 
 function toggleMobMore(btn) {
