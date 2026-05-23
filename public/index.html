@@ -559,6 +559,7 @@ table.gt tbody tr:hover { background: #F8F9FC; }
 .gBp { background: var(--gold-light); color: #7C5F0A; border: 1px solid #FCD34D; }
 .gB  { background: var(--gold-light); color: var(--gold); border: 1px solid rgba(154,123,47,.25); }
 .gX  { background: var(--surface); color: var(--ink3); border: 1px solid var(--line); }
+.gC  { background: #EDE9FE; color: #5B21B6; border: 1px solid #C4B5FD; }
 
 /* Grade points */
 .gt-pts {
@@ -1685,6 +1686,7 @@ table.gt tbody tr:hover { background: rgba(255,255,255,0.03); }
 .gBp { background: rgba(251,191,36,0.15); color: #fcd34d; border: 1px solid rgba(252,211,77,0.2); }
 .gB  { background: rgba(154,123,47,0.2); color: #fbbf24; border: 1px solid rgba(251,191,36,0.15); }
 .gX  { background: rgba(255,255,255,0.05); color: rgba(255,255,255,0.4); border: 1px solid rgba(255,255,255,0.08); }
+.gC  { background: rgba(139,92,246,0.15); color: #c4b5fd; border: 1px solid rgba(167,139,250,0.2); }
 .gt-pts { font-size: 13px; font-weight: 700; color: rgba(255,255,255,0.8); font-family: 'Libre Baskerville', serif; }
 .no-g { padding: 48px; text-align: center; color: rgba(255,255,255,0.3); font-size: 13px; }
 
@@ -2364,6 +2366,7 @@ body.theme-light .no-g { color: var(--ink3); }
 body.theme-light .gAp { background: #D1FAE5; color: #065F46; border-color: #6EE7B7; }
 body.theme-light .gA  { background: #D1FAE5; color: #065F46; border-color: #A7F3D0; }
 body.theme-light .gAm { background: #DBEAFE; color: #1E40AF; border-color: #BFDBFE; }
+body.theme-light .gC  { background: #EDE9FE; color: #5B21B6; border-color: #C4B5FD; }
 body.theme-light .gBp { background: var(--gold-light); color: #7C5F0A; border-color: #FCD34D; }
 body.theme-light .gB  { background: var(--gold-light); color: var(--gold); border-color: rgba(154,123,47,.25); }
 body.theme-light .gX  { background: var(--surface); color: var(--ink3); border-color: var(--line); }
@@ -4098,6 +4101,7 @@ body.theme-light .comms-ch-btn-gp { color: inherit; }
             <button class="cs-year-tab"        id="postTypeEvent"        onclick="setPostType('event')">Event</button>
           </div>
           <input id="postTitle" type="text" placeholder="Title" style="width:100%;padding:10px 12px;border-radius:var(--r);border:1px solid var(--line);background:var(--dash-bg2);color:var(--ink);font-size:14px;box-sizing:border-box">
+          <input id="postImageUrl" type="url" placeholder="Image URL (optional) — paste a link to a photo" style="width:100%;padding:10px 12px;border-radius:var(--r);border:1px solid var(--line);background:var(--dash-bg2);color:var(--ink);font-size:14px;box-sizing:border-box">
           <textarea id="postBody" rows="4" placeholder="Write your post here..." style="width:100%;padding:10px 12px;border-radius:var(--r);border:1px solid var(--line);background:var(--dash-bg2);color:var(--ink);font-size:14px;resize:vertical;box-sizing:border-box"></textarea>
           <div id="eventFieldsWrap" style="display:none;flex-direction:column;gap:10px">
             <input id="postEventDate"     type="date" style="padding:10px 12px;border-radius:var(--r);border:1px solid var(--line);background:var(--dash-bg2);color:var(--ink);font-size:14px;width:100%;box-sizing:border-box">
@@ -7354,41 +7358,41 @@ function renderNews(announcements) {
     container.innerHTML = '<div class="g-wrap"><div class="no-g">No announcements yet.</div></div>';
     return;
   }
+
+  function newsCard(a) {
+    const badgeCls = a.type === 'announcement' ? 'gA' : a.type === 'event' ? 'gC' : 'gB';
+    const badgeTxt = a.type === 'announcement' ? 'Notice' : a.type === 'event' ? 'Event' : 'News';
+    const postedBy = a.author_type === 'student' ? ' &middot; Posted by student' : '';
+    const dateStr  = a.type === 'event' && a.event_date ? escHtml(a.event_date) : escHtml((a.published_at || '').slice(0,10));
+    const meta     = a.type === 'event'
+      ? dateStr + (a.event_time ? ' &middot; ' + escHtml(a.event_time) : '') + (a.event_location ? ' &middot; ' + escHtml(a.event_location) : '')
+      : dateStr + postedBy;
+
+    return '<div style="background:var(--glass-card-bg);border:1px solid var(--glass-card-border);border-radius:var(--r);margin-bottom:16px;overflow:hidden">' +
+      (a.image_url ? '<img src="' + escHtml(a.image_url) + '" alt="" style="width:100%;height:200px;object-fit:cover;display:block;border-bottom:1px solid var(--glass-card-border)">' : '') +
+      '<div style="padding:16px">' +
+        '<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">' +
+          '<span class="gbadge ' + badgeCls + '" style="font-size:10px">' + badgeTxt + '</span>' +
+          '<span style="font-size:11px;color:var(--ink3)">' + meta + '</span>' +
+        '</div>' +
+        '<div style="font-size:15px;font-weight:500;color:var(--ink);margin-bottom:6px;line-height:1.4">' + escHtml(a.title) + '</div>' +
+        (a.body ? '<div style="font-size:13px;color:var(--ink2);line-height:1.6">' + escHtml(a.body) + '</div>' : '') +
+      '</div>' +
+    '</div>';
+  }
+
   const events = items.filter(a => a.type === 'event');
   const news   = items.filter(a => a.type !== 'event');
   let html = '';
+
   if (events.length) {
     html += '<div class="g-wrap"><div class="g-year-head">Upcoming Events</div>';
-    events.forEach(a => {
-      html += '<div class="cs-card pending" style="margin-bottom:10px;padding:16px">' +
-        '<div class="cs-card-body">' +
-        '<div class="cs-card-name">' + escHtml(a.title) + '</div>' +
-        '<div class="cs-card-meta">' +
-          (a.event_date ? escHtml(a.event_date) : '') +
-          (a.event_time ? ' &middot; ' + escHtml(a.event_time) : '') +
-          (a.event_location ? ' &middot; ' + escHtml(a.event_location) : '') +
-        '</div>' +
-        (a.body ? '<div style="font-size:13px;margin-top:8px;color:var(--ink2);line-height:1.5">' + escHtml(a.body) + '</div>' : '') +
-        '</div></div>';
-    });
+    events.forEach(a => { html += newsCard(a); });
     html += '</div>';
   }
   if (news.length) {
     html += '<div class="g-wrap"><div class="g-year-head">News &amp; Announcements</div>';
-    news.forEach(a => {
-      const badgeCls = a.type === 'announcement' ? 'gA' : 'gB';
-      const badgeTxt = a.type === 'announcement' ? 'Notice' : 'News';
-      const postedBy = a.author_type === 'student' ? ' &middot; Posted by student' : '';
-      html += '<div class="cs-card pending" style="margin-bottom:10px;padding:16px">' +
-        '<div class="cs-card-body">' +
-        '<div class="cs-card-name" style="display:flex;align-items:center;gap:8px">' +
-          escHtml(a.title) +
-          '<span class="gbadge ' + badgeCls + '" style="font-size:10px">' + badgeTxt + '</span>' +
-        '</div>' +
-        '<div class="cs-card-meta">' + escHtml((a.published_at || '').slice(0,10)) + postedBy + '</div>' +
-        (a.body ? '<div style="font-size:13px;margin-top:8px;color:var(--ink2);line-height:1.5">' + escHtml(a.body) + '</div>' : '') +
-        '</div></div>';
-    });
+    news.forEach(a => { html += newsCard(a); });
     html += '</div>';
   }
   container.innerHTML = html;
@@ -7416,6 +7420,7 @@ window.submitPost = async function() {
   var payload = {
     student_id:     window._currentStudentId || '',
     title: title, body: body, type: _postType,
+    image_url:      (document.getElementById('postImageUrl') || {}).value      || null,
     event_date:     (document.getElementById('postEventDate') || {}).value     || null,
     event_time:     (document.getElementById('postEventTime') || {}).value     || null,
     event_location: (document.getElementById('postEventLocation') || {}).value || null,
