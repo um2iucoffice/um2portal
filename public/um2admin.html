@@ -2456,6 +2456,37 @@ ALTER TABLE academic_years ADD COLUMN IF NOT EXISTS program_id text REFERENCES d
 <!-- ════════════════════════════════════════ -->
 
 <!-- Timetable Slot Modal -->
+<style>
+/* ── COURSE SEARCH TYPEAHEAD ── */
+.tt-search-wrap { position:relative; }
+.tt-search-wrap input { width:100%; }
+#tt-course-dropdown {
+  position:absolute; top:100%; left:0; right:0; z-index:999;
+  background:var(--white); border:1.5px solid var(--crimson);
+  border-top:none; border-radius:0 0 var(--r) var(--r);
+  max-height:200px; overflow-y:auto; display:none;
+  box-shadow:0 8px 24px rgba(0,0,0,.12);
+}
+.tt-course-opt {
+  padding:9px 13px; font-size:13px; cursor:pointer; color:var(--ink);
+  border-bottom:1px solid var(--line); transition:background .1s;
+}
+.tt-course-opt:last-child { border-bottom:none; }
+.tt-course-opt:hover, .tt-course-opt.active { background:var(--crimson-light); color:var(--crimson); }
+.tt-course-opt em { font-style:normal; font-weight:700; color:var(--crimson); }
+
+/* ── ACADEMIC YEAR COMBO ── */
+.tt-ay-combo { display:flex; gap:6px; align-items:stretch; }
+.tt-ay-combo select { flex:1; }
+.tt-ay-combo input  { flex:1; display:none; }
+.tt-ay-toggle {
+  background:var(--surface); border:1.5px solid var(--line); border-radius:var(--r);
+  padding:0 10px; font-size:11px; font-weight:600; color:var(--ink3);
+  cursor:pointer; white-space:nowrap; transition:all .15s;
+}
+.tt-ay-toggle:hover { border-color:var(--crimson); color:var(--crimson); }
+</style>
+
 <div class="modal-overlay" id="timetableModal">
   <div class="modal">
     <div class="modal-header">
@@ -2463,28 +2494,54 @@ ALTER TABLE academic_years ADD COLUMN IF NOT EXISTS program_id text REFERENCES d
       <button class="modal-close" onclick="closeModal('timetableModal')">✕</button>
     </div>
     <div class="form-grid">
+
+      <!-- Academic Year: select OR type-in -->
       <div class="form-group full">
         <label>Academic Year / Session <span style="color:var(--crimson)">*</span></label>
-        <select id="tt-academic-year" class="form-input">
-          <option value="">Select academic year…</option>
-        </select>
+        <div class="tt-ay-combo">
+          <select id="tt-academic-year" class="form-input">
+            <option value="">Select academic year…</option>
+          </select>
+          <input type="text" id="tt-academic-year-text" class="form-input" placeholder="Or type academic year ID…">
+          <button class="tt-ay-toggle" id="tt-ay-toggle-btn" onclick="toggleAcYearMode()" title="Switch between select and type">⇄ Type</button>
+        </div>
       </div>
+
+      <!-- Session Date -->
       <div class="form-group full">
         <label>Session Date <span style="color:var(--crimson)">*</span></label>
         <input type="date" id="tt-session-date" class="form-input">
       </div>
+
+      <!-- Course — searchable typeahead -->
       <div class="form-group full">
         <label>Course <span style="color:var(--crimson)">*</span></label>
-        <select id="tt-course" class="form-input">
-          <option value="">Loading courses…</option>
-        </select>
+        <div class="tt-search-wrap">
+          <input type="text" id="tt-course-search" class="form-input" placeholder="Search course by name…" autocomplete="off"
+            oninput="filterCourseDropdown(this.value)"
+            onfocus="showCourseDropdown()"
+            onblur="setTimeout(hideCourseDropdown,200)">
+          <input type="hidden" id="tt-course" value="">
+          <div id="tt-course-dropdown"></div>
+        </div>
+        <div id="tt-course-selected" style="display:none;margin-top:5px;font-size:12px;color:var(--green);background:var(--green-light);border-radius:4px;padding:4px 10px"></div>
       </div>
+
+      <!-- Sub-topic (free text) -->
+      <div class="form-group full">
+        <label>Sub-topic / Lecture Title</label>
+        <input type="text" id="tt-sub-topic" class="form-input" placeholder="e.g. Upper Limb Anatomy — Muscles of the Rotator Cuff">
+      </div>
+
+      <!-- Room -->
       <div class="form-group full">
         <label>Lecture Room <span style="color:var(--crimson)">*</span></label>
         <select id="tt-room" class="form-input">
           <option value="">Loading rooms…</option>
         </select>
       </div>
+
+      <!-- Day / Start / End -->
       <div class="form-group">
         <label>Day <span style="color:var(--crimson)">*</span></label>
         <select id="tt-day" class="form-input">
@@ -2501,12 +2558,13 @@ ALTER TABLE academic_years ADD COLUMN IF NOT EXISTS program_id text REFERENCES d
         <label>End Time <span style="color:var(--crimson)">*</span></label>
         <input type="time" id="tt-end" class="form-input">
       </div>
+
       <div class="form-group full">
         <div id="tt-conflict-msg" style="display:none;background:#FEF2F4;border:1px solid #FACDD3;border-radius:var(--r);padding:10px 14px;font-size:12px;color:var(--crimson)"></div>
       </div>
     </div>
     <div class="form-actions">
-      <button class="btn btn-primary" onclick="saveTimetableSlot()"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" ><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> Save Slot</button>
+      <button class="btn btn-primary" onclick="saveTimetableSlot()"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> Save Slot</button>
       <button class="btn btn-outline" onclick="closeModal('timetableModal')">Cancel</button>
     </div>
   </div>
@@ -3449,6 +3507,80 @@ function populateAcademicYearDropdown() {
     _academicYears.map(y => `<option value="${y.id}">${y.name}</option>`).join('');
 }
 
+// ── Academic Year combo: toggle between select & free-type ──
+let _ayTextMode = false;
+function toggleAcYearMode() {
+  _ayTextMode = !_ayTextMode;
+  const sel  = document.getElementById('tt-academic-year');
+  const txt  = document.getElementById('tt-academic-year-text');
+  const btn  = document.getElementById('tt-ay-toggle-btn');
+  if (_ayTextMode) {
+    sel.style.display = 'none'; txt.style.display = 'block';
+    btn.textContent = '⇄ Select';
+    txt.value = sel.value;
+  } else {
+    sel.style.display = 'block'; txt.style.display = 'none';
+    btn.textContent = '⇄ Type';
+    const typed = txt.value.trim();
+    const match = _academicYears.find(y => y.id === typed || y.name.toLowerCase() === typed.toLowerCase());
+    sel.value = match ? match.id : '';
+  }
+}
+function getAcademicYearValue() {
+  if (_ayTextMode) {
+    const v = document.getElementById('tt-academic-year-text').value.trim();
+    return v || null;
+  }
+  return document.getElementById('tt-academic-year').value || null;
+}
+function setAcademicYearValue(v) {
+  const sel = document.getElementById('tt-academic-year');
+  if (sel) sel.value = v || '';
+  if (v && sel && !sel.value) {
+    if (!_ayTextMode) toggleAcYearMode();
+    document.getElementById('tt-academic-year-text').value = v;
+  } else if (!_ayTextMode) {
+    if (sel) sel.value = v || '';
+  }
+}
+
+// ── Course typeahead helpers ──
+function filterCourseDropdown(q) {
+  const dd = document.getElementById('tt-course-dropdown');
+  if (!_profileCourses.length) { dd.style.display = 'none'; return; }
+  const lower = q.toLowerCase().trim();
+  const matches = lower
+    ? _profileCourses.filter(c => (c.name||c.id).toLowerCase().includes(lower))
+    : _profileCourses;
+  if (!matches.length) { dd.style.display = 'none'; return; }
+  dd.innerHTML = matches.slice(0,12).map(c => {
+    const label = c.name || c.id;
+    const hi    = lower ? label.replace(new RegExp('(' + lower.replace(/[.*+?^${}()|[\]\\]/g,'\\$&') + ')','gi'),'<em>$1</em>') : label;
+    return '<div class="tt-course-opt" onmousedown="selectCourse(\'' + c.id + '\',\'' + label.replace(/'/g,"\\'") + '\')">' + hi + ' <span style="font-size:10px;color:var(--ink3);margin-left:4px">' + c.id + '</span></div>';
+  }).join('');
+  dd.style.display = 'block';
+}
+function showCourseDropdown() {
+  filterCourseDropdown(document.getElementById('tt-course-search').value);
+}
+function hideCourseDropdown() {
+  const dd = document.getElementById('tt-course-dropdown');
+  if (dd) dd.style.display = 'none';
+}
+function selectCourse(id, name) {
+  document.getElementById('tt-course').value        = id;
+  document.getElementById('tt-course-search').value = name;
+  const sel = document.getElementById('tt-course-selected');
+  if (sel) { sel.textContent = '✓ ' + name + '  (' + id + ')'; sel.style.display = 'block'; }
+  hideCourseDropdown();
+}
+function clearCourseSelection() {
+  document.getElementById('tt-course').value        = '';
+  document.getElementById('tt-course-search').value = '';
+  const sel = document.getElementById('tt-course-selected');
+  if (sel) sel.style.display = 'none';
+}
+
 // ══════════════════════════════════════════
 // BOOKED SCHEDULE — render overview panel
 // ══════════════════════════════════════════
@@ -3494,6 +3626,7 @@ function renderBookedSchedule() {
           const ayBadge= acYear ? `<span style="font-size:10px;background:var(--blue-light);color:var(--blue);border-radius:3px;padding:1px 6px;font-weight:600">${acYear.name}</span>` : '';
           return `<div style="background:var(--white);border:1px solid var(--line);border-radius:6px;padding:9px 12px">
             <div style="font-size:13px;font-weight:600;color:var(--ink);margin-bottom:3px">${cName}</div>
+            ${s.sub_topic ? '<div style="font-size:12px;color:var(--ink2);font-style:italic;margin-bottom:2px">' + s.sub_topic + '</div>' : ''}
             <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:4px">
               ${ayBadge}
               ${dateStr}
@@ -3634,6 +3767,7 @@ function renderMyTimetable() {
     return `<div style="display:grid;grid-template-columns:1fr 1fr 80px 130px 72px;gap:8px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:10px 14px">
       <div>
         <div style="font-size:13px;font-weight:500;color:var(--ink)">${cName}</div>
+        ${slot.sub_topic ? '<div style="font-size:12px;color:var(--ink2);margin-top:2px;font-style:italic">' + slot.sub_topic + '</div>' : ''}
         <div style="margin-top:3px">${ayBadge}${dateStr}</div>
       </div>
       <div style="font-size:12px;color:var(--ink2)">${rName}</div>
@@ -3666,35 +3800,40 @@ async function openTimetableModal(slotId) {
   await loadAcademicYearsForModal();
   populateAcademicYearDropdown();
 
-  // Populate course dropdown
-  const cSel = document.getElementById('tt-course');
+  // Populate room dropdown
   const rSel = document.getElementById('tt-room');
-  cSel.innerHTML = '<option value="">Select course…</option>' +
-    _profileCourses.map(c => `<option value="${c.id}">${c.name || c.id}</option>`).join('');
   rSel.innerHTML = '<option value="">Select room…</option>' +
     _profileRooms.map(r => `<option value="${r.id}">${r.subject || r.id}</option>`).join('');
 
+  // Reset course search
+  clearCourseSelection();
   document.getElementById('tt-conflict-msg').style.display = 'none';
 
   if (slotId) {
     const slot = _myTimetable.find(s => s.id === slotId);
     if (slot) {
-      cSel.value = slot.course_id;
+      // Restore course search display
+      const course = _profileCourses.find(c => c.id === slot.course_id);
+      if (course) selectCourse(course.id, course.name || course.id);
+      else { document.getElementById('tt-course').value = slot.course_id; }
       rSel.value = slot.room_id;
-      document.getElementById('tt-day').value   = slot.day;
-      document.getElementById('tt-start').value = slot.time_start;
-      document.getElementById('tt-end').value   = slot.time_end;
-      document.getElementById('tt-academic-year').value  = slot.academic_year_id || '';
-      document.getElementById('tt-session-date').value   = slot.session_date || '';
+      document.getElementById('tt-day').value      = slot.day;
+      document.getElementById('tt-start').value    = slot.time_start;
+      document.getElementById('tt-end').value      = slot.time_end;
+      document.getElementById('tt-sub-topic').value = slot.sub_topic || '';
+      document.getElementById('tt-session-date').value = slot.session_date || '';
+      setAcademicYearValue(slot.academic_year_id || '');
     }
     document.getElementById('timetableModalTitle').textContent = 'Edit Timetable Slot';
   } else {
-    cSel.value = ''; rSel.value = '';
-    document.getElementById('tt-day').value   = '';
-    document.getElementById('tt-start').value = '';
-    document.getElementById('tt-end').value   = '';
-    document.getElementById('tt-academic-year').value  = '';
-    document.getElementById('tt-session-date').value   = '';
+    clearCourseSelection();
+    rSel.value = '';
+    document.getElementById('tt-day').value       = '';
+    document.getElementById('tt-start').value     = '';
+    document.getElementById('tt-end').value       = '';
+    document.getElementById('tt-sub-topic').value = '';
+    document.getElementById('tt-session-date').value = '';
+    setAcademicYearValue('');
     document.getElementById('timetableModalTitle').textContent = 'Add Timetable Slot';
   }
   document.getElementById('timetableModal').classList.add('open');
@@ -3706,8 +3845,9 @@ async function saveTimetableSlot() {
   const day         = document.getElementById('tt-day').value;
   const time_start  = document.getElementById('tt-start').value;
   const time_end    = document.getElementById('tt-end').value;
-  const academic_year_id = document.getElementById('tt-academic-year').value || null;
-  const session_date     = document.getElementById('tt-session-date').value   || null;
+  const sub_topic        = document.getElementById('tt-sub-topic').value.trim() || null;
+  const academic_year_id = getAcademicYearValue();
+  const session_date     = document.getElementById('tt-session-date').value || null;
   const conflictEl  = document.getElementById('tt-conflict-msg');
 
   if (!course_id || !room_id || !day || !time_start || !time_end) {
@@ -3740,7 +3880,7 @@ async function saveTimetableSlot() {
   const payload = {
     staff_id: currentUser.id,
     course_id, room_id, day, time_start, time_end,
-    academic_year_id, session_date,
+    sub_topic, academic_year_id, session_date,
     updated_at: new Date().toISOString(),
   };
 
