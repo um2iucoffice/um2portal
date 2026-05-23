@@ -122,8 +122,9 @@ exports.handler = async (event) => {
       `rpc/check_enrollment_eligibility`, {
         method: 'POST',
         body: JSON.stringify({
-          p_student_id: String(student_id),
-          p_period_id:  String(period.id)
+          p_student_id:         String(student_id),
+          p_period_id:          String(period.id),
+          p_skip_already_check: false
         })
       }
     );
