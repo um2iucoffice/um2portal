@@ -3,10 +3,10 @@
 exports.handler = async (event) => {
   const headers = { 'Content-Type': 'application/json',
                     'Access-Control-Allow-Origin': '*' };
-  const { request_id, action, reviewed_by, 
+  const { request_id, action, reviewed_by,
           override_reason, notes } = JSON.parse(event.body || '{}');
 
-  const status = action === 'approve' || action === 'override' 
+  const status = action === 'approve' || action === 'override'
                  ? 'approved' : 'rejected';
 
   await supabase(
