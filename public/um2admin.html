@@ -59,15 +59,20 @@
 
 /* ── PRINT STYLES ── */
 @media print {
+  @page { size: A4 portrait; margin: 18mm 20mm; }
+  html, body { width: 210mm !important; margin: 0 !important; padding: 0 !important; background: #fff !important; }
   body * { visibility: hidden !important; }
   #printArea, #printArea * { visibility: visible !important; }
   #printArea {
-    position: fixed !important; inset: 0 !important;
-    width: 210mm !important; margin: 0 auto !important;
-    padding: 18mm 20mm !important;
+    position: absolute !important;
+    top: 0 !important; left: 0 !important;
+    width: 100% !important;
+    min-height: 297mm !important;
+    margin: 0 !important; padding: 0 !important;
     font-family: 'Times New Roman', Times, serif !important;
     color: #000 !important; background: #fff !important;
     font-size: 12pt !important; line-height: 1.6 !important;
+    box-sizing: border-box !important;
   }
 }
 #printArea { display: none; }
@@ -7731,7 +7736,7 @@ function confirmDeleteLectureRoom(rid, rname) {
 <script>
 // ── PRINT DOCUMENTS ──
 const _LOGO_URL = 'https://github.com/um2iucoffice/um2portal/raw/refs/heads/main/public/UM2_Logo.svg';
-const _SEAL_URL = '/iucseal.svg';
+const _SEAL_URL = 'https://github.com/um2iucoffice/um2portal/raw/refs/heads/main/public/iucseal.svg';
 
 function _getStaffForPrint() {
   const name     = document.getElementById('sp-realname')?.value.trim()   || document.getElementById('sp-nickname')?.value.trim() || '—';
@@ -7836,7 +7841,6 @@ function _letterHead() {
         <div style="font-size:17pt;font-weight:bold;font-family:'Times New Roman',serif;color:#8B1A2E">UM2 MBBS Programme</div>
         <div style="font-size:8.5pt;color:#777;margin-top:2px">Secretariat's Office &nbsp;·&nbsp; sisportal.um2campus.edu.mm</div>
       </div>
-      <img src="${_SEAL_URL}" alt="IUC Seal" style="height:72px;width:auto;flex-shrink:0;opacity:0.85" onerror="this.style.display='none'">
     </div>`;
 }
 
@@ -7848,7 +7852,24 @@ function _signatureBlock() {
         <div style="font-size:9pt;color:#444">Secretariat's Office</div>
       </div>
       <div style="text-align:center">
-        <img src="${_SEAL_URL}" alt="Official Seal" style="width:72px;height:72px;object-fit:contain;display:block;margin:0 auto 6px" onerror="this.style.display='none'">
+        <object data="${_SEAL_URL}" type="image/svg+xml" style="width:80px;height:80px;display:block;margin:0 auto 4px">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="80" height="80">
+            <circle cx="60" cy="60" r="56" fill="none" stroke="#8B1A2E" stroke-width="2.5"/>
+            <circle cx="60" cy="60" r="48" fill="none" stroke="#8B1A2E" stroke-width="1"/>
+            <circle cx="60" cy="60" r="10" fill="none" stroke="#8B1A2E" stroke-width="1.2"/>
+            <path d="M60 22 L63 32 L74 32 L65 39 L68 50 L60 43 L52 50 L55 39 L46 32 L57 32 Z" fill="#8B1A2E" opacity="0.85"/>
+            <text x="60" y="70" text-anchor="middle" font-family="serif" font-size="6.5" fill="#8B1A2E" letter-spacing="1.5">UNIVERSITY OF MEDICINE (2)</text>
+            <text x="60" y="79" text-anchor="middle" font-family="serif" font-size="6" fill="#8B1A2E" letter-spacing="1">YANGON</text>
+            <path id="topArc" d="M 18,60 A 42,42 0 0,1 102,60" fill="none"/>
+            <path id="botArc" d="M 16,62 A 44,44 0 0,0 104,62" fill="none"/>
+            <text font-family="serif" font-size="6.2" fill="#8B1A2E" letter-spacing="1.8">
+              <textPath href="#topArc" startOffset="10%">IUC · SECRETARIAT'S OFFICE</textPath>
+            </text>
+            <text font-family="serif" font-size="5.8" fill="#8B1A2E" letter-spacing="1.2">
+              <textPath href="#botArc" startOffset="12%">OFFICIAL SEAL · UM2 MBBS PROGRAMME</textPath>
+            </text>
+          </svg>
+        </object>
       </div>
       <div style="text-align:center;width:200px">
         <div style="border-top:1px solid #000;padding-top:6px;font-size:10pt">Authorised by</div>
