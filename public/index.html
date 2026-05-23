@@ -6584,15 +6584,50 @@ function renderEnrollmentBanner(period, elig, student) {
       .toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
 
     if (elig.already_requested) {
-      // PENDING state — blue
-      container.innerHTML = `
-        <div style="background:rgba(30,90,200,0.13);border:1px solid rgba(30,90,200,0.35);border-radius:12px;padding:16px 20px;display:flex;align-items:center;gap:14px;margin-bottom:18px;">
-          <div style="font-size:22px;flex-shrink:0;">🕐</div>
-          <div style="flex:1;min-width:0;">
-            <div style="font-weight:700;color:rgba(255,255,255,0.92);font-size:14px;margin-bottom:2px;">Enrollment Request Pending</div>
-            <div style="font-size:12px;color:rgba(255,255,255,0.6);">Your request to advance to the next year of study is under review. Closes ${closeDate}.</div>
-          </div>
-        </div>`;
+      const enrollmentStatus = elig.enrollment_status || 'requested';
+      const toYear           = elig.to_year || 'next year';
+
+      if (enrollmentStatus === 'promoted') {
+        // PROMOTED — green success, no action needed
+        container.innerHTML = `
+          <div style="background:rgba(20,160,80,0.13);border:1px solid rgba(20,160,80,0.45);border-radius:12px;padding:16px 20px;display:flex;align-items:center;gap:14px;margin-bottom:18px;">
+            <div style="font-size:22px;flex-shrink:0;">🎓</div>
+            <div style="flex:1;min-width:0;">
+              <div style="font-weight:700;color:rgba(255,255,255,0.92);font-size:14px;margin-bottom:2px;">Year Progression Approved</div>
+              <div style="font-size:12px;color:rgba(180,255,200,0.75);">You have been promoted to <strong>${toYear}</strong>. Your academic record has been updated.</div>
+            </div>
+          </div>`;
+      } else if (enrollmentStatus === 'approved') {
+        // APPROVED but not yet promoted (should be rare with new code)
+        container.innerHTML = `
+          <div style="background:rgba(20,160,80,0.10);border:1px solid rgba(20,160,80,0.35);border-radius:12px;padding:16px 20px;display:flex;align-items:center;gap:14px;margin-bottom:18px;">
+            <div style="font-size:22px;flex-shrink:0;">✅</div>
+            <div style="flex:1;min-width:0;">
+              <div style="font-weight:700;color:rgba(255,255,255,0.92);font-size:14px;margin-bottom:2px;">Enrollment Approved</div>
+              <div style="font-size:12px;color:rgba(255,255,255,0.6);">Your progression to <strong>${toYear}</strong> has been approved and will be processed shortly.</div>
+            </div>
+          </div>`;
+      } else if (enrollmentStatus === 'rejected') {
+        // REJECTED — show clearly so student knows they can resubmit
+        container.innerHTML = `
+          <div style="background:rgba(180,30,30,0.13);border:1px solid rgba(180,30,30,0.35);border-radius:12px;padding:16px 20px;display:flex;align-items:center;gap:14px;margin-bottom:18px;">
+            <div style="font-size:22px;flex-shrink:0;">❌</div>
+            <div style="flex:1;min-width:0;">
+              <div style="font-weight:700;color:rgba(255,255,255,0.92);font-size:14px;margin-bottom:2px;">Enrollment Request Rejected</div>
+              <div style="font-size:12px;color:rgba(255,200,200,0.75);">Your request was not approved. Please contact the registrar for more information.</div>
+            </div>
+          </div>`;
+      } else {
+        // REQUESTED — under review
+        container.innerHTML = `
+          <div style="background:rgba(30,90,200,0.13);border:1px solid rgba(30,90,200,0.35);border-radius:12px;padding:16px 20px;display:flex;align-items:center;gap:14px;margin-bottom:18px;">
+            <div style="font-size:22px;flex-shrink:0;">🕐</div>
+            <div style="flex:1;min-width:0;">
+              <div style="font-weight:700;color:rgba(255,255,255,0.92);font-size:14px;margin-bottom:2px;">Enrollment Request Pending</div>
+              <div style="font-size:12px;color:rgba(255,255,255,0.6);">Your request to advance to the next year of study is under review. Closes ${closeDate}.</div>
+            </div>
+          </div>`;
+      }
     } else if (elig.eligible) {
       // ELIGIBLE state — green with Enroll Now button
       container.innerHTML = `
@@ -6603,11 +6638,7 @@ function renderEnrollmentBanner(period, elig, student) {
             <div style="font-size:12px;color:rgba(255,255,255,0.6);">You are eligible to enroll for the next year of study. Enrollment closes ${closeDate}.</div>
           </div>
           <button id="enrollBtn" onclick="submitEnrollmentRequest('${period.id}','${student.id}')"
-            style="flex-shrink:0;background:#16a050;border:1px solid rgba(20,160,80,0.5);color:#fff;font-size:13px;font-weight:600;padding:8px 18px;border-radius:8px;cursor:pointer;transition:background 0.15s,transform 0.1s,box-shadow 0.15s;box-shadow:0 2px 8px rgba(20,160,80,0.35);"
-            onmouseover="if(!this.disabled){this.style.background='#12883f';this.style.boxShadow='0 4px 14px rgba(20,160,80,0.45)';}"
-            onmouseout="if(!this.disabled){this.style.background='#16a050';this.style.boxShadow='0 2px 8px rgba(20,160,80,0.35)';}"
-            onmousedown="if(!this.disabled){this.style.transform='scale(0.96)';this.style.background='#0e6e36';}"
-            onmouseup="if(!this.disabled){this.style.transform='scale(1)';}">
+            style="flex-shrink:0;background:rgba(20,160,80,0.75);border:1px solid rgba(20,160,80,0.6);color:#fff;font-size:13px;font-weight:600;padding:8px 18px;border-radius:8px;cursor:pointer;">
             Enroll Now
           </button>
         </div>`;
@@ -6632,14 +6663,7 @@ function renderEnrollmentBanner(period, elig, student) {
 
 window.submitEnrollmentRequest = async function(periodId, studentId) {
   const btn = document.getElementById('enrollBtn');
-  if (btn) {
-    btn.disabled = true;
-    btn.textContent = 'Submitting…';
-    btn.style.background = '#0e6e36';
-    btn.style.opacity = '0.75';
-    btn.style.cursor = 'not-allowed';
-    btn.style.transform = 'scale(1)';
-  }
+  if (btn) btn.disabled = true;
   try {
     const res = await fetch('/.netlify/functions/submit-enrollment-request', {
       method: 'POST',
@@ -6656,30 +6680,18 @@ window.submitEnrollmentRequest = async function(periodId, studentId) {
           <div style="background:rgba(30,90,200,0.13);border:1px solid rgba(30,90,200,0.35);border-radius:12px;padding:16px 20px;display:flex;align-items:center;gap:14px;margin-bottom:18px;">
             <div style="font-size:22px;flex-shrink:0;">🕐</div>
             <div style="flex:1;min-width:0;">
-              <div style="font-weight:700;color:rgba(255,255,255,0.92);font-size:14px;margin-bottom:2px;">Enrollment Request Pending</div>
+              <div style="font-weight:700;color:rgba(255,255,255,0.92);font-size:14px;margin-bottom:2px;">Enrollment Request Submitted</div>
               <div style="font-size:12px;color:rgba(255,255,255,0.6);">Your request to advance to the next year of study has been submitted and is under review.</div>
             </div>
           </div>`;
         container.style.display = 'block';
       });
     } else {
-      if (btn) {
-        btn.disabled = false;
-        btn.textContent = 'Enroll Now';
-        btn.style.background = '#16a050';
-        btn.style.opacity = '1';
-        btn.style.cursor = 'pointer';
-      }
+      if (btn) btn.disabled = false;
       console.warn('Enrollment submission failed:', data);
     }
   } catch(e) {
-    if (btn) {
-      btn.disabled = false;
-      btn.textContent = 'Enroll Now';
-      btn.style.background = '#16a050';
-      btn.style.opacity = '1';
-      btn.style.cursor = 'pointer';
-    }
+    if (btn) btn.disabled = false;
     console.warn('Enrollment submission error:', e.message);
   }
 };
