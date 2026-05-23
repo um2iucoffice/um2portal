@@ -4294,6 +4294,9 @@ body.theme-light .comms-ch-btn-gp { color: inherit; }
         </div>
       </div>
 
+      <!-- Enrollment eligibility banner — populated by checkEnrollmentEligibility() -->
+      <div id="enrollmentBanner" style="display:none"></div>
+
       <!-- Academic Journey — shown only when student has 2+ degree enrollments -->
       <div class="journey-card" id="journeyCard" style="display:none">
         <div class="journey-card-head">Academic Journey</div>
@@ -5114,6 +5117,9 @@ body.theme-light .comms-ch-btn-gp { color: inherit; }
         <h2>Academic Record</h2>
         <p>Full record of grades, credits and grade points — Academic Year 2026–2027</p>
       </div>
+
+      <!-- Enrollment eligibility banner — populated by checkEnrollmentEligibility() -->
+      <div id="enrollmentBannerGrades" style="display:none"></div>
 
       <!-- Student identity banner -->
       <div class="grades-header-banner" id="gradesHeaderBanner" style="display:none">
@@ -5942,6 +5948,7 @@ function populate(s, grades, courses, program_meta, enrollments, academicYears, 
 
   // ── Render grades for the active (first) enrollment ─────────
   renderGrades(grades, s);
+  checkEnrollmentEligibility(s);
   // ── Course Session Grid ──────────────────────────────────────
   renderCourseSession(s, grades, academicYears || []);
   // ── Markbook ─────────────────────────────────────────────────
@@ -6545,6 +6552,115 @@ function getSheetOverallGpa(student) {
   if (raw === null || raw === undefined || String(raw).trim() === '') return '—';
   return String(raw).trim();
 }
+
+// ── Enrollment Eligibility ────────────────────────────────────────────────────
+async function checkEnrollmentEligibility(student) {
+  if (!student.id || !student.program || !student.currentStatus) return;
+  try {
+    const res = await fetch('/.netlify/functions/get-enrollment-periods', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        student_id:   student.id,
+        program_id:   student.program,
+        current_year: student.currentStatus
+      })
+    });
+    const data = await res.json();
+    if (!data.period) return;
+    renderEnrollmentBanner(data.period, data.eligibility, student);
+  } catch(e) {
+    console.warn('Enrollment check failed:', e.message);
+  }
+}
+
+function renderEnrollmentBanner(period, elig, student) {
+  // Render into both home and grades panels
+  ['enrollmentBanner', 'enrollmentBannerGrades'].forEach(id => {
+    const container = document.getElementById(id);
+    if (!container) return;
+
+    const closeDate = new Date(period.close_at)
+      .toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+
+    if (elig.already_requested) {
+      // PENDING state — blue
+      container.innerHTML = `
+        <div style="background:rgba(30,90,200,0.13);border:1px solid rgba(30,90,200,0.35);border-radius:12px;padding:16px 20px;display:flex;align-items:center;gap:14px;margin-bottom:18px;">
+          <div style="font-size:22px;flex-shrink:0;">🕐</div>
+          <div style="flex:1;min-width:0;">
+            <div style="font-weight:700;color:rgba(255,255,255,0.92);font-size:14px;margin-bottom:2px;">Enrollment Request Pending</div>
+            <div style="font-size:12px;color:rgba(255,255,255,0.6);">Your request to advance to the next year of study is under review. Closes ${closeDate}.</div>
+          </div>
+        </div>`;
+    } else if (elig.eligible) {
+      // ELIGIBLE state — green with Enroll Now button
+      container.innerHTML = `
+        <div style="background:rgba(20,160,80,0.13);border:1px solid rgba(20,160,80,0.35);border-radius:12px;padding:16px 20px;display:flex;align-items:center;gap:14px;margin-bottom:18px;">
+          <div style="font-size:22px;flex-shrink:0;">✅</div>
+          <div style="flex:1;min-width:0;">
+            <div style="font-weight:700;color:rgba(255,255,255,0.92);font-size:14px;margin-bottom:2px;">Year Progression Available</div>
+            <div style="font-size:12px;color:rgba(255,255,255,0.6);">You are eligible to enroll for the next year of study. Enrollment closes ${closeDate}.</div>
+          </div>
+          <button id="enrollBtn" onclick="submitEnrollmentRequest('${period.id}','${student.id}')"
+            style="flex-shrink:0;background:rgba(20,160,80,0.75);border:1px solid rgba(20,160,80,0.6);color:#fff;font-size:13px;font-weight:600;padding:8px 18px;border-radius:8px;cursor:pointer;">
+            Enroll Now
+          </button>
+        </div>`;
+    } else {
+      // INELIGIBLE state — amber with reasons list
+      const reasonsList = (elig.reasons || []).map(r => `<li style="margin-bottom:2px;">${r}</li>`).join('');
+      container.innerHTML = `
+        <div style="background:rgba(200,130,20,0.13);border:1px solid rgba(200,130,20,0.35);border-radius:12px;padding:16px 20px;margin-bottom:18px;">
+          <div style="display:flex;align-items:center;gap:14px;">
+            <div style="font-size:22px;flex-shrink:0;">⚠️</div>
+            <div style="flex:1;min-width:0;">
+              <div style="font-weight:700;color:rgba(255,255,255,0.92);font-size:14px;margin-bottom:2px;">Not Yet Eligible for Year Progression</div>
+              <div style="font-size:12px;color:rgba(255,255,255,0.6);">Enrollment closes ${closeDate}. Please resolve the following before the deadline:</div>
+            </div>
+          </div>
+          ${reasonsList ? `<ul style="margin:10px 0 0 36px;padding:0;font-size:12px;color:rgba(255,210,100,0.85);">${reasonsList}</ul>` : ''}
+        </div>`;
+    }
+    container.style.display = 'block';
+  });
+}
+
+window.submitEnrollmentRequest = async function(periodId, studentId) {
+  const btn = document.getElementById('enrollBtn');
+  if (btn) btn.disabled = true;
+  try {
+    const res = await fetch('/.netlify/functions/submit-enrollment-request', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ student_id: studentId, period_id: periodId })
+    });
+    const data = await res.json();
+    if (data.success) {
+      // Re-render both banners as pending
+      ['enrollmentBanner', 'enrollmentBannerGrades'].forEach(id => {
+        const container = document.getElementById(id);
+        if (!container) return;
+        container.innerHTML = `
+          <div style="background:rgba(30,90,200,0.13);border:1px solid rgba(30,90,200,0.35);border-radius:12px;padding:16px 20px;display:flex;align-items:center;gap:14px;margin-bottom:18px;">
+            <div style="font-size:22px;flex-shrink:0;">🕐</div>
+            <div style="flex:1;min-width:0;">
+              <div style="font-weight:700;color:rgba(255,255,255,0.92);font-size:14px;margin-bottom:2px;">Enrollment Request Pending</div>
+              <div style="font-size:12px;color:rgba(255,255,255,0.6);">Your request to advance to the next year of study has been submitted and is under review.</div>
+            </div>
+          </div>`;
+        container.style.display = 'block';
+      });
+    } else {
+      if (btn) btn.disabled = false;
+      console.warn('Enrollment submission failed:', data);
+    }
+  } catch(e) {
+    if (btn) btn.disabled = false;
+    console.warn('Enrollment submission error:', e.message);
+  }
+};
+// ── End Enrollment Eligibility ────────────────────────────────────────────────
 
 function renderGrades(grades, student) {
   const container = document.getElementById('gradesContent');
