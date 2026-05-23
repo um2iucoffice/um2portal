@@ -6557,11 +6557,12 @@ function getSheetOverallGpa(student) {
 
 // ── Enrollment Eligibility ────────────────────────────────────────────────────
 async function checkEnrollmentEligibility(student) {
-  if (!student.id || !student.currentStatus) return;
-  // Use UUID if available, otherwise fall back to program name — server handles both
+  console.log('[ENROLL] called', student?.id, student?.program, student?.currentStatus);
+  if (!student.id || !student.currentStatus) { console.warn('[ENROLL] missing id or currentStatus'); return; }
   const programRef = student.programId || student.program;
-  if (!programRef) return;
+  if (!programRef) { console.warn('[ENROLL] missing program'); return; }
   try {
+    console.log('[ENROLL] fetching for', student.id, programRef, student.currentStatus);
     const res = await fetch('/.netlify/functions/get-enrollment-periods', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -6572,11 +6573,12 @@ async function checkEnrollmentEligibility(student) {
       })
     });
     const data = await res.json();
-    console.log('Enrollment period check:', data);
-    if (!data.period) return;
+    console.log('[ENROLL] response:', JSON.stringify(data));
+    if (!data.period) { console.warn('[ENROLL] no period returned'); return; }
     renderEnrollmentBanner(data.period, data.eligibility, student);
+    console.log('[ENROLL] banner rendered');
   } catch(e) {
-    console.warn('Enrollment check failed:', e.message);
+    console.warn('[ENROLL] failed:', e.message);
   }
 }
 
