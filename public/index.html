@@ -8258,7 +8258,12 @@ function renderHomeNews(announcements) {
   if (container)    container.innerHTML    = preview.map((a, i) => homeCard(a, sorted.indexOf(a), false)).join('');
   if (mobContainer) mobContainer.innerHTML = preview.map((a, i) => homeCard(a, sorted.indexOf(a), true)).join('');
 }
+// Declare and default _postType
+var _postType = 'news';
 
+window.setPostType = function(type) {
+  _postType = type;
+  ...
 window.setPostType = function(type) {
   _postType = type;
   ['news','announcement','event'].forEach(function(t) {
