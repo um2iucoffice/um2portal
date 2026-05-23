@@ -6603,7 +6603,11 @@ function renderEnrollmentBanner(period, elig, student) {
             <div style="font-size:12px;color:rgba(255,255,255,0.6);">You are eligible to enroll for the next year of study. Enrollment closes ${closeDate}.</div>
           </div>
           <button id="enrollBtn" onclick="submitEnrollmentRequest('${period.id}','${student.id}')"
-            style="flex-shrink:0;background:rgba(20,160,80,0.75);border:1px solid rgba(20,160,80,0.6);color:#fff;font-size:13px;font-weight:600;padding:8px 18px;border-radius:8px;cursor:pointer;">
+            style="flex-shrink:0;background:#16a050;border:1px solid rgba(20,160,80,0.5);color:#fff;font-size:13px;font-weight:600;padding:8px 18px;border-radius:8px;cursor:pointer;transition:background 0.15s,transform 0.1s,box-shadow 0.15s;box-shadow:0 2px 8px rgba(20,160,80,0.35);"
+            onmouseover="if(!this.disabled){this.style.background='#12883f';this.style.boxShadow='0 4px 14px rgba(20,160,80,0.45)';}"
+            onmouseout="if(!this.disabled){this.style.background='#16a050';this.style.boxShadow='0 2px 8px rgba(20,160,80,0.35)';}"
+            onmousedown="if(!this.disabled){this.style.transform='scale(0.96)';this.style.background='#0e6e36';}"
+            onmouseup="if(!this.disabled){this.style.transform='scale(1)';}">
             Enroll Now
           </button>
         </div>`;
@@ -6628,7 +6632,14 @@ function renderEnrollmentBanner(period, elig, student) {
 
 window.submitEnrollmentRequest = async function(periodId, studentId) {
   const btn = document.getElementById('enrollBtn');
-  if (btn) btn.disabled = true;
+  if (btn) {
+    btn.disabled = true;
+    btn.textContent = 'Submitting…';
+    btn.style.background = '#0e6e36';
+    btn.style.opacity = '0.75';
+    btn.style.cursor = 'not-allowed';
+    btn.style.transform = 'scale(1)';
+  }
   try {
     const res = await fetch('/.netlify/functions/submit-enrollment-request', {
       method: 'POST',
@@ -6652,11 +6663,23 @@ window.submitEnrollmentRequest = async function(periodId, studentId) {
         container.style.display = 'block';
       });
     } else {
-      if (btn) btn.disabled = false;
+      if (btn) {
+        btn.disabled = false;
+        btn.textContent = 'Enroll Now';
+        btn.style.background = '#16a050';
+        btn.style.opacity = '1';
+        btn.style.cursor = 'pointer';
+      }
       console.warn('Enrollment submission failed:', data);
     }
   } catch(e) {
-    if (btn) btn.disabled = false;
+    if (btn) {
+      btn.disabled = false;
+      btn.textContent = 'Enroll Now';
+      btn.style.background = '#16a050';
+      btn.style.opacity = '1';
+      btn.style.cursor = 'pointer';
+    }
     console.warn('Enrollment submission error:', e.message);
   }
 };
