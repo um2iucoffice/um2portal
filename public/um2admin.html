@@ -9263,7 +9263,7 @@ async function loadEnrollRequests() {
   try {
     const { data: requests, error } = await db
       .from('enrollment_requests')
-      .select('*, student:student_id(id, name, current_year_id, gpa), eligibility_snapshot')
+      .select('*, student:student_id(id, name_en, name_my, year, gpa), eligibility_snapshot')
       .eq('period_id', periodId)
       .order('created_at', { ascending: true });
     if (error) throw error;
@@ -9312,10 +9312,12 @@ async function loadEnrollRequests() {
       const canReject  = r.status !== 'rejected'  && r.status !== 'promoted';
       const isInelig   = !snap.eligible;
 
+      const displayName = s.name_en || '—';
+      const displayYear = yearMap[s.year] || s.year || '—';
       return `<tr>
-        <td style="font-weight:600">${s.name || '—'}</td>
+        <td style="font-weight:600">${displayName}${s.name_my ? `<br><span style="font-size:11px;color:var(--ink3)">${s.name_my}</span>` : ''}</td>
         <td style="font-family:monospace;font-size:12px">${s.id || r.student_id}</td>
-        <td>${yearMap[s.current_year_id] || s.current_year_id || '—'}</td>
+        <td>${displayYear}</td>
         <td>${s.gpa != null ? Number(s.gpa).toFixed(2) : '—'}</td>
         <td>${snap.pass_rate != null ? Math.round(snap.pass_rate * 100) + '%' : '—'}</td>
         <td>${snap.core_passed != null ? (snap.core_passed ? '✓' : '✗') : '—'}</td>
@@ -9323,7 +9325,7 @@ async function loadEnrollRequests() {
         <td>${statusBadge}</td>
         <td style="white-space:nowrap">
           ${canApprove && !isInelig ? `<button class="btn btn-outline btn-sm" style="margin-right:4px" onclick="actionEnrollRequest('${r.id}','approved')">Approve</button>` : ''}
-          ${canApprove && isInelig  ? `<button class="btn btn-outline btn-sm" style="margin-right:4px;border-color:var(--gold);color:var(--gold)" onclick="openOverrideModal('${r.id}','${(s.name||'').replace(/'/g,"\\'")}')">Override</button>` : ''}
+          ${canApprove && isInelig  ? `<button class="btn btn-outline btn-sm" style="margin-right:4px;border-color:var(--gold);color:var(--gold)" onclick="openOverrideModal('${r.id}','${displayName.replace(/'/g,"\\'")}')" >Override</button>` : ''}
           ${canReject  ? `<button class="btn btn-outline btn-sm" style="border-color:var(--crimson);color:var(--crimson)" onclick="actionEnrollRequest('${r.id}','rejected')">Reject</button>` : ''}
         </td>
       </tr>`;
