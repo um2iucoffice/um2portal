@@ -558,6 +558,77 @@ body.theme-light .chr-badge.news        { background: var(--chr-news-light); }
 body.theme-light .chr-badge.event       { background: var(--chr-event-light); }
 body.theme-light .chr-badge.announcement{ background: var(--chr-notice-light); }
 
+/* ── DARK MODE: Chronicles cards ── */
+/* Glass card bg/border in dark mode */
+:root {
+  --glass-card-bg: rgba(255,255,255,0.04);
+  --glass-card-border: rgba(255,255,255,0.08);
+}
+
+/* Featured card */
+.chr-featured { background: rgba(255,255,255,0.04); border-color: rgba(255,255,255,0.08); }
+.chr-featured-title { color: rgba(255,255,255,0.88); }
+.chr-featured-excerpt { color: rgba(255,255,255,0.5); }
+.chr-featured-author { color: rgba(255,255,255,0.35); }
+.chr-featured-footer { border-top-color: rgba(255,255,255,0.07); }
+
+/* Grid card */
+.chr-card { background: rgba(255,255,255,0.04); border-color: rgba(255,255,255,0.08); }
+.chr-card-title { color: rgba(255,255,255,0.82); }
+.chr-card-author { color: rgba(255,255,255,0.35); }
+
+/* Event card */
+.chr-event-card { background: rgba(255,255,255,0.04); border-color: rgba(255,255,255,0.08); }
+.chr-event-title { color: rgba(255,255,255,0.82); }
+.chr-event-meta { color: rgba(255,255,255,0.38); }
+
+/* Home strip card */
+.chr-home-card { background: rgba(255,255,255,0.04); border-color: rgba(255,255,255,0.08); }
+.chr-home-card-title { color: rgba(255,255,255,0.82); }
+.chr-home-card-author { color: rgba(255,255,255,0.35); }
+
+/* Group labels */
+.chr-group-label { color: rgba(255,255,255,0.3); border-bottom-color: rgba(255,255,255,0.07); }
+
+/* Badges in dark mode */
+.chr-badge.news         { background: rgba(139,26,46,0.25);  color: #f87171; border-color: rgba(139,26,46,0.3); }
+.chr-badge.event        { background: rgba(91,33,182,0.2);   color: #c4b5fd; border-color: rgba(91,33,182,0.3); }
+.chr-badge.announcement { background: rgba(123,45,139,0.2);  color: #d8b4fe; border-color: rgba(123,45,139,0.3); }
+.chr-badge.notice       { background: rgba(29,53,87,0.25);   color: #93c5fd; border-color: rgba(29,53,87,0.35); }
+.chr-badge.newsitem     { background: rgba(45,106,79,0.2);   color: #6ee7b7; border-color: rgba(45,106,79,0.3); }
+
+/* Submit wrap */
+.chr-submit-wrap { background: rgba(255,255,255,0.03); border-color: rgba(255,255,255,0.07); }
+.chr-submit-title { color: rgba(255,255,255,0.88); }
+.chr-submit-sub { color: rgba(255,255,255,0.35); }
+.chr-submit-header { border-bottom-color: rgba(255,255,255,0.07); }
+
+/* Light mode overrides to restore correct colors */
+body.theme-light .chr-featured { background: rgba(255,255,255,0.95); border-color: var(--line); }
+body.theme-light .chr-featured-title { color: var(--ink); }
+body.theme-light .chr-featured-excerpt { color: var(--ink2); }
+body.theme-light .chr-featured-author { color: var(--ink3); }
+body.theme-light .chr-featured-footer { border-top-color: var(--line); }
+body.theme-light .chr-card { background: rgba(255,255,255,0.95); border-color: var(--line); }
+body.theme-light .chr-card-title { color: var(--ink); }
+body.theme-light .chr-card-author { color: var(--ink3); }
+body.theme-light .chr-event-card { background: var(--white); border-color: var(--line); }
+body.theme-light .chr-event-title { color: var(--ink); }
+body.theme-light .chr-event-meta { color: var(--ink3); }
+body.theme-light .chr-home-card { background: var(--white); border-color: var(--line); }
+body.theme-light .chr-home-card-title { color: var(--ink); }
+body.theme-light .chr-home-card-author { color: var(--ink3); }
+body.theme-light .chr-group-label { color: var(--ink3); border-bottom-color: var(--line); }
+body.theme-light .chr-badge.news         { background: var(--chr-news-light);   color: var(--chr-news);   border-color: rgba(139,26,46,0.18); }
+body.theme-light .chr-badge.event        { background: var(--chr-event-light);  color: var(--chr-event);  border-color: rgba(29,53,87,0.18); }
+body.theme-light .chr-badge.announcement { background: var(--chr-notice-light); color: var(--chr-notice); border-color: rgba(123,45,139,0.18); }
+body.theme-light .chr-badge.notice       { background: var(--chr-event-light);  color: var(--chr-event);  border-color: rgba(29,53,87,0.18); }
+body.theme-light .chr-badge.newsitem     { background: var(--chr-news-light);   color: var(--chr-news);   border-color: rgba(139,26,46,0.18); }
+body.theme-light .chr-submit-wrap { background: var(--white); border-color: var(--line); }
+body.theme-light .chr-submit-title { color: var(--ink); }
+body.theme-light .chr-submit-sub { color: var(--ink3); }
+body.theme-light .chr-submit-header { border-bottom-color: var(--line); }
+
 /* Event card special style */
 .chr-event-card {
   background: var(--glass-card-bg);
@@ -662,7 +733,6 @@ body.theme-light .chr-badge.announcement{ background: var(--chr-notice-light); }
   border-radius: 9px;
   background: linear-gradient(135deg, var(--chr-spring), var(--chr-spring-mid));
   display: flex; align-items: center; justify-content: center;
-  font-size: 16px;
   box-shadow: 0 2px 8px rgba(45,106,79,0.3);
   flex-shrink: 0;
 }
@@ -5340,7 +5410,9 @@ body.theme-light .comms-ch-btn-gp { color: inherit; }
       </div>
       <div class="chr-submit-wrap" id="submitPostWrap">
         <div class="chr-submit-header">
-          <div class="chr-submit-icon">✍️</div>
+          <div class="chr-submit-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.92)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+          </div>
           <div>
             <div class="chr-submit-title">Share with Our Chronicles</div>
             <div class="chr-submit-sub">Your post will appear once approved by the admin.</div>
@@ -5348,9 +5420,11 @@ body.theme-light .comms-ch-btn-gp { color: inherit; }
         </div>
         <div class="chr-submit-body">
           <div class="chr-type-tabs">
-            <button class="chr-type-tab active" id="postTypeNews"         onclick="setPostType('news')"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2z"/><line x1="8" y1="10" x2="16" y2="10"/><line x1="8" y1="14" x2="13" y2="14"/></svg> News</button>
-            <button class="chr-type-tab"        id="postTypeAnnouncement" onclick="setPostType('announcement')"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 17H2a3 3 0 0 0 3-3V9a7 7 0 0 1 14 0v5a3 3 0 0 0 3 3z"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg> Notice</button>
+            <button class="chr-type-tab active" id="postTypeNews"         onclick="setPostType('news')"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2z"/><line x1="8" y1="10" x2="16" y2="10"/><line x1="8" y1="14" x2="13" y2="14"/></svg> Article</button>
+            <button class="chr-type-tab"        id="postTypeAnnouncement" onclick="setPostType('announcement')"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 17H2a3 3 0 0 0 3-3V9a7 7 0 0 1 14 0v5a3 3 0 0 0 3 3z"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg> Announcement</button>
+            <button class="chr-type-tab"        id="postTypeNotice"       onclick="setPostType('notice')"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg> Notice</button>
             <button class="chr-type-tab"        id="postTypeEvent"        onclick="setPostType('event')"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg> Event</button>
+            <button class="chr-type-tab"        id="postTypeNewsitem"     onclick="setPostType('newsitem')"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="12" y2="17"/></svg> News</button>
           </div>
           <input id="postTitle" type="text" placeholder="Title of your story…" class="chr-input">
           <input id="postAuthorName" type="text" placeholder="Your name (optional)" class="chr-input">
@@ -8713,10 +8787,9 @@ function renderNews(announcements) {
   function openNewsDetail(a) {
     var badgeTxt = a.type === 'announcement' ? 'Notice' : a.type === 'event' ? 'Event' : 'News';
     var dateStr  = a.type === 'event' && a.event_date ? escHtml(a.event_date) : escHtml((a.published_at || '').slice(0,10));
-    var postedBy = a.author_type === 'student' ? ' · Posted by student' : '';
     var meta     = a.type === 'event'
       ? dateStr + (a.event_time ? ' · ' + escHtml(a.event_time) : '') + (a.event_location ? ' · ' + escHtml(a.event_location) : '')
-      : dateStr + postedBy;
+      : dateStr;
     var typeBadgeColor = a.type === 'event'
       ? 'background:#EDE9FE;color:#5B21B6;border:1px solid #C4B5FD'
       : a.type === 'announcement'
@@ -8739,7 +8812,7 @@ function renderNews(announcements) {
       + '.art-meta{font-size:13px;color:rgba(255,255,255,0.35);margin-bottom:36px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}'
       + '.art-divider{width:48px;height:3px;background:linear-gradient(90deg,#2D6A4F,#52B788);border-radius:2px;margin-bottom:36px}'
       + '.art-img{width:100%;max-height:440px;object-fit:cover;border-radius:14px;margin-bottom:36px;border:1px solid rgba(255,255,255,0.06);box-shadow:0 8px 32px rgba(0,0,0,0.4)}'
-      + '.art-body{font-size:16px;line-height:1.85;color:rgba(255,255,255,0.72);white-space:pre-wrap}'
+      + '.art-body{font-size:16px;line-height:1.85;color:rgba(255,255,255,0.72);text-align:justify;text-align-last:left;hyphens:auto;word-break:break-word}'
       + '.art-footer{margin-top:56px;padding-top:20px;border-top:1px solid rgba(255,255,255,0.06);font-size:12px;color:rgba(255,255,255,0.2);text-align:center}'
       + '</style></head><body>'
       + '<div class="art-header">'
@@ -8752,7 +8825,7 @@ function renderNews(announcements) {
       + '  <div class="art-meta">' + meta + (a.author_name ? '<span>·</span><span>By ' + escHtml(a.author_name) + '</span>' : '') + '</div>'
       + '  <div class="art-divider"></div>'
       + (a.image_url ? '  <img class="art-img" src="' + escHtml(a.image_url) + '" alt="" draggable="false" oncontextmenu="return false" style="pointer-events:none;user-select:none;-webkit-user-select:none">' : '')
-      + '  <div class="art-body">' + escHtml(a.body || '') + '</div>'
+      + '  <div class="art-body">' + escHtml(a.body || '').replace(/\n/g, '<br>') + '</div>'
       + '  <div class="art-footer">Our Chronicles at Spring · UM2IUC · IRIS</div>'
       + '</div></body></html>';
     var w = window.open('', '_blank', 'width=820,height=720');
@@ -8959,7 +9032,7 @@ var _postType = 'news'; // default post type
 
 window.setPostType = function(type) {
   _postType = type;
-  ['news','announcement','event'].forEach(function(t) {
+  ['news','announcement','notice','event','newsitem'].forEach(function(t) {
     var btn = document.getElementById('postType' + t.charAt(0).toUpperCase() + t.slice(1));
     if (btn) btn.classList.toggle('active', t === type);
   });
