@@ -13,12 +13,12 @@ exports.handler = async (event) => {
 
   if (!eligibility.eligible && !eligibility.already_requested) {
     return { statusCode: 200, headers,
-             body: JSON.stringify({ success: false, 
+             body: JSON.stringify({ success: false,
                                     message: 'Not eligible',
                                     reasons: eligibility.reasons }) };
   }
 
-  // Get period for from_year/to_year
+  // Get period for from_year_id/to_year_id
   const periods = await supabase(
     `enrollment_periods?id=eq.${period_id}&limit=1`, {}, true);
   const period = periods[0];
@@ -28,9 +28,10 @@ exports.handler = async (event) => {
     method: 'POST',
     headers: { 'Prefer': 'return=minimal' },
     body: JSON.stringify({
-      student_id, period_id,
-      from_year: period.from_year,
-      to_year:   period.to_year,
+      student_id,
+      period_id,
+      from_year: period.from_year_id,
+      to_year:   period.to_year_id,
       status:    'requested'
     })
   }, true);
