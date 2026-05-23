@@ -5694,6 +5694,7 @@ function normaliseStudent(raw) {
     currentStatus: firstValue(s, ['year', 'currentStatus', 'current_status', 'academic_year']),
     enrollmentStatus: firstValue(s, ['status', 'enrollmentStatus', 'enrollment_status']),
     program:     firstValue(s, ['program', 'Program']),
+    programId:   firstValue(s, ['program_id', 'programId', 'program_uuid']),
     programName: firstValue(s, ['programName', 'program_name', 'program', 'Program']),
     graduationStatus: firstValue(s, ['grad_status', 'graduationStatus', 'graduation_status']),
     graduationId: firstValue(s, ['graduation_id', 'graduationId']),
@@ -5948,6 +5949,7 @@ function populate(s, grades, courses, program_meta, enrollments, academicYears, 
 
   // ── Render grades for the active (first) enrollment ─────────
   renderGrades(grades, s);
+  window._student = s;
   checkEnrollmentEligibility(s);
   // ── Course Session Grid ──────────────────────────────────────
   renderCourseSession(s, grades, academicYears || []);
@@ -6555,18 +6557,22 @@ function getSheetOverallGpa(student) {
 
 // ── Enrollment Eligibility ────────────────────────────────────────────────────
 async function checkEnrollmentEligibility(student) {
-  if (!student.id || !student.program || !student.currentStatus) return;
+  if (!student.id || !student.currentStatus) return;
+  // Use UUID if available, otherwise fall back to program name — server handles both
+  const programRef = student.programId || student.program;
+  if (!programRef) return;
   try {
     const res = await fetch('/.netlify/functions/get-enrollment-periods', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         student_id:   student.id,
-        program_id:   student.program,
+        program_id:   programRef,
         current_year: student.currentStatus
       })
     });
     const data = await res.json();
+    console.log('Enrollment period check:', data);
     if (!data.period) return;
     renderEnrollmentBanner(data.period, data.eligibility, student);
   } catch(e) {
