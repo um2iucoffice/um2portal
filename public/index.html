@@ -3315,28 +3315,7 @@ body.theme-light .comms-ch-btn-gp { color: inherit; }
 <div id="dashboard">
 
   <!-- ── MOBILE BOTTOM TAB BAR ── -->
-  <nav class="mob-tabbar" id="mobTabbar">
-    <button class="mob-tab active" data-section="home" onclick="mobSwitchTab('home',this)">
-      <svg class="mob-tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg>
-      <span class="mob-tab-label">Home</span>
-    </button>
-    <button class="mob-tab" data-section="profile" onclick="mobSwitchTab('profile',this)">
-      <svg class="mob-tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
-      <span class="mob-tab-label">Profile</span>
-    </button>
-    <button class="mob-tab" data-section="grades" onclick="mobSwitchTab('grades',this)">
-      <svg class="mob-tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="12" width="4" height="9" rx="1"/><rect x="10" y="7" width="4" height="14" rx="1"/><rect x="17" y="3" width="4" height="18" rx="1"/></svg>
-      <span class="mob-tab-label">Grades</span>
-    </button>
-    <button class="mob-tab" data-section="docs" onclick="mobSwitchTab('docs',this)">
-      <svg class="mob-tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/></svg>
-      <span class="mob-tab-label">Docs</span>
-    </button>
-    <button class="mob-tab" onclick="toggleMobMore(this)">
-      <svg class="mob-tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="5" cy="12" r="1.5" fill="currentColor"/><circle cx="12" cy="12" r="1.5" fill="currentColor"/><circle cx="19" cy="12" r="1.5" fill="currentColor"/></svg>
-      <span class="mob-tab-label">More</span>
-    </button>
-  </nav>
+
 
   <!-- More menu popup -->
   <div class="mob-more-overlay" id="mobMoreOverlay" onclick="closeMobMore()"></div>
@@ -3368,6 +3347,10 @@ body.theme-light .comms-ch-btn-gp { color: inherit; }
     <button class="mob-more-item" onclick="mobSwitchTab('markbook',null);closeMobMore()">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
       Mark Book
+    </button>
+    <button class="mob-more-item" onclick="mobSwitchTab('news',null);closeMobMore()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2z"/><line x1="8" y1="10" x2="16" y2="10"/><line x1="8" y1="14" x2="13" y2="14"/></svg>
+      News & Events
     </button>
     <button class="mob-more-item" onclick="mobSwitchTab('lecturerooms',null);closeMobMore()">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 10l4.553-2.277A1 1 0 0 1 21 8.618v6.764a1 1 0 0 1-1.447.894L15 14"/><rect x="1" y="6" width="14" height="12" rx="2"/></svg>
@@ -3449,6 +3432,11 @@ body.theme-light .comms-ch-btn-gp { color: inherit; }
         <span class="sbnav-label">Mark Book</span>
       </button>
 
+      <button class="sbnav-item" data-section="news" onclick="switchSection('news',this)" id="navNews">
+        <svg class="sbnav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2z"/><line x1="8" y1="10" x2="16" y2="10"/><line x1="8" y1="14" x2="13" y2="14"/></svg>
+        <span class="sbnav-label">News & Events</span>
+      </button>
+
       <button class="sbnav-item" data-section="docs" onclick="switchSection('docs',this)">
         <svg class="sbnav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
         <span class="sbnav-label">Document Office</span>
@@ -3525,7 +3513,6 @@ body.theme-light .comms-ch-btn-gp { color: inherit; }
 
       <!-- Hero welcome banner -->
       <div class="home-hero">
-        <div class="home-hero-avatar" id="homeAvatar">—</div>
         <div class="home-hero-text">
           <div class="home-hero-greeting">Welcome back</div>
           <div class="home-hero-name" id="welcomeName">—</div>
@@ -3814,7 +3801,6 @@ body.theme-light .comms-ch-btn-gp { color: inherit; }
 
       <!-- Student identity banner -->
       <div class="grades-header-banner" id="gradesHeaderBanner" style="display:none">
-        <div class="grades-hdr-avatar" id="gradesAvatar">—</div>
         <div class="grades-hdr-info">
           <div class="grades-hdr-name" id="gradesStudentName">—</div>
           <div class="grades-hdr-id"><span id="gradesIdLabel">Student ID</span>: <span id="gradesStudentId">—</span> &nbsp;·&nbsp; University of Medicine (2)</div>
@@ -4093,6 +4079,39 @@ body.theme-light .comms-ch-btn-gp { color: inherit; }
       </div>
     </div>
 
+    <!-- NEWS & EVENTS -->
+    <div class="section" id="panel-news">
+      <div class="sec-head">
+        <h2>News &amp; Events</h2>
+        <p>Latest announcements and upcoming events from the university.</p>
+      </div>
+      <div id="newsContent">
+        <div class="g-wrap"><div class="no-g">No announcements yet.</div></div>
+      </div>
+
+      <div class="g-wrap" id="submitPostWrap" style="margin-top:24px">
+        <div class="g-year-head">Share something with your campus</div>
+        <div style="display:flex;flex-direction:column;gap:12px;padding:16px">
+          <div style="display:flex;gap:10px;flex-wrap:wrap">
+            <button class="cs-year-tab active" id="postTypeNews"         onclick="setPostType('news')">News</button>
+            <button class="cs-year-tab"        id="postTypeAnnouncement" onclick="setPostType('announcement')">Announcement</button>
+            <button class="cs-year-tab"        id="postTypeEvent"        onclick="setPostType('event')">Event</button>
+          </div>
+          <input id="postTitle" type="text" placeholder="Title" style="width:100%;padding:10px 12px;border-radius:var(--r);border:1px solid var(--line);background:var(--dash-bg2);color:var(--ink);font-size:14px;box-sizing:border-box">
+          <textarea id="postBody" rows="4" placeholder="Write your post here..." style="width:100%;padding:10px 12px;border-radius:var(--r);border:1px solid var(--line);background:var(--dash-bg2);color:var(--ink);font-size:14px;resize:vertical;box-sizing:border-box"></textarea>
+          <div id="eventFieldsWrap" style="display:none;flex-direction:column;gap:10px">
+            <input id="postEventDate"     type="date" style="padding:10px 12px;border-radius:var(--r);border:1px solid var(--line);background:var(--dash-bg2);color:var(--ink);font-size:14px;width:100%;box-sizing:border-box">
+            <input id="postEventTime"     type="text" placeholder="Time (e.g. 10:00 AM)" style="padding:10px 12px;border-radius:var(--r);border:1px solid var(--line);background:var(--dash-bg2);color:var(--ink);font-size:14px;width:100%;box-sizing:border-box">
+            <input id="postEventLocation" type="text" placeholder="Location" style="padding:10px 12px;border-radius:var(--r);border:1px solid var(--line);background:var(--dash-bg2);color:var(--ink);font-size:14px;width:100%;box-sizing:border-box">
+          </div>
+          <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+            <button class="btn-login" id="submitPostBtn" onclick="submitPost()" style="width:auto;padding:10px 24px;font-size:14px">Submit for review</button>
+            <span id="submitPostMsg" style="font-size:13px;color:var(--ink3)"></span>
+          </div>
+        </div>
+      </div>
+    </div>
+
   </div>
 
     <!-- dashboard footer -->
@@ -4237,6 +4256,7 @@ function handleAuth(r) {
     return;
   }
   try {
+    window._announcements = r.announcements || [];
     populate(r.student, r.grades || [], r.courses || {}, r.program_meta || null, r.enrollments || [], r.academicYears || [], r.markbook || []);
   } catch(e) {
     const errEl = document.getElementById('accessError');
@@ -4396,13 +4416,13 @@ function populate(s, grades, courses, program_meta, enrollments, academicYears, 
   const _homeIdLbl = document.getElementById('homeIdLabel');
   if (_homeIdLbl) _homeIdLbl.textContent = /^graduated$/i.test((s.graduationStatus||'').trim()) ? 'Alumni ID' : 'Student ID';
   const homeAvatar = document.getElementById('homeAvatar');
-  if (homeAvatar) homeAvatar.textContent = init;
+  if (homeAvatar) { /* avatar removed */ }
 
   // Grades banner
   const gradesBanner = document.getElementById('gradesHeaderBanner');
   if (gradesBanner) {
     gradesBanner.style.display = 'flex';
-    document.getElementById('gradesAvatar').textContent  = init;
+    // gradesAvatar removed
     document.getElementById('gradesStudentName').textContent = s.fullName || '—';
     document.getElementById('gradesStudentId').textContent   = s.id || '—';
     // GPA is displayed only from the sheet/data source
@@ -4528,6 +4548,7 @@ function populate(s, grades, courses, program_meta, enrollments, academicYears, 
   window._markbook       = (markbook || []);
   // Store current student for Edit My Info
   window._currentStudent = s;
+  window._currentStudentId = s.id || '';
   // If no enrollments returned from server, synthesise one from students row
   if (!window._enrollments.length) {
     window._enrollments = [{
@@ -4568,6 +4589,7 @@ function populate(s, grades, courses, program_meta, enrollments, academicYears, 
   renderCourseSession(s, grades, academicYears || []);
   // ── Markbook ─────────────────────────────────────────────────
   renderMarkbook(s, markbook || [], grades);
+  renderNews(window._announcements || []);
   if (s.photo) {
     updatePhotoInUI(s.photo);
     const preview = document.getElementById('profilePhotoPreview');
@@ -4689,9 +4711,9 @@ async function removePhoto() {
 
   // Clear home / grades avatars
   const homeAvatar = document.getElementById('homeAvatar');
-  if (homeAvatar) homeAvatar.innerHTML = '';
+  // homeAvatar removed
   const gradesAvatar = document.getElementById('gradesAvatar');
-  if (gradesAvatar) gradesAvatar.innerHTML = '';
+  // gradesAvatar removed
 
   // Update in-memory student data
   if (window._currentStudent) window._currentStudent.photo = null;
@@ -5485,6 +5507,7 @@ const SECTION_TITLES = {
   grades:        'Academic Record',
   coursesession: 'Course Session',
   markbook:      'Mark Book',
+  news:          'News & Events',
   docs:          'Document Office',
   idcard:        'ID Card',
   photo:         'Profile Photo',
@@ -7312,6 +7335,7 @@ function doSignOut() {
 
   window._sessionPassword = saved.password;
   try {
+    window._announcements = saved.announcements || [];
     populate(saved.studentData, saved.grades || [], saved.courses || {}, saved.program_meta || null, saved.enrollments || [], saved.academicYears || [], saved.markbook || []);
   } catch(e) { return; }
 
@@ -7320,6 +7344,103 @@ function doSignOut() {
   dash.style.display = '';
   setTimeout(() => { dash.classList.add('show'); }, 100);
 })();
+
+// ── News & Events ─────────────────────────────────────────────
+function renderNews(announcements) {
+  const container = document.getElementById('newsContent');
+  if (!container) return;
+  const items = (announcements || []);
+  if (!items.length) {
+    container.innerHTML = '<div class="g-wrap"><div class="no-g">No announcements yet.</div></div>';
+    return;
+  }
+  const events = items.filter(a => a.type === 'event');
+  const news   = items.filter(a => a.type !== 'event');
+  let html = '';
+  if (events.length) {
+    html += '<div class="g-wrap"><div class="g-year-head">Upcoming Events</div>';
+    events.forEach(a => {
+      html += '<div class="cs-card pending" style="margin-bottom:10px;padding:16px">' +
+        '<div class="cs-card-body">' +
+        '<div class="cs-card-name">' + escHtml(a.title) + '</div>' +
+        '<div class="cs-card-meta">' +
+          (a.event_date ? escHtml(a.event_date) : '') +
+          (a.event_time ? ' &middot; ' + escHtml(a.event_time) : '') +
+          (a.event_location ? ' &middot; ' + escHtml(a.event_location) : '') +
+        '</div>' +
+        (a.body ? '<div style="font-size:13px;margin-top:8px;color:var(--ink2);line-height:1.5">' + escHtml(a.body) + '</div>' : '') +
+        '</div></div>';
+    });
+    html += '</div>';
+  }
+  if (news.length) {
+    html += '<div class="g-wrap"><div class="g-year-head">News &amp; Announcements</div>';
+    news.forEach(a => {
+      const badgeCls = a.type === 'announcement' ? 'gA' : 'gB';
+      const badgeTxt = a.type === 'announcement' ? 'Notice' : 'News';
+      const postedBy = a.author_type === 'student' ? ' &middot; Posted by student' : '';
+      html += '<div class="cs-card pending" style="margin-bottom:10px;padding:16px">' +
+        '<div class="cs-card-body">' +
+        '<div class="cs-card-name" style="display:flex;align-items:center;gap:8px">' +
+          escHtml(a.title) +
+          '<span class="gbadge ' + badgeCls + '" style="font-size:10px">' + badgeTxt + '</span>' +
+        '</div>' +
+        '<div class="cs-card-meta">' + escHtml((a.published_at || '').slice(0,10)) + postedBy + '</div>' +
+        (a.body ? '<div style="font-size:13px;margin-top:8px;color:var(--ink2);line-height:1.5">' + escHtml(a.body) + '</div>' : '') +
+        '</div></div>';
+    });
+    html += '</div>';
+  }
+  container.innerHTML = html;
+}
+
+let _postType = 'news';
+window.setPostType = function(type) {
+  _postType = type;
+  ['news','announcement','event'].forEach(function(t) {
+    var btn = document.getElementById('postType' + t.charAt(0).toUpperCase() + t.slice(1));
+    if (btn) btn.classList.toggle('active', t === type);
+  });
+  var ef = document.getElementById('eventFieldsWrap');
+  if (ef) ef.style.display = type === 'event' ? 'flex' : 'none';
+};
+
+window.submitPost = async function() {
+  var title = (document.getElementById('postTitle').value || '').trim();
+  var body  = (document.getElementById('postBody').value  || '').trim();
+  var msg   = document.getElementById('submitPostMsg');
+  var btn   = document.getElementById('submitPostBtn');
+  if (!title || !body) { msg.textContent = 'Please fill in a title and body.'; return; }
+  btn.disabled = true;
+  msg.textContent = 'Submitting...';
+  var payload = {
+    student_id:     window._currentStudentId || '',
+    title: title, body: body, type: _postType,
+    event_date:     (document.getElementById('postEventDate') || {}).value     || null,
+    event_time:     (document.getElementById('postEventTime') || {}).value     || null,
+    event_location: (document.getElementById('postEventLocation') || {}).value || null,
+  };
+  try {
+    var res  = await fetch('/.netlify/functions/submit-post', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    var data = await res.json();
+    if (data.success) {
+      msg.textContent = 'Submitted! Your post will appear once approved by admin.';
+      msg.style.color = 'var(--green)';
+      document.getElementById('postTitle').value = '';
+      document.getElementById('postBody').value  = '';
+    } else {
+      msg.textContent = data.error || 'Something went wrong.';
+      msg.style.color = 'var(--crimson)';
+    }
+  } catch(e) {
+    msg.textContent = 'Connection error. Please try again.';
+    msg.style.color = 'var(--crimson)';
+  }
+  btn.disabled = false;
+};
 </script>
 </body>
 </html>
