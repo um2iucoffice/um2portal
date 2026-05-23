@@ -88,7 +88,21 @@ exports.handler = async (event) => {
       };
     }
 
-    // 4. Insert the enrollment request
+    // 4. Run eligibility check to save as snapshot
+    let eligibility_snapshot = null;
+    try {
+      eligibility_snapshot = await supabase(
+        `rpc/check_enrollment_eligibility`, {
+          method: 'POST',
+          body: JSON.stringify({ p_student_id: student_id, p_period_id: period_id })
+        }
+      );
+    } catch (eligErr) {
+      // Non-fatal — continue without snapshot
+      console.warn('Eligibility snapshot failed:', eligErr.message);
+    }
+
+    // 5. Insert the enrollment request with eligibility snapshot
     const result = await supabase(
       `enrollment_requests`, {
         method: 'POST',
@@ -98,8 +112,9 @@ exports.handler = async (event) => {
           period_id,
           from_year,
           to_year,
-          status:       'requested',
-          requested_at: new Date().toISOString()
+          status:               'requested',
+          requested_at:         new Date().toISOString(),
+          eligibility_snapshot: eligibility_snapshot || null
         })
       }
     );
