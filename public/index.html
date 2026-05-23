@@ -483,9 +483,8 @@ table.gt th:nth-child(3),
 table.gt th:nth-child(4),
 table.gt th:nth-child(5),
 table.gt th:nth-child(6),
-table.gt th:nth-child(7),
-table.gt th:nth-child(8) { text-align: center; }
-table.gt th:nth-child(9) { text-align: left; }
+table.gt th:nth-child(7) { text-align: center; }
+table.gt th:nth-child(8) { text-align: left; }
 table.gt td {
   padding: 10px 14px;
   border-bottom: 1px solid var(--line);
@@ -496,11 +495,10 @@ table.gt td:nth-child(3),
 table.gt td:nth-child(4),
 table.gt td:nth-child(5),
 table.gt td:nth-child(6),
-table.gt td:nth-child(7),
-table.gt td:nth-child(8) { text-align: center; }
+table.gt td:nth-child(7) { text-align: center; }
 /* Grade column — force all badges into one locked column width */
-table.gt th:nth-child(8),
-table.gt td:nth-child(8) {
+table.gt th:nth-child(7),
+table.gt td:nth-child(7) {
   text-align: center;
   width: 66px;
   min-width: 66px;
@@ -508,7 +506,7 @@ table.gt td:nth-child(8) {
   padding-left: 4px;
   padding-right: 4px;
 }
-table.gt td:nth-child(9) { font-size: 11px; color: var(--ink3); font-style: italic; }
+table.gt td:nth-child(8) { font-size: 11px; color: var(--ink3); font-style: italic; }
 table.gt tr:last-child td { border-bottom: none; }
 table.gt tbody tr { transition: background .1s; }
 table.gt tbody tr:hover { background: #F8F9FC; }
@@ -579,14 +577,24 @@ table.gt tbody tr:hover { background: #F8F9FC; }
   padding: 0;
   margin-bottom: 20px;
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   box-shadow: var(--shadow-sm);
   overflow: hidden;
 }
-.ts-item { display: flex; flex-direction: row; align-items: center; justify-content: space-between; padding: 14px 22px; border-bottom: 1px solid var(--line); gap: 12px; }
-.ts-item:last-child { border-bottom: none; }
-.ts-lbl { font-size: 11px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; color: var(--ink3); }
-.ts-val { font-family: 'Libre Baskerville', serif; font-size: 20px; font-weight: 700; color: var(--ink); line-height: 1.1; text-align: right; }
+.ts-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 16px 22px;
+  flex: 1;
+  border-right: 1px solid var(--line);
+  text-align: center;
+  gap: 4px;
+}
+.ts-item:last-child { border-right: none; }
+.ts-lbl { font-size: 10px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; color: var(--ink3); }
+.ts-val { font-family: 'Libre Baskerville', serif; font-size: 22px; font-weight: 700; color: var(--ink); line-height: 1.1; }
 .ts-val.accent { color: var(--crimson); }
 .ts-divider { display: none; }
 
@@ -1798,96 +1806,55 @@ canvas.photo-canvas, #idcardPhoto canvas, #homeAvatar canvas, #gradesAvatar canv
   /* ── Login ── */
   .login-left { display: none; }
 
-  /* Full-screen dark gradient background matching desktop left panel */
   #loginScreen {
     background:
       radial-gradient(ellipse at 20% 15%, rgba(139,26,46,0.45) 0%, transparent 55%),
       radial-gradient(ellipse at 85% 80%, rgba(154,123,47,0.18) 0%, transparent 50%),
       var(--ink);
   }
-
-  /* SVG medical pattern overlay on the screen itself */
   #loginScreen::before {
     content: '';
-    position: absolute;
-    inset: 0;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='900' height='900' viewBox='0 0 900 900'%3E%3Cg stroke='%23ffffff' stroke-width='1' fill='none' opacity='0.035'%3E%3Ccircle cx='80' cy='80' r='18'/%3E%3Ccircle cx='80' cy='80' r='10'/%3E%3Cpath d='M80 62 Q80 30 110 30 Q140 30 140 60 L140 110 Q140 150 110 165 Q80 180 70 210'/%3E%3Cpolyline points='200,120 230,120 245,90 255,150 270,80 285,160 300,120 340,120'/%3E%3Crect x='438' y='310' width='8' height='40' rx='2'/%3E%3Crect x='422' y='326' width='40' height='8' rx='2'/%3E%3Ccircle cx='820' cy='700' r='40'/%3E%3Ccircle cx='820' cy='700' r='28'/%3E%3Ccircle cx='820' cy='700' r='14'/%3E%3Ccircle cx='820' cy='700' r='4'/%3E%3C/g%3E%3C/svg%3E");
-    background-repeat: repeat;
-    background-size: 600px 600px;
-    pointer-events: none;
-    z-index: 0;
+    position: absolute; inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='900' height='900' viewBox='0 0 900 900'%3E%3Cg stroke='%23ffffff' stroke-width='1' fill='none' opacity='0.035'%3E%3Ccircle cx='80' cy='80' r='18'/%3E%3Cpolyline points='200,120 230,120 245,90 255,150 270,80 285,160 300,120 340,120'/%3E%3Crect x='438' y='310' width='8' height='40' rx='2'/%3E%3Crect x='422' y='326' width='40' height='8' rx='2'/%3E%3Ccircle cx='820' cy='700' r='40'/%3E%3C/g%3E%3C/svg%3E");
+    background-repeat: repeat; background-size: 600px 600px;
+    pointer-events: none; z-index: 0;
   }
-
   .login-right {
-    padding: 0;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    background: none;
-    position: relative;
-    z-index: 1;
+    padding: 0; min-height: 100vh;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    background: none; position: relative; z-index: 1;
   }
-
-  /* Mobile branded header strip (replaces hidden .login-left) */
   .login-right::before {
-    content: '';
-    position: fixed;
-    top: 0; left: 0; right: 0;
-    height: 4px;
-    background: linear-gradient(90deg, var(--crimson), rgba(154,123,47,0.8));
-    z-index: 10;
+    content: ''; position: fixed; top: 0; left: 0; right: 0; height: 4px;
+    background: linear-gradient(90deg, var(--crimson), rgba(154,123,47,0.8)); z-index: 10;
   }
-
-  /* Branding block above the form card */
   .login-mobile-brand {
-    display: flex !important;
-    flex-direction: column;
-    align-items: center;
-    gap: 6px;
-    margin-bottom: 28px;
-    position: relative;
-    z-index: 2;
+    display: flex !important; flex-direction: column; align-items: center;
+    gap: 6px; margin-bottom: 28px; position: relative; z-index: 2;
   }
   .login-mobile-brand .mob-brand-abbr {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 13px;
-    letter-spacing: 4px;
-    color: rgba(255,255,255,0.38);
-    text-transform: uppercase;
+    font-family: 'Bebas Neue', sans-serif; font-size: 13px; letter-spacing: 4px;
+    color: rgba(255,255,255,0.38); text-transform: uppercase;
   }
   .login-mobile-brand .mob-brand-title {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 28px;
-    color: rgba(255,255,255,0.92);
-    letter-spacing: 0.5px;
-    line-height: 1;
+    font-family: 'Bebas Neue', sans-serif; font-size: 28px;
+    color: rgba(255,255,255,0.92); letter-spacing: 0.5px; line-height: 1;
   }
-
   .login-form-wrap {
-    width: calc(100% - 40px);
-    max-width: 400px;
-    border-radius: 18px;
-    padding: 36px 28px 32px;
-    min-height: unset;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
+    width: calc(100% - 40px); max-width: 400px;
+    border-radius: 18px; padding: 36px 28px 32px;
+    min-height: unset; display: flex; flex-direction: column; justify-content: center;
     background: rgba(255,255,255,0.93);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
+    backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
     border: 1px solid rgba(255,255,255,0.95);
     box-shadow: 0 24px 60px rgba(0,0,0,0.35), 0 2px 8px rgba(0,0,0,0.15);
-    position: relative;
-    z-index: 2;
-    margin-bottom: 24px;
+    position: relative; z-index: 2; margin-bottom: 24px;
   }
   body.theme-light #loginScreen {
     background:
       radial-gradient(ellipse at 20% 15%, rgba(139,26,46,0.25) 0%, transparent 55%),
-      radial-gradient(ellipse at 85% 80%, rgba(154,123,47,0.1) 0%, transparent 50%),
-      #1a2540;
+      radial-gradient(ellipse at 85% 80%, rgba(154,123,47,0.1) 0%, transparent 50%), #1a2540;
   }
   body.theme-light .login-form-wrap {
     background: rgba(255,255,255,0.97);
@@ -1898,54 +1865,51 @@ canvas.photo-canvas, #idcardPhoto canvas, #homeAvatar canvas, #gradesAvatar canv
   .btn-login { padding: 14px; font-size: 15px; border-radius: 10px; }
 
   /* ── Main layout: no left margin, full width ── */
-  .dash-main { margin-left: 0 !important; }
+  .dash-main {
+    margin-left: 0 !important;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
 
   /* ── MOBILE TOP BAR ── */
   .dash-topbar {
-    height: 56px;
-    padding: 0 16px;
+    height: 56px; padding: 0 16px;
     display: flex; align-items: center; gap: 10px;
     position: sticky; top: 0; z-index: 50;
   }
-  /* Brand logo/name on left */
   .dash-topbar::before { display: none; }
   .dash-topbar-logo {
-    display: block !important;
-    height: 28px;
-    width: auto;
-    object-fit: contain;
-    margin-right: auto;
-    opacity: 0.9;
-    flex-shrink: 0;
+    display: block !important; height: 28px; width: auto;
+    object-fit: contain; margin-right: auto; opacity: 0.9; flex-shrink: 0;
   }
   body.theme-light .dash-topbar-logo { filter: none; }
   .dash-topbar-title { display: none; }
   .dash-topbar-id {
-    font-size: 11px; padding: 4px 10px;
-    max-width: 110px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-    border-radius: 6px;
+    font-size: 11px; padding: 4px 10px; max-width: 110px;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap; border-radius: 6px;
   }
   .theme-toggle-btn { width: 36px; height: 36px; flex-shrink: 0; }
 
   /* ── MOBILE BOTTOM TAB BAR ── */
-  .mob-tabbar {
-    display: flex !important;
-  }
+  .mob-tabbar { display: flex !important; }
 
-  /* ── Content area: padding for top + bottom bars ── */
+  /* ── Content area ── */
   .dash-content {
-    padding: 16px 14px 90px;
+    padding: 16px 14px 110px;
     overflow-x: hidden;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
   }
 
-  /* ── HOME: Hero banner ── */
+  /* ── SECTION HEADINGS ── */
+  .sec-head { margin-bottom: 16px; }
+  .sec-head h2 { font-size: 19px; }
+  .sec-head p { font-size: 12px; line-height: 1.5; }
+
+  /* ── HOME: Hero banner — compact horizontal ── */
   .home-hero {
-    flex-direction: row;
-    gap: 14px;
-    padding: 18px 16px;
-    border-radius: 14px;
-    margin-bottom: 20px;
-    align-items: center;
+    flex-direction: row; gap: 14px;
+    padding: 18px 16px; border-radius: 14px; margin-bottom: 18px; align-items: center;
   }
   .home-hero-avatar { width: 52px; height: 52px; font-size: 20px; border-radius: 10px; flex-shrink: 0; }
   .home-hero-text { flex: 1; text-align: left; }
@@ -1954,56 +1918,43 @@ canvas.photo-canvas, #idcardPhoto canvas, #homeAvatar canvas, #gradesAvatar canv
   .home-hero-sub { font-size: 11px; }
   .home-hero-badge { display: none; }
 
-  /* ── HOME: MUNI-style icon grid ── */
-  .home-section-label { font-size: 11px; margin-bottom: 12px; }
+  /* ── HOME: Quick-access icon grid (3 cols) ── */
+  .home-section-label { font-size: 11px; margin-bottom: 10px; }
   .qlinks {
     display: grid !important;
     grid-template-columns: repeat(3, 1fr) !important;
-    gap: 8px !important;
-    margin-bottom: 24px;
+    gap: 8px !important; margin-bottom: 20px;
   }
   .ql {
     background: rgba(255,255,255,0.05) !important;
     border: 1px solid rgba(255,255,255,0.09) !important;
-    border-radius: 14px !important;
-    padding: 16px 8px 12px !important;
+    border-radius: 14px !important; padding: 14px 6px 12px !important;
     min-height: auto !important;
-    display: flex !important;
-    flex-direction: column !important;
-    align-items: center !important;
-    justify-content: flex-start !important;
-    text-align: center !important;
-    gap: 0 !important;
-    transform: none !important;
+    display: flex !important; flex-direction: column !important;
+    align-items: center !important; justify-content: flex-start !important;
+    text-align: center !important; gap: 0 !important;
+    transform: none !important; transition: background .15s !important;
   }
+  .ql:active { background: rgba(139,26,46,0.18) !important; }
   .ql:hover { transform: none !important; }
   .ql::after { display: none !important; }
   .ql-icon {
-    width: 52px; height: 52px;
-    border-radius: 50% !important;
+    width: 48px; height: 48px; border-radius: 50% !important;
     background: rgba(139,26,46,0.22) !important;
     border: 1.5px solid rgba(139,26,46,0.3);
     display: flex; align-items: center; justify-content: center;
-    margin: 0 auto 8px !important;
-    flex-shrink: 0;
+    margin: 0 auto 7px !important; flex-shrink: 0;
   }
-  .ql-icon svg { width: 22px; height: 22px; }
-  .ql-t { font-size: 11px !important; font-weight: 600; line-height: 1.3; color: rgba(255,255,255,0.82) !important; }
-  .ql-s { display: none !important; }
-  .ql-arrow { display: none !important; }
-
-  body.theme-light .ql {
-    background: var(--white) !important;
-    border-color: var(--line) !important;
-  }
-  body.theme-light .ql-icon {
-    background: var(--crimson-light) !important;
-    border-color: rgba(139,26,46,0.15) !important;
-  }
+  .ql-icon svg { width: 20px; height: 20px; }
+  .ql-t { font-size: 10.5px !important; font-weight: 600; line-height: 1.25; color: rgba(255,255,255,0.82) !important; }
+  .ql-s, .ql-arrow { display: none !important; }
+  body.theme-light .ql { background: var(--white) !important; border-color: var(--line) !important; }
+  body.theme-light .ql:active { background: var(--crimson-light) !important; }
+  body.theme-light .ql-icon { background: var(--crimson-light) !important; border-color: rgba(139,26,46,0.15) !important; }
   body.theme-light .ql-t { color: var(--ink) !important; }
 
   /* ── Journey card ── */
-  .journey-card { border-radius: 12px; }
+  .journey-card { border-radius: 12px; margin-bottom: 16px; }
   .degree-row { padding: 12px 14px; gap: 10px; }
   .degree-row-name { font-size: 12px; }
   .degree-row-meta { font-size: 10px; }
@@ -2012,71 +1963,93 @@ canvas.photo-canvas, #idcardPhoto canvas, #homeAvatar canvas, #gradesAvatar canv
 
   /* ── PROFILE section ── */
   .banner {
-    flex-direction: column; gap: 14px;
-    align-items: flex-start;
-    padding: 16px 16px;
-    border-radius: 12px;
-    margin-bottom: 14px;
+    flex-direction: column; gap: 12px; align-items: flex-start;
+    padding: 16px; border-radius: 12px; margin-bottom: 14px;
   }
-  .b-name h1 { font-size: 18px; }
+  .b-name h1 { font-size: 17px; }
   .b-name .mm { font-size: 12px; margin-bottom: 8px; }
-
-  .icard { border-radius: 12px; margin-bottom: 14px; }
-  .icard-head { padding: 10px 14px; font-size: 9px; }
+  .icard { border-radius: 12px; margin-bottom: 14px; overflow: hidden; }
+  .icard-head { padding: 10px 14px; font-size: 9px; letter-spacing: 1.4px; }
+  /* Single-column info grid */
   .igrid { grid-template-columns: 1fr; }
-  .icell { padding: 12px 14px; border-right: none !important; }
+  .icell { padding: 11px 14px; border-right: none !important; }
   .icell:nth-last-child(-n+2) { border-bottom: 1px solid rgba(255,255,255,0.05) !important; }
   body.theme-light .icell:nth-last-child(-n+2) { border-bottom: 1px solid var(--line) !important; }
   .icell:last-child { border-bottom: none !important; }
-  .ic-lbl { font-size: 9px; }
+  .ic-lbl { font-size: 9px; margin-bottom: 2px; }
   .ic-val { font-size: 13px; }
 
-  /* ── GRADES section ── */
-  .grades-header-banner { flex-direction: column; gap: 10px; padding: 14px; border-radius: 12px; }
+  /* ── GRADES / Academic Record ── */
+  .grades-header-banner { flex-direction: column; gap: 10px; padding: 14px; border-radius: 12px; margin-bottom: 14px; }
   .grades-hdr-gpa { text-align: left; }
   .grades-hdr-gpa-val { font-size: 28px; }
-  .transcript-summary { padding: 0; border-radius: 12px; }
-  .ts-item { padding: 12px 16px; }
-  .ts-val { font-size: 18px; }
+  /* Transcript summary: stack vertically on mobile */
+  .transcript-summary { flex-direction: column; border-radius: 12px; margin-bottom: 14px; }
+  .ts-item { flex-direction: row; justify-content: space-between; align-items: center; padding: 11px 14px; border-right: none; border-bottom: 1px solid var(--line); text-align: left; }
+  .ts-item:last-child { border-bottom: none; }
+  .ts-val { font-size: 17px; }
   .ts-lbl { font-size: 10px; }
-  .degree-tabs { padding: 0 4px; }
+  /* Degree tabs */
+  .degree-tabs { padding: 0 2px; }
   .degree-tab { padding: 10px 12px; font-size: 12px; }
-  .g-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; border-radius: 12px; }
-  table.gt { min-width: 520px; }
-  table.gt th, table.gt td { padding: 8px 10px; }
-  .sec-head { margin-bottom: 16px; }
-  .sec-head h2 { font-size: 18px; }
-  .sec-head p { font-size: 12px; }
+  /* Grade table: horizontal scroll wrapper */
+  .g-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; border-radius: 12px; margin-bottom: 14px; }
+  table.gt { min-width: 500px; font-size: 11.5px; }
+  table.gt th { padding: 7px 8px; font-size: 9px; }
+  table.gt td { padding: 8px 8px; }
+
+  /* ── Course Session ── */
+  .cs-wrap { padding: 0; }
+  .cs-header { padding: 12px 14px; background: rgba(255,255,255,0.03); border-radius: 10px; margin-bottom: 10px; }
+  body.theme-light .cs-header { background: var(--surface); }
+  .cs-year-tabs { gap: 6px; margin-bottom: 12px; flex-wrap: wrap; }
+  .cs-year-tab { padding: 7px 14px; font-size: 12px; min-height: 36px; }
+  /* List cards: larger tap targets */
+  .cs-card { padding: 12px 14px 12px 14px; border-radius: 10px; min-height: 52px; }
+  .cs-card-name { font-size: 13px; }
+  .cs-card-meta { font-size: 11px; }
+  .cs-status-icon { width: 22px; height: 22px; }
+  .cs-grid { gap: 6px; }
+
+  /* ── Mark Book ── */
+  .mb-year-head { padding: 10px 14px; font-size: 10px; }
 
   /* ── DOCUMENTS section ── */
   .doc-grid { grid-template-columns: 1fr !important; gap: 12px; }
-  .doc-card { padding: 18px 16px 14px; border-radius: 12px; }
+  .doc-card { padding: 18px 16px 16px; border-radius: 12px; }
   .doc-title { font-size: 15px; }
   .doc-desc { font-size: 12px; }
+  .btn-print-doc { padding: 14px; font-size: 14px; border-radius: 8px; min-height: 48px; }
 
   /* ── ID CARD section ── */
   .idcard { width: 100%; max-width: 340px; }
-  .idcard-wrap { padding: 8px 0 0; gap: 16px; }
-  .idcard-actions { flex-direction: column; gap: 8px; }
-  .btn-idcard { justify-content: center; padding: 13px 20px; }
+  .idcard-wrap { padding: 8px 0 0; gap: 16px; align-items: center; }
+  .idcard-actions { flex-direction: column; gap: 8px; width: 100%; max-width: 340px; }
+  .btn-idcard { justify-content: center; padding: 14px 20px; font-size: 14px; min-height: 48px; }
+
+  /* ── Communication / Channels ── */
+  .comms-grid { grid-template-columns: 1fr !important; gap: 10px; }
+
+  /* ── Lecture Rooms ── */
+  .lr-grid { grid-template-columns: 1fr !important; gap: 12px; }
+
+  /* ── Edit Info form ── */
+  #panel-editinfo [style*="grid-template-columns:1fr 1fr"] {
+    grid-template-columns: 1fr !important;
+  }
 
   /* ── Glass card ── */
   .glass-card { border-radius: 12px; }
-  .glass-card-head { padding: 11px 14px; }
+  .glass-card-head { padding: 10px 14px; }
 
-  /* ── DASHBOARD FOOTER — standardized across all pages on mobile ── */
+  /* ── DASHBOARD FOOTER ── */
   .dash-footer {
-    font-size: 10px !important;
-    padding: 12px 16px 16px !important;
-    line-height: 1.6 !important;
-    text-align: center !important;
-    color: rgba(255,255,255,0.18) !important;
-    letter-spacing: 0 !important;
-    margin-bottom: 66px; /* clear the bottom tab bar */
+    font-size: 10px !important; padding: 12px 16px 16px !important;
+    line-height: 1.6 !important; text-align: center !important;
+    color: rgba(255,255,255,0.18) !important; letter-spacing: 0 !important;
+    margin-bottom: 72px;
   }
-  body.theme-light .dash-footer {
-    color: var(--ink3) !important;
-  }
+  body.theme-light .dash-footer { color: var(--ink3) !important; }
 }
 
 /* ══════════════════════════════════════
@@ -2417,104 +2390,14 @@ body.theme-light #panel-photo .icard { background: var(--white); }
 body.theme-light #panel-photo .field input { background: var(--white); border-color: var(--line); color: var(--ink); }
 body.theme-light #photoDropZone { border-color: var(--line) !important; background: var(--surface) !important; }
 
-/* ══════════════════════════════════════
-   IMPROVED MOBILE STYLES
-   ══════════════════════════════════════ */
-@media(max-width:700px){
-  /* Shrink copyright footer on mobile */
-  .dash-footer {
-    font-size: 9px !important;
-    padding: 10px 14px !important;
-    line-height: 1.5;
-    margin-bottom: env(safe-area-inset-bottom);
-  }
-
-  /* Better touch targets for nav items */
-  .sbnav-item {
-    padding: 13px 14px 13px 18px;
-    margin: 2px 10px;
-    font-size: 14px;
-  }
-  .sbnav-label { font-size: 14px; }
-  
-  /* Topbar improvements */
-  .dash-topbar { height: 52px; gap: 10px; padding: 0 14px 0 62px; }
-  .dash-topbar-title { font-size: 14px; }
-  .dash-topbar-id { font-size: 10px; padding: 3px 8px; max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  
-  /* Theme toggle in topbar on mobile */
-  .theme-toggle-btn { width: 32px; height: 32px; }
-  
-  /* Content padding — extra bottom room for tab bar */
-  .dash-content { padding: 16px 14px 100px; overflow-y: auto; -webkit-overflow-scrolling: touch; }
-  
-  /* Ensure the main column itself scrolls properly on iOS */
-  .dash-main { overflow-y: auto; -webkit-overflow-scrolling: touch; }
-
-  /* Hero responsive */
-  .home-hero { padding: 20px 18px; gap: 16px; flex-direction: column; text-align: center; border-radius: 12px; }
-  .home-hero-avatar { width: 60px; height: 60px; font-size: 22px; }
-  .home-hero-name { font-size: 20px; }
-  .home-hero-badge { width: 100%; padding: 12px 16px; border-radius: 10px; display: flex; align-items: center; justify-content: space-between; }
-  .home-hero-badge-val { font-size: 22px; }
-  
-  /* Quick links — 2 columns on mobile */
-  .qlinks { grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
-  .ql { min-height: 96px; padding: 14px 14px; }
-  .ql-icon { width: 30px; height: 30px; margin-bottom: 8px; }
-  .ql-t { font-size: 12px; }
-  .ql-s { font-size: 10px; }
-  
-  /* Banner layout */
-  .banner { flex-direction: column; gap: 12px; padding: 18px 16px; border-radius: 12px; }
-  .b-name h1 { font-size: 17px; }
-  
-  /* Info grid — single column */
-  .igrid { grid-template-columns: 1fr; }
-  .icell:nth-child(odd) { border-right: none; }
-  .icell:nth-last-child(-n+2) { border-bottom: 1px solid rgba(255,255,255,0.05); }
-  body.theme-light .icell:nth-last-child(-n+2) { border-bottom: 1px solid var(--line); }
-  .icell:last-child { border-bottom: none !important; }
-  .icell { padding: 12px 16px; }
-  
-  /* Grades header */
-  .grades-header-banner { flex-wrap: wrap; gap: 12px; padding: 16px 16px; }
-  .grades-hdr-gpa { margin-top: 0; }
-  .grades-hdr-gpa-val { font-size: 26px; }
-  
-  /* Transcript summary */
-  .transcript-summary { padding: 0; }
-  .ts-item { padding: 13px 16px; }
-  .ts-val { font-size: 18px; }
-  
-  /* Grade table — horizontal scroll */
-  .g-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
-  table.gt { min-width: 540px; }
-  
-  /* Section heading */
-  .sec-head { margin-bottom: 18px; }
-  .sec-head h2 { font-size: 19px; }
-  
-  /* Journey card */
-  .degree-row { padding: 12px 14px; gap: 10px; }
-  .degree-row-gpa-val { font-size: 17px; }
-  
-  /* Doc grid */
-  .doc-grid { gap: 12px; }
-  .doc-card { padding: 20px 18px 16px; }
-  
-  /* ID card */
-  .idcard { width: 100%; max-width: 340px; }
-  .idcard-wrap { padding: 8px 0; }
-  .idcard-actions { flex-direction: column; }
-  .btn-idcard { justify-content: center; }
-  
-  /* Login — handled in first mobile block above */
-}
-
+/* ── Very small screens (≤380px) ── */
 @media(max-width:380px){
-  .qlinks { grid-template-columns: repeat(3,1fr) !important; }
-  .dash-content { padding: 14px 10px 90px; }
+  .qlinks { grid-template-columns: repeat(3,1fr) !important; gap: 6px !important; }
+  .ql-icon { width: 42px !important; height: 42px !important; }
+  .ql-t { font-size: 9.5px !important; }
+  .dash-content { padding: 12px 10px 110px; }
+  .cs-card { padding: 10px 12px; }
+  .cs-card-name { font-size: 12px; }
 }
 
 /* ══════════════════════════════════════
@@ -2675,6 +2558,14 @@ body.theme-light .gt-session {
 .cs-header {
   display: flex; align-items: center; justify-content: space-between;
   margin-bottom: 14px; flex-wrap: wrap; gap: 8px;
+  padding: 14px 18px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 10px;
+}
+body.theme-light .cs-header {
+  background: var(--surface);
+  border-color: var(--line);
 }
 .cs-header-left { display: flex; align-items: center; gap: 10px; }
 .cs-title {
@@ -3928,11 +3819,6 @@ body.theme-light .comms-ch-btn-gp { color: inherit; }
           <div class="grades-hdr-name" id="gradesStudentName">—</div>
           <div class="grades-hdr-id"><span id="gradesIdLabel">Student ID</span>: <span id="gradesStudentId">—</span> &nbsp;·&nbsp; University of Medicine (2)</div>
         </div>
-        <div class="grades-hdr-gpa">
-          <div class="grades-hdr-gpa-label">Overall GPA</div>
-          <div class="grades-hdr-gpa-val" id="gradesGpa">—</div>
-          <div class="grades-hdr-gpa-den">/ 4.00</div>
-        </div>
       </div>
 
       <div id="transcriptSummary" style="display:none" class="transcript-summary">
@@ -4172,13 +4058,6 @@ body.theme-light .comms-ch-btn-gp { color: inherit; }
       </div>
     </div>
 
-  </div>
-
-    <!-- dashboard footer -->
-    <footer class="dash-footer">
-      <span id="footerYear"></span>
-    </footer>
-
     <!-- COURSE SESSION -->
     <div class="section" id="panel-coursesession">
       <div class="sec-head">
@@ -4213,6 +4092,13 @@ body.theme-light .comms-ch-btn-gp { color: inherit; }
         <div class="g-wrap"><div class="no-g">No assessment records yet.</div></div>
       </div>
     </div>
+
+  </div>
+
+    <!-- dashboard footer -->
+    <footer class="dash-footer">
+      <span id="footerYear"></span>
+    </footer>
 
   </div><!-- /.dash-main -->
 
@@ -5369,10 +5255,9 @@ function renderGrades(grades, student) {
         <thead>
           <tr>
             <th style="width:10%">Code</th>
-            <th style="width:22%">Course Title</th>
-            <th style="text-align:center;width:8%">Session</th>
+            <th style="width:28%">Course Title</th>
             <th style="text-align:center;width:6%">Credits</th>
-            <th style="text-align:center;width:14%">Assessment Type</th>
+            <th style="text-align:center;width:16%">Assessment Type</th>
             <th style="text-align:center;width:8%">Score</th>
             <th style="text-align:center;width:8%">Year</th>
             <th style="text-align:center;width:8%">Grade</th>
@@ -5402,7 +5287,6 @@ function renderGrades(grades, student) {
           <td>
             <div class="gt-course gt-course-graded">${gradedIcon}${escHtml(r.course.name)}</div>
           </td>
-          <td style="text-align:center"><span class="gt-session">${escHtml(sessionStr)}</span></td>
           <td style="text-align:center"><span class="gt-cr">${r.course.credits != null ? r.course.credits : '—'}</span></td>
           <td style="text-align:center;font-size:11px;color:var(--gt-assess-color,var(--ink3))">${escHtml(typeStr)}</td>
           <td style="text-align:center">
@@ -6887,9 +6771,12 @@ function printDocument(type) {
         ${isGraduated && grad && grad !== '—' ? `<div class="det-row"><span class="lbl">Graduation Status</span><span class="val">${grad}</span></div>` : ''}
         ${isGraduated && gradDate ? `<div class="det-row"><span class="lbl">Date of Graduation</span><span class="val">${gradDate}</span></div>` : ''}
         ${isGraduated && gradID ? `<div class="det-row"><span class="lbl">Graduation ID</span><span class="val">${gradID}</span></div>` : ''}
+        ${(() => { const gpa = (window._currentStudent && (window._currentStudent['Overall GPA'] || window._currentStudent.OverallGPA || window._currentStudent.overallGPA || window._currentStudent.overall_gpa || window._currentStudent.gpa || window._currentStudent.GPA)) || document.getElementById('tsGpa')?.textContent || ''; return gpa && gpa !== '—' ? `<div class="det-row"><span class="lbl">Overall GPA</span><span class="val" style="font-weight:700;color:#8B1A2E">${gpa} / 4.00</span></div>` : ''; })()}
       </div>
       <div class="section-label">Academic Record — ${programLabel}</div>
-      ${academicRecord}` : ''}
+      ${academicRecord}
+      ${(() => { const gpa = (window._currentStudent && (window._currentStudent['Overall GPA'] || window._currentStudent.OverallGPA || window._currentStudent.overallGPA || window._currentStudent.overall_gpa || window._currentStudent.gpa || window._currentStudent.GPA)) || document.getElementById('tsGpa')?.textContent || ''; return gpa && gpa !== '—' ? `<div style="margin-top:16px;padding:10px 14px;border:1.5px solid #8B1A2E;border-radius:6px;display:flex;justify-content:space-between;align-items:center;font-family:'DM Sans',sans-serif;page-break-inside:avoid"><span style="font-size:9pt;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#444">Overall GPA</span><span style="font-size:16pt;font-weight:700;color:#8B1A2E;font-family:'DM Sans',sans-serif">${gpa} <span style="font-size:9pt;font-weight:400;color:#888">/ 4.00</span></span></div>` : ''; })()}
+      ` : ''}
 
       ${confirmationBody}
       ${closing}
