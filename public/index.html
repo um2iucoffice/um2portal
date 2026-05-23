@@ -948,6 +948,14 @@ table.gt tbody tr:hover { background: #F8F9FC; }
     min-width: auto !important;
     height: auto !important;
     padding: 0 !important;
+    display: inline !important;
+  }
+  .gbadge sup {
+    font-size: 0.65em !important;
+    line-height: 0 !important;
+    position: relative !important;
+    top: -0.5em !important;
+    vertical-align: baseline !important;
   }
 
   /* Grade points */
@@ -4549,7 +4557,11 @@ function populate(s, grades, courses, program_meta, enrollments, academicYears, 
 
   // ── ID Card tab label ─────────────────────────────────────────
   const navIdCard = document.getElementById('navIdCard');
-  if (navIdCard) navIdCard.textContent = isGraduated ? 'Alumni ID Card' : 'ID Card';
+  if (navIdCard) {
+    const lbl = navIdCard.querySelector('.sbnav-label');
+    if (lbl) lbl.textContent = isGraduated ? 'Alumni ID Card' : 'ID Card';
+    else navIdCard.textContent = isGraduated ? 'Alumni ID Card' : 'ID Card';
+  }
   const idCardTitle = document.getElementById('idCardPageTitle');
   const idCardSub   = document.getElementById('idCardPageSub');
   if (idCardTitle) idCardTitle.textContent = isGraduated ? 'Alumni ID Card' : 'Student ID Card';
@@ -5581,6 +5593,9 @@ function switchSection(id, btn) {
 if (id === 'editinfo') { try { onSwitchToEditInfo(); } catch(e) {} }
 if (id === 'comms') { try { loadCommsSection(); } catch(e) {} }
 if (id === 'lecturerooms') { try { loadLectureRooms(); } catch(e) {} }
+  // Scroll content area back to top
+  const _sc = document.querySelector('.dash-content');
+  if (_sc) _sc.scrollTo(0, 0);
   // Close sidebar on mobile
   closeSidebar();
 }
