@@ -256,14 +256,38 @@ export const handler = async (event) => {
       }];
     }
 
-    // ── 9. Build photo URL if needed ─────────────────────────
+    // ── 9. Fetch markbook ────────────────────────────────────
+    let markbook = [];
+    try {
+      const markbookRows = await supabase(
+        `markbook?student_id=eq.${encodeURIComponent(raw.id)}&select=*&order=course_id.asc`,
+        {},
+        true
+      );
+      markbook = (markbookRows || []).map(r => ({
+        courseId:       String(r.course_id || '').trim().toUpperCase(),
+        assessmentName: r.assessment_name || '',
+        maxScore:       r.max_score       ?? '',
+        score:          r.score           ?? '',
+        percentage:     r.percentage      ?? '',
+        grade:          r.letter          || '',
+        year:           r.year            || '',
+        block:          r.block           || '',
+        notes:          r.notes           || '',
+        updatedAt:      r.updated_at      || ''
+      }));
+    } catch (e) {
+      console.warn('Could not fetch markbook (table may not exist):', e.message);
+    }
+
+    // ── 10. Build photo URL if needed ────────────────────────
     if (student.photo && !student.photo.startsWith('http')) {
       student.photo = `${SUPABASE_URL}/storage/v1/object/public/student-photos/${student.photo}`;
     }
 
     return {
       statusCode: 200, headers,
-      body: JSON.stringify({ success: true, student, grades, courses, enrollments })
+      body: JSON.stringify({ success: true, student, grades, courses, enrollments, markbook })
     };
 
   } catch (err) {
