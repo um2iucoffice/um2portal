@@ -3727,114 +3727,537 @@ body.theme-light .comms-ch-btn-gp { color: inherit; }
         </div>
       </div>
 
-      <!-- Applications section label -->
-      <div class="home-section-label" style="margin-top:4px;margin-bottom:12px">Applications</div>
-
-      <!-- First 4 apps always visible -->
-      <div class="qlinks" id="appsGridTop">
-        <div class="ql" onclick="switchTab('profile')">
-          <div class="ql-icon"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="var(--crimson)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg></div>
-          <div class="ql-t">My Personal Page</div>
-          <div class="ql-s">Personal &amp; enrollment details</div>
-          <span class="ql-arrow">→</span>
+      <!-- ══ STUDENT OVERVIEW STRIP ══ -->
+      <div class="stu-overview" id="stuOverview">
+        <div class="stu-ov-item">
+          <div class="stu-ov-val" id="ovGpa">—</div>
+          <div class="stu-ov-lbl">Overall GPA</div>
         </div>
-        <div class="ql" onclick="switchTab('grades')">
-          <div class="ql-icon"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="var(--crimson)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="12" width="4" height="9" rx="1"/><rect x="10" y="7" width="4" height="14" rx="1"/><rect x="17" y="3" width="4" height="18" rx="1"/></svg></div>
-          <div class="ql-t">Academic Record</div>
-          <div class="ql-s">Grades, credits &amp; grade points</div>
-          <span class="ql-arrow">→</span>
+        <div class="stu-ov-divider"></div>
+        <div class="stu-ov-item">
+          <div class="stu-ov-val" id="ovCredits">—</div>
+          <div class="stu-ov-lbl">Credits Completed</div>
         </div>
-        <div class="ql" onclick="switchTab('coursesession')">
-          <div class="ql-icon"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="var(--crimson)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div>
-          <div class="ql-t">Course Session</div>
-          <div class="ql-s">Current year courses &amp; progress</div>
-          <span class="ql-arrow">→</span>
+        <div class="stu-ov-divider"></div>
+        <div class="stu-ov-item">
+          <div class="stu-ov-val" id="ovCourses">—</div>
+          <div class="stu-ov-lbl">Courses Taken</div>
         </div>
-        <div class="ql" onclick="switchTab('markbook')">
-          <div class="ql-icon"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="var(--crimson)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/><line x1="9" y1="9" x2="15" y2="9"/><line x1="9" y1="13" x2="13" y2="13"/></svg></div>
-          <div class="ql-t">Mark Book</div>
-          <div class="ql-s">Internal assessment &amp; test marks</div>
-          <span class="ql-arrow">→</span>
+        <div class="stu-ov-divider"></div>
+        <div class="stu-ov-item">
+          <div class="stu-ov-val" id="ovStatus">—</div>
+          <div class="stu-ov-lbl">Academic Status</div>
+        </div>
+        <div class="stu-ov-divider"></div>
+        <div class="stu-ov-item">
+          <div class="stu-ov-val" id="ovYear">—</div>
+          <div class="stu-ov-lbl">Academic Year</div>
         </div>
       </div>
 
-      <!-- Collapsible extra apps -->
-      <div class="qlinks" id="appsGridMore" style="display:none">
-        <div class="ql" onclick="switchTab('docs')">
-          <div class="ql-icon"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="var(--crimson)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></div>
-          <div class="ql-t">Document Office</div>
-          <div class="ql-s">Official transcripts &amp; letters</div>
-          <span class="ql-arrow">→</span>
-        </div>
-        <div class="ql" onclick="switchTab('idcard')">
-          <div class="ql-icon"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="var(--crimson)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><circle cx="8" cy="12" r="2.5"/><line x1="13" y1="10" x2="19" y2="10"/><line x1="13" y1="14" x2="17" y2="14"/></svg></div>
-          <div class="ql-t">ID Card</div>
-          <div class="ql-s">View &amp; print your ID card</div>
-          <span class="ql-arrow">→</span>
-        </div>
-        <div class="ql" onclick="switchTab('photo')">
-          <div class="ql-icon"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="var(--crimson)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg></div>
-          <div class="ql-t">Profile Photo</div>
-          <div class="ql-s">Upload your ID photo</div>
-          <span class="ql-arrow">→</span>
-        </div>
-        <div class="ql" onclick="switchTab('editinfo')">
-          <div class="ql-icon"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="var(--crimson)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></div>
-          <div class="ql-t">Edit My Info</div>
-          <div class="ql-s">Request personal info updates</div>
-          <span class="ql-arrow">→</span>
-        </div>
-        <div class="ql" onclick="switchTab('comms')">
-          <div class="ql-icon"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="var(--crimson)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div>
-          <div class="ql-t">Communication</div>
-          <div class="ql-s">Telegram, WhatsApp &amp; group links</div>
-          <span class="ql-arrow">→</span>
-        </div>
-        <div class="ql" onclick="switchTab('lecturerooms')">
-          <div class="ql-icon"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="var(--crimson)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M15 10l4.553-2.277A1 1 0 0 1 21 8.68v6.64a1 1 0 0 1-1.447.898L15 14"/><rect x="1" y="6" width="14" height="12" rx="2"/></svg></div>
-          <div class="ql-t">Lecture Rooms</div>
-          <div class="ql-s">Join live Zoom sessions</div>
-          <span class="ql-arrow">→</span>
-        </div>
-        <div class="ql" onclick="window.open('https://um2campus.com/login/index.php','_blank')">
-          <div class="ql-icon"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="var(--crimson)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><polygon points="12,2 22,8 12,14 2,8"/><polyline points="6,11 6,17 12,20 18,17 18,11"/><line x1="22" y1="8" x2="22" y2="14"/></svg></div>
-          <div class="ql-t">E-Learning</div>
-          <div class="ql-s">Courses, lectures &amp; materials</div>
-          <span class="ql-arrow">↗</span>
-        </div>
-        <div class="ql" onclick="window.open('https://supportportal.um2campus.org','_blank')">
-          <div class="ql-icon"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="var(--crimson)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11C3 6.03 7.03 2 12 2s9 4.03 9 9"/><path d="M3 11v2a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"/><path d="M21 11v2a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3z"/><path d="M19 15v1a4 4 0 0 1-4 4h-2"/></svg></div>
-          <div class="ql-t">Support</div>
-          <div class="ql-s">Submit a help request</div>
-          <span class="ql-arrow">↗</span>
-        </div>
-        <div class="ql dim">
-          <div class="ql-icon" style="opacity:.4"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="var(--crimson)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z"/></svg></div>
-          <div class="ql-t">Exam Registration</div>
-          <div class="ql-s">Coming soon</div>
-        </div>
-      </div>
+      <!-- ══ APPLICATIONS DASHBOARD ══ -->
+      <div class="apps-dashboard">
 
-      <!-- "More applications" — IS MU-style centered text link -->
-      <div style="text-align:center;margin-bottom:28px;margin-top:4px">
-        <button id="appsToggleBtn" onclick="toggleAppsGrid()" style="
-          background:none;border:none;cursor:pointer;
-          font-family:'DM Sans',sans-serif;font-size:15px;
-          color:rgba(100,160,220,0.75);
-          display:inline-flex;flex-direction:column;align-items:center;gap:4px;
-          padding:8px 20px;
-          transition:color .15s;
-        " onmouseenter="this.style.color='rgba(100,180,255,0.95)'" onmouseleave="this.style.color='rgba(100,160,220,0.75)'">
-          <span id="appsToggleTxt">More applications</span>
-          <svg id="appsToggleIcon" width="18" height="18" viewBox="0 0 24 24" fill="currentColor" stroke="none" xmlns="http://www.w3.org/2000/svg" style="transition:transform .2s">
-            <polygon points="12,17 2,7 22,7"/>
-          </svg>
-        </button>
-      </div>
+        <!-- § Academic -->
+        <div class="app-section">
+          <div class="app-section-header">
+            <span class="app-section-dot" style="background:rgba(96,165,250,0.7)"></span>
+            <span class="app-section-title">Academic</span>
+            <div class="app-section-rule"></div>
+          </div>
+          <div class="app-grid app-grid-primary">
+
+            <div class="aq aq-primary" onclick="switchTab('grades')">
+              <div class="aq-accent" style="--accent:rgba(96,165,250,0.18);--accent-border:rgba(96,165,250,0.35);--accent-glow:rgba(96,165,250,0.15);--accent-icon:rgba(96,165,250,0.2);--accent-stroke:#60a5fa"></div>
+              <div class="aq-icon-wrap">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--aq-stroke)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="12" width="4" height="9" rx="1"/><rect x="10" y="7" width="4" height="14" rx="1"/><rect x="17" y="3" width="4" height="18" rx="1"/></svg>
+              </div>
+              <div class="aq-body">
+                <div class="aq-title">Academic Record</div>
+                <div class="aq-sub">Grades, credits &amp; grade points</div>
+              </div>
+              <div class="aq-arrow">→</div>
+            </div>
+
+            <div class="aq aq-primary" onclick="switchTab('coursesession')">
+              <div class="aq-accent" style="--accent:rgba(96,165,250,0.18);--accent-border:rgba(96,165,250,0.35);--accent-glow:rgba(96,165,250,0.15);--accent-icon:rgba(96,165,250,0.2);--accent-stroke:#60a5fa"></div>
+              <div class="aq-icon-wrap">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--aq-stroke)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+              </div>
+              <div class="aq-body">
+                <div class="aq-title">Course Session</div>
+                <div class="aq-sub">Current year courses &amp; progress</div>
+              </div>
+              <div class="aq-arrow">→</div>
+            </div>
+
+            <div class="aq aq-primary" onclick="switchTab('markbook')">
+              <div class="aq-accent" style="--accent:rgba(96,165,250,0.18);--accent-border:rgba(96,165,250,0.35);--accent-glow:rgba(96,165,250,0.15);--accent-icon:rgba(96,165,250,0.2);--accent-stroke:#60a5fa"></div>
+              <div class="aq-icon-wrap">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--aq-stroke)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/><line x1="9" y1="9" x2="15" y2="9"/><line x1="9" y1="13" x2="13" y2="13"/></svg>
+              </div>
+              <div class="aq-body">
+                <div class="aq-title">Mark Book</div>
+                <div class="aq-sub">Internal assessment &amp; test marks</div>
+              </div>
+              <div class="aq-arrow">→</div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- § Student Services -->
+        <div class="app-section">
+          <div class="app-section-header">
+            <span class="app-section-dot" style="background:rgba(139,26,46,0.7)"></span>
+            <span class="app-section-title">Student Services</span>
+            <div class="app-section-rule"></div>
+          </div>
+          <div class="app-grid app-grid-secondary">
+
+            <div class="aq aq-secondary" onclick="switchTab('profile')">
+              <div class="aq-accent" style="--accent:rgba(139,26,46,0.12);--accent-border:rgba(139,26,46,0.28);--accent-glow:rgba(139,26,46,0.1);--accent-icon:rgba(139,26,46,0.18);--accent-stroke:rgba(220,80,100,0.85)"></div>
+              <div class="aq-icon-wrap">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--aq-stroke)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+              </div>
+              <div class="aq-body">
+                <div class="aq-title">My Personal Page</div>
+                <div class="aq-sub">Personal &amp; enrollment details</div>
+              </div>
+              <div class="aq-arrow">→</div>
+            </div>
+
+            <div class="aq aq-secondary" onclick="switchTab('docs')">
+              <div class="aq-accent" style="--accent:rgba(139,26,46,0.12);--accent-border:rgba(139,26,46,0.28);--accent-glow:rgba(139,26,46,0.1);--accent-icon:rgba(139,26,46,0.18);--accent-stroke:rgba(220,80,100,0.85)"></div>
+              <div class="aq-icon-wrap">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--aq-stroke)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+              </div>
+              <div class="aq-body">
+                <div class="aq-title">Document Office</div>
+                <div class="aq-sub">Official transcripts &amp; letters</div>
+              </div>
+              <div class="aq-arrow">→</div>
+            </div>
+
+            <div class="aq aq-secondary" onclick="switchTab('idcard')">
+              <div class="aq-accent" style="--accent:rgba(139,26,46,0.12);--accent-border:rgba(139,26,46,0.28);--accent-glow:rgba(139,26,46,0.1);--accent-icon:rgba(139,26,46,0.18);--accent-stroke:rgba(220,80,100,0.85)"></div>
+              <div class="aq-icon-wrap">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--aq-stroke)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><circle cx="8" cy="12" r="2.5"/><line x1="13" y1="10" x2="19" y2="10"/><line x1="13" y1="14" x2="17" y2="14"/></svg>
+              </div>
+              <div class="aq-body">
+                <div class="aq-title">ID Card</div>
+                <div class="aq-sub">View &amp; print your student ID</div>
+              </div>
+              <div class="aq-arrow">→</div>
+            </div>
+
+            <div class="aq aq-secondary" onclick="switchTab('editinfo')">
+              <div class="aq-accent" style="--accent:rgba(139,26,46,0.12);--accent-border:rgba(139,26,46,0.28);--accent-glow:rgba(139,26,46,0.1);--accent-icon:rgba(139,26,46,0.18);--accent-stroke:rgba(220,80,100,0.85)"></div>
+              <div class="aq-icon-wrap">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--aq-stroke)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+              </div>
+              <div class="aq-body">
+                <div class="aq-title">Edit My Info</div>
+                <div class="aq-sub">Request personal info updates</div>
+              </div>
+              <div class="aq-arrow">→</div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- § Communication & Learning -->
+        <div class="app-section">
+          <div class="app-section-header">
+            <span class="app-section-dot" style="background:rgba(167,139,250,0.7)"></span>
+            <span class="app-section-title">Communication &amp; Learning</span>
+            <div class="app-section-rule"></div>
+          </div>
+          <div class="app-grid app-grid-secondary">
+
+            <div class="aq aq-secondary" onclick="switchTab('comms')">
+              <div class="aq-accent" style="--accent:rgba(139,92,246,0.12);--accent-border:rgba(139,92,246,0.3);--accent-glow:rgba(139,92,246,0.1);--accent-icon:rgba(139,92,246,0.2);--accent-stroke:rgba(167,139,250,0.9)"></div>
+              <div class="aq-icon-wrap">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--aq-stroke)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+              </div>
+              <div class="aq-body">
+                <div class="aq-title">Communication</div>
+                <div class="aq-sub">Telegram, WhatsApp &amp; groups</div>
+              </div>
+              <div class="aq-arrow">→</div>
+            </div>
+
+            <div class="aq aq-secondary" onclick="switchTab('lecturerooms')">
+              <div class="aq-accent" style="--accent:rgba(139,92,246,0.12);--accent-border:rgba(139,92,246,0.3);--accent-glow:rgba(139,92,246,0.1);--accent-icon:rgba(139,92,246,0.2);--accent-stroke:rgba(167,139,250,0.9)"></div>
+              <div class="aq-icon-wrap">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--aq-stroke)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M15 10l4.553-2.277A1 1 0 0 1 21 8.68v6.64a1 1 0 0 1-1.447.898L15 14"/><rect x="1" y="6" width="14" height="12" rx="2"/></svg>
+              </div>
+              <div class="aq-body">
+                <div class="aq-title">Lecture Rooms</div>
+                <div class="aq-sub">Join live Zoom sessions</div>
+              </div>
+              <div class="aq-arrow">→</div>
+            </div>
+
+            <div class="aq aq-secondary" onclick="window.open('https://um2campus.com/login/index.php','_blank')">
+              <div class="aq-accent" style="--accent:rgba(139,92,246,0.12);--accent-border:rgba(139,92,246,0.3);--accent-glow:rgba(139,92,246,0.1);--accent-icon:rgba(139,92,246,0.2);--accent-stroke:rgba(167,139,250,0.9)"></div>
+              <div class="aq-icon-wrap">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--aq-stroke)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="12,2 22,8 12,14 2,8"/><polyline points="6,11 6,17 12,20 18,17 18,11"/><line x1="22" y1="8" x2="22" y2="14"/></svg>
+              </div>
+              <div class="aq-body">
+                <div class="aq-title">E-Learning</div>
+                <div class="aq-sub">Courses, lectures &amp; materials</div>
+              </div>
+              <div class="aq-arrow">↗</div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- § Administration -->
+        <div class="app-section">
+          <div class="app-section-header">
+            <span class="app-section-dot" style="background:rgba(251,191,36,0.6)"></span>
+            <span class="app-section-title">Administration</span>
+            <div class="app-section-rule"></div>
+          </div>
+          <div class="app-grid app-grid-utility">
+
+            <div class="aq aq-utility" onclick="switchTab('photo')">
+              <div class="aq-accent" style="--accent:rgba(251,191,36,0.08);--accent-border:rgba(251,191,36,0.22);--accent-glow:rgba(251,191,36,0.08);--accent-icon:rgba(251,191,36,0.14);--accent-stroke:rgba(251,191,36,0.75)"></div>
+              <div class="aq-icon-wrap">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--aq-stroke)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+              </div>
+              <div class="aq-body">
+                <div class="aq-title">Profile Photo</div>
+                <div class="aq-sub">Upload your ID photo</div>
+              </div>
+              <div class="aq-arrow">→</div>
+            </div>
+
+            <div class="aq aq-utility" onclick="window.open('https://supportportal.um2campus.org','_blank')">
+              <div class="aq-accent" style="--accent:rgba(251,191,36,0.08);--accent-border:rgba(251,191,36,0.22);--accent-glow:rgba(251,191,36,0.08);--accent-icon:rgba(251,191,36,0.14);--accent-stroke:rgba(251,191,36,0.75)"></div>
+              <div class="aq-icon-wrap">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--aq-stroke)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11C3 6.03 7.03 2 12 2s9 4.03 9 9"/><path d="M3 11v2a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"/><path d="M21 11v2a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3z"/><path d="M19 15v1a4 4 0 0 1-4 4h-2"/></svg>
+              </div>
+              <div class="aq-body">
+                <div class="aq-title">Support</div>
+                <div class="aq-sub">Submit a help request</div>
+              </div>
+              <div class="aq-arrow">↗</div>
+            </div>
+
+            <div class="aq aq-coming">
+              <div class="aq-accent" style="--accent:rgba(255,255,255,0.03);--accent-border:rgba(255,255,255,0.08);--accent-glow:transparent;--accent-icon:rgba(255,255,255,0.07);--accent-stroke:rgba(255,255,255,0.25)"></div>
+              <div class="aq-icon-wrap">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--aq-stroke)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z"/></svg>
+              </div>
+              <div class="aq-body">
+                <div class="aq-title">Exam Registration</div>
+                <div class="aq-sub">Launching soon</div>
+              </div>
+              <div class="aq-coming-badge">Preview</div>
+            </div>
+
+          </div>
+        </div>
+
+      </div><!-- /.apps-dashboard -->
+
       <style>
-        body.theme-light #appsToggleBtn { color: rgba(30,90,180,0.6) !important; }
-        body.theme-light #appsToggleBtn:hover { color: rgba(30,90,180,0.9) !important; }
+      /* ── STUDENT OVERVIEW STRIP ── */
+      .stu-overview {
+        display: flex;
+        align-items: center;
+        background: rgba(255,255,255,0.03);
+        border: 1px solid rgba(255,255,255,0.07);
+        border-radius: 12px;
+        padding: 0;
+        margin-top: 8px;
+        margin-bottom: 32px;
+        overflow: hidden;
+      }
+      .stu-ov-item {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 16px 12px;
+        gap: 4px;
+        min-width: 0;
+      }
+      .stu-ov-val {
+        font-family: 'Libre Baskerville', serif;
+        font-size: 20px;
+        color: rgba(255,255,255,0.88);
+        line-height: 1;
+        font-weight: 700;
+        letter-spacing: -0.3px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 100%;
+        text-align: center;
+      }
+      .stu-ov-lbl {
+        font-size: 10px;
+        font-weight: 600;
+        letter-spacing: 0.8px;
+        text-transform: uppercase;
+        color: rgba(255,255,255,0.3);
+        white-space: nowrap;
+      }
+      .stu-ov-divider {
+        width: 1px;
+        height: 32px;
+        background: rgba(255,255,255,0.07);
+        flex-shrink: 0;
+      }
+
+      /* ── APPS DASHBOARD CONTAINER ── */
+      .apps-dashboard {
+        display: flex;
+        flex-direction: column;
+        gap: 32px;
+        margin-bottom: 40px;
+      }
+
+      /* ── SECTION HEADER ── */
+      .app-section-header {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 16px;
+      }
+      .app-section-dot {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        flex-shrink: 0;
+      }
+      .app-section-title {
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: 1.6px;
+        text-transform: uppercase;
+        color: rgba(255,255,255,0.38);
+        white-space: nowrap;
+      }
+      .app-section-rule {
+        flex: 1;
+        height: 1px;
+        background: rgba(255,255,255,0.06);
+      }
+
+      /* ── APP GRIDS ── */
+      .app-grid {
+        display: grid;
+        gap: 14px;
+      }
+      .app-grid-primary   { grid-template-columns: repeat(3, 1fr); }
+      .app-grid-secondary { grid-template-columns: repeat(4, 1fr); }
+      .app-grid-utility   { grid-template-columns: repeat(4, 1fr); }
+
+      /* ── BASE CARD ── */
+      .aq {
+        position: relative;
+        border-radius: 12px;
+        padding: 20px 20px 18px;
+        cursor: pointer;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        overflow: hidden;
+        transition: transform 240ms cubic-bezier(.2,.8,.2,1),
+                    border-color 240ms ease,
+                    box-shadow 240ms ease;
+        /* CSS custom property bridge for per-card accent colours */
+        --aq-stroke: var(--accent-stroke, rgba(255,255,255,0.4));
+      }
+      .aq .aq-accent {
+        /* pseudo-layer carrying the per-card colours */
+        position: absolute; inset: 0; pointer-events: none; border-radius: inherit;
+        border: 1px solid var(--accent-border, rgba(255,255,255,0.1));
+        background: var(--accent, transparent);
+        transition: border-color 240ms ease;
+      }
+      .aq:hover { transform: translateY(-4px); }
+      .aq:hover .aq-accent {
+        border-color: color-mix(in srgb, var(--accent-border, rgba(255,255,255,0.1)) 100%, white 30%);
+      }
+      .aq:active { transform: translateY(-1px); }
+
+      /* Icon wrapper */
+      .aq-icon-wrap {
+        width: 42px;
+        height: 42px;
+        border-radius: 9px;
+        background: var(--accent-icon, rgba(255,255,255,0.07));
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        position: relative;
+        z-index: 1;
+        transition: background 240ms ease;
+      }
+      .aq:hover .aq-icon-wrap {
+        background: color-mix(in srgb, var(--accent-icon, rgba(255,255,255,0.07)) 100%, white 15%);
+      }
+
+      /* Text */
+      .aq-body { position: relative; z-index: 1; flex: 1; }
+      .aq-title {
+        font-size: 13px;
+        font-weight: 600;
+        color: rgba(255,255,255,0.88);
+        margin-bottom: 4px;
+        letter-spacing: -0.1px;
+        line-height: 1.3;
+      }
+      .aq-sub {
+        font-size: 11.5px;
+        color: rgba(255,255,255,0.35);
+        line-height: 1.5;
+      }
+
+      /* Arrow */
+      .aq-arrow {
+        position: absolute;
+        top: 17px;
+        right: 17px;
+        font-size: 14px;
+        color: rgba(255,255,255,0.15);
+        z-index: 1;
+        transition: color 240ms ease, transform 240ms cubic-bezier(.2,.8,.2,1);
+      }
+      .aq:hover .aq-arrow {
+        color: var(--accent-stroke, rgba(255,255,255,0.6));
+        transform: translate(3px, -1px);
+      }
+
+      /* ── PRIMARY TIER ── */
+      .aq-primary {
+        min-height: 136px;
+        background: rgba(255,255,255,0.038);
+      }
+      .aq-primary:hover {
+        box-shadow: 0 8px 32px var(--accent-glow, rgba(255,255,255,0.08)),
+                    0 2px 8px rgba(0,0,0,0.3);
+      }
+      .aq-primary .aq-title { font-size: 14px; }
+      .aq-primary .aq-sub   { font-size: 12px; color: rgba(255,255,255,0.42); }
+
+      /* ── SECONDARY TIER ── */
+      .aq-secondary {
+        min-height: 118px;
+        background: rgba(255,255,255,0.025);
+      }
+      .aq-secondary:hover {
+        box-shadow: 0 6px 24px var(--accent-glow, rgba(255,255,255,0.06)),
+                    0 2px 6px rgba(0,0,0,0.25);
+      }
+
+      /* ── UTILITY TIER ── */
+      .aq-utility {
+        min-height: 104px;
+        background: rgba(255,255,255,0.018);
+        padding: 16px 18px 14px;
+      }
+      .aq-utility .aq-icon-wrap { width: 36px; height: 36px; border-radius: 7px; }
+      .aq-utility .aq-title { font-size: 12.5px; color: rgba(255,255,255,0.72); }
+      .aq-utility .aq-sub   { font-size: 11px; }
+      .aq-utility:hover {
+        box-shadow: 0 4px 16px var(--accent-glow, rgba(255,255,255,0.04)),
+                    0 1px 4px rgba(0,0,0,0.2);
+      }
+
+      /* ── COMING SOON TIER ── */
+      .aq-coming {
+        min-height: 104px;
+        background: rgba(255,255,255,0.012);
+        padding: 16px 18px 14px;
+        cursor: not-allowed;
+        opacity: 0.6;
+      }
+      .aq-coming:hover { transform: none; box-shadow: none; }
+      .aq-coming .aq-title { color: rgba(255,255,255,0.4); }
+      .aq-coming .aq-sub   { color: rgba(255,255,255,0.22); font-size: 11px; }
+      .aq-coming .aq-icon-wrap { width: 36px; height: 36px; border-radius: 7px; }
+      .aq-coming-badge {
+        position: absolute;
+        top: 12px;
+        right: 12px;
+        font-size: 9px;
+        font-weight: 700;
+        letter-spacing: 0.8px;
+        text-transform: uppercase;
+        color: rgba(255,255,255,0.3);
+        background: rgba(255,255,255,0.06);
+        border: 1px solid rgba(255,255,255,0.1);
+        border-radius: 4px;
+        padding: 2px 7px;
+        z-index: 1;
+      }
+
+      /* ── LIGHT THEME OVERRIDES ── */
+      body.theme-light .stu-overview {
+        background: var(--white);
+        border-color: var(--line);
+      }
+      body.theme-light .stu-ov-val { color: var(--ink); }
+      body.theme-light .stu-ov-lbl { color: var(--ink3); }
+      body.theme-light .stu-ov-divider { background: var(--line); }
+      body.theme-light .app-section-title { color: var(--ink3); }
+      body.theme-light .app-section-rule  { background: var(--line); }
+
+      body.theme-light .aq-primary   { background: var(--white); box-shadow: var(--shadow-sm); }
+      body.theme-light .aq-secondary { background: var(--white); box-shadow: var(--shadow-sm); }
+      body.theme-light .aq-utility   { background: var(--surface); box-shadow: none; }
+      body.theme-light .aq-coming    { background: var(--surface); }
+
+      body.theme-light .aq-title { color: var(--ink) !important; }
+      body.theme-light .aq-sub   { color: var(--ink3) !important; }
+      body.theme-light .aq-arrow { color: var(--line) !important; }
+      body.theme-light .aq:hover .aq-arrow { color: var(--crimson) !important; }
+      body.theme-light .aq-coming-badge { color: var(--ink3); background: var(--surface); border-color: var(--line); }
+
+      body.theme-light .aq-primary:hover,
+      body.theme-light .aq-secondary:hover { box-shadow: 0 8px 28px rgba(13,27,42,0.1), 0 2px 6px rgba(13,27,42,0.06); }
+      body.theme-light .aq-utility:hover   { box-shadow: 0 4px 14px rgba(13,27,42,0.07); }
+
+      /* ── RESPONSIVE ── */
+      @media(max-width:960px) {
+        .app-grid-secondary,
+        .app-grid-utility   { grid-template-columns: repeat(3, 1fr); }
+      }
+      @media(max-width:720px) {
+        .app-grid-primary   { grid-template-columns: repeat(2, 1fr); }
+        .app-grid-secondary { grid-template-columns: repeat(2, 1fr); }
+        .app-grid-utility   { grid-template-columns: repeat(2, 1fr); }
+        .stu-overview { flex-wrap: wrap; }
+        .stu-ov-item  { min-width: 50%; }
+        .stu-ov-divider:nth-child(even) { display: none; }
+      }
+      @media(max-width:480px) {
+        .app-grid-primary   { grid-template-columns: 1fr 1fr; }
+        .app-grid-secondary { grid-template-columns: 1fr 1fr; }
+        .app-grid-utility   { grid-template-columns: 1fr 1fr; }
+        .aq-primary   { min-height: 120px; padding: 16px; }
+        .aq-secondary { min-height: 110px; padding: 16px; }
+        .aq-utility   { min-height: 100px; padding: 14px; }
+        .aq-coming    { min-height: 100px; padding: 14px; }
+        .stu-ov-val  { font-size: 17px; }
+        .stu-ov-item { padding: 14px 10px; }
+        .apps-dashboard { gap: 24px; }
+      }
       </style>
+
+      <!-- Keep appsGridTop/More empty stubs so toggleAppsGrid() doesn't throw -->
+      <div id="appsGridTop" style="display:none"></div>
+      <div id="appsGridMore" style="display:none"></div>
+      <div id="appsToggleBtn" style="display:none"></div>
 
     </div>
 
@@ -4844,6 +5267,7 @@ function populate(s, grades, courses, program_meta, enrollments, academicYears, 
   renderMarkbook(s, markbook || [], grades);
   renderNews(window._announcements || []);
   renderHomeNews(window._announcements || []);
+  renderStudentOverview(s, grades, courses);
   if (s.photo) {
     updatePhotoInUI(s.photo);
     const preview = document.getElementById('profilePhotoPreview');
@@ -7736,7 +8160,40 @@ body{font-family:'DM Sans',sans-serif;background:#0e1420;color:rgba(255,255,255,
   window.openNewsDetail = openNewsDetail;
 }
 
-// ── Home panel news feed (compact 3-column grid, max 3 items) ────────────────
+// ── Student overview strip (above apps dashboard) ───────────────────────────
+function renderStudentOverview(student, grades, courses) {
+  const gpaEl      = document.getElementById('ovGpa');
+  const creditsEl  = document.getElementById('ovCredits');
+  const coursesEl  = document.getElementById('ovCourses');
+  const statusEl   = document.getElementById('ovStatus');
+  const yearEl     = document.getElementById('ovYear');
+
+  // GPA
+  const gpa = getSheetOverallGpa(student);
+  if (gpaEl) gpaEl.textContent = (gpa && gpa !== '—') ? gpa : '—';
+
+  // Credits + courses from grades
+  if (grades && grades.length && courses) {
+    let totalCredits = 0; let creditsKnown = true;
+    grades.forEach(g => {
+      const c = courses[g.courseId];
+      if (c && c.credits != null) totalCredits += Number(c.credits);
+      else creditsKnown = false;
+    });
+    if (creditsEl) creditsEl.textContent = creditsKnown ? totalCredits : (totalCredits > 0 ? totalCredits + '+' : '—');
+    if (coursesEl) coursesEl.textContent = grades.length;
+  }
+
+  // Status
+  const status = (student && (student.currentStatus || student.enrollmentStatus || student.year || '')) || '—';
+  if (statusEl) statusEl.textContent = status;
+
+  // Academic year
+  const yr = (student && (student.admissionYear || student.academic_year || '')) || '—';
+  if (yearEl) yearEl.textContent = yr !== '—' ? yr : (student && student.id ? yr : '—');
+}
+
+
 function renderHomeNews(announcements) {
   const container    = document.getElementById('homeNewsCards');
   const mobContainer = document.getElementById('mobHomeNewsCards');
