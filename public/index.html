@@ -9067,7 +9067,7 @@ function doSignOut() {
   try {
     window._announcements = saved.announcements || [];
     populate(saved.studentData, saved.grades || [], saved.courses || {}, saved.program_meta || null, saved.enrollments || [], saved.academicYears || [], saved.markbook || []);
-  } catch(e) { return; }
+  } catch(e) { console.error('Session restore populate() error:', e); return; }
 
   document.getElementById('loginScreen').classList.add('hidden');
   const dash = document.getElementById('dashboard');
