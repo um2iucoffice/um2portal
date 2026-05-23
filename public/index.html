@@ -4310,7 +4310,9 @@ function handleAuth(r) {
     return;
   }
   try {
+    console.log('DEBUG login response announcements:', r.announcements);
     window._announcements = r.announcements || [];
+    console.log('DEBUG window._announcements set to:', window._announcements);
     populate(r.student, r.grades || [], r.courses || {}, r.program_meta || null, r.enrollments || [], r.academicYears || [], r.markbook || []);
   } catch(e) {
     const errEl = document.getElementById('accessError');
