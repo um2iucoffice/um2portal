@@ -136,6 +136,434 @@ body.theme-light #appsToggleBtn:hover {
   color: var(--crimson);
 }
 /* End light theme overrides */
+
+/* ── OUR CHRONICLES AT SPRING — Panel & Card Styles ── */
+:root {
+  --chr-spring: #2D6A4F;
+  --chr-spring-light: #D8F3DC;
+  --chr-spring-mid: #52B788;
+  --chr-event: #1D3557;
+  --chr-event-light: #E8F0F9;
+  --chr-notice: #7B2D8B;
+  --chr-notice-light: #F3E8F9;
+  --chr-news: #8B1A2E;
+  --chr-news-light: #F7EEF0;
+}
+
+/* Panel header with spring gradient */
+#panel-news .sec-head,
+#panel-share .sec-head {
+  position: relative;
+  overflow: hidden;
+}
+#panel-news .sec-head::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(45,106,79,0.06) 0%, rgba(82,183,136,0.04) 100%);
+  border-radius: inherit;
+  pointer-events: none;
+}
+#panel-news .sec-head h2::before {
+  content: '🌿 ';
+  font-style: normal;
+}
+
+/* Chronicles section title badge */
+.chronicles-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 20px 0 16px;
+  border-bottom: 1px solid var(--glass-card-border);
+  margin-bottom: 20px;
+}
+.chronicles-icon {
+  width: 40px; height: 40px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, var(--chr-spring), var(--chr-spring-mid));
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px; flex-shrink: 0;
+  box-shadow: 0 4px 12px rgba(45,106,79,0.3);
+}
+.chronicles-title-wrap { flex: 1; }
+.chronicles-title {
+  font-family: 'Libre Baskerville', serif;
+  font-size: 17px; font-weight: 700;
+  color: var(--ink);
+  letter-spacing: -.2px;
+}
+.chronicles-subtitle {
+  font-size: 12px; color: var(--ink3);
+  margin-top: 2px;
+}
+
+/* Featured card (first item) */
+.chr-featured {
+  position: relative;
+  border-radius: 12px;
+  overflow: hidden;
+  cursor: pointer;
+  margin-bottom: 16px;
+  border: 1px solid var(--glass-card-border);
+  background: var(--glass-card-bg);
+  transition: border-color .2s, box-shadow .2s, transform .2s;
+}
+.chr-featured:hover {
+  border-color: var(--chr-spring-mid);
+  box-shadow: 0 8px 32px rgba(45,106,79,0.15);
+  transform: translateY(-2px);
+}
+.chr-featured-img {
+  width: 100%; height: 260px;
+  object-fit: cover; display: block;
+  pointer-events: none; user-select: none;
+}
+.chr-featured-noimgbg {
+  height: 100px;
+  background: linear-gradient(135deg, rgba(45,106,79,0.12) 0%, rgba(82,183,136,0.07) 100%);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 36px;
+}
+.chr-featured-body {
+  padding: 20px 22px;
+}
+.chr-featured-meta {
+  display: flex; align-items: center; gap: 10px;
+  margin-bottom: 10px;
+}
+.chr-featured-title {
+  font-family: 'Libre Baskerville', serif;
+  font-size: 20px; font-weight: 700;
+  color: var(--ink); line-height: 1.35;
+  margin-bottom: 8px;
+  letter-spacing: -.2px;
+}
+.chr-featured-excerpt {
+  font-size: 13.5px; color: var(--ink2);
+  line-height: 1.7;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.chr-featured-footer {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid var(--glass-card-border);
+}
+.chr-featured-author { font-size: 12px; color: var(--ink3); }
+.chr-featured-cta {
+  font-size: 12px; font-weight: 600;
+  color: var(--chr-spring);
+  letter-spacing: .3px;
+}
+body.theme-light .chr-featured-cta { color: var(--chr-spring); }
+
+/* Grid of smaller cards */
+.chr-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 14px;
+  margin-bottom: 16px;
+}
+@media (max-width: 700px) {
+  .chr-grid { grid-template-columns: 1fr; }
+}
+
+.chr-card {
+  background: var(--glass-card-bg);
+  border: 1px solid var(--glass-card-border);
+  border-radius: 10px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: border-color .18s, box-shadow .18s, transform .18s;
+  display: flex;
+  flex-direction: column;
+}
+.chr-card:hover {
+  border-color: var(--chr-spring-mid);
+  box-shadow: 0 4px 20px rgba(45,106,79,0.12);
+  transform: translateY(-1px);
+}
+.chr-card-img {
+  width: 100%; height: 140px;
+  object-fit: cover; display: block;
+  pointer-events: none; user-select: none;
+  flex-shrink: 0;
+}
+.chr-card-noimgbg {
+  height: 60px;
+  background: linear-gradient(135deg, rgba(45,106,79,0.08) 0%, rgba(82,183,136,0.05) 100%);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 22px; flex-shrink: 0;
+}
+.chr-card-body {
+  padding: 14px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.chr-card-meta {
+  display: flex; align-items: center; gap: 8px;
+  flex-wrap: wrap;
+}
+.chr-card-title {
+  font-size: 14px; font-weight: 600;
+  color: var(--ink); line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.chr-card-author {
+  font-size: 11px; color: var(--ink3);
+  margin-top: auto;
+}
+
+/* Section group header */
+.chr-group-label {
+  display: flex; align-items: center; gap: 10px;
+  font-size: 10px; font-weight: 700;
+  letter-spacing: 1.4px; text-transform: uppercase;
+  color: var(--ink3);
+  margin: 20px 0 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--glass-card-border);
+}
+.chr-group-label::before {
+  content: '';
+  display: inline-block;
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.chr-group-label.events::before { background: #5B21B6; }
+.chr-group-label.news::before   { background: var(--chr-spring); }
+
+/* Type badges in Chronicles */
+.chr-badge {
+  display: inline-block;
+  font-size: 9px; font-weight: 700;
+  letter-spacing: 1px; text-transform: uppercase;
+  padding: 3px 8px; border-radius: 20px;
+}
+.chr-badge.news     { background: var(--chr-news-light);   color: var(--chr-news);   border: 1px solid rgba(139,26,46,0.18); }
+.chr-badge.event    { background: var(--chr-event-light);  color: var(--chr-event);  border: 1px solid rgba(29,53,87,0.18); }
+.chr-badge.announcement { background: var(--chr-notice-light); color: var(--chr-notice); border: 1px solid rgba(123,45,139,0.18); }
+body.theme-light .chr-badge.news        { background: var(--chr-news-light); }
+body.theme-light .chr-badge.event       { background: var(--chr-event-light); }
+body.theme-light .chr-badge.announcement{ background: var(--chr-notice-light); }
+
+/* Event card special style */
+.chr-event-card {
+  background: var(--glass-card-bg);
+  border: 1px solid var(--glass-card-border);
+  border-left: 4px solid #5B21B6;
+  border-radius: 10px;
+  padding: 16px;
+  cursor: pointer;
+  display: flex; gap: 16px; align-items: flex-start;
+  transition: border-color .18s, box-shadow .18s;
+  margin-bottom: 10px;
+}
+.chr-event-card:hover {
+  border-color: #7C3AED;
+  box-shadow: 0 4px 16px rgba(91,33,182,0.12);
+}
+.chr-event-date-block {
+  background: linear-gradient(135deg, #5B21B6, #7C3AED);
+  border-radius: 8px;
+  padding: 10px 12px;
+  text-align: center;
+  flex-shrink: 0;
+  min-width: 52px;
+  box-shadow: 0 2px 8px rgba(91,33,182,0.25);
+}
+.chr-event-month { font-size: 9px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: rgba(255,255,255,0.7); }
+.chr-event-day   { font-size: 22px; font-weight: 700; color: #fff; line-height: 1.1; }
+.chr-event-body  { flex: 1; }
+.chr-event-title { font-size: 14px; font-weight: 600; color: var(--ink); line-height: 1.4; margin-bottom: 6px; }
+.chr-event-meta  { font-size: 12px; color: var(--ink3); display: flex; flex-wrap: wrap; gap: 8px; }
+.chr-event-meta-item { display: flex; align-items: center; gap: 4px; }
+
+/* Home feed Chronicles strip */
+.chr-home-strip {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+@media (max-width: 1100px) {
+  .chr-home-strip { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 700px) {
+  .chr-home-strip { grid-template-columns: 1fr; }
+}
+.chr-home-card {
+  background: var(--glass-card-bg);
+  border: 1px solid var(--glass-card-border);
+  border-radius: 10px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: border-color .18s, box-shadow .18s, transform .18s;
+}
+.chr-home-card:hover {
+  border-color: var(--chr-spring-mid);
+  box-shadow: 0 4px 20px rgba(45,106,79,0.12);
+  transform: translateY(-2px);
+}
+.chr-home-card-img {
+  width: 100%; height: 110px;
+  object-fit: cover; display: block;
+  pointer-events: none; user-select: none;
+}
+.chr-home-card-noimgbg {
+  height: 50px;
+  background: linear-gradient(135deg, rgba(45,106,79,0.1), rgba(82,183,136,0.06));
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px;
+}
+.chr-home-card-body {
+  padding: 11px 13px;
+  display: flex; flex-direction: column; gap: 5px;
+}
+.chr-home-card-title {
+  font-size: 13px; font-weight: 600;
+  color: var(--ink); line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.chr-home-card-meta {
+  display: flex; align-items: center; gap: 7px;
+  flex-wrap: wrap;
+}
+.chr-home-card-author { font-size: 11px; color: var(--ink3); }
+
+/* Submit panel redesign */
+.chr-submit-wrap {
+  background: var(--glass-card-bg);
+  border: 1px solid var(--glass-card-border);
+  border-radius: 12px;
+  overflow: hidden;
+}
+.chr-submit-header {
+  background: linear-gradient(135deg, rgba(45,106,79,0.08) 0%, rgba(82,183,136,0.05) 100%);
+  border-bottom: 1px solid var(--glass-card-border);
+  padding: 18px 22px;
+  display: flex; align-items: center; gap: 12px;
+}
+.chr-submit-icon {
+  width: 36px; height: 36px;
+  border-radius: 9px;
+  background: linear-gradient(135deg, var(--chr-spring), var(--chr-spring-mid));
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px;
+  box-shadow: 0 2px 8px rgba(45,106,79,0.3);
+  flex-shrink: 0;
+}
+.chr-submit-title {
+  font-size: 15px; font-weight: 600;
+  color: var(--ink);
+}
+.chr-submit-sub {
+  font-size: 12px; color: var(--ink3); margin-top: 2px;
+}
+.chr-submit-body {
+  padding: 20px 22px;
+  display: flex; flex-direction: column; gap: 14px;
+}
+.chr-type-tabs {
+  display: flex; gap: 8px; flex-wrap: wrap;
+}
+.chr-type-tab {
+  padding: 7px 16px;
+  border-radius: 20px;
+  border: 1px solid var(--glass-card-border);
+  background: var(--glass-card-bg);
+  color: var(--ink3);
+  font-size: 12px; font-weight: 600;
+  cursor: pointer;
+  font-family: 'DM Sans', sans-serif;
+  transition: all .15s;
+  letter-spacing: .3px;
+}
+.chr-type-tab:hover {
+  border-color: var(--chr-spring-mid);
+  color: var(--chr-spring);
+  background: rgba(45,106,79,0.05);
+}
+.chr-type-tab.active {
+  background: linear-gradient(135deg, var(--chr-spring), var(--chr-spring-mid));
+  color: #fff;
+  border-color: transparent;
+  box-shadow: 0 2px 8px rgba(45,106,79,0.3);
+}
+.chr-input {
+  width: 100%;
+  padding: 11px 14px;
+  border-radius: 8px;
+  border: 1px solid var(--glass-card-border);
+  background: var(--dash-bg2);
+  color: var(--ink);
+  font-size: 14px;
+  font-family: 'DM Sans', sans-serif;
+  box-sizing: border-box;
+  transition: border-color .15s;
+}
+.chr-input:focus {
+  outline: none;
+  border-color: var(--chr-spring-mid);
+  box-shadow: 0 0 0 3px rgba(45,106,79,0.1);
+}
+.chr-photo-label {
+  display: flex; align-items: center; gap: 10px;
+  padding: 11px 14px;
+  border-radius: 8px;
+  border: 1.5px dashed var(--glass-card-border);
+  background: var(--dash-bg2);
+  color: var(--ink3);
+  font-size: 13px;
+  cursor: pointer;
+  box-sizing: border-box;
+  transition: border-color .2s, background .2s;
+}
+.chr-photo-label:hover {
+  border-color: var(--chr-spring-mid);
+  background: rgba(45,106,79,0.04);
+  color: var(--chr-spring);
+}
+.chr-submit-btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 11px 26px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, var(--chr-spring), var(--chr-spring-mid));
+  color: #fff;
+  font-size: 14px; font-weight: 600;
+  font-family: 'DM Sans', sans-serif;
+  border: none; cursor: pointer;
+  box-shadow: 0 3px 10px rgba(45,106,79,0.35);
+  transition: opacity .15s, transform .15s;
+  letter-spacing: .2px;
+}
+.chr-submit-btn:hover { opacity: .92; transform: translateY(-1px); }
+.chr-submit-btn:disabled { opacity: .5; cursor: not-allowed; transform: none; }
+
+/* Home feed label */
+.chr-home-label {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 11px; font-weight: 700;
+  letter-spacing: 1.5px; text-transform: uppercase;
+  color: var(--ink3);
+}
+.chr-home-label::before {
+  content: '🌿';
+  font-size: 13px;
+}
+/* End Chronicles styles */
 body{
   font-family:'DM Sans',sans-serif;
   background-color:var(--surface);
@@ -3353,7 +3781,7 @@ body.theme-light .comms-ch-btn-gp { color: inherit; }
     <!-- News -->
     <button class="mob-tab" data-section="news" onclick="mobSwitchTab('news',this)">
       <svg class="mob-tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2z"/><line x1="8" y1="10" x2="16" y2="10"/><line x1="8" y1="14" x2="13" y2="14"/></svg>
-      <span class="mob-tab-label">News</span>
+      <span class="mob-tab-label">Chronicles</span>
     </button>
 
     <!-- IRIS external link -->
@@ -3403,11 +3831,11 @@ body.theme-light .comms-ch-btn-gp { color: inherit; }
     </button>
     <button class="mob-more-item" onclick="mobSwitchTab('news',null);closeMobMore()">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2z"/><line x1="8" y1="10" x2="16" y2="10"/><line x1="8" y1="14" x2="13" y2="14"/></svg>
-      News & Events
+      Our Chronicles at Spring
     </button>
     <button class="mob-more-item" onclick="mobSwitchTab('share',null);closeMobMore()">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
-      Share With Campus
+      Contribute to Chronicles
     </button>
     <button class="mob-more-item" onclick="mobSwitchTab('lecturerooms',null);closeMobMore()">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 10l4.553-2.277A1 1 0 0 1 21 8.618v6.764a1 1 0 0 1-1.447.894L15 14"/><rect x="1" y="6" width="14" height="12" rx="2"/></svg>
@@ -3491,12 +3919,12 @@ body.theme-light .comms-ch-btn-gp { color: inherit; }
 
       <button class="sbnav-item" data-section="news" onclick="switchSection('news',this)" id="navNews" style="display:none">
         <svg class="sbnav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2z"/><line x1="8" y1="10" x2="16" y2="10"/><line x1="8" y1="14" x2="13" y2="14"/></svg>
-        <span class="sbnav-label">News & Events</span>
+        <span class="sbnav-label">Our Chronicles at Spring</span>
       </button>
 
       <button class="sbnav-item" data-section="share" onclick="switchSection('share',this)" id="navShare">
         <svg class="sbnav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
-        <span class="sbnav-label">Share With Campus</span>
+        <span class="sbnav-label">Contribute to Chronicles</span>
       </button>
 
       <button class="sbnav-item" data-section="docs" onclick="switchSection('docs',this)">
@@ -3668,7 +4096,7 @@ body.theme-light .comms-ch-btn-gp { color: inherit; }
       <!-- News feed (mobile home only — shown via CSS on ≤700px) -->
       <div class="mob-news-quick" style="display:none;margin-bottom:20px;flex-direction:column;gap:0">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
-          <div class="home-section-label" style="margin-bottom:0">News &amp; Events</div>
+          <div class="home-section-label" style="margin-bottom:0">Our Chronicles at Spring</div>
           <button onclick="switchTab('news')" style="font-family:'DM Sans',sans-serif;font-size:12px;color:var(--crimson);background:none;border:none;cursor:pointer;padding:0;opacity:.8">See all →</button>
         </div>
         <div id="mobHomeNewsCards" style="display:flex;flex-direction:column;gap:10px">
@@ -4208,14 +4636,14 @@ body.theme-light .comms-ch-btn-gp { color: inherit; }
       <div id="appsGridMore" style="display:none"></div>
       <div id="appsToggleBtn" style="display:none"></div>
 
-      <!-- ── NEWS & EVENTS (above IRIS brand banner) ── -->
+      <!-- ── OUR CHRONICLES AT SPRING (home preview) ── -->
       <div id="homeNewsFeed" style="margin-bottom:20px">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
-          <div class="home-section-label" style="margin-bottom:0">News &amp; Events</div>
-          <button onclick="switchTab('news')" style="font-family:'DM Sans',sans-serif;font-size:12px;color:var(--crimson);background:none;border:none;cursor:pointer;padding:0;opacity:.8;transition:opacity .15s" onmouseenter="this.style.opacity='1'" onmouseleave="this.style.opacity='.8'">See all →</button>
+          <div class="chr-home-label" style="margin-bottom:0">Our Chronicles at Spring</div>
+          <button onclick="switchTab('news')" style="font-family:'DM Sans',sans-serif;font-size:12px;color:var(--chr-spring);background:none;border:none;cursor:pointer;padding:0;opacity:.8;transition:opacity .15s" onmouseenter="this.style.opacity='1'" onmouseleave="this.style.opacity='.8'">Read all →</button>
         </div>
-        <div id="homeNewsCards" style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px">
-          <div style="background:var(--glass-card-bg);border:1px solid var(--glass-card-border);border-radius:var(--r);padding:16px;opacity:.5;font-size:13px;color:var(--ink3)">Loading…</div>
+        <div id="homeNewsCards" class="chr-home-strip">
+          <div style="background:var(--glass-card-bg);border:1px solid var(--glass-card-border);border-radius:10px;padding:16px;opacity:.5;font-size:13px;color:var(--ink3)">Loading…</div>
         </div>
       </div>
 
@@ -4691,33 +5119,39 @@ body.theme-light .comms-ch-btn-gp { color: inherit; }
     <!-- NEWS & EVENTS -->
     <div class="section" id="panel-news">
       <div class="sec-head">
-        <h2>News &amp; Events</h2>
-        <p>Latest announcements and upcoming events from the university.</p>
+        <h2>Our Chronicles at Spring</h2>
+        <p>Stories, events and voices from our university community.</p>
       </div>
       <div id="newsContent">
-        <div class="g-wrap"><div class="no-g">No announcements yet.</div></div>
+        <div style="padding:40px 0;text-align:center;color:var(--ink3);font-size:14px">🌿 No chronicles yet. Be the first to share a story!</div>
       </div>
     </div>
 
-    <!-- SHARE WITH CAMPUS -->
+    <!-- CONTRIBUTE TO CHRONICLES -->
     <div class="section" id="panel-share">
       <div class="sec-head">
-        <h2>Share With Campus</h2>
-        <p>Post news, announcements or events for the university community.</p>
+        <h2>Contribute to Chronicles</h2>
+        <p>Contribute your story, event or announcement to the Chronicles.</p>
       </div>
-      <div class="g-wrap" id="submitPostWrap">
-        <div class="g-year-head">Share something with your campus</div>
-        <div style="display:flex;flex-direction:column;gap:12px;padding:16px">
-          <div style="display:flex;gap:10px;flex-wrap:wrap">
-            <button class="cs-year-tab active" id="postTypeNews"         onclick="setPostType('news')">News</button>
-            <button class="cs-year-tab"        id="postTypeAnnouncement" onclick="setPostType('announcement')">Announcement</button>
-            <button class="cs-year-tab"        id="postTypeEvent"        onclick="setPostType('event')">Event</button>
+      <div class="chr-submit-wrap" id="submitPostWrap">
+        <div class="chr-submit-header">
+          <div class="chr-submit-icon">✍️</div>
+          <div>
+            <div class="chr-submit-title">Share with Our Chronicles</div>
+            <div class="chr-submit-sub">Your post will appear once approved by the admin.</div>
           </div>
-          <input id="postTitle" type="text" placeholder="Title" style="width:100%;padding:10px 12px;border-radius:var(--r);border:1px solid var(--line);background:var(--dash-bg2);color:var(--ink);font-size:14px;box-sizing:border-box">
-          <input id="postAuthorName" type="text" placeholder="Your Name (Optional)" style="width:100%;padding:10px 12px;border-radius:var(--r);border:1px solid var(--line);background:var(--dash-bg2);color:var(--ink);font-size:14px;box-sizing:border-box">
-         <label for="postImageFile" style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:var(--r);border:1px dashed var(--line);background:var(--dash-bg2);color:var(--ink3);font-size:13px;cursor:pointer;box-sizing:border-box;transition:border-color .2s" onmouseenter="this.style.borderColor='var(--crimson)'" onmouseleave="this.style.borderColor='var(--line)'">
+        </div>
+        <div class="chr-submit-body">
+          <div class="chr-type-tabs">
+            <button class="chr-type-tab active" id="postTypeNews"         onclick="setPostType('news')">📰 News</button>
+            <button class="chr-type-tab"        id="postTypeAnnouncement" onclick="setPostType('announcement')">📢 Notice</button>
+            <button class="chr-type-tab"        id="postTypeEvent"        onclick="setPostType('event')">🗓 Event</button>
+          </div>
+          <input id="postTitle" type="text" placeholder="Title of your story…" class="chr-input">
+          <input id="postAuthorName" type="text" placeholder="Your name (optional)" class="chr-input">
+          <label for="postImageFile" class="chr-photo-label">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
-            <span id="postImageLabel">Upload photo (optional)</span>
+            <span id="postImageLabel">Upload a photo (optional)</span>
           </label>
           <input id="postImageFile" type="file" accept="image/*" style="display:none" onchange="
             var f=this.files[0];
@@ -4729,19 +5163,22 @@ body.theme-light .comms-ch-btn-gp { color: inherit; }
               r.onload=function(e){prev.src=e.target.result;prev.style.display='block'};
               r.readAsDataURL(f);
             } else {
-              lbl.textContent='Upload photo (optional)';
+              lbl.textContent='Upload a photo (optional)';
               prev.style.display='none';
             }
           ">
-          <img id="postImagePreview" src="" alt="preview" style="display:none;width:100%;max-height:180px;object-fit:cover;border-radius:var(--r);border:1px solid var(--line)">
-          <textarea id="postBody" rows="4" placeholder="Write your post here..." style="width:100%;padding:10px 12px;border-radius:var(--r);border:1px solid var(--line);background:var(--dash-bg2);color:var(--ink);font-size:14px;resize:vertical;box-sizing:border-box"></textarea>
+          <img id="postImagePreview" src="" alt="preview" style="display:none;width:100%;max-height:200px;object-fit:cover;border-radius:8px;border:1px solid var(--glass-card-border)">
+          <textarea id="postBody" rows="5" placeholder="Write your story here…" class="chr-input" style="resize:vertical"></textarea>
           <div id="eventFieldsWrap" style="display:none;flex-direction:column;gap:10px">
-            <input id="postEventDate"     type="date" style="padding:10px 12px;border-radius:var(--r);border:1px solid var(--line);background:var(--dash-bg2);color:var(--ink);font-size:14px;width:100%;box-sizing:border-box">
-            <input id="postEventTime"     type="text" placeholder="Time (e.g. 10:00 AM)" style="padding:10px 12px;border-radius:var(--r);border:1px solid var(--line);background:var(--dash-bg2);color:var(--ink);font-size:14px;width:100%;box-sizing:border-box">
-            <input id="postEventLocation" type="text" placeholder="Location" style="padding:10px 12px;border-radius:var(--r);border:1px solid var(--line);background:var(--dash-bg2);color:var(--ink);font-size:14px;width:100%;box-sizing:border-box">
+            <input id="postEventDate"     type="date"  class="chr-input">
+            <input id="postEventTime"     type="text"  placeholder="Time (e.g. 10:00 AM)"  class="chr-input">
+            <input id="postEventLocation" type="text"  placeholder="Location"               class="chr-input">
           </div>
-          <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
-            <button class="btn-login" id="submitPostBtn" onclick="submitPost()" style="width:auto;padding:10px 24px;font-size:14px">Submit for review</button>
+          <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">
+            <button class="chr-submit-btn" id="submitPostBtn" onclick="submitPost()">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+              Submit for review
+            </button>
             <span id="submitPostMsg" style="font-size:13px;color:var(--ink3)"></span>
           </div>
         </div>
@@ -4952,8 +5389,7 @@ function firstValue(obj, keys, fallback = '') {
 
 function normaliseStudent(raw) {
   const s = raw || {};
-  return {
-    ...s,
+  return Object.assign({}, s, {
     id: firstValue(s, ['id', 'student_id', 'studentId', 'Student ID', 'StudentID']),
     fullName: firstValue(s, ['name_en', 'fullName', 'full_name', 'Name', 'name']),
     fullNameMM: firstValue(s, ['name_my', 'fullNameMM', 'full_name_mm', 'Name Myanmar', 'name_mm']),
@@ -4977,7 +5413,7 @@ function normaliseStudent(raw) {
     graduationDateMY: firstValue(s, ['graduation_date_my', 'graduationDateMY']),
     gpa: firstValue(s, ['Overall GPA', 'overall_gpa', 'OverallGPA', 'overallGPA', 'gpa', 'GPA']),
     gender: firstValue(s, ['gender', 'Gender', 'sex', 'Sex'])
-  };
+  });
 }
 
 function normaliseGradeRow(raw) {
@@ -4986,8 +5422,7 @@ function normaliseGradeRow(raw) {
     'courseId', 'course_id', 'Course ID', 'CourseID', 'course_code', 'Course Code', 'code'
   ], '')).trim();
 
-  return {
-    ...g,
+  return Object.assign({}, g, {
     courseId,
     course:        firstValue(g, ['course', 'Course', 'course_name', 'CourseName', 'courseName', 'subject', 'Subject']),
     numericScore:  firstValue(g, ['numericScore', 'NumericScore', 'numeric_score', 'score', 'Score']),
@@ -4998,7 +5433,7 @@ function normaliseGradeRow(raw) {
     completionYear: firstValue(g, ['completionYear', 'CompletionYear', 'completion_year', 'year', 'Year']),
     academicYear:  firstValue(g, ['academicYear', 'AcademicYear', 'academic_year', 'yearLevel', 'YearLevel', 'course_year']),
     note:          firstValue(g, ['note', 'Note', 'notes', 'Notes', 'comment', 'Comment', 'remarks', 'Remarks'])
-  };
+  });
 }
 
 // ── Populate dashboard ────────────────────────────────────────
@@ -5843,7 +6278,7 @@ function renderGrades(grades, student) {
     if (!groups[academicYear]) groups[academicYear] = {};
     const block = course.block || 'General';
     if (!groups[academicYear][block]) groups[academicYear][block] = [];
-    groups[academicYear][block].push({ ...g, course, academicYear });
+    groups[academicYear][block].push(Object.assign({}, g, { course: course, academicYear: academicYear }));
   });
 
   // Build year order from the active course catalogue (preserves DB insertion order),
@@ -5854,14 +6289,8 @@ function renderGrades(grades, student) {
   });
   const metaOrder = PROGRAM_META.yearOrder || [];
   // Merge: catalogue order first (reflects DB), then any extra from meta, then unknowns
-  const mergedOrder = [
-    ...catalogYearOrder,
-    ...metaOrder.filter(y => !catalogYearOrder.includes(y))
-  ];
-  const order = [
-    ...mergedOrder.filter(y => groups[y]),
-    ...Object.keys(groups).filter(y => !mergedOrder.includes(y)).sort()
-  ];
+  const mergedOrder = catalogYearOrder.concat(metaOrder.filter(function(y) { return !catalogYearOrder.includes(y); }));
+  const order = mergedOrder.filter(function(y) { return groups[y]; }).concat(Object.keys(groups).filter(function(y) { return !mergedOrder.includes(y); }).sort());
 
   // Summary stats: GPA is not calculated here.
   // It only reflects the value supplied by the sheet/data source.
@@ -6148,8 +6577,8 @@ const SECTION_TITLES = {
   grades:        'Academic Record',
   coursesession: 'Course Session',
   markbook:      'Mark Book',
-  news:          'News & Events',
-  share:         'Share With Campus',
+  news:          'Our Chronicles at Spring',
+  share:         'Contribute to Chronicles',
   docs:          'Document Office',
   idcard:        'ID Card',
   photo:         'Profile Photo',
@@ -6379,7 +6808,7 @@ function renderMarkbook(student, markbook, grades) {
     const block      = r.block || courseMeta.block || r.course || courseMeta.name || 'General';
     if (!groups[yr])        groups[yr]        = {};
     if (!groups[yr][block]) groups[yr][block] = [];
-    groups[yr][block].push({ ...r, courseId, courseMeta });
+    groups[yr][block].push(Object.assign({}, r, { courseId: courseId, courseMeta: courseMeta }));
   });
 
   // Year ordering — follow catalogue order
@@ -6388,11 +6817,8 @@ function renderMarkbook(student, markbook, grades) {
     if (c.year && !catalogYearOrder.includes(c.year)) catalogYearOrder.push(c.year);
   });
   const metaOrder  = (PROGRAM_META && PROGRAM_META.yearOrder) ? PROGRAM_META.yearOrder : [];
-  const mergedOrder = [...catalogYearOrder, ...metaOrder.filter(y => !catalogYearOrder.includes(y))];
-  const order = [
-    ...mergedOrder.filter(y => groups[y]),
-    ...Object.keys(groups).filter(y => !mergedOrder.includes(y)).sort()
-  ];
+  const mergedOrder = catalogYearOrder.concat(metaOrder.filter(function(y) { return !catalogYearOrder.includes(y); }));
+  const order = mergedOrder.filter(function(y) { return groups[y]; }).concat(Object.keys(groups).filter(function(y) { return !mergedOrder.includes(y); }).sort());
 
   let totalAssessments = rows.length;
   let sumPct = 0, pctCount = 0;
@@ -7279,7 +7705,7 @@ function printDocument(type) {
       const block = course.block || 'General';
       if (!groups[yr]) groups[yr] = {};
       if (!groups[yr][block]) groups[yr][block] = [];
-      groups[yr][block].push({ ...g, course });
+      groups[yr][block].push(Object.assign({}, g, { course: course }));
     });
 
     // Same year ordering as renderGrades — derive from course catalogue
@@ -7289,14 +7715,8 @@ function printDocument(type) {
       if (c.year && !tCatalogOrder.includes(c.year)) tCatalogOrder.push(c.year);
     });
     const tMetaOrder = (typeof PROGRAM_META !== 'undefined' && PROGRAM_META.yearOrder) || [];
-    const tMergedOrder = [
-      ...tCatalogOrder,
-      ...tMetaOrder.filter(y => !tCatalogOrder.includes(y))
-    ];
-    const orderedYears = [
-      ...tMergedOrder.filter(y => groups[y]),
-      ...Object.keys(groups).filter(y => !tMergedOrder.includes(y)).sort()
-    ];
+    const tMergedOrder = tCatalogOrder.concat(tMetaOrder.filter(function(y) { return !tCatalogOrder.includes(y); }));
+    const orderedYears = tMergedOrder.filter(function(y) { return groups[y]; }).concat(Object.keys(groups).filter(function(y) { return !tMergedOrder.includes(y); }).sort());
 
     orderedYears.forEach(yr => {
       const rows = [];
@@ -8069,110 +8489,175 @@ function doSignOut() {
   setTimeout(() => { dash.classList.add('show'); _resolveInitialHash(); }, 100);
 })();
 
-// ── News & Events ─────────────────────────────────────────────
+// ── Our Chronicles at Spring — render functions ──────────────
 function renderNews(announcements) {
-  const container = document.getElementById('newsContent');
+  var container = document.getElementById('newsContent');
   if (!container) return;
-  const items = (announcements || []);
+  var items = (announcements || []);
   if (!items.length) {
-    container.innerHTML = '<div class="g-wrap"><div class="no-g">No announcements yet.</div></div>';
+    container.innerHTML = '<div style="padding:48px 0;text-align:center;color:var(--ink3);font-size:14px">🌿 No chronicles yet. Be the first to share a story!</div>';
     return;
   }
 
-  // Sort all items by date (latest first)
-  const sorted = [...items].sort((a, b) => {
-    const da = a.type === 'event' ? (a.event_date || a.published_at || '') : (a.published_at || '');
-    const db = b.type === 'event' ? (b.event_date || b.published_at || '') : (b.published_at || '');
+  var sorted = items.slice().sort(function(a, b) {
+    var da = a.type === 'event' ? (a.event_date || a.published_at || '') : (a.published_at || '');
+    var db = b.type === 'event' ? (b.event_date || b.published_at || '') : (b.published_at || '');
     return db.localeCompare(da);
   });
 
   function openNewsDetail(a) {
-    const badgeTxt = a.type === 'announcement' ? 'Article/Announcement/News' : a.type === 'event' ? 'Event' : 'News';
-    const dateStr  = a.type === 'event' && a.event_date ? escHtml(a.event_date) : escHtml((a.published_at || '').slice(0,10));
-    const postedBy = a.author_type === 'student' ? ' &middot; Posted by student' : '';
-    const meta     = a.type === 'event'
-      ? dateStr + (a.event_time ? ' &middot; ' + escHtml(a.event_time) : '') + (a.event_location ? ' &middot; ' + escHtml(a.event_location) : '')
+    var badgeTxt = a.type === 'announcement' ? 'Notice' : a.type === 'event' ? 'Event' : 'News';
+    var dateStr  = a.type === 'event' && a.event_date ? escHtml(a.event_date) : escHtml((a.published_at || '').slice(0,10));
+    var postedBy = a.author_type === 'student' ? ' · Posted by student' : '';
+    var meta     = a.type === 'event'
+      ? dateStr + (a.event_time ? ' · ' + escHtml(a.event_time) : '') + (a.event_location ? ' · ' + escHtml(a.event_location) : '')
       : dateStr + postedBy;
+    var typeBadgeColor = a.type === 'event'
+      ? 'background:#EDE9FE;color:#5B21B6;border:1px solid #C4B5FD'
+      : a.type === 'announcement'
+        ? 'background:#F3E8F9;color:#7B2D8B;border:1px solid rgba(123,45,139,0.2)'
+        : 'background:#D8F3DC;color:#2D6A4F;border:1px solid rgba(45,106,79,0.2)';
 
-    const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>${escHtml(a.title)} — IRIS News</title>
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
-<style>
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-body{font-family:'DM Sans',sans-serif;background:#0e1420;color:rgba(255,255,255,0.85);min-height:100vh;padding:0;-webkit-font-smoothing:antialiased}
-.art-header{background:rgba(10,15,26,0.98);border-bottom:1px solid rgba(255,255,255,0.06);padding:16px 24px;display:flex;align-items:center;gap:14px;position:sticky;top:0;z-index:10;backdrop-filter:blur(12px)}
-.art-back{background:none;border:1px solid rgba(255,255,255,0.12);border-radius:8px;padding:7px 14px;color:rgba(255,255,255,0.55);font-size:13px;cursor:pointer;font-family:'DM Sans',sans-serif;display:flex;align-items:center;gap:6px;transition:all .15s}
-.art-back:hover{background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.85)}
-.art-iris{font-size:13px;color:rgba(255,255,255,0.3);margin-left:auto;letter-spacing:.3px}
-.art-wrap{max-width:720px;margin:0 auto;padding:48px 28px 80px}
-.art-badge{display:inline-block;font-size:10px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;padding:4px 10px;border-radius:4px;margin-bottom:16px}
-.art-badge.news{background:rgba(139,26,46,0.2);color:#e05470;border:1px solid rgba(139,26,46,0.3)}
-.art-badge.event{background:rgba(139,92,246,0.15);color:#c4b5fd;border:1px solid rgba(167,139,250,0.25)}
-.art-badge.announcement{background:rgba(16,185,129,0.12);color:#6ee7b7;border:1px solid rgba(110,231,183,0.2)}
-.art-title{font-family:'Libre Baskerville',serif;font-size:32px;color:#fff;line-height:1.3;letter-spacing:-.3px;margin-bottom:14px}
-.art-meta{font-size:13px;color:rgba(255,255,255,0.35);margin-bottom:32px;display:flex;align-items:center;gap:8px}
-.art-img{width:100%;max-height:420px;object-fit:cover;border-radius:12px;margin-bottom:32px;border:1px solid rgba(255,255,255,0.06)}
-.art-body{font-size:16px;line-height:1.8;color:rgba(255,255,255,0.72);white-space:pre-wrap}
-</style></head><body>
-<div class="art-header">
-  <button class="art-back" onclick="window.close()">&#8592; Back</button>
-  <span class="art-iris">IRIS · UM2IUC</span>
-</div>
-<div class="art-wrap">
-  <div class="art-badge ${escHtml(a.type || 'news')}">${badgeTxt}</div>
-  <h1 class="art-title">${escHtml(a.title)}</h1>
-  <div class="art-meta">${meta}</div>
-  ${a.image_url ? `<img class="art-img" src="${escHtml(a.image_url)}" alt="" draggable="false" oncontextmenu="return false" style="pointer-events:none;user-select:none;-webkit-user-select:none">` : ''}
-  <div class="art-body">${escHtml(a.body || '')}</div>
-</div>
-</body></html>`;
-    const w = window.open('', '_blank', 'width=800,height=700');
+    var html = '<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">'
+      + '<title>' + escHtml(a.title) + ' — Our Chronicles</title>'
+      + '<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">'
+      + '<style>'
+      + '*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}'
+      + 'body{font-family:\'DM Sans\',sans-serif;background:#0a0f1a;color:rgba(255,255,255,0.85);min-height:100vh;-webkit-font-smoothing:antialiased}'
+      + '.art-header{background:rgba(8,12,22,0.98);border-bottom:1px solid rgba(255,255,255,0.06);padding:16px 24px;display:flex;align-items:center;gap:14px;position:sticky;top:0;z-index:10;backdrop-filter:blur(12px)}'
+      + '.art-back{background:none;border:1px solid rgba(255,255,255,0.12);border-radius:8px;padding:7px 14px;color:rgba(255,255,255,0.55);font-size:13px;cursor:pointer;font-family:\'DM Sans\',sans-serif;display:flex;align-items:center;gap:6px;transition:all .15s}'
+      + '.art-back:hover{background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.9)}'
+      + '.art-brand{font-size:12px;color:rgba(45,106,79,0.7);margin-left:auto;font-weight:600;letter-spacing:.5px}'
+      + '.art-wrap{max-width:740px;margin:0 auto;padding:52px 28px 96px}'
+      + '.art-badge{display:inline-block;font-size:9px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;padding:4px 12px;border-radius:20px;margin-bottom:18px}'
+      + '.art-title{font-family:\'Libre Baskerville\',serif;font-size:34px;color:#fff;line-height:1.25;letter-spacing:-.4px;margin-bottom:16px}'
+      + '.art-meta{font-size:13px;color:rgba(255,255,255,0.35);margin-bottom:36px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}'
+      + '.art-divider{width:48px;height:3px;background:linear-gradient(90deg,#2D6A4F,#52B788);border-radius:2px;margin-bottom:36px}'
+      + '.art-img{width:100%;max-height:440px;object-fit:cover;border-radius:14px;margin-bottom:36px;border:1px solid rgba(255,255,255,0.06);box-shadow:0 8px 32px rgba(0,0,0,0.4)}'
+      + '.art-body{font-size:16px;line-height:1.85;color:rgba(255,255,255,0.72);white-space:pre-wrap}'
+      + '.art-footer{margin-top:56px;padding-top:20px;border-top:1px solid rgba(255,255,255,0.06);font-size:12px;color:rgba(255,255,255,0.2);text-align:center}'
+      + '</style></head><body>'
+      + '<div class="art-header">'
+      + '  <button class="art-back" onclick="window.close()">&#8592; Back</button>'
+      + '  <span class="art-brand">🌿 Our Chronicles at Spring</span>'
+      + '</div>'
+      + '<div class="art-wrap">'
+      + '  <div class="art-badge" style="' + typeBadgeColor + '">' + badgeTxt + '</div>'
+      + '  <h1 class="art-title">' + escHtml(a.title) + '</h1>'
+      + '  <div class="art-meta">' + meta + (a.author_name ? '<span>·</span><span>By ' + escHtml(a.author_name) + '</span>' : '') + '</div>'
+      + '  <div class="art-divider"></div>'
+      + (a.image_url ? '  <img class="art-img" src="' + escHtml(a.image_url) + '" alt="" draggable="false" oncontextmenu="return false" style="pointer-events:none;user-select:none;-webkit-user-select:none">' : '')
+      + '  <div class="art-body">' + escHtml(a.body || '') + '</div>'
+      + '  <div class="art-footer">Our Chronicles at Spring · UM2IUC · IRIS</div>'
+      + '</div></body></html>';
+    var w = window.open('', '_blank', 'width=820,height=720');
     if (w) { w.document.write(html); w.document.close(); }
   }
 
-  // Store for click handler
   window._newsItems = sorted;
 
-  function newsCard(a, idx) {
-    const badgeCls = a.type === 'announcement' ? 'gA' : a.type === 'event' ? 'gC' : 'gB';
-    const badgeTxt = a.type === 'announcement' ? 'Notice' : a.type === 'event' ? 'Event' : 'News';
-    const postedBy = a.author_type === 'student' ? ' &middot; Posted by student' : '';
-    const dateStr  = a.type === 'event' && a.event_date ? escHtml(a.event_date) : escHtml((a.published_at || '').slice(0,10));
-    const meta     = a.type === 'event'
-      ? dateStr + (a.event_time ? ' &middot; ' + escHtml(a.event_time) : '') + (a.event_location ? ' &middot; ' + escHtml(a.event_location) : '')
-      : dateStr + postedBy;
-
-    return '<div data-newsidx="' + idx + '" style="background:var(--glass-card-bg);border:1px solid var(--glass-card-border);border-radius:var(--r);margin-bottom:16px;overflow:hidden;cursor:pointer;transition:border-color .18s,box-shadow .18s" onmouseenter="this.style.borderColor=\'rgba(139,26,46,0.4)\';this.style.boxShadow=\'0 4px 20px rgba(139,26,46,0.12)\'" onmouseleave="this.style.borderColor=\'var(--glass-card-border)\';this.style.boxShadow=\'none\'" onclick="window._newsItems&&openNewsDetail(window._newsItems[this.dataset.newsidx])">' +
-      (a.image_url ? '<img src="' + escHtml(a.image_url) + '" alt="" style="width:100%;height:200px;object-fit:cover;display:block;border-bottom:1px solid var(--glass-card-border);pointer-events:none;user-select:none;-webkit-user-select:none" draggable="false" oncontextmenu="return false">' : '') +
-      '<div style="padding:16px">' +
-        '<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">' +
-          '<span class="gbadge ' + badgeCls + '" style="font-size:10px">' + badgeTxt + '</span>' +
-          '<span style="font-size:11px;color:var(--ink3)">' + meta + '</span>' +
-          '<span style="margin-left:auto;font-size:11px;color:rgba(139,26,46,0.6)">Read →</span>' +
-        '</div>' +
-        '<div style="font-size:15px;font-weight:500;color:var(--ink);margin-bottom:6px;line-height:1.4">' + escHtml(a.title) + '</div>' +
-        (a.body ? '<div style="font-size:13px;color:var(--ink2);line-height:1.6;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden">' + escHtml(a.body) + '</div>' : '') +
-      '</div>' +
-    '</div>';
+  // Helper: parse date string to get month/day
+  function parseDateParts(dateStr) {
+    if (!dateStr) return { month: '', day: '' };
+    var d = new Date(dateStr);
+    if (isNaN(d.getTime())) return { month: '', day: dateStr };
+    var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    return { month: months[d.getMonth()], day: String(d.getDate()) };
   }
 
-  const events = sorted.filter(a => a.type === 'event');
-  const news   = sorted.filter(a => a.type !== 'event');
-  let html = '';
+  // Featured card (first non-event item, or first item)
+  function featuredCard(a, idx) {
+    var dateStr = a.type === 'event' && a.event_date ? escHtml(a.event_date) : escHtml((a.published_at || '').slice(0,10));
+    var typeTxt = a.type === 'announcement' ? 'Notice' : a.type === 'event' ? 'Event' : 'News';
+    var typeEmoji = a.type === 'event' ? '🗓' : a.type === 'announcement' ? '📢' : '📰';
+    return '<div class="chr-featured" data-newsidx="' + idx + '" onclick="window._newsItems&&window.openNewsDetail(window._newsItems[this.dataset.newsidx])">'
+      + (a.image_url
+          ? '<img class="chr-featured-img" src="' + escHtml(a.image_url) + '" alt="" draggable="false" oncontextmenu="return false">'
+          : '<div class="chr-featured-noimgbg">' + typeEmoji + '</div>')
+      + '<div class="chr-featured-body">'
+      + '  <div class="chr-featured-meta">'
+      + '    <span class="chr-badge ' + escHtml(a.type || 'news') + '">' + typeTxt + '</span>'
+      + '    <span style="font-size:12px;color:var(--ink3)">' + dateStr + '</span>'
+      + '    <span style="margin-left:auto;font-size:12px;color:var(--chr-spring);font-weight:600">Read story →</span>'
+      + '  </div>'
+      + '  <div class="chr-featured-title">' + escHtml(a.title) + '</div>'
+      + (a.body ? '  <div class="chr-featured-excerpt">' + escHtml(a.body) + '</div>' : '')
+      + '  <div class="chr-featured-footer">'
+      + '    <span class="chr-featured-author">' + (a.author_name ? 'By ' + escHtml(a.author_name) : 'University Community') + '</span>'
+      + '    <span class="chr-featured-cta">🌿 Our Chronicles</span>'
+      + '  </div>'
+      + '</div>'
+      + '</div>';
+  }
 
+  // Grid card (smaller)
+  function gridCard(a, idx) {
+    var dateStr = a.type === 'event' && a.event_date ? escHtml(a.event_date) : escHtml((a.published_at || '').slice(0,10));
+    var typeTxt = a.type === 'announcement' ? 'Notice' : a.type === 'event' ? 'Event' : 'News';
+    var typeEmoji = a.type === 'event' ? '🗓' : a.type === 'announcement' ? '📢' : '📰';
+    return '<div class="chr-card" data-newsidx="' + idx + '" onclick="window._newsItems&&window.openNewsDetail(window._newsItems[this.dataset.newsidx])">'
+      + (a.image_url
+          ? '<img class="chr-card-img" src="' + escHtml(a.image_url) + '" alt="" draggable="false" oncontextmenu="return false">'
+          : '<div class="chr-card-noimgbg">' + typeEmoji + '</div>')
+      + '<div class="chr-card-body">'
+      + '  <div class="chr-card-meta">'
+      + '    <span class="chr-badge ' + escHtml(a.type || 'news') + '">' + typeTxt + '</span>'
+      + '    <span style="font-size:11px;color:var(--ink3)">' + dateStr + '</span>'
+      + '  </div>'
+      + '  <div class="chr-card-title">' + escHtml(a.title) + '</div>'
+      + (a.author_name ? '<div class="chr-card-author">By ' + escHtml(a.author_name) + '</div>' : '')
+      + '</div>'
+      + '</div>';
+  }
+
+  // Event card (special style with date block)
+  function eventCard(a, idx) {
+    var dp = parseDateParts(a.event_date || a.published_at || '');
+    var timeMeta = (a.event_time ? a.event_time : '');
+    var locMeta  = (a.event_location ? a.event_location : '');
+    return '<div class="chr-event-card" data-newsidx="' + idx + '" onclick="window._newsItems&&window.openNewsDetail(window._newsItems[this.dataset.newsidx])">'
+      + '<div class="chr-event-date-block">'
+      + '  <div class="chr-event-month">' + escHtml(dp.month) + '</div>'
+      + '  <div class="chr-event-day">'   + escHtml(dp.day)   + '</div>'
+      + '</div>'
+      + '<div class="chr-event-body">'
+      + '  <div class="chr-event-title">' + escHtml(a.title) + '</div>'
+      + '  <div class="chr-event-meta">'
+      + (timeMeta ? '<span class="chr-event-meta-item">🕐 ' + escHtml(timeMeta) + '</span>' : '')
+      + (locMeta  ? '<span class="chr-event-meta-item">📍 ' + escHtml(locMeta)  + '</span>' : '')
+      + (a.author_name ? '<span class="chr-event-meta-item">👤 ' + escHtml(a.author_name) + '</span>' : '')
+      + '  </div>'
+      + (a.body ? '<div style="font-size:12px;color:var(--ink3);margin-top:6px;line-height:1.6;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">' + escHtml(a.body) + '</div>' : '')
+      + '</div>'
+      + '</div>';
+  }
+
+  var events  = sorted.filter(function(a) { return a.type === 'event'; });
+  var stories = sorted.filter(function(a) { return a.type !== 'event'; });
+  var html = '';
+
+  // Events section
   if (events.length) {
-    html += '<div class="g-wrap"><div class="g-year-head">Upcoming Events</div>';
-    events.forEach((a, i) => { html += newsCard(a, sorted.indexOf(a)); });
-    html += '</div>';
+    html += '<div class="chr-group-label events">Upcoming Events</div>';
+    events.forEach(function(a) { html += eventCard(a, sorted.indexOf(a)); });
   }
-  if (news.length) {
-    html += '<div class="g-wrap"><div class="g-year-head">News &amp; Announcements</div>';
-    news.forEach((a, i) => { html += newsCard(a, sorted.indexOf(a)); });
-    html += '</div>';
-  }
-  container.innerHTML = html;
 
-  // Expose openNewsDetail globally
+  // Stories & notices section
+  if (stories.length) {
+    html += '<div class="chr-group-label news">Stories &amp; Notices</div>';
+    if (stories.length >= 1) {
+      html += featuredCard(stories[0], sorted.indexOf(stories[0]));
+    }
+    if (stories.length > 1) {
+      html += '<div class="chr-grid">';
+      for (var i = 1; i < stories.length; i++) {
+        html += gridCard(stories[i], sorted.indexOf(stories[i]));
+      }
+      html += '</div>';
+    }
+  }
+
+  container.innerHTML = html;
   window.openNewsDetail = openNewsDetail;
 }
 
@@ -8211,59 +8696,50 @@ function renderStudentOverview(student, grades, courses) {
 
 
 function renderHomeNews(announcements) {
-  const container    = document.getElementById('homeNewsCards');
-  const mobContainer = document.getElementById('mobHomeNewsCards');
+  var container    = document.getElementById('homeNewsCards');
+  var mobContainer = document.getElementById('mobHomeNewsCards');
   if (!container && !mobContainer) return;
-  const items = (announcements || []);
+  var items = (announcements || []);
 
-  const emptyMsg = '<div style="grid-column:1/-1;background:var(--glass-card-bg);border:1px solid var(--glass-card-border);border-radius:var(--r);padding:24px;text-align:center;color:var(--ink3);font-size:13px">No announcements yet.</div>';
+  var emptyMsg = '<div style="background:var(--glass-card-bg);border:1px solid var(--glass-card-border);border-radius:10px;padding:28px;text-align:center;color:var(--ink3);font-size:13px">🌿 No chronicles yet.</div>';
   if (!items.length) {
     if (container)    container.innerHTML    = emptyMsg;
     if (mobContainer) mobContainer.innerHTML = emptyMsg;
     return;
   }
 
-  const sorted = [...items].sort((a, b) => {
-    const da = a.type === 'event' ? (a.event_date || a.published_at || '') : (a.published_at || '');
-    const db = b.type === 'event' ? (b.event_date || b.published_at || '') : (b.published_at || '');
+  var sorted = items.slice().sort(function(a, b) {
+    var da = a.type === 'event' ? (a.event_date || a.published_at || '') : (a.published_at || '');
+    var db = b.type === 'event' ? (b.event_date || b.published_at || '') : (b.published_at || '');
     return db.localeCompare(da);
   });
 
-  function homeCard(a, idx, compact) {
-    const badgeCls = a.type === 'announcement' ? 'gA' : a.type === 'event' ? 'gC' : 'gB';
-    const badgeTxt = a.type === 'announcement' ? 'Notice' : a.type === 'event' ? 'Event' : 'News';
-    const dateStr  = a.type === 'event' && a.event_date ? escHtml(a.event_date) : escHtml((a.published_at || '').slice(0,10));
-    const imgH     = compact ? '100px' : '120px';
-    const imgHtml  = a.image_url
-      ? '<img src="' + escHtml(a.image_url) + '" alt="" style="width:100%;height:' + imgH + ';object-fit:cover;display:block;border-bottom:1px solid var(--glass-card-border);pointer-events:none;user-select:none;-webkit-user-select:none" draggable="false" oncontextmenu="return false">'
-      : '';
-    return '<div data-newsidx="' + idx + '" style="background:var(--glass-card-bg);border:1px solid var(--glass-card-border);border-radius:var(--r);overflow:hidden;cursor:pointer;transition:border-color .18s,box-shadow .18s;display:flex;flex-direction:' + (compact ? 'row' : 'column') + '" onmouseenter="this.style.borderColor=\'rgba(139,26,46,0.4)\';this.style.boxShadow=\'0 4px 20px rgba(139,26,46,0.12)\'" onmouseleave="this.style.borderColor=\'var(--glass-card-border)\';this.style.boxShadow=\'none\'" onclick="window._newsItems&&window.openNewsDetail(window._newsItems[this.dataset.newsidx])">' +
-      (compact && a.image_url
-        ? '<img src="' + escHtml(a.image_url) + '" alt="" style="width:80px;height:80px;object-fit:cover;flex-shrink:0;pointer-events:none;user-select:none;-webkit-user-select:none" draggable="false" oncontextmenu="return false">'
-        : (!compact ? imgHtml : '')) +
-      '<div style="padding:12px;flex:1;display:flex;flex-direction:column;gap:5px;justify-content:center">' +
-        '<div style="display:flex;align-items:center;gap:7px">' +
-          '<span class="gbadge ' + badgeCls + '" style="font-size:10px">' + badgeTxt + '</span>' +
-          '<span style="font-size:11px;color:var(--ink3)">' + dateStr + '</span>' +
-        '</div>' +
-        '<div style="font-size:13px;font-weight:600;color:var(--ink);line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">' + escHtml(a.title) + '</div>' +
-(a.author_name ? '<div style="font-size:11px;color:var(--ink3);margin-top:2px">— ' + escHtml(a.author_name) + '</div>' : '') +
-(a.body && !compact ? '<div style="font-size:12px;color:var(--ink3);line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">' + escHtml(a.body) + '</div>' : '') +
-        (a.body && !compact ? '<div style="font-size:12px;color:var(--ink3);line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">' + escHtml(a.body) + '</div>' : '') +
-      '</div>' +
-    '</div>';
+  function homeCard(a, idx) {
+    var dateStr = a.type === 'event' && a.event_date ? escHtml(a.event_date) : escHtml((a.published_at || '').slice(0,10));
+    var typeTxt = a.type === 'announcement' ? 'Notice' : a.type === 'event' ? 'Event' : 'News';
+    var typeEmoji = a.type === 'event' ? '🗓' : a.type === 'announcement' ? '📢' : '📰';
+    return '<div class="chr-home-card" data-newsidx="' + idx + '" onclick="window._newsItems&&window.openNewsDetail&&window.openNewsDetail(window._newsItems[this.dataset.newsidx])">'
+      + (a.image_url
+          ? '<img class="chr-home-card-img" src="' + escHtml(a.image_url) + '" alt="" draggable="false" oncontextmenu="return false">'
+          : '<div class="chr-home-card-noimgbg">' + typeEmoji + '</div>')
+      + '<div class="chr-home-card-body">'
+      + '  <div class="chr-home-card-meta">'
+      + '    <span class="chr-badge ' + escHtml(a.type || 'news') + '">' + typeTxt + '</span>'
+      + '    <span style="font-size:11px;color:var(--ink3)">' + dateStr + '</span>'
+      + '  </div>'
+      + '  <div class="chr-home-card-title">' + escHtml(a.title) + '</div>'
+      + (a.author_name ? '<div class="chr-home-card-author">By ' + escHtml(a.author_name) + '</div>' : '')
+      + '</div>'
+      + '</div>';
   }
 
-  const preview = sorted.slice(0, 3);
-  if (container)    container.innerHTML    = preview.map((a, i) => homeCard(a, sorted.indexOf(a), false)).join('');
-  if (mobContainer) mobContainer.innerHTML = preview.map((a, i) => homeCard(a, sorted.indexOf(a), true)).join('');
+  var preview = sorted.slice(0, 3);
+  if (container)    container.innerHTML    = preview.map(function(a, i) { return homeCard(a, sorted.indexOf(a)); }).join('');
+  if (mobContainer) mobContainer.innerHTML = preview.map(function(a, i) { return homeCard(a, sorted.indexOf(a)); }).join('');
 }
-// Declare and default _postType
-var _postType = 'news';
 
-window.setPostType = function(type) {
-  _postType = type;
-  ...
+var _postType = 'news'; // default post type
+
 window.setPostType = function(type) {
   _postType = type;
   ['news','announcement','event'].forEach(function(t) {
