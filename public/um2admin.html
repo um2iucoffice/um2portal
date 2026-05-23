@@ -710,7 +710,7 @@ body.theme-light .mob-menu-btn { color:var(--ink2); }
 
 /* ── MOBILE BOTTOM NAV (admin) ── */
 .mob-bottom-nav {
-  display:none; position:fixed; bottom:0; left:0; right:0; z-index:50;
+  display:none !important; position:fixed; bottom:0; left:0; right:0; z-index:50;
   height:56px; background:rgba(10,15,26,.97); border-top:1px solid rgba(255,255,255,.08);
   justify-content:space-around; align-items:center;
 }
@@ -730,7 +730,7 @@ body.theme-light .mob-nav-btn { color:var(--ink3); }
   .topbar { left:0; }
   .sidebar { transform:translateX(-100%); transition:transform .25s ease; z-index:58; }
   .sidebar.mob-open { transform:translateX(0); }
-  .main { margin-left:0 !important; padding: 76px 14px 80px; overflow-x:hidden; }
+  .main { margin-left:0 !important; padding: 76px 14px 20px; overflow-x:hidden; }
   .stat-grid { grid-template-columns:1fr 1fr; }
   .sis-panel { grid-template-columns:1fr; }
   .form-grid { grid-template-columns:1fr; }
@@ -738,7 +738,7 @@ body.theme-light .mob-nav-btn { color:var(--ink3); }
   .profile-hero-card { flex-direction:column; gap:16px; }
   .profile-info-grid { grid-template-columns:1fr; }
   .mob-menu-btn { display:flex; align-items:center; justify-content:center; }
-  .mob-bottom-nav { display:flex; }
+  .mob-bottom-nav { display:none !important; }
   .sync-badge { display:none; }
   /* Profile page: stack columns */
   .profile-2col-grid { display:block !important; }
@@ -830,7 +830,7 @@ input, select, textarea { width: 100%; box-sizing: border-box; min-height: 42px;
 table { min-width: 520px; }
 
 /* ── Toast: mobile safe ── */
-.notif-toast { bottom: 72px; right: 12px; left: 12px; max-width: 100%; }
+.notif-toast { bottom: 16px; right: 12px; left: 12px; max-width: 100%; }
 
 /* ── Tabs: scrollable ── */
 .tabs {
@@ -883,7 +883,7 @@ table { min-width: 520px; }
 
   /* Layout */
   body { font-size: 14px; }
-  .main { padding: 72px 12px 80px; }
+  .main { padding: 72px 12px 20px; }
 
   /* Page header */
   .page-header { margin-bottom: 16px; }
@@ -1377,6 +1377,9 @@ button, .btn, .nav-item, .tab, .mob-nav-btn, .login-role-btn, .tt-tab {
   <div class="nav-item" id="nav-myProfile" onclick="showView('myProfile')">
     <span class="nav-icon"><svg class="nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg></span>My Profile
   </div>
+  <div class="nav-item" id="nav-teachingSchedule" onclick="showView('teachingSchedule')">
+    <span class="nav-icon"><svg class="nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></span>Teaching Schedule
+  </div>
   <div class="nav-item" id="nav-docOffice" onclick="showView('docOffice')"><span class="nav-icon"><svg class="nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="13" y2="17"/></svg></span>Document Office</div>
 
   <div class="sidebar-section">Overview</div>
@@ -1528,11 +1531,6 @@ button, .btn, .nav-item, .tab, .mob-nav-btn, .login-role-btn, .tt-tab {
     <select id="studentStatusFilter" style="width:140px" onchange="filterStudents(document.getElementById('studentSearchInput').value)">
       <option value="">All Status</option>
       <option>Active</option><option>Degree Awarded</option><option>Inactive</option>
-    </select>
-    <select id="studentGenderFilter" style="width:130px" onchange="filterStudents(document.getElementById('studentSearchInput').value)">
-      <option value="">All Genders</option>
-      <option value="male">♂ Male</option>
-      <option value="female">♀ Female</option>
     </select>
   </div>
   <div class="card" style="padding:0">
@@ -2782,18 +2780,11 @@ ALTER TABLE academic_years ADD COLUMN IF NOT EXISTS program_id text REFERENCES d
       </button>
       <button class="btn btn-primary btn-sm" onclick="saveStaffProfile()">Save Changes</button>
     </div>
-    <div class="page-actions" id="myProfileActions-schedule" style="display:none">
-      <button class="btn btn-primary btn-sm" onclick="openTimetableModal()" style="display:flex;align-items:center;gap:6px">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-        Add Slot
-      </button>
-    </div>
   </div>
 
-  <!-- Profile + Schedule Tabs -->
+  <!-- Profile Tabs -->
   <div class="tabs" id="myProfileMainTabs" style="margin-bottom:20px">
     <div class="tab active" id="mpt-profile" onclick="switchMyProfileTab('profile')">👤 Profile</div>
-    <div class="tab" id="mpt-schedule" onclick="switchMyProfileTab('schedule')">📅 Teaching Schedule</div>
   </div>
 
   <!-- TAB: Profile -->
@@ -2898,8 +2889,22 @@ ALTER TABLE academic_years ADD COLUMN IF NOT EXISTS program_id text REFERENCES d
   </div><!-- /grid -->
   </div><!-- /myProfileTab-profile -->
 
-  <!-- TAB: Teaching Schedule -->
-  <div id="myProfileTab-schedule" style="display:none">
+</div>
+
+<!-- ═══════ TEACHING SCHEDULE (standalone view) ═══════ -->
+<div class="view" id="view-teachingSchedule">
+  <div class="page-header">
+    <div class="page-header-left">
+      <div class="page-title">Teaching Schedule</div>
+      <div class="page-sub">Manage your lecture slots and room bookings</div>
+    </div>
+    <div class="page-actions">
+      <button class="btn btn-primary btn-sm" onclick="openTimetableModal()" style="display:flex;align-items:center;gap:6px">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Add Slot
+      </button>
+    </div>
+  </div>
   <style>
   .tt-tab-bar {
     display:flex; gap:0; border-bottom:2px solid var(--line);
@@ -2918,8 +2923,6 @@ ALTER TABLE academic_years ADD COLUMN IF NOT EXISTS program_id text REFERENCES d
   .tt-tab:hover:not(.active) { color:var(--ink2); }
   .tt-tab-panel { display:none; padding:20px 0 0; }
   .tt-tab-panel.active { display:block; }
-
-  /* Slot card */
   .tt-slot-card {
     background:var(--white); border:1px solid var(--line); border-radius:10px;
     padding:14px 16px; display:flex; align-items:flex-start; gap:14px;
@@ -2945,13 +2948,6 @@ ALTER TABLE academic_years ADD COLUMN IF NOT EXISTS program_id text REFERENCES d
   </style>
 
   <div class="card" style="margin-top:0">
-    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:14px">
-      <div>
-        <div class="card-title" style="margin-bottom:2px">Teaching Schedule</div>
-        <div style="font-size:12px;color:var(--ink3)">Manage your lecture slots and room bookings</div>
-      </div>
-    </div>
-
     <!-- Tab bar -->
     <div class="tt-tab-bar">
       <button class="tt-tab active" id="ttTab-list" onclick="switchTTTab('list')">📋 My Slots</button>
@@ -2978,7 +2974,6 @@ ALTER TABLE academic_years ADD COLUMN IF NOT EXISTS program_id text REFERENCES d
       </div>
     </div>
   </div>
-  </div><!-- /myProfileTab-schedule -->
 </div>
 
 </main>
@@ -4286,7 +4281,7 @@ async function loadMyTimetable() {
 
 // ── MY PROFILE TAB SWITCHER ──
 function switchMyProfileTab(tab) {
-  const tabs = ['profile', 'schedule'];
+  const tabs = ['profile'];
   tabs.forEach(t => {
     const panel = document.getElementById('myProfileTab-' + t);
     const btn   = document.getElementById('mpt-' + t);
@@ -4295,10 +4290,6 @@ function switchMyProfileTab(tab) {
     if (btn)   { btn.classList.toggle('active', t === tab); }
     if (acts)  acts.style.display = t === tab ? '' : 'none';
   });
-  if (tab === 'schedule') {
-    renderTimetableList();
-    renderBookedSchedule();
-  }
 }
 
 function switchTTTab(tab) {
@@ -4787,82 +4778,133 @@ function renderStudentTable(data) {
     return;
   }
 
-  const genderFilter = document.getElementById('studentGenderFilter')?.value || '';
-  let filtered = genderFilter ? data.filter(s => (s.gender || '') === genderFilter) : data;
+  // ── Group by Program → Academic Year (3-level accordion) ──
+  // Build: { program -> { year -> [students] } }
+  const byProgram = {};
+  data.forEach(s => {
+    const prog = s.program || 'Unknown Program';
+    const yr   = s.year   || 'Unknown Year';
+    if (!byProgram[prog]) byProgram[prog] = {};
+    if (!byProgram[prog][yr]) byProgram[prog][yr] = [];
+    byProgram[prog][yr].push(s);
+  });
 
-  // Group by gender for display
-  const males   = filtered.filter(s => (s.gender || '').toLowerCase() === 'male');
-  const females = filtered.filter(s => (s.gender || '').toLowerCase() === 'female');
-  const other   = filtered.filter(s => !s.gender || (s.gender.toLowerCase() !== 'male' && s.gender.toLowerCase() !== 'female'));
-
-  function rowHtml(s) {
-    const gpa = Number(s.gpa) || 0;
-    const gpaColor = gpa >= 3.5 ? 'text-green' : gpa >= 2.0 ? 'text-gold' : 'text-crimson';
-    const statusBadge = s.status === 'Active' ? 'b-green' : s.status === 'Degree Awarded' ? 'b-blue' : 'b-red';
-    const isGraduated = s.grad_status === 'Graduated';
-    const pwDisplay = currentRole === 'registrar'
-      ? `<td onclick="event.stopPropagation()" style="white-space:nowrap">
-           <span class="pw-masked" style="font-family:monospace;color:var(--ink3);letter-spacing:.15em">••••••••</span>
-           <span class="pw-plain" style="display:none;font-family:monospace;font-size:11px;color:var(--ink)">${s.master_password || '—'}</span>
-           <button class="pw-eye" style="margin-left:6px;display:inline-flex;vertical-align:middle" onclick="toggleTablePwVisibility(this)" title="Show / Hide">
-             <svg style="width:13px;height:13px;stroke:currentColor;stroke-width:1.9;fill:none;stroke-linecap:round;stroke-linejoin:round"><use href="#i-eye"></use></svg>
-           </button>
-         </td>`
-      : '';
-    const levelBadgeMap = {
-      bachelor: '<span class="badge b-blue">Bach</span>',
-      master:   '<span class="badge b-mast" style="background:var(--mast-light);color:var(--mast)">Master</span>',
-      phd:      '<span class="badge b-phd"  style="background:var(--phd-light);color:var(--phd)">PhD</span>',
-    };
-    const levelBadge = levelBadgeMap[s.degree_level || 'bachelor'] || levelBadgeMap.bachelor;
-    const genderIcon = s.gender === 'male' ? '♂' : s.gender === 'female' ? '♀' : '—';
-    const genderStyle = s.gender === 'male' ? 'color:var(--blue);font-weight:600' : s.gender === 'female' ? 'color:var(--crimson);font-weight:600' : 'color:var(--ink3)';
-    return `<tr id="stu-row-${s.id}" onclick="showProfile('${s.id}')" style="cursor:pointer">
-      <td style="width:36px;padding:9px 8px" onclick="event.stopPropagation()">
-        <input type="checkbox" class="stu-cb" data-id="${s.id}" onchange="onStudentCheckChange()">
-      </td>
-      <td class="text-mono text-crimson">${s.id}${isGraduated ? ' <span style="font-size:9px;font-weight:700;background:var(--green-light);color:var(--green);border-radius:3px;padding:1px 5px;vertical-align:middle">ALUMNI</span>' : ''}</td>
-      <td><strong>${s.name_en}</strong>${s.name_my ? `<br><span class="text-muted my-text">${s.name_my}</span>` : ''}</td>
-      <td>${s.father || '—'}</td>
-      <td>${s.email}</td>
-      <td><span class="badge b-muted" style="font-size:10px">${s.program || '—'}</span></td>
-      <td>${levelBadge}</td>
-      <td><span class="badge b-blue">${s.year || '—'}</span></td>
-      <td style="${genderStyle}">${genderIcon} ${s.gender ? s.gender.charAt(0).toUpperCase()+s.gender.slice(1) : '—'}</td>
-      <td><strong class="${gpaColor}">${gpa.toFixed(1)}</strong></td>
-      <td><span class="badge ${statusBadge}">${s.status}</span></td>
-      ${pwDisplay}
-      <td class="flex gap-2" onclick="event.stopPropagation()">
-        <button class="btn btn-outline btn-sm" onclick="showProfile('${s.id}')">View</button>
-        ${currentRole === 'registrar' ? `<button class="btn btn-outline btn-sm" onclick="openEditModal('${s.id}')">Edit</button>` : ''}
-        ${currentRole === 'registrar' ? `<button class="btn btn-danger btn-sm" onclick="confirmDeleteStudent('${s.id}','${s.name_en.replace(/'/g,"\\'")}')"><svg style="width:13px;height:13px;stroke:currentColor;stroke-width:1.9;fill:none;stroke-linecap:round;stroke-linejoin:round"><use href="#i-trash"></use></svg></button>` : ''}
-      </td>
-    </tr>`;
-  }
-
-  function sectionHeader(label, count, color, groupKey) {
-    return `<tr style="background:${color}">
-      <td style="width:36px;padding:7px 8px">
-        <input type="checkbox" class="stu-group-cb" data-group="${groupKey}" onchange="toggleSelectGroup(this,'${groupKey}')" title="Select all ${label}">
-      </td>
-      <td colspan="11" style="padding:7px 14px;font-size:10px;font-weight:700;letter-spacing:1.4px;text-transform:uppercase;color:var(--ink3)">${label} — ${count} student${count!==1?'s':''}</td>
-    </tr>`;
-  }
+  const colSpan = currentRole === 'registrar' ? 13 : 12;
 
   let html = '';
-  if (males.length) {
-    html += sectionHeader('♂ Male', males.length, 'rgba(30,58,110,0.04)', 'male');
-    html += males.map(rowHtml).join('');
-  }
-  if (females.length) {
-    html += sectionHeader('♀ Female', females.length, 'rgba(139,26,46,0.04)', 'female');
-    html += females.map(rowHtml).join('');
-  }
-  if (other.length) {
-    html += sectionHeader('— Gender Not Set', other.length, 'rgba(0,0,0,0.02)', 'other');
-    html += other.map(rowHtml).join('');
-  }
+  Object.entries(byProgram).forEach(([prog, years], pi) => {
+    const progTotal = Object.values(years).reduce((n, arr) => n + arr.length, 0);
+    const progKey = `prog-${pi}`;
+    // Program-level row
+    html += `<tr class="stu-prog-header" data-prog-key="${progKey}" onclick="toggleStudentProgram('${progKey}')" style="cursor:pointer;background:rgba(139,26,46,0.07);border-top:2px solid rgba(139,26,46,0.15)">
+      <td style="width:36px;padding:8px" onclick="event.stopPropagation()">
+        <input type="checkbox" class="stu-group-cb" data-group="${progKey}" onchange="toggleSelectGroup(this,'${progKey}')" title="Select all in ${prog}">
+      </td>
+      <td colspan="${colSpan - 1}" style="padding:10px 14px">
+        <div style="display:flex;align-items:center;gap:10px">
+          <svg class="prog-chevron-${progKey}" style="width:14px;height:14px;stroke:var(--crimson);stroke-width:2.5;fill:none;stroke-linecap:round;stroke-linejoin:round;transition:transform .2s;flex-shrink:0" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+          <div>
+            <span style="font-size:12px;font-weight:800;letter-spacing:1.2px;text-transform:uppercase;color:var(--crimson)">${prog}</span>
+            <span style="font-size:11px;color:var(--ink3);margin-left:8px">${progTotal} student${progTotal!==1?'s':''} · ${Object.keys(years).length} year${Object.keys(years).length!==1?'s':''}</span>
+          </div>
+        </div>
+      </td>
+    </tr>`;
+
+    // Year-level rows (inside each program)
+    Object.entries(years).forEach(([yr, studs], yi) => {
+      const yearKey = `year-${pi}-${yi}`;
+      html += `<tr class="stu-year-header stu-prog-body-${progKey}" data-year-key="${yearKey}" onclick="toggleStudentYear('${yearKey}')" style="cursor:pointer;background:rgba(30,58,110,0.04);display:table-row">
+        <td style="width:36px;padding:7px 8px 7px 24px" onclick="event.stopPropagation()">
+          <input type="checkbox" class="stu-group-cb" data-group="${yearKey}" onchange="toggleSelectGroup(this,'${yearKey}')" title="Select all in ${yr}">
+        </td>
+        <td colspan="${colSpan - 1}" style="padding:8px 14px 8px 10px">
+          <div style="display:flex;align-items:center;gap:8px">
+            <svg class="year-chevron-${yearKey}" style="width:12px;height:12px;stroke:var(--blue);stroke-width:2.5;fill:none;stroke-linecap:round;stroke-linejoin:round;transition:transform .2s;flex-shrink:0" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+            <span style="font-size:11px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:var(--blue)">${yr}</span>
+            <span style="font-size:11px;color:var(--ink3)">${studs.length} student${studs.length!==1?'s':''}</span>
+          </div>
+        </td>
+      </tr>`;
+
+      // Student rows (inside each year)
+      studs.forEach(s => {
+        const gpa = Number(s.gpa) || 0;
+        const gpaColor = gpa >= 3.5 ? 'text-green' : gpa >= 2.0 ? 'text-gold' : 'text-crimson';
+        const statusBadge = s.status === 'Active' ? 'b-green' : s.status === 'Degree Awarded' ? 'b-blue' : 'b-red';
+        const isGraduated = s.grad_status === 'Graduated';
+        const pwDisplay = currentRole === 'registrar'
+          ? `<td onclick="event.stopPropagation()" style="white-space:nowrap">
+               <span class="pw-masked" style="font-family:monospace;color:var(--ink3);letter-spacing:.15em">••••••••</span>
+               <span class="pw-plain" style="display:none;font-family:monospace;font-size:11px;color:var(--ink)">${s.master_password || '—'}</span>
+               <button class="pw-eye" style="margin-left:6px;display:inline-flex;vertical-align:middle" onclick="toggleTablePwVisibility(this)" title="Show / Hide">
+                 <svg style="width:13px;height:13px;stroke:currentColor;stroke-width:1.9;fill:none;stroke-linecap:round;stroke-linejoin:round"><use href="#i-eye"></use></svg>
+               </button>
+             </td>`
+          : '';
+        const levelBadgeMap = {
+          bachelor: '<span class="badge b-blue">Bach</span>',
+          master:   '<span class="badge b-mast" style="background:var(--mast-light);color:var(--mast)">Master</span>',
+          phd:      '<span class="badge b-phd"  style="background:var(--phd-light);color:var(--phd)">PhD</span>',
+        };
+        const levelBadge = levelBadgeMap[s.degree_level || 'bachelor'] || levelBadgeMap.bachelor;
+        const genderIcon = s.gender === 'male' ? '♂' : s.gender === 'female' ? '♀' : '—';
+        const genderStyle = s.gender === 'male' ? 'color:var(--blue);font-weight:600' : s.gender === 'female' ? 'color:var(--crimson);font-weight:600' : 'color:var(--ink3)';
+        html += `<tr id="stu-row-${s.id}" class="stu-prog-body-${progKey} stu-year-body-${yearKey}" onclick="showProfile('${s.id}')" style="cursor:pointer;display:none">
+          <td style="width:36px;padding:9px 8px 9px 32px" onclick="event.stopPropagation()">
+            <input type="checkbox" class="stu-cb" data-id="${s.id}" onchange="onStudentCheckChange()">
+          </td>
+          <td class="text-mono text-crimson">${s.id}${isGraduated ? ' <span style="font-size:9px;font-weight:700;background:var(--green-light);color:var(--green);border-radius:3px;padding:1px 5px;vertical-align:middle">ALUMNI</span>' : ''}</td>
+          <td><strong>${s.name_en}</strong>${s.name_my ? `<br><span class="text-muted my-text">${s.name_my}</span>` : ''}</td>
+          <td>${s.father || '—'}</td>
+          <td>${s.email}</td>
+          <td><span class="badge b-muted" style="font-size:10px">${s.program || '—'}</span></td>
+          <td>${levelBadge}</td>
+          <td><span class="badge b-blue">${s.year || '—'}</span></td>
+          <td style="${genderStyle}">${genderIcon} ${s.gender ? s.gender.charAt(0).toUpperCase()+s.gender.slice(1) : '—'}</td>
+          <td><strong class="${gpaColor}">${gpa.toFixed(1)}</strong></td>
+          <td><span class="badge ${statusBadge}">${s.status}</span></td>
+          ${pwDisplay}
+          <td class="flex gap-2" onclick="event.stopPropagation()">
+            <button class="btn btn-outline btn-sm" onclick="showProfile('${s.id}')">View</button>
+            ${currentRole === 'registrar' ? `<button class="btn btn-outline btn-sm" onclick="openEditModal('${s.id}')">Edit</button>` : ''}
+            ${currentRole === 'registrar' ? `<button class="btn btn-danger btn-sm" onclick="confirmDeleteStudent('${s.id}','${s.name_en.replace(/'/g,"\\'")}')"><svg style="width:13px;height:13px;stroke:currentColor;stroke-width:1.9;fill:none;stroke-linecap:round;stroke-linejoin:round"><use href="#i-trash"></use></svg></button>` : ''}
+          </td>
+        </tr>`;
+      });
+    });
+  });
+
   tb.innerHTML = html;
+}
+
+// Toggle Program accordion
+function toggleStudentProgram(progKey) {
+  const rows = document.querySelectorAll(`.stu-prog-body-${progKey}`);
+  const chevron = document.querySelector(`.prog-chevron-${progKey}`);
+  const isOpen = rows.length && rows[0].style.display !== 'none';
+  rows.forEach(r => r.style.display = isOpen ? 'none' : 'table-row');
+  if (chevron) chevron.style.transform = isOpen ? '' : 'rotate(180deg)';
+  // Close year sub-rows when closing program
+  if (isOpen) {
+    rows.forEach(r => {
+      const yk = r.dataset && r.dataset.yearKey;
+      if (yk) {
+        document.querySelectorAll(`.stu-year-body-${yk}`).forEach(sr => sr.style.display = 'none');
+        const yc = document.querySelector(`.year-chevron-${yk}`);
+        if (yc) yc.style.transform = '';
+      }
+    });
+  }
+}
+
+// Toggle Year accordion (inside Program)
+function toggleStudentYear(yearKey) {
+  const rows = document.querySelectorAll(`.stu-year-body-${yearKey}`);
+  const chevron = document.querySelector(`.year-chevron-${yearKey}`);
+  const isOpen = rows.length && rows[0].style.display !== 'none';
+  rows.forEach(r => r.style.display = isOpen ? 'none' : 'table-row');
+  if (chevron) chevron.style.transform = isOpen ? '' : 'rotate(180deg)';
 }
 
 function showProfile(sid) {
@@ -7566,6 +7608,7 @@ function showView(id) {
   if (id === 'degrees') renderDegreeGrid();
   if (id === 'myProfile') loadStaffProfile();
   if (id === 'userList') loadUserList();
+  if (id === 'teachingSchedule') { loadStaffProfile(); renderTimetableList(); renderBookedSchedule(); }
   window.scrollTo(0, 0);
 }
 
@@ -7588,18 +7631,14 @@ function filterStudents(q) {
   const statusFilter  = document.getElementById('studentStatusFilter').value;
   const programFilter = (document.getElementById('studentProgramFilter') || {}).value || '';
   const query = (q !== undefined ? q : (document.getElementById('studentSearchInput')?.value || '')).toLowerCase();
-  let visible = 0;
-  students.forEach(s => {
-    const row = document.getElementById('stu-row-' + s.id);
-    if (!row) return;
-    const matchQ = !query    || (s.name_en + s.name_my + s.id + s.email).toLowerCase().includes(query);
-    const matchY = !yearFilter    || s.year    === yearFilter;
-    const matchS = !statusFilter  || s.status  === statusFilter;
-    const matchP = !programFilter || (s.program || '') === programFilter;
-    const show = matchQ && matchY && matchS && matchP;
-    row.style.display = show ? '' : 'none';
-    if (show) visible++;
+  const filtered = students.filter(s => {
+    const matchQ = !query        || (s.name_en + (s.name_my||'') + s.id + s.email).toLowerCase().includes(query);
+    const matchY = !yearFilter   || s.year    === yearFilter;
+    const matchS = !statusFilter || s.status  === statusFilter;
+    const matchP = !programFilter|| (s.program || '') === programFilter;
+    return matchQ && matchY && matchS && matchP;
   });
+  renderStudentTable(filtered);
 }
 
 function filterCourses(q) {
