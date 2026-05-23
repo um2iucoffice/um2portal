@@ -289,7 +289,9 @@ exports.handler = async (event) => {
     let announcements = [];
     try {
       const announcementRows = await supabase(
-        `announcements?is_approved=eq.true&order=published_at.desc&select=*`
+        `announcements?is_approved=eq.true&order=published_at.desc&select=*`,
+        {},
+        true
       );
       announcements = (announcementRows || []).map(a => ({
         id:             a.id             || '',
