@@ -14,7 +14,8 @@ exports.handler = async (event) => {
 
   const {
     student_id, title, body, type,
-    image_url, event_date, event_time, event_location
+    image_url, author_name,           // ← author_name added here
+    event_date, event_time, event_location
   } = JSON.parse(event.body);
 
   if (!student_id || !title || !body) {
@@ -27,6 +28,7 @@ exports.handler = async (event) => {
     body,
     type:           type           || 'news',
     image_url:      image_url      || null,
+    author_name:    author_name    || null,  // ← author_name saved here
     event_date:     event_date     || null,
     event_time:     event_time     || null,
     event_location: event_location || null,
