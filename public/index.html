@@ -1904,18 +1904,17 @@ canvas.photo-canvas, #idcardPhoto canvas, #homeAvatar canvas, #gradesAvatar canv
   }
   .theme-toggle-btn { width: 36px; height: 36px; flex-shrink: 0; }
 
-  /* ── MOBILE BOTTOM TAB BAR ── */
-  .mob-tabbar { display: flex !important; }
+  /* ── MOBILE BOTTOM TAB BAR — hidden ── */
+  .mob-tabbar { display: none !important; }
 
-  /* Show news quick-access on mobile home */
-  /* Show news feed on mobile home */
-  .mob-news-quick { display: flex !important; }
-  /* Hide desktop news feed on mobile (use mob-news-quick instead) */
-  #homeNewsFeed { display: none !important; }
+  /* Hide mob-news-quick (not needed; homeNewsFeed shown below) */
+  .mob-news-quick { display: none !important; }
+  /* Show desktop news feed on mobile too */
+  #homeNewsFeed { display: block !important; }
 
   /* ── Content area ── */
   .dash-content {
-    padding: 16px 14px 110px;
+    padding: 16px 14px 40px;
     overflow-x: hidden;
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
@@ -4924,7 +4923,7 @@ function handleAuth(r) {
   document.getElementById('loginScreen').classList.add('hidden');
   const dash = document.getElementById('dashboard');
   dash.style.display = '';
-  setTimeout(() => { dash.classList.add('show'); }, 100);
+  setTimeout(() => { dash.classList.add('show'); _resolveInitialHash(); }, 100);
 }
 
 function handleAuthErr() {
@@ -6157,7 +6156,30 @@ const SECTION_TITLES = {
   comms:         'Communication'
 };
 
-function switchSection(id, btn) {
+// ── Hash routing helpers ──────────────────────────────────────
+// All valid section ids — used to validate incoming hashes
+const VALID_SECTIONS = new Set(Object.keys(SECTION_TITLES));
+
+// Internal flag: prevents hashchange loop when we set the hash ourselves
+let _suppressHashChange = false;
+
+function _setHash(id) {
+  _suppressHashChange = true;
+  history.replaceState(null, '', '#' + id);
+  // Release the flag after the hashchange event (if any) fires
+  setTimeout(function() { _suppressHashChange = false; }, 0);
+}
+
+function _pushHash(id) {
+  _suppressHashChange = true;
+  history.pushState(null, '', '#' + id);
+  setTimeout(function() { _suppressHashChange = false; }, 0);
+}
+
+function switchSection(id, btn, _fromHash) {
+  // Validate section
+  if (!VALID_SECTIONS.has(id)) id = 'home';
+
   // Update section panels
   document.querySelectorAll('.section').forEach(p => p.classList.remove('active'));
   const panel = document.getElementById('panel-' + id);
@@ -6182,15 +6204,41 @@ function switchSection(id, btn) {
   const titleEl = document.getElementById('topbarTitle');
   if (titleEl) titleEl.textContent = SECTION_TITLES[id] || id;
 
-  // Load edit info data when navigating to that section
-if (id === 'editinfo') { try { onSwitchToEditInfo(); } catch(e) {} }
-if (id === 'comms') { try { loadCommsSection(); } catch(e) {} }
-if (id === 'lecturerooms') { try { loadLectureRooms(); } catch(e) {} }
+  // Load section-specific data
+  if (id === 'editinfo') { try { onSwitchToEditInfo(); } catch(e) {} }
+  if (id === 'comms') { try { loadCommsSection(); } catch(e) {} }
+  if (id === 'lecturerooms') { try { loadLectureRooms(); } catch(e) {} }
+
   // Scroll to top
   const _dm = document.querySelector('.dash-main');
   if (_dm) _dm.scrollTop = 0;
+
   // Close sidebar on mobile
   closeSidebar();
+
+  // ── Hash routing: update URL (skip if navigation came from hashchange) ──
+  if (!_fromHash) {
+    _pushHash(id);
+  }
+}
+
+// Listen for browser Back / Forward
+window.addEventListener('hashchange', function() {
+  if (_suppressHashChange) return;
+  const hash = (location.hash || '').replace('#', '');
+  const id   = VALID_SECTIONS.has(hash) ? hash : 'home';
+  // Navigate without pushing another history entry
+  switchSection(id, null, true /* _fromHash */);
+});
+
+// On page load: open the panel matching the current hash (default #home)
+// Called after login so the dashboard is visible first
+function _resolveInitialHash() {
+  const hash = (location.hash || '').replace('#', '');
+  const id   = VALID_SECTIONS.has(hash) ? hash : 'home';
+  // Replace (not push) so Back from initial view exits the app
+  _setHash(id);
+  switchSection(id, null, true /* _fromHash */);
 }
 
 // Legacy alias so existing switchTab() calls in renderDocCards etc. still work
@@ -7992,7 +8040,11 @@ function doSignOut() {
   const mobN = document.getElementById('mobMoreName');   if (mobN) mobN.textContent = '—';
   const mobI = document.getElementById('mobMoreId');     if (mobI) mobI.textContent = '—';
 
-  switchSection('home');
+  // Clear hash so Back button doesn't navigate to a protected section
+  _suppressHashChange = true;
+  history.replaceState(null, '', location.pathname);
+  setTimeout(function() { _suppressHashChange = false; }, 0);
+  switchSection('home', null, true);
 }
 
 // ── Auto-restore session on page load (3-minute TTL) ─────────
@@ -8012,7 +8064,7 @@ function doSignOut() {
   document.getElementById('loginScreen').classList.add('hidden');
   const dash = document.getElementById('dashboard');
   dash.style.display = '';
-  setTimeout(() => { dash.classList.add('show'); }, 100);
+  setTimeout(() => { dash.classList.add('show'); _resolveInitialHash(); }, 100);
 })();
 
 // ── News & Events ─────────────────────────────────────────────
