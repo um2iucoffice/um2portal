@@ -304,6 +304,7 @@ exports.handler = async (event) => {
         event_location: a.event_location || null,
         published_at:   a.published_at   || '',
         author_type:    a.author_type    || '',
+        author_name:    a.author_name    || null,
       }));
     } catch (e) {
       console.warn('Could not fetch announcements:', e.message);
