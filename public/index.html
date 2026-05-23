@@ -4324,17 +4324,18 @@ function handleAuth(r) {
   // ── Persist session for refresh recovery (3 min TTL) ──
   try {
     sessionStorage.setItem('iris_session', JSON.stringify({
-      studentId    : (document.getElementById('loginStudentId').value || '').trim().toLowerCase(),
-      password     : window._sessionPassword,
-      studentData  : r.student,
-      grades       : r.grades || [],
-      courses      : r.courses || {},
-      program_meta : r.program_meta || null,
-      enrollments  : r.enrollments || [],
-      academicYears: r.academicYears || [],
-      markbook     : r.markbook || [],
-      savedAt      : Date.now()
-    }));
+  studentId    : (document.getElementById('loginStudentId').value || '').trim().toLowerCase(),
+  password     : window._sessionPassword,
+  studentData  : r.student,
+  grades       : r.grades || [],
+  courses      : r.courses || {},
+  program_meta : r.program_meta || null,
+  enrollments  : r.enrollments || [],
+  academicYears: r.academicYears || [],
+  markbook     : r.markbook || [],
+  announcements: r.announcements || [],
+  savedAt      : Date.now()
+}));
   } catch(e) {}
 
   document.getElementById('loginScreen').classList.add('hidden');
