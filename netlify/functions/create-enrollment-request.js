@@ -43,7 +43,7 @@ exports.handler = async (event) => {
       };
     }
 
-    // 1. Fetch the student's current year
+    // 1. Fetch student's current year
     const students = await supabase(
       `students?id=eq.${student_id}&select=year&limit=1`,
       { method: 'GET' }
@@ -56,9 +56,9 @@ exports.handler = async (event) => {
       };
     }
 
-    // 2. Fetch the enrollment period to get to_year
+    // 2. Fetch the enrollment period (need from_year_id and to_year_id)
     const periods = await supabase(
-      `enrollment_periods?id=eq.${period_id}&select=*&limit=1`,
+      `enrollment_periods?id=eq.${period_id}&select=from_year_id,to_year_id&limit=1`,
       { method: 'GET' }
     );
     const period = periods && periods[0];
@@ -69,8 +69,26 @@ exports.handler = async (event) => {
       };
     }
 
-    // 3. Insert the enrollment request
-    // unique_student_period constraint handles duplicate submissions
+    // 3. Resolve from_year_id and to_year_id → year label text from academic_years
+    const yearIds = [period.from_year_id, period.to_year_id].filter(Boolean);
+    const academicYears = await supabase(
+      `academic_years?id=in.(${yearIds.join(',')})&select=id,year`,
+      { method: 'GET' }
+    );
+    const yearMap = {};
+    (academicYears || []).forEach(ay => { yearMap[ay.id] = ay.year; });
+
+    const from_year = yearMap[period.from_year_id] || student.year;
+    const to_year   = yearMap[period.to_year_id];
+
+    if (!to_year) {
+      return {
+        statusCode: 200, headers,
+        body: JSON.stringify({ success: false, message: 'Could not resolve target year from enrollment period' })
+      };
+    }
+
+    // 4. Insert the enrollment request
     const result = await supabase(
       `enrollment_requests`, {
         method: 'POST',
@@ -78,9 +96,9 @@ exports.handler = async (event) => {
         body: JSON.stringify({
           student_id,
           period_id,
-          from_year:   student.year,
-          to_year:     period.to_year,   // adjust field name to match your enrollment_periods schema
-          status:      'requested',
+          from_year,
+          to_year,
+          status:       'requested',
           requested_at: new Date().toISOString()
         })
       }
@@ -94,14 +112,12 @@ exports.handler = async (event) => {
     };
 
   } catch (err) {
-    // Handle duplicate submission gracefully
     if (err.message.includes('unique_student_period')) {
       return {
         statusCode: 200, headers,
-        body: JSON.stringify({ success: false, message: 'Enrollment request already submitted for this period' })
+        body: JSON.stringify({ success: false, message: 'You have already submitted an enrollment request for this period.' })
       };
     }
-
     console.error('create-enrollment-request error:', err);
     return {
       statusCode: 200, headers,
