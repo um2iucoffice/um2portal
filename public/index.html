@@ -5643,6 +5643,115 @@ function renderJourney(enrollments) {
   }).join('');
 }
 
+// ── Mark Book ─────────────────────────────────────────────────
+// Renders internal assessment marks (tests/evaluations) into #markbookContent.
+// markbook rows are expected to have: courseId, course, assessmentName,
+// maxScore, score, percentage, grade, year, notes (all optional except courseId).
+function renderMarkbook(student, markbook, grades) {
+  const container = document.getElementById('markbookContent');
+  if (!container) return;
+
+  // If no markbook data, fall back to showing grades as assessments
+  const rows = markbook && markbook.length > 0 ? markbook : [];
+
+  if (rows.length === 0) {
+    container.innerHTML = '<div class="g-wrap"><div class="no-g">No assessment records yet.</div></div>';
+    return;
+  }
+
+  // Group by academic year then by course
+  const groups = {};
+  rows.forEach(r => {
+    const courseId   = String(r.courseId || r.course_id || '').trim().toUpperCase();
+    const courseMeta = COURSES[courseId] || { name: r.course || r.courseName || courseId || '—', year: r.year || 'Other', block: r.block || 'General' };
+    const yr         = r.year || courseMeta.year || 'Other';
+    const block      = r.block || courseMeta.block || r.course || courseMeta.name || 'General';
+    if (!groups[yr])        groups[yr]        = {};
+    if (!groups[yr][block]) groups[yr][block] = [];
+    groups[yr][block].push({ ...r, courseId, courseMeta });
+  });
+
+  // Year ordering — follow catalogue order
+  const catalogYearOrder = [];
+  Object.values(COURSES).forEach(c => {
+    if (c.year && !catalogYearOrder.includes(c.year)) catalogYearOrder.push(c.year);
+  });
+  const metaOrder  = (PROGRAM_META && PROGRAM_META.yearOrder) ? PROGRAM_META.yearOrder : [];
+  const mergedOrder = [...catalogYearOrder, ...metaOrder.filter(y => !catalogYearOrder.includes(y))];
+  const order = [
+    ...mergedOrder.filter(y => groups[y]),
+    ...Object.keys(groups).filter(y => !mergedOrder.includes(y)).sort()
+  ];
+
+  let totalAssessments = rows.length;
+  let sumPct = 0, pctCount = 0;
+  rows.forEach(r => {
+    const pct = r.percentage != null && r.percentage !== '' ? parseFloat(r.percentage) : null;
+    if (pct != null && !isNaN(pct)) { sumPct += pct; pctCount++; }
+  });
+  const avgPct = pctCount > 0 ? (sumPct / pctCount).toFixed(1) + '%' : '—';
+
+  let html = `<div class="ts-wrap" style="margin-bottom:16px;display:flex;gap:16px;flex-wrap:wrap">
+    <div class="ts-stat"><span class="ts-val">${totalAssessments}</span><span class="ts-lbl">Assessments</span></div>
+    <div class="ts-stat"><div class="ts-divider"></div></div>
+    <div class="ts-stat"><span class="ts-val">${order.length}</span><span class="ts-lbl">Academic Years</span></div>
+    <div class="ts-stat"><div class="ts-divider"></div></div>
+    <div class="ts-stat"><span class="ts-val">${avgPct}</span><span class="ts-lbl">Avg Score</span></div>
+  </div>`;
+
+  order.forEach(yr => {
+    const blockMap       = groups[yr] || {};
+    const allRowsInYear  = Object.values(blockMap).flat();
+    html += `<div class="g-wrap">`;
+    html += `<div class="g-year-head">${escHtml(yr)}</div>`;
+
+    Object.entries(blockMap).forEach(([blockName, brows]) => {
+      html += `<div class="g-block-head">${escHtml(blockName)}</div>`;
+      html += `<table class="gt">
+        <thead>
+          <tr>
+            <th style="width:10%">Code</th>
+            <th style="width:28%">Assessment</th>
+            <th style="text-align:center;width:12%">Max Score</th>
+            <th style="text-align:center;width:12%">Score</th>
+            <th style="text-align:center;width:12%">Percentage</th>
+            <th style="text-align:center;width:10%">Grade</th>
+            <th style="width:16%">Notes</th>
+          </tr>
+        </thead>
+        <tbody>`;
+
+      brows.forEach(r => {
+        const maxScore  = r.maxScore  != null && r.maxScore  !== '' ? r.maxScore  : (r.max_score != null && r.max_score !== '' ? r.max_score : '—');
+        const score     = r.score     != null && r.score     !== '' ? r.score     : '—';
+        const pct       = r.percentage != null && r.percentage !== '' ? r.percentage + '%' : (maxScore !== '—' && score !== '—' ? (parseFloat(score)/parseFloat(maxScore)*100).toFixed(1) + '%' : '—');
+        const asmtName  = r.assessmentName || r.assessment_name || r.courseMeta.name || '—';
+        const gradeVal  = r.grade || r.letter || '';
+        const hasGrade  = gradeVal && String(gradeVal).trim() && String(gradeVal).trim() !== '—';
+        const gradedIcon = hasGrade ? `<svg class="gt-graded-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>` : '';
+        const gradeDisplay = escHtml(gradeVal || '—').replace(/\+/g, '<sup>+</sup>').replace(/-/g, '<sup>−</sup>');
+        const noteVal   = r.notes || r.note || r.remarks || '';
+        html += `<tr>
+          <td style="font-size:11px;color:var(--ink3);font-family:monospace">${escHtml(r.courseId || '—')}</td>
+          <td><div class="gt-course gt-course-graded">${gradedIcon}${escHtml(asmtName)}</div></td>
+          <td style="text-align:center"><span class="gt-cr">${escHtml(String(maxScore))}</span></td>
+          <td style="text-align:center"><span class="sbar-num">${escHtml(String(score))}</span></td>
+          <td style="text-align:center;font-size:12px;color:var(--ink2)">${escHtml(pct)}</td>
+          <td style="text-align:center"><span class="gbadge ${gc(gradeVal)}">${gradeDisplay}</span></td>
+          <td style="font-size:11px;color:var(--ink3);font-style:italic;max-width:160px">${escHtml(noteVal)}</td>
+        </tr>`;
+      });
+
+      html += `</tbody></table>`;
+    });
+
+    html += `<div class="g-year-totals"><span>Assessments: <strong>${allRowsInYear.length}</strong></span></div>`;
+    html += `</div>`;
+  });
+
+  container.innerHTML = html;
+}
+
 // ── Degree tabs (grades panel, 2+ enrollments only) ───────────
 function renderDegreeTabs(enrollments, grades, courses) {
   const wrap = document.getElementById('gradeDegreeTabs');
