@@ -887,6 +887,7 @@ input[readonly] { color:var(--ink2); cursor:default; }
   <div class="nav-item staff-visible" id="nav-lectureRooms" onclick="showView('lectureRooms')"><span class="nav-icon"><svg class="nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg></span>Lecture Rooms</div>
 
   <div class="sidebar-section">System</div>
+  <div class="nav-item registrar-only" id="nav-userList" onclick="showView('userList')"><span class="nav-icon"><svg class="nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></span>User List</div>
   <div class="nav-item registrar-only" id="nav-editRequests" onclick="showView('editRequests')"><span class="nav-icon"><svg class="nav-svg"><use href="#i-edit"></use></svg></span>Edit Requests<span class="nav-badge" id="editRequestsBadge" style="display:none">0</span></div>
   <div class="nav-item" id="nav-notifications" onclick="showView('notifications')"><span class="nav-icon"><svg class="nav-svg"><use href="#i-mail"></use></svg></span>Email Log<span class="nav-badge">3</span></div>
   <div id="emailToggleNav" style="margin:6px 14px 2px;padding:8px 10px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);display:flex;align-items:center;gap:8px;cursor:pointer" onclick="toggleEmailSending()" title="Enable or disable all outbound email notifications">
@@ -2093,6 +2094,38 @@ ALTER TABLE academic_years ADD COLUMN IF NOT EXISTS program_id text REFERENCES d
 </div>
 
 
+<!-- ═══════ USER LIST (Registrar Only) ═══════ -->
+<div class="view registrar-only" id="view-userList">
+  <div class="page-header">
+    <div class="page-header-left">
+      <div class="page-title">System Users</div>
+      <div class="page-sub">All staff accounts with roles assigned in the profiles table</div>
+    </div>
+    <div class="page-actions">
+      <button class="btn btn-outline btn-sm" onclick="loadUserList()">↺ Refresh</button>
+    </div>
+  </div>
+  <div class="card" style="padding:0">
+    <div class="table-wrap"><table>
+      <thead>
+        <tr>
+          <th>Staff ID</th>
+          <th>Full Name</th>
+          <th>Role</th>
+          <th>User UUID</th>
+          <th>Department</th>
+          <th>Title</th>
+          <th>Published</th>
+          <th>Created</th>
+        </tr>
+      </thead>
+      <tbody id="userListBody">
+        <tr><td colspan="8" style="text-align:center;color:var(--ink3);padding:24px">Loading users…</td></tr>
+      </tbody>
+    </table></div>
+  </div>
+</div>
+
 <!-- ═══════ MY PROFILE (Staff/Faculty) ═══════ -->
 <div class="view" id="view-myProfile">
   <div class="page-header">
@@ -2160,13 +2193,18 @@ ALTER TABLE academic_years ADD COLUMN IF NOT EXISTS program_id text REFERENCES d
             <input class="form-input" type="text" id="sp-realname" placeholder="Full legal name">
           </div>
           <div class="form-group">
-            <label class="form-label">Department <span style="color:var(--crimson)">*</span></label>
+            <label class="form-label">Department <span style="color:var(--crimson)">*</span>
+              <span id="sp-dept-lock" style="display:none;font-size:10px;font-weight:500;color:var(--ink3);background:var(--surface);border:1px solid var(--line);border-radius:4px;padding:2px 7px;margin-left:6px;letter-spacing:.3px">🔒 Registrar only</span>
+            </label>
             <select class="form-input" id="sp-department">
               <option value="">Loading departments…</option>
             </select>
+            <div id="sp-dept-readonly" style="display:none;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:10px 13px;font-size:13px;color:var(--ink2)">—</div>
           </div>
           <div class="form-group">
-            <label class="form-label">Title / Position</label>
+            <label class="form-label">Title / Position
+              <span id="sp-title-lock" style="display:none;font-size:10px;font-weight:500;color:var(--ink3);background:var(--surface);border:1px solid var(--line);border-radius:4px;padding:2px 7px;margin-left:6px;letter-spacing:.3px">🔒 Registrar only</span>
+            </label>
             <select class="form-input" id="sp-title">
               <option value="">Select title…</option>
               <option>Professor</option>
@@ -2178,6 +2216,7 @@ ALTER TABLE academic_years ADD COLUMN IF NOT EXISTS program_id text REFERENCES d
               <option>Head of Department</option>
               <option>Administrative Staff</option>
             </select>
+            <div id="sp-title-readonly" style="display:none;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:10px 13px;font-size:13px;color:var(--ink2)">—</div>
           </div>
           <div class="form-group" style="grid-column:1/-1">
             <label class="form-label">Qualifications</label>
@@ -2210,6 +2249,18 @@ ALTER TABLE academic_years ADD COLUMN IF NOT EXISTS program_id text REFERENCES d
         <div id="myTimetableList" style="display:flex;flex-direction:column;gap:8px"></div>
         <div id="myTimetableEmpty" style="text-align:center;padding:24px;color:var(--ink3);font-size:13px">No slots booked yet. Click "+ Add Slot" to start.</div>
       </div>
+
+      <!-- Booked Schedule Summary -->
+      <div class="card" style="margin-top:16px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+          <div class="card-title" style="margin-bottom:0">Booked Schedule Overview</div>
+          <div id="bookedScheduleAcYear" style="font-size:11px;color:var(--ink3);background:var(--surface);border:1px solid var(--line);border-radius:4px;padding:3px 10px"></div>
+        </div>
+        <p style="font-size:12px;color:var(--ink3);margin-bottom:14px">All confirmed room bookings across academic year sessions, grouped by day.</p>
+        <div id="bookedScheduleGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px">
+          <div style="color:var(--ink3);font-size:13px;padding:8px 0">No bookings yet.</div>
+        </div>
+      </div>
     </div>
   </div>
 </div>
@@ -2232,6 +2283,16 @@ ALTER TABLE academic_years ADD COLUMN IF NOT EXISTS program_id text REFERENCES d
       <button class="modal-close" onclick="closeModal('timetableModal')">✕</button>
     </div>
     <div class="form-grid">
+      <div class="form-group full">
+        <label>Academic Year / Session <span style="color:var(--crimson)">*</span></label>
+        <select id="tt-academic-year" class="form-input">
+          <option value="">Select academic year…</option>
+        </select>
+      </div>
+      <div class="form-group full">
+        <label>Session Date <span style="color:var(--crimson)">*</span></label>
+        <input type="date" id="tt-session-date" class="form-input">
+      </div>
       <div class="form-group full">
         <label>Course <span style="color:var(--crimson)">*</span></label>
         <select id="tt-course" class="form-input">
@@ -3113,10 +3174,156 @@ function showViewTitled(viewId) {
     bulkCourses:'Bulk Import Courses', degrees:'Degree Programs', years:'Academic Years',
     bulkYears:'Bulk Import Years', channels:'Channels', lectureRooms:'Lecture Rooms',
     editRequests:'Edit Requests', notifications:'Email Log', setup:'Setup Guide',
-    myProfile:'My Profile', profile:'Student Profile',
+    myProfile:'My Profile', profile:'Student Profile', userList:'System Users',
   };
   const tb = document.getElementById('topbarTitle');
   if (tb && titles[viewId]) tb.textContent = titles[viewId];
+}
+
+// ══════════════════════════════════════════
+// DEPARTMENT & TITLE — Registrar-only lock
+// ══════════════════════════════════════════
+function applyProfileFieldLocks() {
+  const isRegistrar = currentRole === 'registrar';
+  const deptSel = document.getElementById('sp-department');
+  const deptRo  = document.getElementById('sp-dept-readonly');
+  const deptLock= document.getElementById('sp-dept-lock');
+  const titleSel= document.getElementById('sp-title');
+  const titleRo = document.getElementById('sp-title-readonly');
+  const titleLock=document.getElementById('sp-title-lock');
+
+  if (isRegistrar) {
+    if (deptSel)  deptSel.style.display  = '';
+    if (deptRo)   deptRo.style.display   = 'none';
+    if (deptLock) deptLock.style.display = 'none';
+    if (titleSel) titleSel.style.display = '';
+    if (titleRo)  titleRo.style.display  = 'none';
+    if (titleLock)titleLock.style.display= 'none';
+  } else {
+    if (deptSel)  deptSel.style.display  = 'none';
+    if (deptRo)   deptRo.style.display   = '';
+    if (deptLock) deptLock.style.display = 'inline-flex';
+    if (titleSel) titleSel.style.display = 'none';
+    if (titleRo)  titleRo.style.display  = '';
+    if (titleLock)titleLock.style.display= 'inline-flex';
+  }
+}
+
+// ══════════════════════════════════════════
+// USER LIST — load from profiles + staff_profiles
+// ══════════════════════════════════════════
+async function loadUserList() {
+  const tbody = document.getElementById('userListBody');
+  if (!tbody) return;
+  tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:var(--ink3);padding:24px">Loading…</td></tr>';
+  let profRes, spRes;
+  try { profRes = await db.from('profiles').select('*').order('created_at'); } catch(e) { profRes = { data: [], error: e }; }
+  try { spRes   = await db.from('staff_profiles').select('user_id,department,title,published'); } catch(e) { spRes = { data: [], error: e }; }
+  const profiles   = profRes.data || [];
+  const staffProfs = spRes.data   || [];
+  if (!profiles.length) {
+    tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:var(--ink3);padding:24px">No users found or insufficient permissions.</td></tr>';
+    return;
+  }
+  const spMap = {};
+  staffProfs.forEach(s => { spMap[s.user_id] = s; });
+  tbody.innerHTML = profiles.map(p => {
+    const sp = spMap[p.id] || {};
+    const roleBadge = p.role === 'registrar'
+      ? `<span class="badge" style="background:var(--crimson-light);color:var(--crimson);border:1px solid rgba(139,26,46,.2)">Secretariat</span>`
+      : `<span class="badge b-blue">Faculty</span>`;
+    const published = sp.published
+      ? `<span class="badge b-green">Published</span>`
+      : `<span class="badge b-muted">Private</span>`;
+    const created = p.created_at ? p.created_at.slice(0,10) : '—';
+    const shortId = p.id ? p.id.slice(0,8) + '…' : '—';
+    return `<tr>
+      <td class="text-mono text-crimson">${p.staff_id || '—'}</td>
+      <td><strong>${p.full_name || '—'}</strong></td>
+      <td>${roleBadge}</td>
+      <td class="text-mono" style="font-size:11px;color:var(--ink3)" title="${p.id}">${shortId}</td>
+      <td>${sp.department || '<span style="color:var(--ink3)">—</span>'}</td>
+      <td>${sp.title      || '<span style="color:var(--ink3)">—</span>'}</td>
+      <td>${published}</td>
+      <td style="color:var(--ink3);font-size:12px">${created}</td>
+    </tr>`;
+  }).join('');
+}
+
+// ══════════════════════════════════════════
+// ACADEMIC YEARS — load into timetable modal
+// ══════════════════════════════════════════
+let _academicYears = [];
+async function loadAcademicYearsForModal() {
+  if (_academicYears.length) return; // cached
+  let res;
+  try { res = await db.from('academic_years').select('id,name').order('sort_order'); } catch(e) { res = { data: [] }; }
+  _academicYears = res.data || [];
+}
+
+function populateAcademicYearDropdown() {
+  const sel = document.getElementById('tt-academic-year');
+  if (!sel) return;
+  sel.innerHTML = '<option value="">Select academic year…</option>' +
+    _academicYears.map(y => `<option value="${y.id}">${y.name}</option>`).join('');
+}
+
+// ══════════════════════════════════════════
+// BOOKED SCHEDULE — render overview panel
+// ══════════════════════════════════════════
+function renderBookedSchedule() {
+  const grid = document.getElementById('bookedScheduleGrid');
+  if (!grid) return;
+  if (!_myTimetable.length) {
+    grid.innerHTML = '<div style="color:var(--ink3);font-size:13px;padding:8px 0">No bookings yet.</div>';
+    return;
+  }
+
+  // Group slots by day
+  const dayOrder = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+  const byDay = {};
+  _myTimetable.forEach(s => {
+    const d = s.day || 'Other';
+    if (!byDay[d]) byDay[d] = [];
+    byDay[d].push(s);
+  });
+
+  // Build label for academic year + date if available
+  const ayLabel = document.getElementById('bookedScheduleAcYear');
+  const uniqueAYs = [...new Set(_myTimetable.map(s => s.academic_year_id).filter(Boolean))];
+  const ayNames = uniqueAYs.map(id => {
+    const y = _academicYears.find(a => a.id === id);
+    return y ? y.name : id;
+  });
+  if (ayLabel) ayLabel.textContent = ayNames.length ? ayNames.join(', ') : 'All Sessions';
+
+  const days = [...dayOrder.filter(d => byDay[d]), ...Object.keys(byDay).filter(d => !dayOrder.includes(d))];
+  grid.innerHTML = days.map(day => {
+    const slots = byDay[day].sort((a,b) => (a.time_start||'').localeCompare(b.time_start||''));
+    return `<div style="background:var(--surface);border:1px solid var(--line);border-radius:10px;overflow:hidden">
+      <div style="background:var(--crimson);color:#fff;padding:8px 14px;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase">${day}</div>
+      <div style="padding:10px;display:flex;flex-direction:column;gap:8px">
+        ${slots.map(s => {
+          const course = _profileCourses.find(c => c.id === s.course_id);
+          const room   = _profileRooms.find(r => r.id === s.room_id);
+          const acYear = _academicYears.find(a => a.id === s.academic_year_id);
+          const cName  = course ? (course.name || course.id) : s.course_id;
+          const rName  = room   ? (room.subject || room.id) : s.room_id;
+          const dateStr= s.session_date ? `<span style="color:var(--ink3);font-size:11px">${s.session_date}</span>` : '';
+          const ayBadge= acYear ? `<span style="font-size:10px;background:var(--blue-light);color:var(--blue);border-radius:3px;padding:1px 6px;font-weight:600">${acYear.name}</span>` : '';
+          return `<div style="background:var(--white);border:1px solid var(--line);border-radius:6px;padding:9px 12px">
+            <div style="font-size:13px;font-weight:600;color:var(--ink);margin-bottom:3px">${cName}</div>
+            <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:4px">
+              ${ayBadge}
+              ${dateStr}
+            </div>
+            <div style="font-size:12px;color:var(--ink2)">📍 ${rName}</div>
+            <div style="font-size:12px;color:var(--ink3);font-family:monospace;margin-top:2px">${s.time_start||''} – ${s.time_end||''}</div>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>`;
+  }).join('');
 }
 
 // ── STAFF PROFILE ──
@@ -3168,10 +3375,17 @@ async function loadStaffProfile() {
     // Set dataset.current BEFORE loadDepartments() so it pre-selects the correct option
     const depSel = document.getElementById('sp-department');
     if (depSel && data.department) depSel.dataset.current = data.department;
+    // Populate readonly fallback displays
+    const deptRo = document.getElementById('sp-dept-readonly');
+    if (deptRo) deptRo.textContent = data.department || '—';
+    const titleRo = document.getElementById('sp-title-readonly');
+    if (titleRo) titleRo.textContent = data.title || '—';
   }
   // Now load departments — it will read dataset.current and pre-select correctly
   await loadDepartments();
+  await loadAcademicYearsForModal();
   await loadMyTimetable();
+  applyProfileFieldLocks();
 }
 
 async function saveStaffProfile() {
@@ -3224,16 +3438,23 @@ function renderMyTimetable() {
   if (!_myTimetable.length) {
     list.innerHTML = '';
     if (empty) empty.style.display = 'block';
+    renderBookedSchedule();
     return;
   }
   if (empty) empty.style.display = 'none';
   list.innerHTML = _myTimetable.map(slot => {
     const course = _profileCourses.find(c => c.id === slot.course_id);
     const room   = _profileRooms.find(r => r.id === slot.room_id);
+    const acYear = _academicYears.find(a => a.id === slot.academic_year_id);
     const cName  = course ? (course.name || course.id) : slot.course_id;
     const rName  = room   ? (room.subject || room.id) : slot.room_id;
+    const ayBadge= acYear ? `<span style="font-size:10px;background:var(--blue-light);color:var(--blue);border-radius:3px;padding:1px 6px;font-weight:600;margin-right:4px">${acYear.name}</span>` : '';
+    const dateStr= slot.session_date ? `<span style="font-size:11px;color:var(--ink3);font-family:monospace">${slot.session_date}</span>` : '';
     return `<div style="display:grid;grid-template-columns:1fr 1fr 80px 130px 72px;gap:8px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:10px 14px">
-      <div style="font-size:13px;font-weight:500;color:var(--ink)">${cName}</div>
+      <div>
+        <div style="font-size:13px;font-weight:500;color:var(--ink)">${cName}</div>
+        <div style="margin-top:3px">${ayBadge}${dateStr}</div>
+      </div>
       <div style="font-size:12px;color:var(--ink2)">${rName}</div>
       <div style="font-size:12px;font-weight:600;color:var(--blue)">${slot.day}</div>
       <div style="font-size:12px;color:var(--ink3);font-family:monospace">${slot.time_start} – ${slot.time_end}</div>
@@ -3245,6 +3466,7 @@ function renderMyTimetable() {
       </div>
     </div>`;
   }).join('');
+  renderBookedSchedule();
 }
 
 async function openTimetableModal(slotId) {
@@ -3258,6 +3480,10 @@ async function openTimetableModal(slotId) {
     _profileCourses = cR.data || [];
     _profileRooms   = rR.data || [];
   }
+
+  // Load academic years
+  await loadAcademicYearsForModal();
+  populateAcademicYearDropdown();
 
   // Populate course dropdown
   const cSel = document.getElementById('tt-course');
@@ -3277,6 +3503,8 @@ async function openTimetableModal(slotId) {
       document.getElementById('tt-day').value   = slot.day;
       document.getElementById('tt-start').value = slot.time_start;
       document.getElementById('tt-end').value   = slot.time_end;
+      document.getElementById('tt-academic-year').value  = slot.academic_year_id || '';
+      document.getElementById('tt-session-date').value   = slot.session_date || '';
     }
     document.getElementById('timetableModalTitle').textContent = 'Edit Timetable Slot';
   } else {
@@ -3284,6 +3512,8 @@ async function openTimetableModal(slotId) {
     document.getElementById('tt-day').value   = '';
     document.getElementById('tt-start').value = '';
     document.getElementById('tt-end').value   = '';
+    document.getElementById('tt-academic-year').value  = '';
+    document.getElementById('tt-session-date').value   = '';
     document.getElementById('timetableModalTitle').textContent = 'Add Timetable Slot';
   }
   document.getElementById('timetableModal').classList.add('open');
@@ -3295,6 +3525,8 @@ async function saveTimetableSlot() {
   const day         = document.getElementById('tt-day').value;
   const time_start  = document.getElementById('tt-start').value;
   const time_end    = document.getElementById('tt-end').value;
+  const academic_year_id = document.getElementById('tt-academic-year').value || null;
+  const session_date     = document.getElementById('tt-session-date').value   || null;
   const conflictEl  = document.getElementById('tt-conflict-msg');
 
   if (!course_id || !room_id || !day || !time_start || !time_end) {
@@ -3327,6 +3559,7 @@ async function saveTimetableSlot() {
   const payload = {
     staff_id: currentUser.id,
     course_id, room_id, day, time_start, time_end,
+    academic_year_id, session_date,
     updated_at: new Date().toISOString(),
   };
 
@@ -6281,6 +6514,7 @@ function showView(id) {
   if (id === 'setup') renderSchemaSQL();
   if (id === 'degrees') renderDegreeGrid();
   if (id === 'myProfile') loadStaffProfile();
+  if (id === 'userList') loadUserList();
   window.scrollTo(0, 0);
 }
 
