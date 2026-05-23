@@ -4219,21 +4219,7 @@ body.theme-light .comms-ch-btn-gp { color: inherit; }
       <div id="appsGridMore" style="display:none"></div>
       <div id="appsToggleBtn" style="display:none"></div>
 
-      <!-- ── IRIS BRAND BANNER (bottom of home) ── -->
-      <div id="irisQuickRow" style="margin-top:16px;margin-bottom:8px">
-        <div class="iris-sys-card">
-          <div class="iris-sys-card-glow"></div>
-          <div class="iris-sys-logo-wrap">
-            <img src="/iris.svg" alt="IRIS" class="iris-sys-logo" onerror="this.style.display='none';document.getElementById('irisLogoFallback').style.display='flex'">
-            <div id="irisLogoFallback" style="display:none;width:100%;height:100%;align-items:center;justify-content:center;font-family:'Libre Baskerville',serif;font-size:16px;font-weight:700;color:#e05470">IR</div>
-          </div>
-          <div class="iris-sys-info">
-            <div class="iris-sys-abbr">IRIS</div>
-            <div class="iris-sys-full">Institutional Records &amp; Information System</div>
-            <div class="iris-sys-org">University of Medicine (2) · IUC</div>
-          </div>
-        </div>
-      </div>
+      <!-- ── IRIS BRAND BANNER injected by JS below ── -->
 
     </div>
 
@@ -8298,5 +8284,43 @@ window.submitPost = async function() {
   btn.disabled = false;
 };
 </script>
+<!-- ── IRIS BRAND BANNER TEMPLATE ── -->
+<template id="irisBannerTpl">
+  <div class="iris-brand-banner">
+    <div class="iris-sys-card">
+      <div class="iris-sys-card-glow"></div>
+      <div class="iris-sys-logo-wrap">
+        <img src="/iris.svg" alt="IRIS" class="iris-sys-logo"
+             onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+        <div style="display:none;width:100%;height:100%;align-items:center;justify-content:center;font-family:'Libre Baskerville',serif;font-size:16px;font-weight:700;color:#e05470">IR</div>
+      </div>
+      <div class="iris-sys-info">
+        <div class="iris-sys-abbr">IRIS</div>
+        <div class="iris-sys-full">Institutional Records &amp; Information System</div>
+        <div class="iris-sys-org">University of Medicine (2) · IUC</div>
+      </div>
+    </div>
+  </div>
+</template>
+
+<style>
+.iris-brand-banner {
+  margin-top: 40px;
+  margin-bottom: 8px;
+}
+</style>
+
+<script>
+// Inject IRIS brand banner into every panel
+(function() {
+  const tpl = document.getElementById('irisBannerTpl');
+  if (!tpl) return;
+  document.querySelectorAll('[id^="panel-"]').forEach(function(panel) {
+    const clone = tpl.content.cloneNode(true);
+    panel.appendChild(clone);
+  });
+})();
+</script>
+
 </body>
 </html>
