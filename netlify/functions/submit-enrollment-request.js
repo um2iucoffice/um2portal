@@ -22,8 +22,10 @@ async function supabase(path, options = {}, useServiceKey = false) {
 
 // POST { student_id, period_id }
 exports.handler = async (event) => {
-  const headers = { 'Content-Type': 'application/json',
-                    'Access-Control-Allow-Origin': '*' };
+  const headers = {
+    'Content-Type': 'application/json',
+    'Access-Control-Allow-Origin': '*'
+  };
 
   if (event.httpMethod === 'OPTIONS') {
     return { statusCode: 204, headers };
@@ -31,10 +33,11 @@ exports.handler = async (event) => {
 
   try {
     const { student_id, period_id } = JSON.parse(event.body || '{}');
-
     if (!student_id || !period_id) {
-      return { statusCode: 200, headers,
-               body: JSON.stringify({ success: false, message: 'Missing student_id or period_id' }) };
+      return {
+        statusCode: 200, headers,
+        body: JSON.stringify({ success: false, message: 'Missing student_id or period_id' })
+      };
     }
 
     // Re-run eligibility server-side
@@ -44,23 +47,31 @@ exports.handler = async (event) => {
     }, true);
 
     if (!eligibility.eligible && !eligibility.already_requested) {
-      return { statusCode: 200, headers,
-               body: JSON.stringify({ success: false,
-                                      message: 'Not eligible',
-                                      reasons: eligibility.reasons }) };
+      return {
+        statusCode: 200, headers,
+        body: JSON.stringify({ success: false, message: 'Not eligible', reasons: eligibility.reasons })
+      };
     }
 
-    // Get period for from_year_id/to_year_id
+    // Get period for from_year_id / to_year_id
     const periods = await supabase(
       `enrollment_periods?id=eq.${period_id}&limit=1`, {}, true);
     const period = periods[0];
-
     if (!period) {
-      return { statusCode: 200, headers,
-               body: JSON.stringify({ success: false, message: 'Period not found' }) };
+      return {
+        statusCode: 200, headers,
+        body: JSON.stringify({ success: false, message: 'Period not found' })
+      };
     }
 
-    // Insert request
+    // Delete any prior rejected row so the INSERT below won't hit a duplicate
+    await supabase(
+      `enrollment_requests?period_id=eq.${period_id}&student_id=eq.${student_id}&status=eq.rejected`,
+      { method: 'DELETE', headers: { 'Prefer': 'return=minimal' } },
+      true
+    );
+
+    // Insert fresh request
     await supabase(`enrollment_requests`, {
       method: 'POST',
       headers: { 'Prefer': 'return=minimal' },
@@ -74,12 +85,13 @@ exports.handler = async (event) => {
       })
     }, true);
 
-    return { statusCode: 200, headers,
-             body: JSON.stringify({ success: true }) };
+    return { statusCode: 200, headers, body: JSON.stringify({ success: true }) };
 
   } catch (err) {
     console.error('submit-enrollment-request error:', err);
-    return { statusCode: 200, headers,
-             body: JSON.stringify({ success: false, message: err.message }) };
+    return {
+      statusCode: 200, headers,
+      body: JSON.stringify({ success: false, message: err.message })
+    };
   }
 };
