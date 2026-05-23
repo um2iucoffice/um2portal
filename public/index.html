@@ -6604,13 +6604,20 @@ function renderGrades(grades, student) {
     // Calculate total duration from academic_years duration_months for years in the student's record
     (function() {
       var ayData = window._academicYears || [];
+      console.log('[StudyDuration] order:', order, 'ayData:', ayData);
       var totalMonths = 0;
       var matched = 0;
       order.forEach(function(yearLabel) {
         var ayRow = ayData.find(function(ay) { return ay.name === yearLabel; });
-        if (ayRow && ayRow.durationMonths != null) {
-          totalMonths += Number(ayRow.durationMonths);
-          matched++;
+        if (ayRow) {
+          // Support both camelCase (from login.js mapAcademicYear) and snake_case (raw)
+          var dm = ayRow.durationMonths != null ? ayRow.durationMonths
+                 : ayRow.duration_months != null ? ayRow.duration_months
+                 : null;
+          if (dm != null) {
+            totalMonths += Number(dm);
+            matched++;
+          }
         }
       });
       var yearsEl = document.getElementById('tsYears');
