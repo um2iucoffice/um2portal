@@ -3130,8 +3130,14 @@ let _editingTimetableId = null;
 async function loadDepartments() {
   const sel = document.getElementById('sp-department');
   if (!sel) return;
-  const { data } = await db.from('departments').select('name').eq('is_active', true).order('name').catch(() => ({ data: null }));
-  if (!data) { sel.innerHTML = '<option value="">Could not load departments</option>'; return; }
+  sel.innerHTML = '<option value="">Loading departments…</option>';
+  const { data, error } = await db.from('departments').select('name').eq('is_active', true).order('name').catch(e => ({ data: null, error: e }));
+  if (error || !data) {
+    sel.innerHTML = '<option value="">Could not load departments</option>';
+    console.error('loadDepartments error:', error);
+    toast('Could not load departments: ' + (error?.message || 'Unknown error'), '⚠');
+    return;
+  }
   const cur = sel.dataset.current || '';
   sel.innerHTML = '<option value="">Select department…</option>' +
     data.map(d => `<option value="${d.name}" ${d.name === cur ? 'selected' : ''}>${d.name}</option>`).join('');
@@ -3188,14 +3194,17 @@ async function loadMyTimetable() {
   if (!currentUser) return;
   // Load courses + rooms for dropdowns
   const [cRes, rRes] = await Promise.all([
-    db.from('courses').select('id,name').order('name').catch(() => ({ data: [] })),
-    db.from('lecture_rooms').select('id,subject').order('subject').catch(() => ({ data: [] }))
+    db.from('courses').select('id,name').order('name').catch(e => ({ data: [], error: e })),
+    db.from('lecture_rooms').select('id,subject').order('subject').catch(e => ({ data: [], error: e }))
   ]);
+  if (cRes.error) console.error('loadMyTimetable courses error:', cRes.error);
+  if (rRes.error) console.error('loadMyTimetable rooms error:', rRes.error);
   _profileCourses = cRes.data || [];
   _profileRooms   = rRes.data || [];
 
   // Load this user's timetable slots
-  const { data } = await db.from('lecture_timetable').select('*').eq('staff_id', currentUser.id).order('day').order('time_start').catch(() => ({ data: [] }));
+  const { data, error: ttError } = await db.from('lecture_timetable').select('*').eq('staff_id', currentUser.id).order('day').order('time_start').catch(e => ({ data: [], error: e }));
+  if (ttError) console.error('loadMyTimetable timetable error:', ttError);
   _myTimetable = data || [];
   renderMyTimetable();
 }
@@ -6264,6 +6273,7 @@ function showView(id) {
   if (ni) ni.classList.add('active');
   if (id === 'setup') renderSchemaSQL();
   if (id === 'degrees') renderDegreeGrid();
+  if (id === 'myProfile') loadStaffProfile();
   window.scrollTo(0, 0);
 }
 
@@ -7402,6 +7412,7 @@ function printStaffGoodStanding() {
 }
 
 
+function _getStudentForPrint() {
   const s = students.find(x => x.id === currentProfileId);
   if (!s) { toast('No student selected.', '⚠'); return null; }
   return s;
