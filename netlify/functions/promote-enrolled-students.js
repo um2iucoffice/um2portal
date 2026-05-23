@@ -12,7 +12,7 @@ exports.handler = async (event) => {
 
   if (new Date() < new Date(period.close_at)) {
     return { statusCode: 200, headers,
-             body: JSON.stringify({ success: false, 
+             body: JSON.stringify({ success: false,
                                     message: 'Period not yet closed' }) };
   }
 
@@ -24,11 +24,11 @@ exports.handler = async (event) => {
 
   let promoted = 0;
   for (const req of requests) {
-    // Update student year
+    // Update student year using to_year_id
     await supabase(`students?id=eq.${req.student_id}`, {
       method: 'PATCH',
       headers: { 'Prefer': 'return=minimal' },
-      body: JSON.stringify({ year: period.to_year })
+      body: JSON.stringify({ year: period.to_year_id })
     }, true);
 
     // Mark request as promoted
@@ -36,9 +36,9 @@ exports.handler = async (event) => {
       method: 'PATCH',
       headers: { 'Prefer': 'return=minimal' },
       body: JSON.stringify({
-        status:       'promoted',
-        promoted_at:  new Date().toISOString(),
-        reviewed_by:  promoted_by
+        status:      'promoted',
+        promoted_at: new Date().toISOString(),
+        reviewed_by: promoted_by
       })
     }, true);
 
