@@ -1,3 +1,25 @@
+const SUPABASE_URL         = process.env.SUPABASE_URL;
+const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY;
+
+async function supabase(path, options = {}, useServiceKey = false) {
+  const key = SUPABASE_SERVICE_KEY;
+  const url  = `${SUPABASE_URL}/rest/v1/${path}`;
+  const res  = await fetch(url, {
+    ...options,
+    headers: {
+      'apikey':        key,
+      'Authorization': `Bearer ${key}`,
+      'Content-Type':  'application/json',
+      ...(options.headers || {})
+    }
+  });
+  if (!res.ok) {
+    const err = await res.text();
+    throw new Error(`Supabase error on ${path}: ${err}`);
+  }
+  return res.json();
+}
+
 // POST { student_id, period_id }
 // Runs eligibility check then inserts enrollment_requests row
 exports.handler = async (event) => {
