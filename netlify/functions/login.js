@@ -97,6 +97,17 @@ function mapEnrollment(row, programName) {
   };
 }
 
+// ── Map academic year row ────────────────────────────────────
+function mapAcademicYear(row) {
+  return {
+    id:             row.id               || '',
+    name:           row.name             || '',
+    sortOrder:      row.sort_order       ?? 99,
+    programId:      row.program_id       || null,
+    durationMonths: row.duration_months  ?? 12,
+  };
+}
+
 // ── Netlify handler ──────────────────────────────────────────
 exports.handler = async (event) => {
   if (event.httpMethod !== 'POST') {
@@ -310,9 +321,29 @@ exports.handler = async (event) => {
       console.warn('Could not fetch announcements:', e.message);
     }
 
+    // ── 12. Fetch academic years ─────────────────────────────
+    let academicYears = [];
+    try {
+      const yearRows = await supabase(
+        `academic_years?select=id,name,sort_order,program_id,duration_months&order=sort_order.asc`
+      );
+      academicYears = (yearRows || []).map(mapAcademicYear);
+    } catch (e) {
+      console.warn('Could not fetch academic years:', e.message);
+    }
+
     return {
       statusCode: 200, headers,
-      body: JSON.stringify({ success: true, student, grades, courses, enrollments, markbook, announcements })
+      body: JSON.stringify({
+        success:       true,
+        student,
+        grades,
+        courses,
+        enrollments,
+        markbook,
+        announcements,
+        academicYears,
+      })
     };
 
   } catch (err) {
