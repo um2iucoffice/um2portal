@@ -2353,7 +2353,7 @@ CRS022,Renal Medicine,M-2,Integrated System Modules,8,OSCE,MBBS</div>
   </div>
   <div class="card" style="padding:0">
     <div class="table-wrap"><table>
-      <thead><tr><th>Year ID</th><th>Year Name</th><th>Order</th><th>Linked Program</th><th>Students Enrolled</th><th>Courses</th><th>Actions</th></tr></thead>
+      <thead><tr><th>Year ID</th><th>Year Name</th><th>Duration</th><th>Order</th><th>Linked Program</th><th>Students Enrolled</th><th>Courses</th><th>Actions</th></tr></thead>
       <tbody id="yearsTableBody"></tbody>
     </table></div>
   </div>
@@ -2372,14 +2372,14 @@ CRS022,Renal Medicine,M-2,Integrated System Modules,8,OSCE,MBBS</div>
   </div>
   <div class="card">
     <div class="card-title">Required CSV Format</div>
-    <div class="code-block">year_id,year_name,sort_order,program_id
-AY001,Foundation Year,1,MBBS
-AY002,M-1,2,MBBS
-AY003,M-2,3,MBBS
-AY004,M-3,4,MBBS
-AY005,M-4,5,MBBS
-AY006,M-5,6,MBBS</div>
-    <p class="text-muted mt-2"><strong>year_id</strong> must be unique (e.g. AY001). Existing IDs will be <strong>updated</strong>. <strong>sort_order</strong> controls display order — lower numbers appear first. <strong>program_id</strong> is optional — links the year to a specific degree program.</p>
+    <div class="code-block">year_id,year_name,sort_order,program_id,duration_months
+AY001,Foundation Year,1,MBBS,12
+AY002,M-1,2,MBBS,18
+AY003,M-2,3,MBBS,12
+AY004,M-3,4,MBBS,12
+AY005,M-4,5,MBBS,12
+AY006,M-5,6,MBBS,12</div>
+    <p class="text-muted mt-2"><strong>year_id</strong> must be unique (e.g. AY001). Existing IDs will be <strong>updated</strong>. <strong>sort_order</strong> controls display order — lower numbers appear first. <strong>program_id</strong> is optional. <strong>duration_months</strong> is optional — defaults to 12 (e.g. 6 = ½ yr, 12 = 1 yr, 18 = 1½ yrs).</p>
     <div class="form-actions" style="margin-top:12px">
       <button class="btn btn-outline btn-sm" onclick="downloadYearTemplate()"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" ><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Download Template CSV</button>
     </div>
@@ -3332,6 +3332,16 @@ ALTER TABLE academic_years ADD COLUMN IF NOT EXISTS program_id text REFERENCES d
       <div class="form-group"><label>Year ID *</label><input id="ym-id" placeholder="e.g. AY008"></div>
       <div class="form-group"><label>Sort Order</label><input id="ym-order" type="number" placeholder="e.g. 7"></div>
       <div class="form-group full"><label>Year Name *</label><input id="ym-name" placeholder="e.g. M-6"></div>
+      <div class="form-group full">
+        <label>Duration <span style="font-weight:400;color:var(--ink3)">(months)</span></label>
+        <select id="ym-duration">
+          <option value="6">6 months (½ year)</option>
+          <option value="12" selected>12 months (1 year)</option>
+          <option value="18">18 months (1½ years)</option>
+          <option value="24">24 months (2 years)</option>
+          <option value="30">30 months (2½ years)</option>
+        </select>
+      </div>
       <div class="form-group full"><label>Linked Degree Program <span style="font-weight:400;color:var(--ink3)">(optional)</span></label>
         <select id="ym-program">
           <option value="">— None / All Programs —</option>
@@ -7406,9 +7416,14 @@ function renderYearsTable() {
     const linkedProg = y.program_id
       ? (degreePrograms.find(p => p.id === y.program_id)?.name || y.program_id)
       : '<span style="color:var(--ink3);font-style:italic">—</span>';
+    const dur = y.duration_months;
+    const durLabel = !dur ? '—'
+      : dur % 12 === 0 ? `${dur/12} yr${dur/12!==1?'s':''}`
+      : `${Math.floor(dur/12)}½ yrs`;
     tb.innerHTML += `<tr>
       <td class="text-mono text-crimson">${y.id}</td>
       <td><strong>${y.name}</strong></td>
+      <td>${durLabel}</td>
       <td>${y.sort_order}</td>
       <td>${linkedProg}</td>
       <td>${enrolled}</td>
@@ -7439,6 +7454,7 @@ function openYearModal(yid) {
     document.getElementById('ym-id').readOnly = true;
     document.getElementById('ym-name').value  = y.name;
     document.getElementById('ym-order').value = y.sort_order;
+    document.getElementById('ym-duration').value = y.duration_months || 12;
     if (ymProg) ymProg.value = y.program_id || '';
   } else {
     document.getElementById('yearModalTitle').textContent = 'Add Academic Year';
@@ -7446,6 +7462,7 @@ function openYearModal(yid) {
     document.getElementById('ym-id').readOnly = false;
     document.getElementById('ym-name').value  = '';
     document.getElementById('ym-order').value = '';
+    document.getElementById('ym-duration').value = 12;
     if (ymProg) ymProg.value = '';
   }
   document.getElementById('yearModal').classList.add('open');
@@ -7456,9 +7473,10 @@ async function saveYear() {
   const name     = document.getElementById('ym-name').value.trim();
   const order    = parseInt(document.getElementById('ym-order').value) || academicYears.length + 1;
   const programId = (document.getElementById('ym-program')?.value || '').trim() || null;
+  const durationMonths = parseInt(document.getElementById('ym-duration').value) || 12;
   if (!id || !name) { toast('Year ID and Year Name are required.', 'Notice'); return; }
 
-  const record = { id, name, sort_order: order, program_id: programId };
+  const record = { id, name, sort_order: order, program_id: programId, duration_months: durationMonths };
 
   // Try saving to Supabase; gracefully degrade if table doesn't exist
   try {
@@ -7511,7 +7529,7 @@ let bulkYearRows = [];
 
 function downloadYearTemplate() {
   downloadCSV('academic_years_template.csv',
-    'year_id,year_name,sort_order,program_id\nAY001,Foundation Year,1,MBBS\nAY002,M-1,2,MBBS\nAY003,M-2,3,MBBS\nAY004,M-3,4,MBBS\nAY005,M-4,5,MBBS\nAY006,M-5,6,MBBS');
+    'year_id,year_name,sort_order,program_id,duration_months\nAY001,Foundation Year,1,MBBS,12\nAY002,M-1,2,MBBS,18\nAY003,M-2,3,MBBS,12\nAY004,M-3,4,MBBS,12\nAY005,M-4,5,MBBS,12\nAY006,M-5,6,MBBS,12');
 }
 
 function handleBulkYearCSV(input) {
@@ -7524,13 +7542,15 @@ function handleBulkYearCSV(input) {
       let errors = 0;
       document.getElementById('yearPreviewCount').textContent = bulkYearRows.length;
       const pt = document.getElementById('yearPreviewTable');
-      pt.innerHTML = `<thead><tr><th>Year ID</th><th>Year Name</th><th>Sort Order</th><th>Program</th><th>Action</th><th>Validation</th></tr></thead>`;
+      pt.innerHTML = `<thead><tr><th>Year ID</th><th>Year Name</th><th>Duration</th><th>Sort Order</th><th>Program</th><th>Action</th><th>Validation</th></tr></thead>`;
       let body = '<tbody>';
       bulkYearRows.forEach(row => {
         const yid      = (row.year_id || '').trim().toUpperCase();
         const name     = (row.year_name || '').trim();
         const order    = row.sort_order || '';
         const progId   = (row.program_id || '').trim() || '—';
+        const dur      = parseInt(row.duration_months) || 12;
+        const durLabel = dur % 12 === 0 ? `${dur/12} yr${dur/12!==1?'s':''}` : `${Math.floor(dur/12)}½ yrs`;
         const hasRequired = yid && name;
         if (!hasRequired) errors++;
         const existing = academicYears.find(x => x.id === yid);
@@ -7539,6 +7559,7 @@ function handleBulkYearCSV(input) {
         body += `<tr class="${hasRequired ? '' : 'bulk-row-err'}">
           <td class="text-mono">${yid || '<span class="text-crimson">Missing</span>'}</td>
           <td>${name || '<span class="text-crimson">Missing</span>'}</td>
+          <td>${durLabel}</td>
           <td>${order}</td>
           <td>${progId}</td>
           <td><span class="badge ${actionBadge}">${action}</span></td>
@@ -7557,7 +7578,7 @@ async function submitBulkYears() {
   const rc = document.getElementById('yearResultCard');
   const rt = document.getElementById('yearResultTable');
   let inserted = 0, updated = 0, errs = 0;
-  rt.innerHTML = `<thead><tr><th>Year ID</th><th>Year Name</th><th>Sort Order</th><th>Program</th><th>Action</th><th>DB</th></tr></thead>`;
+  rt.innerHTML = `<thead><tr><th>Year ID</th><th>Year Name</th><th>Duration</th><th>Sort Order</th><th>Program</th><th>Action</th><th>DB</th></tr></thead>`;
   let body = '<tbody>';
 
   for (const row of bulkYearRows) {
@@ -7565,14 +7586,16 @@ async function submitBulkYears() {
     const name   = (row.year_name || '').trim();
     const order  = parseInt(row.sort_order) || academicYears.length + 1;
     const progId = (row.program_id || '').trim() || null;
+    const dur    = parseInt(row.duration_months) || 12;
+    const durLabel = dur % 12 === 0 ? `${dur/12} yr${dur/12!==1?'s':''}` : `${Math.floor(dur/12)}½ yrs`;
 
     if (!yid || !name) {
       errs++;
-      body += `<tr class="bulk-row-err"><td class="text-mono">${yid||'?'}</td><td>${name||'—'}</td><td>—</td><td>—</td><td><span class="badge b-red">✗ Skipped</span></td><td>—</td></tr>`;
+      body += `<tr class="bulk-row-err"><td class="text-mono">${yid||'?'}</td><td>${name||'—'}</td><td>—</td><td>—</td><td>—</td><td><span class="badge b-red">✗ Skipped</span></td><td>—</td></tr>`;
       continue;
     }
 
-    const record = { id: yid, name, sort_order: order, program_id: progId };
+    const record = { id: yid, name, sort_order: order, program_id: progId, duration_months: dur };
     const existing = academicYears.find(x => x.id === yid);
 
     try {
@@ -7583,11 +7606,11 @@ async function submitBulkYears() {
     if (existing) {
       updated++;
       Object.assign(existing, record);
-      body += `<tr class="bulk-row-ok"><td class="text-mono text-crimson">${yid}</td><td>${name}</td><td>${order}</td><td>${progId||'—'}</td><td><span class="badge b-blue">↑ Updated</span></td><td><span class="badge b-green">✓</span></td></tr>`;
+      body += `<tr class="bulk-row-ok"><td class="text-mono text-crimson">${yid}</td><td>${name}</td><td>${durLabel}</td><td>${order}</td><td>${progId||'—'}</td><td><span class="badge b-blue">↑ Updated</span></td><td><span class="badge b-green">✓</span></td></tr>`;
     } else {
       inserted++;
       academicYears.push(record);
-      body += `<tr class="bulk-row-ok"><td class="text-mono text-crimson">${yid}</td><td>${name}</td><td>${order}</td><td>${progId||'—'}</td><td><span class="badge b-green">✓ Inserted</span></td><td><span class="badge b-green">✓</span></td></tr>`;
+      body += `<tr class="bulk-row-ok"><td class="text-mono text-crimson">${yid}</td><td>${name}</td><td>${durLabel}</td><td>${order}</td><td>${progId||'—'}</td><td><span class="badge b-green">✓ Inserted</span></td><td><span class="badge b-green">✓</span></td></tr>`;
     }
   }
 
