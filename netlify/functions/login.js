@@ -325,7 +325,9 @@ exports.handler = async (event) => {
     let academicYears = [];
     try {
       const yearRows = await supabase(
-        `academic_years?select=id,name,sort_order,program_id,duration_months&order=sort_order.asc`
+        `academic_years?select=id,name,sort_order,program_id,duration_months&order=sort_order.asc`,
+        {},
+        true  // use service key — academic_years table has RLS
       );
       academicYears = (yearRows || []).map(mapAcademicYear);
     } catch (e) {
