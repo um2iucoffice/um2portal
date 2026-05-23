@@ -1373,6 +1373,9 @@ button, .btn, .nav-item, .tab, .mob-nav-btn, .login-role-btn, .tt-tab {
     </div>
   </div>
 
+  <div class="sidebar-section">Overview</div>
+  <div class="nav-item active" id="nav-dashboard" onclick="showView('dashboard')"><span class="nav-icon"><svg class="nav-svg"><use href="#i-dashboard"></use></svg></span>Quick Access</div>
+
   <div class="sidebar-section">My Space</div>
   <div class="nav-item" id="nav-myProfile" onclick="showView('myProfile')">
     <span class="nav-icon"><svg class="nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg></span>My Profile
@@ -1381,9 +1384,6 @@ button, .btn, .nav-item, .tab, .mob-nav-btn, .login-role-btn, .tt-tab {
     <span class="nav-icon"><svg class="nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></span>Teaching Schedule
   </div>
   <div class="nav-item" id="nav-docOffice" onclick="showView('docOffice')"><span class="nav-icon"><svg class="nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="13" y2="17"/></svg></span>Document Office</div>
-
-  <div class="sidebar-section">Overview</div>
-  <div class="nav-item active" id="nav-dashboard" onclick="showView('dashboard')"><span class="nav-icon"><svg class="nav-svg"><use href="#i-dashboard"></use></svg></span>Quick Access</div>
 
   <div class="sidebar-section registrar-section staff-visible">Secretariat</div>
   <div class="nav-item staff-visible" id="nav-students" onclick="showView('students')"><span class="nav-icon"><svg class="nav-svg"><use href="#i-students"></use></svg></span>Students<span class="nav-badge" id="studentCount">3</span></div>
@@ -1434,26 +1434,34 @@ button, .btn, .nav-item, .tab, .mob-nav-btn, .login-role-btn, .tt-tab {
 <div class="view active" id="view-dashboard">
   <div class="page-header">
     <div class="page-header-left">
-      <div class="page-title">Quick Access</div>
+      <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+        <div class="page-title">Quick Access</div>
+        <button class="btn btn-outline btn-sm" id="refreshDataBtn" onclick="refreshAllData()" title="Reload all data from Supabase" style="margin-top:1px">
+          <svg class="ui-icon"><use href="#i-sync"></use></svg> Refresh Data
+        </button>
+      </div>
       <div class="page-sub" id="dashSub">University of Medicine 2 — Registry System</div>
-    </div>
-    <div class="page-actions">
-      <button class="btn btn-outline btn-sm" id="refreshDataBtn" onclick="refreshAllData()" title="Reload all data from Supabase">
-        <svg class="ui-icon"><use href="#i-sync"></use></svg> Refresh Data
-      </button>
     </div>
   </div>
 
+  <!-- Quick Access Tabs -->
+  <div class="tabs" style="margin-bottom:20px">
+    <div class="tab active" onclick="switchDashTab('all',this)">All</div>
+    <div class="tab" onclick="switchDashTab('academics',this)">Academics</div>
+    <div class="tab" onclick="switchDashTab('students',this)">Students</div>
+    <div class="tab" onclick="switchDashTab('myspace',this)">My Space</div>
+  </div>
+
   <!-- Welcome + live stats -->
-  <div class="stat-grid">
+  <div class="stat-grid" data-dashtab="students">
     <div class="stat-card"><div class="stat-value" id="dashStudentCount">—</div><div class="stat-label">Total Students</div><div class="stat-delta" id="dashStudentDelta">—</div></div>
     <div class="stat-card"><div class="stat-value" id="dashCourseCount">—</div><div class="stat-label">Courses</div><div class="stat-delta">Across all years</div></div>
     <div class="stat-card"><div class="stat-value" id="dashGradeCount">—</div><div class="stat-label">Grades Uploaded</div><div class="stat-delta">This session</div></div>
   </div>
-  <div id="programStatGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px;margin-bottom:20px"></div>
+  <div id="programStatGrid" data-dashtab="students" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px;margin-bottom:20px"></div>
 
   <!-- Quick shortcuts grid -->
-  <div class="card" style="margin-bottom:20px">
+  <div class="card" data-dashtab="academics" style="margin-bottom:20px">
     <div class="card-title">Quick Actions</div>
     <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;margin-top:4px">
       <button onclick="showView('students');setMobNav('students')" style="display:flex;flex-direction:column;align-items:center;gap:8px;padding:18px 12px;background:var(--surface);border:1.5px solid var(--line);border-radius:10px;cursor:pointer;font-family:inherit;transition:all .15s;color:var(--ink2)" onmouseover="this.style.borderColor='var(--crimson)';this.style.background='var(--crimson-light)'" onmouseout="this.style.borderColor='var(--line)';this.style.background='var(--surface)'">
@@ -1484,7 +1492,7 @@ button, .btn, .nav-item, .tab, .mob-nav-btn, .login-role-btn, .tt-tab {
   </div>
 
   <!-- Pipeline status -->
-  <div class="card">
+  <div class="card" data-dashtab="academics">
     <div class="card-title">Grade Upload Pipeline</div>
     <div class="pipeline">
       <div class="pipeline-step"><div class="pipeline-dot done">✓</div><div class="pipeline-label"><strong>CSV Received</strong>staff upload</div></div>
@@ -1493,7 +1501,7 @@ button, .btn, .nav-item, .tab, .mob-nav-btn, .login-role-btn, .tt-tab {
       <div class="pipeline-step"><div class="pipeline-dot active"><svg style="width:14px;height:14px;stroke:currentColor;stroke-width:1.9;fill:none;stroke-linecap:round;stroke-linejoin:round"><use href="#i-mail"></use></svg></div><div class="pipeline-label"><strong>Email Sent</strong>student notified</div></div>
     </div>
   </div>
-  <div class="card mt-4">
+  <div class="card mt-4" data-dashtab="myspace">
     <div class="card-title">Recent Activity</div>
     <div class="table-wrap"><table>
       <thead><tr><th>Time</th><th>Action</th><th>Student</th><th>By</th><th>Status</th></tr></thead>
@@ -7621,6 +7629,23 @@ function switchTab(tabId, btn) {
     btn.closest('.tabs').querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
     btn.classList.add('active');
   }
+}
+
+// Dashboard Quick Access tabs
+function switchDashTab(tab, btn) {
+  if (btn) {
+    btn.closest('.tabs').querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    btn.classList.add('active');
+  }
+  // card groups: all show everything; filter by data-dashtab attribute
+  const cards = document.querySelectorAll('#view-dashboard [data-dashtab]');
+  cards.forEach(el => {
+    if (tab === 'all' || el.dataset.dashtab === tab) {
+      el.style.display = '';
+    } else {
+      el.style.display = 'none';
+    }
+  });
 }
 
 // ══════════════════════════════════════════
