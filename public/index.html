@@ -1092,7 +1092,9 @@ body.dashboard-active {
 /* ── SIDEBAR LAYOUT ── */
 #dashboard {
   display: none;
-  min-height: 100vh;
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
 }
 #dashboard.show {
   display: flex;
@@ -1292,8 +1294,6 @@ body.dashboard-active {
 .dash-main {
   margin-left: 256px;
   flex: 1;
-  min-height: 100vh;
-  height: 100vh;
   overflow-y: auto;
   overflow-x: hidden;
   display: flex;
@@ -2571,8 +2571,10 @@ body.theme-light .mob-tab.active::after { background: var(--crimson); }
   background: rgba(14,20,32,0.97);
   border: 1px solid rgba(255,255,255,0.1);
   border-radius: 16px;
-  overflow: hidden; z-index: 70;
-  min-width: 210px;
+  overflow-y: auto; overflow-x: hidden;
+  max-height: calc(100vh - 110px);
+  z-index: 70;
+  min-width: 220px;
   box-shadow: 0 8px 32px rgba(0,0,0,0.4);
   backdrop-filter: blur(20px);
 }
@@ -2611,6 +2613,7 @@ body.theme-light .mob-more-user-id   { color: var(--ink3); }
 body.theme-light .mob-more-item { color: var(--ink2); border-top-color: var(--line); }
 body.theme-light .mob-more-item svg { color: var(--ink3); }
 .mob-more-item.danger { color: #f87171; }
+.mob-more-item.dim { opacity: .4; cursor: not-allowed; pointer-events: none; }
 .mob-more-item.danger svg { color: #f87171; }
 body.theme-light .mob-more-item.danger { color: var(--crimson); }
 body.theme-light .mob-more-item.danger svg { color: var(--crimson); }
@@ -3457,6 +3460,18 @@ body.theme-light .comms-ch-btn-gp { color: inherit; }
     <button class="mob-more-item" onclick="mobSwitchTab('lecturerooms',null);closeMobMore()">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 10l4.553-2.277A1 1 0 0 1 21 8.618v6.764a1 1 0 0 1-1.447.894L15 14"/><rect x="1" y="6" width="14" height="12" rx="2"/></svg>
       Lecture Rooms
+    </button>
+    <button class="mob-more-item" onclick="window.open('https://um2campus.com/login/index.php','_blank');closeMobMore()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12,2 22,8 12,14 2,8"/><polyline points="6,11 6,17 12,20 18,17 18,11"/></svg>
+      E-Learning ↗
+    </button>
+    <button class="mob-more-item" onclick="window.open('https://supportportal.um2campus.org','_blank');closeMobMore()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11C3 6.03 7.03 2 12 2s9 4.03 9 9"/><path d="M3 11v2a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"/><path d="M21 11v2a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3z"/></svg>
+      Support ↗
+    </button>
+    <button class="mob-more-item dim">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z"/></svg>
+      Exam Registration <span style="font-size:10px;opacity:.6;margin-left:4px">Soon</span>
     </button>
     <button class="mob-more-item" onclick="toggleTheme();closeMobMore()">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/></svg>
