@@ -4101,7 +4101,25 @@ body.theme-light .comms-ch-btn-gp { color: inherit; }
             <button class="cs-year-tab"        id="postTypeEvent"        onclick="setPostType('event')">Event</button>
           </div>
           <input id="postTitle" type="text" placeholder="Title" style="width:100%;padding:10px 12px;border-radius:var(--r);border:1px solid var(--line);background:var(--dash-bg2);color:var(--ink);font-size:14px;box-sizing:border-box">
-          <input id="postImageUrl" type="url" placeholder="Image URL (optional) — paste a link to a photo" style="width:100%;padding:10px 12px;border-radius:var(--r);border:1px solid var(--line);background:var(--dash-bg2);color:var(--ink);font-size:14px;box-sizing:border-box">
+          <label for="postImageFile" style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:var(--r);border:1px dashed var(--line);background:var(--dash-bg2);color:var(--ink3);font-size:13px;cursor:pointer;box-sizing:border-box;transition:border-color .2s" onmouseenter="this.style.borderColor='var(--crimson)'" onmouseleave="this.style.borderColor='var(--line)'">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+            <span id="postImageLabel">Upload photo (optional)</span>
+          </label>
+          <input id="postImageFile" type="file" accept="image/*" style="display:none" onchange="
+            var f=this.files[0];
+            var lbl=document.getElementById('postImageLabel');
+            var prev=document.getElementById('postImagePreview');
+            if(f){
+              lbl.textContent=f.name;
+              var r=new FileReader();
+              r.onload=function(e){prev.src=e.target.result;prev.style.display='block'};
+              r.readAsDataURL(f);
+            } else {
+              lbl.textContent='Upload photo (optional)';
+              prev.style.display='none';
+            }
+          ">
+          <img id="postImagePreview" src="" alt="preview" style="display:none;width:100%;max-height:180px;object-fit:cover;border-radius:var(--r);border:1px solid var(--line)">
           <textarea id="postBody" rows="4" placeholder="Write your post here..." style="width:100%;padding:10px 12px;border-radius:var(--r);border:1px solid var(--line);background:var(--dash-bg2);color:var(--ink);font-size:14px;resize:vertical;box-sizing:border-box"></textarea>
           <div id="eventFieldsWrap" style="display:none;flex-direction:column;gap:10px">
             <input id="postEventDate"     type="date" style="padding:10px 12px;border-radius:var(--r);border:1px solid var(--line);background:var(--dash-bg2);color:var(--ink);font-size:14px;width:100%;box-sizing:border-box">
@@ -7416,13 +7434,42 @@ window.submitPost = async function() {
   var btn   = document.getElementById('submitPostBtn');
   if (!title || !body) { msg.textContent = 'Please fill in a title and body.'; return; }
   btn.disabled = true;
-  msg.textContent = 'Submitting...';
+  msg.style.color = 'var(--ink3)';
+
+  // ── Step 1: upload image if selected ──────────────────────────
+  var image_url = null;
+  var fileInput = document.getElementById('postImageFile');
+  if (fileInput && fileInput.files && fileInput.files[0]) {
+    msg.textContent = 'Uploading image…';
+    var formData = new FormData();
+    formData.append('file', fileInput.files[0]);
+    try {
+      var upRes  = await fetch('/.netlify/functions/upload-image', { method: 'POST', body: formData });
+      var upData = await upRes.json();
+      if (upData.url) {
+        image_url = upData.url;
+      } else {
+        msg.textContent = upData.error || 'Image upload failed.';
+        msg.style.color = 'var(--crimson)';
+        btn.disabled = false;
+        return;
+      }
+    } catch(e) {
+      msg.textContent = 'Image upload error. Please try again.';
+      msg.style.color = 'var(--crimson)';
+      btn.disabled = false;
+      return;
+    }
+  }
+
+  // ── Step 2: submit the post ────────────────────────────────────
+  msg.textContent = 'Submitting…';
   var payload = {
     student_id:     window._currentStudentId || '',
     title: title, body: body, type: _postType,
-    image_url:      (document.getElementById('postImageUrl') || {}).value      || null,
-    event_date:     (document.getElementById('postEventDate') || {}).value     || null,
-    event_time:     (document.getElementById('postEventTime') || {}).value     || null,
+    image_url:      image_url,
+    event_date:     (document.getElementById('postEventDate')     || {}).value || null,
+    event_time:     (document.getElementById('postEventTime')     || {}).value || null,
     event_location: (document.getElementById('postEventLocation') || {}).value || null,
   };
   try {
@@ -7436,6 +7483,10 @@ window.submitPost = async function() {
       msg.style.color = 'var(--green)';
       document.getElementById('postTitle').value = '';
       document.getElementById('postBody').value  = '';
+      fileInput.value = '';
+      document.getElementById('postImageLabel').textContent = 'Upload photo (optional)';
+      var prev = document.getElementById('postImagePreview');
+      if (prev) { prev.src = ''; prev.style.display = 'none'; }
     } else {
       msg.textContent = data.error || 'Something went wrong.';
       msg.style.color = 'var(--crimson)';
