@@ -6662,18 +6662,15 @@ function renderGrades(grades, student) {
         const gradeDisplay = escHtml(r.grade || '—')
           .replace(/\+/g, '<sup>+</sup>')
           .replace(/-/g, '<sup>−</sup>');
-        // Failed rows get a subtle red tint and a FAILED pill
+        // Failed rows get a subtle red tint; no FAILED pill, credits hidden for F grades
         const failedRowStyle = r._isFailed ? 'background:rgba(139,26,46,0.04);' : '';
         const failedCreditDisplay = r._isFailed
-          ? `<span class="gt-cr" style="background:rgba(139,26,46,0.1);border-color:rgba(139,26,46,0.2);color:var(--crimson);text-decoration:line-through">${r.course.credits != null ? r.course.credits : '—'}</span>`
+          ? `<span style="color:var(--ink3);font-size:11px">—</span>`
           : `<span class="gt-cr">${r.course.credits != null ? r.course.credits : '—'}</span>`;
-        const failedTag = r._isFailed
-          ? `<span style="display:inline-block;margin-left:6px;font-size:9px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:var(--crimson);background:rgba(139,26,46,0.1);border:1px solid rgba(139,26,46,0.2);border-radius:3px;padding:1px 5px;vertical-align:middle">Failed</span>`
-          : '';
         html += `<tr style="${failedRowStyle}">
           <td style="font-size:11px;color:var(--ink3);font-family:monospace">${escHtml(r.courseId || '—')}</td>
           <td>
-            <div class="gt-course gt-course-graded">${gradedIcon}${escHtml(r.course.name)}${failedTag}</div>
+            <div class="gt-course gt-course-graded">${gradedIcon}${escHtml(r.course.name)}</div>
           </td>
           <td style="text-align:center">${failedCreditDisplay}</td>
           <td style="text-align:center;font-size:11px;color:var(--gt-assess-color,var(--ink3))">${escHtml(typeStr)}</td>
@@ -8988,16 +8985,17 @@ function renderStudentOverview(student, grades, courses) {
   const gpa = getSheetOverallGpa(student);
   if (gpaEl) gpaEl.textContent = (gpa && gpa !== '—') ? gpa : '—';
 
-  // Credits + courses from grades
+  // Credits + courses from grades — exclude F-grade (failed) courses
   if (grades && grades.length && courses) {
     let totalCredits = 0; let creditsKnown = true;
-    grades.forEach(g => {
+    const passedGrades = grades.filter(g => String(g.grade || '').trim().toUpperCase() !== 'F');
+    passedGrades.forEach(g => {
       const c = courses[g.courseId];
       if (c && c.credits != null) totalCredits += Number(c.credits);
       else creditsKnown = false;
     });
     if (creditsEl) creditsEl.textContent = creditsKnown ? totalCredits : (totalCredits > 0 ? totalCredits + '+' : '—');
-    if (coursesEl) coursesEl.textContent = grades.length;
+    if (coursesEl) coursesEl.textContent = passedGrades.length;
   }
 
   // Status
