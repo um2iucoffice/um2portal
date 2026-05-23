@@ -9319,8 +9319,15 @@ async function loadEnrollRequests() {
         <td style="font-family:monospace;font-size:12px">${s.id || r.student_id}</td>
         <td>${displayYear}</td>
         <td>${s.gpa != null ? Number(s.gpa).toFixed(2) : '—'}</td>
-        <td>${snap.pass_rate != null ? Math.round(snap.pass_rate * 100) + '%' : '—'}</td>
-        <td>${snap.core_passed != null ? (snap.core_passed ? '✓' : '✗') : '—'}</td>
+        <td>${snap.pass_rate != null ? snap.pass_rate + '%' : '—'}</td>
+        <td>${snap.core_total != null
+              ? (snap.core_total === 0
+                  ? '<span style="color:var(--ink3)">N/A</span>'
+                  : snap.core_passed + '/' + snap.core_total
+                    + (snap.core_passed >= snap.core_total
+                        ? ' <span style="color:var(--green)">✓</span>'
+                        : ' <span style="color:var(--crimson)">✗</span>'))
+              : '—'}</td>
         <td>${eligBadge}</td>
         <td>${statusBadge}</td>
         <td style="white-space:nowrap">
@@ -9337,12 +9344,23 @@ async function loadEnrollRequests() {
 }
 
 async function actionEnrollRequest(requestId, newStatus) {
-  const { error } = await db.from('enrollment_requests')
-    .update({ status: newStatus, reviewed_at: new Date().toISOString() })
-    .eq('id', requestId);
-  if (error) { toast('Update failed: ' + error.message, '❌'); return; }
-  toast(newStatus === 'approved' ? 'Request approved.' : 'Request rejected.', newStatus === 'approved' ? '✅' : '🚫');
-  loadEnrollRequests();
+  try {
+    const res  = await fetch('/.netlify/functions/submit-enrollment-request', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({
+        request_id:  requestId,
+        action:      newStatus === 'approved' ? 'approve' : 'reject',
+        reviewed_by: window._adminUserId || null
+      })
+    });
+    const data = await res.json();
+    if (!data.success) throw new Error(data.message || 'Unknown error');
+    toast(newStatus === 'approved' ? 'Request approved — student year updated.' : 'Request rejected.', newStatus === 'approved' ? '✅' : '🚫');
+    loadEnrollRequests();
+  } catch(e) {
+    toast('Update failed: ' + e.message, '❌');
+  }
 }
 
 // Override modal
@@ -9360,13 +9378,25 @@ function closeOverrideModal() {
 async function confirmOverride() {
   const reason = document.getElementById('overrideReason').value.trim();
   if (!reason) { toast('Please enter an override reason.', '⚠️'); return; }
-  const { error } = await db.from('enrollment_requests')
-    .update({ status: 'approved', override_reason: reason, reviewed_at: new Date().toISOString() })
-    .eq('id', _overrideRequestId);
-  if (error) { toast('Override failed: ' + error.message, '❌'); return; }
-  closeOverrideModal();
-  toast('Override approved.', '✅');
-  loadEnrollRequests();
+  try {
+    const res  = await fetch('/.netlify/functions/submit-enrollment-request', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({
+        request_id:      _overrideRequestId,
+        action:          'override',
+        reviewed_by:     window._adminUserId || null,
+        override_reason: reason
+      })
+    });
+    const data = await res.json();
+    if (!data.success) throw new Error(data.message || 'Unknown error');
+    closeOverrideModal();
+    toast('Override approved — student year updated.', '✅');
+    loadEnrollRequests();
+  } catch(e) {
+    toast('Override failed: ' + e.message, '❌');
+  }
 }
 
 // Promote All Approved
