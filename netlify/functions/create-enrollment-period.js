@@ -1,5 +1,5 @@
-// POST { program_id, from_year, to_year, open_at, close_at,
-//        min_pass_rate, require_all_core, auto_promote, notes, created_by }
+// POST { program_id, from_year_id, to_year_id, open_at, close_at,
+//        min_pass_rate, require_core, auto_promote, notes, created_by }
 exports.handler = async (event) => {
   const headers = { 'Content-Type': 'application/json',
                     'Access-Control-Allow-Origin': '*' };
@@ -9,16 +9,16 @@ exports.handler = async (event) => {
     method: 'POST',
     headers: { 'Prefer': 'return=representation' },
     body: JSON.stringify({
-      program_id:       body.program_id,
-      from_year:        body.from_year,
-      to_year:          body.to_year,
-      open_at:          body.open_at,
-      close_at:         body.close_at,
-      min_pass_rate:    body.min_pass_rate    ?? 100,
-      require_all_core: body.require_all_core ?? true,
-      auto_promote:     body.auto_promote     ?? true,
-      notes:            body.notes            || null,
-      created_by:       body.created_by       || null
+      program_id:    body.program_id,
+      from_year_id:  body.from_year_id,
+      to_year_id:    body.to_year_id,
+      open_at:       body.open_at,
+      close_at:      body.close_at,
+      min_pass_rate: body.min_pass_rate ?? 100,
+      require_core:  body.require_core  ?? true,
+      auto_promote:  body.auto_promote  ?? true,
+      notes:         body.notes         || null,
+      created_by:    body.created_by    || null
     })
   }, true);
 
