@@ -6598,10 +6598,14 @@ function renderEnrollmentBanner(period, elig, student) {
     var closeDate = new Date(period.close_at)
       .toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
 
-    // Shared style helpers — use CSS vars so both themes work
-    var titleStyle = 'font-weight:700;font-size:14px;margin-bottom:3px;color:var(--ink);';
-    var subStyle   = 'font-size:12px;line-height:1.6;color:var(--ink2);';
-    var strongStyle= 'font-weight:600;color:var(--ink);';
+    // Detect theme at render time so text is legible in both dark and light mode
+    var isDark     = !document.body.classList.contains('theme-light');
+    var titleColor = isDark ? 'rgba(255,255,255,0.92)' : '#0D1B2A';
+    var subColor   = isDark ? 'rgba(255,255,255,0.58)' : '#3D4A5C';
+    var strongColor= isDark ? 'rgba(255,255,255,0.85)' : '#0D1B2A';
+    var titleStyle = 'font-weight:700;font-size:14px;margin-bottom:3px;color:' + titleColor + ';';
+    var subStyle   = 'font-size:12px;line-height:1.6;color:' + subColor + ';';
+    var strongStyle= 'font-weight:600;color:' + strongColor + ';';
 
     function wrap(bgColor, borderColor, iconKey, iconBg, titleText, subHtml) {
       return '<div style="background:' + bgColor + ';border:1px solid ' + borderColor + ';border-radius:12px;padding:16px 20px;display:flex;align-items:center;gap:14px;margin-bottom:18px;">'
@@ -6679,7 +6683,7 @@ function renderEnrollmentBanner(period, elig, student) {
 
     } else {
       var reasonsList = (elig.reasons || []).map(function(r) {
-        return '<li style="margin-bottom:3px;color:var(--ink2);">' + r + '</li>';
+        return '<li style="margin-bottom:3px;color:' + subColor + ';">' + r + '</li>';
       }).join('');
 
       html = '<div style="background:var(--gold-light);border:1px solid rgba(154,123,47,0.25);border-radius:12px;padding:16px 20px;margin-bottom:18px;">'
@@ -6717,11 +6721,14 @@ window.submitEnrollmentRequest = async function(periodId, studentId) {
       ['enrollmentBanner', 'enrollmentBannerGrades'].forEach(id => {
         const container = document.getElementById(id);
         if (!container) return;
+        var _isDark2 = !document.body.classList.contains('theme-light');
+        var _tc2 = _isDark2 ? 'rgba(255,255,255,0.92)' : '#0D1B2A';
+        var _sc2 = _isDark2 ? 'rgba(255,255,255,0.58)' : '#3D4A5C';
         container.innerHTML = '<div style="background:rgba(59,130,246,0.08);border:1px solid rgba(59,130,246,0.22);border-radius:12px;padding:16px 20px;display:flex;align-items:center;gap:14px;margin-bottom:18px;">'
           + _enrollIconWrap('requested', '#2563EB')
           + '<div style="flex:1;min-width:0;">'
-          + '  <div style="font-weight:700;font-size:14px;margin-bottom:3px;color:var(--ink);">Enrollment Request Submitted</div>'
-          + '  <div style="font-size:12px;line-height:1.6;color:var(--ink2);">Your request to advance to the next year of study has been submitted and is under review.</div>'
+          + '  <div style="font-weight:700;font-size:14px;margin-bottom:3px;color:' + _tc2 + ';">Enrollment Request Submitted</div>'
+          + '  <div style="font-size:12px;line-height:1.6;color:' + _sc2 + ';">Your request to advance to the next year of study has been submitted and is under review.</div>'
           + '</div>'
           + '</div>';
         container.style.display = 'block';
@@ -7530,11 +7537,27 @@ function renderDocCards(enrollments) {
 
     html += '<div class="doc-grid">';
 
+    const isInactive   = /inactive/i.test(e.enrollmentStatus || '');
     const confirmTitle = graduated ? 'Confirmation of Graduation' : 'Confirmation of Study';
     const confirmDesc  = graduated
       ? `Official letter confirming graduation from the <strong>${programLabel}</strong> program at the University of Medicine (2).`
       : `Official letter confirming current enrollment in the <strong>${programLabel}</strong> program at the University of Medicine (2).`;
-    const confirmTag   = graduated ? 'Graduated' : 'Enrolled';
+    const confirmTag   = graduated ? 'Graduated' : (isInactive ? 'Inactive' : 'Enrolled');
+    const confirmTagStyle = (isInactive && !graduated)
+      ? 'background:var(--crimson-light);color:var(--crimson);border-color:rgba(139,26,46,.2);'
+      : '';
+    const confirmBtn = (!graduated && isInactive)
+      ? `<button class="btn-print-doc" disabled style="opacity:0.45;cursor:not-allowed;background:var(--ink3);">
+           <svg viewBox="0 0 24 24" style="width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+           Not Available — Inactive
+         </button>
+         <div style="font-size:11px;color:var(--ink3);margin-top:8px;text-align:center;line-height:1.5;">
+           This document is only available to students with an active enrollment.
+         </div>`
+      : `<button class="btn-print-doc" onclick="printConfirmation(${idx})">
+           <svg viewBox="0 0 24 24"><polyline points="6,9 6,2 18,2 18,9"/><path d="M6,18H4a2,2,0,0,1-2-2V11a2,2,0,0,1,2-2H20a2,2,0,0,1,2,2v5a2,2,0,0,1-2,2H18"/><rect x="6" y="14" width="12" height="8"/></svg>
+           Print / Save PDF
+         </button>`;
 
     html += `
       <div class="doc-card${graduated ? ' cert-banner' : ''}">
@@ -7546,12 +7569,9 @@ function renderDocCards(enrollments) {
         <div class="doc-tags">
           <span class="doc-tag">Official Document</span>
           <span class="doc-tag">Instant</span>
-          <span class="doc-tag">${confirmTag}</span>
+          <span class="doc-tag" style="${confirmTagStyle}">${confirmTag}</span>
         </div>
-        <button class="btn-print-doc" onclick="printConfirmation(${idx})">
-          <svg viewBox="0 0 24 24"><polyline points="6,9 6,2 18,2 18,9"/><path d="M6,18H4a2,2,0,0,1-2-2V11a2,2,0,0,1,2-2H20a2,2,0,0,1,2,2v5a2,2,0,0,1-2,2H18"/><rect x="6" y="14" width="12" height="8"/></svg>
-          Print / Save PDF
-        </button>
+        ${confirmBtn}
       </div>`;
 
     html += `
