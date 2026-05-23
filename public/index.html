@@ -3616,6 +3616,18 @@ body.theme-light .comms-ch-btn-gp { color: inherit; }
           <div class="ql-s">Grades, credits &amp; grade points</div>
           <span class="ql-arrow">→</span>
         </div>
+        <div class="ql" onclick="switchTab('coursesession')">
+          <div class="ql-icon"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="var(--crimson)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="8" y1="14" x2="8" y2="14"/><line x1="12" y1="14" x2="12" y2="14"/><line x1="16" y1="14" x2="16" y2="14"/></svg></div>
+          <div class="ql-t">Course Session</div>
+          <div class="ql-s">Current year courses &amp; progress</div>
+          <span class="ql-arrow">→</span>
+        </div>
+        <div class="ql" onclick="switchTab('markbook')">
+          <div class="ql-icon"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="var(--crimson)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/><line x1="9" y1="9" x2="15" y2="9"/><line x1="9" y1="13" x2="13" y2="13"/></svg></div>
+          <div class="ql-t">Mark Book</div>
+          <div class="ql-s">Internal assessment &amp; test marks</div>
+          <span class="ql-arrow">→</span>
+        </div>
         <div class="ql" onclick="switchTab('docs')">
           <div class="ql-icon"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="var(--crimson)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></div>
           <div class="ql-t">Document Office</div>
@@ -4118,7 +4130,7 @@ body.theme-light .comms-ch-btn-gp { color: inherit; }
         <h2>Course Session</h2>
         <p id="csPageSub">All courses for your current academic year — completed courses are marked green.</p>
       </div>
-      <div id="courseSessionWrap" class="cs-wrap">
+      <div id="courseSessionWrap" class="cs-wrap" style="display:none">
         <div class="cs-header">
           <div class="cs-header-left">
             <span class="cs-title">Session</span>
@@ -5405,12 +5417,34 @@ function renderCourseSession(student, grades, academicYears) {
       .filter(Boolean);
   }
 
-  // Fallback: derive years from course catalog if no academicYears provided
+  // Fallback: derive years from grades first (most accurate), then course catalog
   if (uniqueYears.length === 0) {
-    const seen = new Set();
-    Object.values(COURSES).forEach(c => {
-      if (c.year && !seen.has(c.year)) { seen.add(c.year); uniqueYears.push(c.year); }
+    // Prefer years that appear in the student's actual grade records
+    const gradeYears = new Set();
+    (grades || []).forEach(g => {
+      const c = COURSES[String(g.courseId || '').trim()];
+      if (c && c.year) gradeYears.add(c.year);
     });
+    if (gradeYears.size > 0) {
+      // Use catalogue order but only for years the student has grades in
+      const seen = new Set();
+      Object.values(COURSES).forEach(c => {
+        if (c.year && gradeYears.has(c.year) && !seen.has(c.year)) {
+          seen.add(c.year); uniqueYears.push(c.year);
+        }
+      });
+    }
+    // If still empty (no grades yet), include only the student's current year
+    if (uniqueYears.length === 0 && studentYear) {
+      uniqueYears = [studentYear];
+    }
+    // Last resort: full catalog (original behaviour)
+    if (uniqueYears.length === 0) {
+      const seen = new Set();
+      Object.values(COURSES).forEach(c => {
+        if (c.year && !seen.has(c.year)) { seen.add(c.year); uniqueYears.push(c.year); }
+      });
+    }
   }
 
   // Group courses by year
