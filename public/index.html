@@ -3604,40 +3604,19 @@ body.theme-light .comms-ch-btn-gp { color: inherit; }
         </div>
       </div>
 
-      <!-- ── PORTAL HERO — IRIS card (non-interactive hero) ── -->
-      <div class="home-section-label" style="margin-bottom:12px">Portal</div>
-      <div id="irisQuickRow" style="display:block;margin-bottom:20px">
-        <div class="iris-sys-card">
-          <div class="iris-sys-card-glow"></div>
-          <div class="iris-sys-logo-wrap">
-            <img src="/iris.svg" alt="IRIS" class="iris-sys-logo" onerror="this.style.display='none';document.getElementById('irisLogoFallback').style.display='flex'">
-            <div id="irisLogoFallback" style="display:none;width:100%;height:100%;align-items:center;justify-content:center;font-family:'Libre Baskerville',serif;font-size:16px;font-weight:700;color:#e05470">IR</div>
-          </div>
-          <div class="iris-sys-info">
-            <div class="iris-sys-abbr">IRIS</div>
-            <div class="iris-sys-full">Institutional Records &amp; Information System</div>
-            <div class="iris-sys-org">University of Medicine (2) · IUC</div>
-          </div>
-          <a href="https://iris.um2iuc.edu.mm" target="_blank" rel="noopener" class="iris-sys-badge" style="text-decoration:none">Portal ↗</a>
-        </div>
-      </div>
-
       <style>
       .iris-sys-card {
         position: relative;
         overflow: hidden;
         border-radius: 14px;
-        border: 1px solid rgba(139,26,46,0.22);
-        background: linear-gradient(115deg, rgba(139,26,46,0.12) 0%, rgba(10,15,26,0.55) 60%, rgba(154,123,47,0.06) 100%);
-        padding: 20px 24px;
+        border: 1px solid rgba(139,26,46,0.18);
+        background: linear-gradient(115deg, rgba(139,26,46,0.10) 0%, rgba(10,15,26,0.45) 60%, rgba(154,123,47,0.05) 100%);
+        padding: 18px 24px;
         display: flex;
         align-items: center;
         gap: 18px;
         cursor: default;
-      }
-      .iris-sys-badge:hover {
-        background: rgba(139,26,46,0.28) !important;
-        color: #e05470 !important;
+        opacity: 0.82;
       }
       .iris-sys-card-glow {
         position: absolute;
@@ -3680,24 +3659,6 @@ body.theme-light .comms-ch-btn-gp { color: inherit; }
         text-transform: uppercase;
         color: rgba(139,26,46,0.6);
       }
-      .iris-sys-badge {
-        flex-shrink: 0;
-        position: relative; z-index: 1;
-        font-size: 11px;
-        font-weight: 700;
-        letter-spacing: .8px;
-        text-transform: uppercase;
-        color: rgba(224,84,112,0.7);
-        background: rgba(139,26,46,0.15);
-        border: 1px solid rgba(139,26,46,0.25);
-        border-radius: 6px;
-        padding: 5px 12px;
-        transition: background .2s, color .2s;
-      }
-      .iris-sys-card:hover .iris-sys-badge {
-        background: rgba(139,26,46,0.28);
-        color: #e05470;
-      }
       /* Light theme */
       body.theme-light .iris-sys-card {
         background: var(--white);
@@ -3712,7 +3673,6 @@ body.theme-light .comms-ch-btn-gp { color: inherit; }
       body.theme-light .iris-sys-abbr { color: var(--ink); }
       body.theme-light .iris-sys-full { color: var(--ink3); }
       body.theme-light .iris-sys-org { color: var(--crimson); opacity: .7; }
-      body.theme-light .iris-sys-badge { color: var(--crimson); background: var(--crimson-light); border-color: rgba(139,26,46,0.2); }
       body.theme-light .iris-sys-logo-wrap { background: var(--crimson-light); border-color: rgba(139,26,46,0.18); }
       </style>
 
@@ -4258,6 +4218,22 @@ body.theme-light .comms-ch-btn-gp { color: inherit; }
       <div id="appsGridTop" style="display:none"></div>
       <div id="appsGridMore" style="display:none"></div>
       <div id="appsToggleBtn" style="display:none"></div>
+
+      <!-- ── IRIS BRAND BANNER (bottom of home) ── -->
+      <div id="irisQuickRow" style="margin-top:16px;margin-bottom:8px">
+        <div class="iris-sys-card">
+          <div class="iris-sys-card-glow"></div>
+          <div class="iris-sys-logo-wrap">
+            <img src="/iris.svg" alt="IRIS" class="iris-sys-logo" onerror="this.style.display='none';document.getElementById('irisLogoFallback').style.display='flex'">
+            <div id="irisLogoFallback" style="display:none;width:100%;height:100%;align-items:center;justify-content:center;font-family:'Libre Baskerville',serif;font-size:16px;font-weight:700;color:#e05470">IR</div>
+          </div>
+          <div class="iris-sys-info">
+            <div class="iris-sys-abbr">IRIS</div>
+            <div class="iris-sys-full">Institutional Records &amp; Information System</div>
+            <div class="iris-sys-org">University of Medicine (2) · IUC</div>
+          </div>
+        </div>
+      </div>
 
     </div>
 
