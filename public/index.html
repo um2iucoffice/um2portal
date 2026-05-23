@@ -6604,7 +6604,6 @@ function renderGrades(grades, student) {
     // Calculate total duration from academic_years duration_months for years in the student's record
     (function() {
       var ayData = window._academicYears || [];
-      console.log('[StudyDuration] order:', order, 'ayData:', ayData);
       var totalMonths = 0;
       var matched = 0;
       order.forEach(function(yearLabel) {
