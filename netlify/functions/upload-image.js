@@ -1,12 +1,14 @@
 // netlify/functions/upload-image.js
 // NO extra dependencies — parses multipart using Node.js built-ins only.
-// Only requires @supabase/supabase-js which you already have.
+// Only requires @supabase/supabase-js and ws which you already have.
 
 const { createClient } = require('@supabase/supabase-js');
+const ws = require('ws');
 
 const supabase = createClient(
   process.env.SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_KEY
+  process.env.SUPABASE_SERVICE_KEY,
+  { realtime: { transport: ws } }
 );
 
 const BUCKET = 'post-images';
@@ -20,24 +22,20 @@ function parseMultipart(event) {
   const boundary = boundaryMatch[1];
   const bodyBuffer = Buffer.from(event.body, event.isBase64Encoded ? 'base64' : 'utf8');
 
-  const delimiter    = Buffer.from('\r\n--' + boundary);
-  const closeDelim   = Buffer.from('\r\n--' + boundary + '--');
+  const delimiter  = Buffer.from('\r\n--' + boundary);
+  const closeDelim = Buffer.from('\r\n--' + boundary + '--');
 
   let files = [];
   let start = bodyBuffer.indexOf('--' + boundary) + ('--' + boundary).length;
 
   while (start < bodyBuffer.length) {
-    // skip \r\n after boundary
     start += 2;
-
-    // find end of headers
     const headerEnd = bodyBuffer.indexOf('\r\n\r\n', start);
     if (headerEnd === -1) break;
 
     const headerStr = bodyBuffer.slice(start, headerEnd).toString();
     start = headerEnd + 4;
 
-    // find next boundary
     const nextBoundary = bodyBuffer.indexOf(delimiter, start);
     const partEnd = nextBoundary === -1 ? bodyBuffer.indexOf(closeDelim, start) : nextBoundary;
     if (partEnd === -1) break;
@@ -45,7 +43,6 @@ function parseMultipart(event) {
     const data = bodyBuffer.slice(start, partEnd);
     start = partEnd + delimiter.length;
 
-    // parse headers
     const nameMatch     = headerStr.match(/name="([^"]+)"/);
     const filenameMatch = headerStr.match(/filename="([^"]+)"/);
     const mimeMatch     = headerStr.match(/Content-Type:\s*([^\r\n]+)/i);
@@ -59,7 +56,6 @@ function parseMultipart(event) {
       });
     }
 
-    // stop at close delimiter
     if (bodyBuffer.indexOf(closeDelim, partEnd) === partEnd) break;
   }
 
