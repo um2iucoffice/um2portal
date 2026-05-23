@@ -67,9 +67,10 @@ exports.handler = async (event) => {
       body: JSON.stringify({
         student_id,
         period_id,
-        from_year: period.from_year_id,
-        to_year:   period.to_year_id,
-        status:    'requested'
+        from_year:            period.from_year_id,
+        to_year:              period.to_year_id,
+        status:               'requested',
+        eligibility_snapshot: eligibility
       })
     }, true);
 
