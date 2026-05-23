@@ -9265,7 +9265,7 @@ async function loadEnrollRequests() {
       .from('enrollment_requests')
       .select('*, student:student_id(id, name_en, name_my, year, gpa), eligibility_snapshot')
       .eq('period_id', periodId)
-      .order('created_at', { ascending: true });
+      .order('requested_at', { ascending: true });
     if (error) throw error;
 
     if (!requests || !requests.length) {
