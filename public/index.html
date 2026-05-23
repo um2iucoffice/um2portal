@@ -6553,17 +6553,17 @@ function renderGrades(grades, student) {
     return;
   }
 
-  // Group by academic year — F grades are excluded from the transcript
+  // Group by academic year — F grades ARE included in academic record (shown with failed styling)
+  // but excluded from credits/totals. Transcript print excludes F grades separately.
   const groups = {};
   grades.forEach(g => {
     const letterGrade = String(g.grade || '').trim().toUpperCase();
-    if (letterGrade === 'F') return;
     const course = COURSES[g.courseId] || { name: g.course || g.courseId || '—', year: 'Other', block: g.block || 'General', credits: g.credits ?? null, assessment: g.assessment || '—' };
     const academicYear = getAcademicYear(g, course);
     if (!groups[academicYear]) groups[academicYear] = {};
     const block = course.block || 'General';
     if (!groups[academicYear][block]) groups[academicYear][block] = [];
-    groups[academicYear][block].push(Object.assign({}, g, { course: course, academicYear: academicYear }));
+    groups[academicYear][block].push(Object.assign({}, g, { course: course, academicYear: academicYear, _isFailed: letterGrade === 'F' }));
   });
 
   // Build year order from the active course catalogue (preserves DB insertion order),
@@ -6579,13 +6579,16 @@ function renderGrades(grades, student) {
 
   // Summary stats: GPA is not calculated here.
   // It only reflects the value supplied by the sheet/data source.
-  let totalCourses = grades.length;
+  // Exclude F-grade courses from earned course count
+  let totalCourses = grades.filter(g => String(g.grade || '').trim().toUpperCase() !== 'F').length;
   const overallGpa = getSheetOverallGpa(student);
 
-  // Calculate total credits from course data
+  // Calculate total credits — exclude F-grade (failed) courses
   let totalCredits = 0;
   let creditsKnown = true;
   grades.forEach(g => {
+    const letterGrade = String(g.grade || '').trim().toUpperCase();
+    if (letterGrade === 'F') return; // failed courses do not count toward earned credits
     const c = COURSES[g.courseId];
     if (c && c.credits != null) totalCredits += Number(c.credits);
     else creditsKnown = false;
@@ -6659,12 +6662,20 @@ function renderGrades(grades, student) {
         const gradeDisplay = escHtml(r.grade || '—')
           .replace(/\+/g, '<sup>+</sup>')
           .replace(/-/g, '<sup>−</sup>');
-        html += `<tr>
+        // Failed rows get a subtle red tint and a FAILED pill
+        const failedRowStyle = r._isFailed ? 'background:rgba(139,26,46,0.04);' : '';
+        const failedCreditDisplay = r._isFailed
+          ? `<span class="gt-cr" style="background:rgba(139,26,46,0.1);border-color:rgba(139,26,46,0.2);color:var(--crimson);text-decoration:line-through">${r.course.credits != null ? r.course.credits : '—'}</span>`
+          : `<span class="gt-cr">${r.course.credits != null ? r.course.credits : '—'}</span>`;
+        const failedTag = r._isFailed
+          ? `<span style="display:inline-block;margin-left:6px;font-size:9px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:var(--crimson);background:rgba(139,26,46,0.1);border:1px solid rgba(139,26,46,0.2);border-radius:3px;padding:1px 5px;vertical-align:middle">Failed</span>`
+          : '';
+        html += `<tr style="${failedRowStyle}">
           <td style="font-size:11px;color:var(--ink3);font-family:monospace">${escHtml(r.courseId || '—')}</td>
           <td>
-            <div class="gt-course gt-course-graded">${gradedIcon}${escHtml(r.course.name)}</div>
+            <div class="gt-course gt-course-graded">${gradedIcon}${escHtml(r.course.name)}${failedTag}</div>
           </td>
-          <td style="text-align:center"><span class="gt-cr">${r.course.credits != null ? r.course.credits : '—'}</span></td>
+          <td style="text-align:center">${failedCreditDisplay}</td>
           <td style="text-align:center;font-size:11px;color:var(--gt-assess-color,var(--ink3))">${escHtml(typeStr)}</td>
           <td style="text-align:center">
             <span class="sbar-num">${escHtml(scoreStr)}</span>
@@ -6677,9 +6688,14 @@ function renderGrades(grades, student) {
       html += `</tbody></table>`;
     });
 
-    // Year totals row
+    // Year totals row — show passed and failed counts separately
+    const passedInYear = allRowsInYear.filter(r => !r._isFailed).length;
+    const failedInYear = allRowsInYear.filter(r => r._isFailed).length;
+    const failedNote = failedInYear > 0
+      ? ` &nbsp;·&nbsp; <span style="color:var(--crimson)">${failedInYear} Failed</span>`
+      : '';
     html += `<div class="g-year-totals">
-      <span>Courses: <strong>${allRowsInYear.length}</strong></span>
+      <span>Passed: <strong>${passedInYear}</strong>${failedNote}</span>
     </div>`;
     html += `</div>`;
   });
@@ -7981,8 +7997,11 @@ function printDocument(type) {
       : rawGrades;
 
     // Group by academic year (same logic as renderGrades)
+    // F grades are excluded from printed transcripts
     const groups = {};
     filteredGrades.forEach(g => {
+      const letterGrade = String(g.grade || '').trim().toUpperCase();
+      if (letterGrade === 'F') return; // never print failed courses on transcript
       const course = rawCourses[g.courseId] || {
         name: g.course || g.courseId || '—',
         year: 'Other',
