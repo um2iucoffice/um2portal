@@ -285,10 +285,32 @@ export const handler = async (event) => {
       student.photo = `${SUPABASE_URL}/storage/v1/object/public/student-photos/${student.photo}`;
     }
 
-    return {
-      statusCode: 200, headers,
-      body: JSON.stringify({ success: true, student, grades, courses, enrollments, markbook })
-    };
+   // ── 11. Fetch announcements ──────────────────────────────────
+let announcements = [];
+try {
+  const announcementRows = await supabase(
+    `announcements?is_approved=eq.true&order=created_at.desc&select=*`
+  );
+  announcements = (announcementRows || []).map(a => ({
+    id:             a.id             || '',
+    type:           a.type           || 'news',
+    title:          a.title          || '',
+    body:           a.body           || '',
+    image_url:      a.image_url      || null,
+    event_date:     a.event_date     || null,
+    event_time:     a.event_time     || null,
+    event_location: a.event_location || null,
+    published_at:   a.published_at   || a.created_at || '',
+    author_type:    a.author_type    || '',
+  }));
+} catch (e) {
+  console.warn('Could not fetch announcements:', e.message);
+}
+
+return {
+  statusCode: 200, headers,
+  body: JSON.stringify({ success: true, student, grades, courses, enrollments, markbook, announcements })
+};
 
   } catch (err) {
     console.error('Login error:', err);
