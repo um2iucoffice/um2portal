@@ -2603,6 +2603,204 @@ body.theme-light .mob-more-item.danger svg { color: var(--crimson); }
 .mob-more-overlay { display:none; position:fixed; inset:0; z-index:65; }
 .mob-more-overlay.open { display:block; }
 
+/* Grade badge + and - as superscript */
+.gbadge sup { font-size: 0.7em; vertical-align: super; line-height: 0; }
+
+/* Green completion icon for courses with grades */
+.gt-course-graded {
+  display: inline-flex; align-items: center; gap: 5px;
+}
+.gt-graded-icon {
+  width: 16px; height: 16px; flex-shrink: 0;
+  color: #22c55e;
+}
+body.theme-light .gt-graded-icon { color: var(--green); }
+
+/* Course session badge */
+.gt-session {
+  display: inline-block;
+  font-size: 9px; font-weight: 700; letter-spacing: .6px;
+  text-transform: uppercase;
+  padding: 2px 7px; border-radius: 3px;
+  background: rgba(139,26,46,0.12);
+  color: rgba(224,84,112,0.85);
+  border: 1px solid rgba(139,26,46,0.18);
+  white-space: nowrap;
+}
+body.theme-light .gt-session {
+  background: var(--crimson-light);
+  color: var(--crimson);
+  border-color: rgba(139,26,46,0.2);
+}
+
+/* ── COURSE SESSION GRID ── */
+.cs-wrap {
+  margin-bottom: 24px;
+}
+.cs-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 14px; flex-wrap: wrap; gap: 8px;
+}
+.cs-header-left { display: flex; align-items: center; gap: 10px; }
+.cs-title {
+  font-size: 11px; font-weight: 700; letter-spacing: 1.5px;
+  text-transform: uppercase; color: rgba(255,255,255,0.35);
+}
+body.theme-light .cs-title { color: var(--ink3); }
+.cs-year-badge {
+  font-size: 10px; font-weight: 700; letter-spacing: .8px;
+  text-transform: uppercase;
+  padding: 3px 10px; border-radius: 4px;
+  background: rgba(139,26,46,0.18);
+  color: #e05470;
+  border: 1px solid rgba(139,26,46,0.28);
+}
+body.theme-light .cs-year-badge {
+  background: var(--crimson-light); color: var(--crimson);
+  border-color: rgba(139,26,46,0.2);
+}
+.cs-progress-bar-wrap {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 11px; color: rgba(255,255,255,0.3);
+}
+body.theme-light .cs-progress-bar-wrap { color: var(--ink3); }
+.cs-progress-track {
+  width: 100px; height: 5px; border-radius: 99px;
+  background: rgba(255,255,255,0.08);
+  overflow: hidden; flex-shrink: 0;
+}
+body.theme-light .cs-progress-track { background: var(--line); }
+.cs-progress-fill {
+  height: 100%; border-radius: 99px;
+  background: linear-gradient(90deg, #22c55e, #16a34a);
+  transition: width .5s ease;
+}
+.cs-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 10px;
+}
+@media(max-width:700px) { .cs-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 8px; } }
+.cs-card {
+  position: relative;
+  border-radius: 10px;
+  padding: 14px 14px 12px;
+  display: flex; flex-direction: column; gap: 6px;
+  border: 1px solid rgba(255,255,255,0.07);
+  background: rgba(255,255,255,0.03);
+  transition: border-color .18s, background .18s;
+  overflow: hidden;
+}
+body.theme-light .cs-card {
+  background: var(--white); border-color: var(--line);
+}
+.cs-card.completed {
+  border-color: rgba(34,197,94,0.25);
+  background: rgba(34,197,94,0.05);
+}
+body.theme-light .cs-card.completed {
+  border-color: rgba(26,92,58,0.25);
+  background: rgba(26,92,58,0.04);
+}
+.cs-card.pending {
+  border-color: rgba(255,255,255,0.06);
+  opacity: 0.72;
+}
+body.theme-light .cs-card.pending { opacity: 0.8; }
+.cs-card-top {
+  display: flex; align-items: flex-start; justify-content: space-between; gap: 6px;
+}
+.cs-card-code {
+  font-size: 9px; font-weight: 700; letter-spacing: 1px;
+  text-transform: uppercase;
+  font-family: monospace;
+  color: rgba(255,255,255,0.28);
+}
+body.theme-light .cs-card-code { color: var(--ink3); }
+.cs-status-icon {
+  flex-shrink: 0; width: 18px; height: 18px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+}
+.cs-status-icon.done {
+  background: rgba(34,197,94,0.18);
+  border: 1.5px solid rgba(34,197,94,0.4);
+  color: #22c55e;
+}
+body.theme-light .cs-status-icon.done {
+  background: var(--green-light); border-color: rgba(26,92,58,0.3); color: var(--green);
+}
+.cs-status-icon.todo {
+  background: rgba(255,255,255,0.05);
+  border: 1.5px solid rgba(255,255,255,0.1);
+  color: rgba(255,255,255,0.2);
+}
+body.theme-light .cs-status-icon.todo {
+  background: var(--surface); border-color: var(--line); color: var(--ink3);
+}
+.cs-card-name {
+  font-size: 12px; font-weight: 600; line-height: 1.35;
+  color: rgba(255,255,255,0.78);
+}
+body.theme-light .cs-card-name { color: var(--ink); }
+.cs-card.pending .cs-card-name { color: rgba(255,255,255,0.42); }
+body.theme-light .cs-card.pending .cs-card-name { color: var(--ink3); }
+.cs-card-meta {
+  font-size: 10px; color: rgba(255,255,255,0.25); line-height: 1.3;
+}
+body.theme-light .cs-card-meta { color: var(--ink3); }
+.cs-card-grade {
+  margin-top: 2px;
+  display: inline-flex; align-items: center; gap: 5px;
+  font-size: 10px; font-weight: 700;
+  color: #22c55e;
+}
+body.theme-light .cs-card-grade { color: var(--green); }
+.cs-card-grade .gbadge {
+  font-size: 10px; min-width: 28px; height: 20px; padding: 0 5px;
+}
+/* Completed shimmer accent line */
+.cs-card.completed::before {
+  content: '';
+  position: absolute; left: 0; top: 0; bottom: 0; width: 3px;
+  background: linear-gradient(180deg, #22c55e, #16a34a);
+  border-radius: 3px 0 0 3px;
+}
+body.theme-light .cs-card.completed::before {
+  background: linear-gradient(180deg, var(--green), #2d9a5a);
+}
+
+/* Course session year tabs */
+.cs-year-tabs {
+  display: flex; gap: 4px; margin-bottom: 16px;
+  overflow-x: auto; scrollbar-width: none;
+  flex-wrap: wrap;
+}
+.cs-year-tabs::-webkit-scrollbar { display: none; }
+.cs-year-tab {
+  padding: 6px 14px; border-radius: 99px;
+  font-size: 11px; font-weight: 600; letter-spacing: .3px;
+  border: 1px solid rgba(255,255,255,0.1);
+  background: rgba(255,255,255,0.04);
+  color: rgba(255,255,255,0.4);
+  cursor: pointer; white-space: nowrap;
+  transition: all .15s;
+  font-family: 'DM Sans', sans-serif;
+}
+.cs-year-tab:hover { background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.7); }
+.cs-year-tab.active {
+  background: rgba(139,26,46,0.22);
+  border-color: rgba(139,26,46,0.4);
+  color: #e05470;
+}
+body.theme-light .cs-year-tab {
+  background: var(--surface); border-color: var(--line); color: var(--ink3);
+}
+body.theme-light .cs-year-tab:hover { background: var(--crimson-light); color: var(--crimson); }
+body.theme-light .cs-year-tab.active {
+  background: var(--crimson-light); border-color: rgba(139,26,46,0.25); color: var(--crimson);
+}
+
 /* ── COMMUNICATION SECTION ── */
 .comms-loading {
   display: flex; align-items: center; gap: 10px;
@@ -3197,6 +3395,10 @@ body.theme-light .comms-ch-btn-gp { color: inherit; }
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
       Communication
     </button>
+    <button class="mob-more-item" onclick="mobSwitchTab('lecturerooms',null);closeMobMore()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 10l4.553-2.277A1 1 0 0 1 21 8.618v6.764a1 1 0 0 1-1.447.894L15 14"/><rect x="1" y="6" width="14" height="12" rx="2"/></svg>
+      Lecture Rooms
+    </button>
     <button class="mob-more-item" onclick="toggleTheme();closeMobMore()">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/></svg>
       Toggle Theme
@@ -3634,6 +3836,26 @@ body.theme-light .comms-ch-btn-gp { color: inherit; }
         </div>
       </div>
 
+      <!-- Course Session Grid — all courses for student's academic year -->
+      <div id="courseSessionWrap" style="display:none" class="cs-wrap">
+        <div class="cs-header">
+          <div class="cs-header-left">
+            <span class="cs-title">Course Session</span>
+            <span class="cs-year-badge" id="csYearBadge">—</span>
+          </div>
+          <div class="cs-progress-bar-wrap">
+            <span id="csProgressLabel">0 / 0 completed</span>
+            <div class="cs-progress-track">
+              <div class="cs-progress-fill" id="csProgressFill" style="width:0%"></div>
+            </div>
+          </div>
+        </div>
+        <!-- Year tabs (shown if courses span multiple academic years) -->
+        <div class="cs-year-tabs" id="csYearTabs" style="display:none"></div>
+        <!-- Card grid -->
+        <div class="cs-grid" id="csGrid"></div>
+      </div>
+
       <!-- Degree tabs — shown only when student has 2+ enrollments -->
       <div id="gradeDegreeTabs" style="display:none">
         <div class="icard" style="margin-bottom:16px;overflow:hidden">
@@ -3853,7 +4075,7 @@ body.theme-light .comms-ch-btn-gp { color: inherit; }
 
     <!-- dashboard footer -->
     <footer class="dash-footer">
-      &copy; <span id="footerYear"></span> UM2 Interim University Council &nbsp;·&nbsp; University of Medicine (2), Republic of the Union of Myanmar
+      <span id="footerYear"></span>
     </footer>
 
   </div><!-- /.dash-main -->
@@ -4312,6 +4534,8 @@ function populate(s, grades, courses, program_meta, enrollments) {
 
   // ── Render grades for the active (first) enrollment ─────────
   renderGrades(grades, s);
+  // ── Course Session Grid ──────────────────────────────────────
+  renderCourseSession(s, grades);
   if (s.photo) {
     updatePhotoInUI(s.photo);
     const preview = document.getElementById('profilePhotoPreview');
@@ -4999,13 +5223,14 @@ function renderGrades(grades, student) {
         <thead>
           <tr>
             <th style="width:10%">Code</th>
-            <th style="width:26%">Course Title</th>
+            <th style="width:22%">Course Title</th>
+            <th style="text-align:center;width:8%">Session</th>
             <th style="text-align:center;width:6%">Credits</th>
             <th style="text-align:center;width:14%">Assessment Type</th>
             <th style="text-align:center;width:8%">Score</th>
             <th style="text-align:center;width:8%">Year</th>
             <th style="text-align:center;width:8%">Grade</th>
-            <th style="width:20%">Note</th>
+            <th style="width:16%">Note</th>
           </tr>
         </thead>
         <tbody>`;
@@ -5018,18 +5243,28 @@ function renderGrades(grades, student) {
           r.score !== undefined && r.score !== '' ? r.score : '—';
         const dateStr = getCompletionYear(r);
         const typeStr = r.completionType || r.CompletionType || r.course.assessment || '—';
+        // Session: the academic year label for this course
+        const sessionStr = r.course.year || yr;
+        // Green mark if this row has a real grade
+        const hasGrade = r.grade && String(r.grade).trim() && String(r.grade).trim() !== '—';
+        const gradedIcon = hasGrade ? `<svg class="gt-graded-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>` : '';
+        // Superscript + and - in grade
+        const gradeDisplay = escHtml(r.grade || '—')
+          .replace(/\+/g, '<sup>+</sup>')
+          .replace(/-/g, '<sup>−</sup>');
         html += `<tr>
           <td style="font-size:11px;color:var(--ink3);font-family:monospace">${escHtml(r.courseId || '—')}</td>
           <td>
-            <div class="gt-course">${escHtml(r.course.name)}</div>
+            <div class="gt-course gt-course-graded">${gradedIcon}${escHtml(r.course.name)}</div>
           </td>
+          <td style="text-align:center"><span class="gt-session">${escHtml(sessionStr)}</span></td>
           <td style="text-align:center"><span class="gt-cr">${r.course.credits != null ? r.course.credits : '—'}</span></td>
           <td style="text-align:center;font-size:11px;color:var(--gt-assess-color,var(--ink3))">${escHtml(typeStr)}</td>
           <td style="text-align:center">
             <span class="sbar-num">${escHtml(scoreStr)}</span>
           </td>
           <td style="text-align:center;font-size:11px;color:var(--ink3)">${escHtml(dateStr)}</td>
-          <td style="text-align:center"><span class="gbadge ${gc(r.grade)}">${escHtml(r.grade || '—')}</span></td>
+          <td style="text-align:center"><span class="gbadge ${gc(r.grade)}">${gradeDisplay}</span></td>
           <td style="font-size:11px;color:var(--ink3);font-style:italic;max-width:160px">${escHtml(getNote(r))}</td>
         </tr>`;
       });
@@ -5045,6 +5280,123 @@ function renderGrades(grades, student) {
 
   container.innerHTML = html;
 }
+
+// ── Course Session Grid ───────────────────────────────────────
+// Shows all courses for the student's current academic year.
+// Graded courses are marked as completed (green); others as pending.
+function renderCourseSession(student, grades) {
+  const wrap   = document.getElementById('courseSessionWrap');
+  const grid   = document.getElementById('csGrid');
+  const badge  = document.getElementById('csYearBadge');
+  const pLabel = document.getElementById('csProgressLabel');
+  const pFill  = document.getElementById('csProgressFill');
+  const tabBar = document.getElementById('csYearTabs');
+  if (!wrap || !grid) return;
+
+  // Determine the student's current academic year (e.g. "M-1", "Foundation Year")
+  const studentYear = (student && (student.currentStatus || student.year || student.academic_year || '')) || '';
+
+  // Build a set of graded courseIds from the grades array
+  const gradedIds = new Set();
+  const gradeMap  = {};   // courseId → grade row
+  (grades || []).forEach(g => {
+    if (g.courseId) {
+      gradedIds.add(String(g.courseId).trim());
+      gradeMap[String(g.courseId).trim()] = g;
+    }
+  });
+
+  // Collect all courses from the active catalog, grouped by year
+  const allYears = [];
+  const coursesByYear = {};
+  Object.entries(COURSES).forEach(([id, c]) => {
+    const yr = c.year || 'Other';
+    if (!coursesByYear[yr]) { coursesByYear[yr] = []; allYears.push(yr); }
+    coursesByYear[yr].push({ id, ...c });
+  });
+  // De-dup years (preserve insertion order)
+  const uniqueYears = [...new Set(allYears)];
+
+  if (uniqueYears.length === 0) { wrap.style.display = 'none'; return; }
+
+  // Determine which year to show by default:
+  // 1) match student's currentStatus to a year key, 2) fallback to first year with graded courses, 3) first year
+  let activeYear = uniqueYears.find(y => y === studentYear)
+    || uniqueYears.find(y => (coursesByYear[y] || []).some(c => gradedIds.has(c.id)))
+    || uniqueYears[0];
+
+  function renderYearGrid(yr) {
+    const courses = coursesByYear[yr] || [];
+    const completed = courses.filter(c => gradedIds.has(c.id)).length;
+    const total     = courses.length;
+
+    if (badge)  badge.textContent  = yr;
+    if (pLabel) pLabel.textContent = `${completed} / ${total} completed`;
+    if (pFill)  pFill.style.width  = total > 0 ? Math.round((completed / total) * 100) + '%' : '0%';
+
+    grid.innerHTML = courses.map(c => {
+      const isDone  = gradedIds.has(c.id);
+      const gRow    = gradeMap[c.id];
+      const grade   = gRow ? (gRow.grade || '') : '';
+      const gradeDisplay = grade
+        ? grade.replace(/\+/g, '<sup>+</sup>').replace(/-/g, '<sup>−</sup>')
+        : '';
+      const gradeClass = grade ? gc(grade) : 'gX';
+
+      const statusIcon = isDone
+        ? `<span class="cs-status-icon done"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>`
+        : `<span class="cs-status-icon todo"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/></svg></span>`;
+
+      const gradeBadge = isDone && grade
+        ? `<div class="cs-card-grade">
+             <span class="gbadge ${gradeClass}">${gradeDisplay}</span>
+             <span style="font-size:9px;opacity:.7">Completed</span>
+           </div>`
+        : `<div style="font-size:9px;color:rgba(255,255,255,0.2);font-style:italic;margin-top:2px">Pending</div>`;
+
+      return `<div class="cs-card ${isDone ? 'completed' : 'pending'}">
+        <div class="cs-card-top">
+          <span class="cs-card-code">${escHtml(c.id)}</span>
+          ${statusIcon}
+        </div>
+        <div class="cs-card-name">${escHtml(c.name)}</div>
+        <div class="cs-card-meta">${escHtml(c.assessment || '')}${c.credits != null ? ' · ' + c.credits + ' cr' : ''}</div>
+        ${gradeBadge}
+      </div>`;
+    }).join('');
+
+    // Update active tab highlight
+    document.querySelectorAll('.cs-year-tab').forEach(t => {
+      t.classList.toggle('active', t.dataset.yr === yr);
+    });
+  }
+
+  // Build year tabs if there are multiple years in the catalog
+  if (uniqueYears.length > 1) {
+    tabBar.style.display = 'flex';
+    tabBar.innerHTML = uniqueYears.map(yr => {
+      const courses = coursesByYear[yr] || [];
+      const done = courses.filter(c => gradedIds.has(c.id)).length;
+      const pip  = done > 0 ? `<span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:#22c55e;margin-left:5px;vertical-align:middle"></span>` : '';
+      return `<button class="cs-year-tab${yr === activeYear ? ' active' : ''}" data-yr="${escHtml(yr)}" onclick="csShowYear('${escHtml(yr)}')">${escHtml(yr)}${pip}</button>`;
+    }).join('');
+  } else {
+    tabBar.style.display = 'none';
+  }
+
+  renderYearGrid(activeYear);
+  wrap.style.display = '';
+
+  // Expose for tab switching
+  window._csRenderYear = renderYearGrid;
+}
+
+window.csShowYear = function(yr) {
+  if (window._csRenderYear) window._csRenderYear(yr);
+  // update badge to match
+  const badge = document.getElementById('csYearBadge');
+  if (badge) badge.textContent = yr;
+};
 
 // ── Section / sidebar switching ───────────────────────────────
 const SECTION_TITLES = {
@@ -5215,6 +5567,7 @@ function switchDegreeTab(idx) {
     ? (window._allGrades || []).filter(g => !g.enrollmentId || g.enrollmentId === e.id)
     : (window._allGrades || []);
   renderGrades(filtered, window._currentStudent || {});
+  renderCourseSession(window._currentStudent || {}, filtered);
 }
 
 // ── Cert cards (degree certificate section) ───────────────────
