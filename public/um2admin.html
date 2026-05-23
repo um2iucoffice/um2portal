@@ -2740,7 +2740,7 @@ ALTER TABLE academic_years ADD COLUMN IF NOT EXISTS program_id text REFERENCES d
     </div>
   </div>
 
-  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px">
+  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;align-items:stretch">
 
     <!-- Confirmation of Service -->
     <div class="card" style="display:flex;flex-direction:column;gap:12px">
@@ -2753,7 +2753,7 @@ ALTER TABLE academic_years ADD COLUMN IF NOT EXISTS program_id text REFERENCES d
           <div style="font-size:12px;color:var(--ink3);margin-top:2px">Official letter confirming your active service at UM2</div>
         </div>
       </div>
-      <button class="btn btn-outline btn-sm" onclick="printStaffConfirmation()" style="align-self:flex-start;display:flex;align-items:center;gap:6px">
+      <button class="btn btn-outline btn-sm" onclick="printStaffConfirmation()" style="margin-top:auto;align-self:flex-start;display:flex;align-items:center;gap:6px">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
         Print Letter
       </button>
@@ -2770,7 +2770,7 @@ ALTER TABLE academic_years ADD COLUMN IF NOT EXISTS program_id text REFERENCES d
           <div style="font-size:12px;color:var(--ink3);margin-top:2px">Certificate confirming good academic and disciplinary standing</div>
         </div>
       </div>
-      <button class="btn btn-outline btn-sm" onclick="printStaffGoodStanding()" style="align-self:flex-start;display:flex;align-items:center;gap:6px">
+      <button class="btn btn-outline btn-sm" onclick="printStaffGoodStanding()" style="margin-top:auto;align-self:flex-start;display:flex;align-items:center;gap:6px">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
         Print Certificate
       </button>
@@ -2787,7 +2787,7 @@ ALTER TABLE academic_years ADD COLUMN IF NOT EXISTS program_id text REFERENCES d
           <div style="font-size:12px;color:var(--ink3);margin-top:2px">Auto-generated official record of faculty profile and service details</div>
         </div>
       </div>
-      <button class="btn btn-outline btn-sm" onclick="printFacultyInfoRecord()" style="align-self:flex-start;display:flex;align-items:center;gap:6px">
+      <button class="btn btn-outline btn-sm" onclick="printFacultyInfoRecord()" style="margin-top:auto;align-self:flex-start;display:flex;align-items:center;gap:6px">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
         Print Record
       </button>
