@@ -6574,89 +6574,127 @@ async function checkEnrollmentEligibility(student) {
   }
 }
 
+// ── Enrollment banner SVG icons ───────────────────────────────────────────────
+var _enrollIcons = {
+  promoted: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c0 1.657 2.686 3 6 3s6-1.343 6-3v-5"/></svg>',
+  approved: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"/><path d="m9 12 2 2 4-4"/></svg>',
+  rejected: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m15 9-6 6M9 9l6 6"/></svg>',
+  requested:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>',
+  eligible: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"/><path d="M12 8v4l3 3"/></svg>',
+  ineligible:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>'
+};
+
+function _enrollIconWrap(key, color) {
+  return '<div style="width:36px;height:36px;border-radius:8px;background:' + color + ';display:flex;align-items:center;justify-content:center;flex-shrink:0;">'
+       + '<span style="display:flex;align-items:center;color:#fff;">' + _enrollIcons[key] + '</span>'
+       + '</div>';
+}
+
 function renderEnrollmentBanner(period, elig, student) {
-  // Render into both home and grades panels
-  ['enrollmentBanner', 'enrollmentBannerGrades'].forEach(id => {
-    const container = document.getElementById(id);
+  ['enrollmentBanner', 'enrollmentBannerGrades'].forEach(function(id) {
+    var container = document.getElementById(id);
     if (!container) return;
 
-    const closeDate = new Date(period.close_at)
+    var closeDate = new Date(period.close_at)
       .toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
 
+    // Shared style helpers — use CSS vars so both themes work
+    var titleStyle = 'font-weight:700;font-size:14px;margin-bottom:3px;color:var(--ink);';
+    var subStyle   = 'font-size:12px;line-height:1.6;color:var(--ink2);';
+    var strongStyle= 'font-weight:600;color:var(--ink);';
+
+    function wrap(bgColor, borderColor, iconKey, iconBg, titleText, subHtml) {
+      return '<div style="background:' + bgColor + ';border:1px solid ' + borderColor + ';border-radius:12px;padding:16px 20px;display:flex;align-items:center;gap:14px;margin-bottom:18px;">'
+           + _enrollIconWrap(iconKey, iconBg)
+           + '<div style="flex:1;min-width:0;">'
+           + '  <div style="' + titleStyle + '">' + titleText + '</div>'
+           + '  <div style="' + subStyle + '">' + subHtml + '</div>'
+           + '</div>'
+           + '</div>';
+    }
+
+    var html = '';
+
     if (elig.already_requested) {
-      const enrollmentStatus = elig.enrollment_status || 'requested';
-      const toYear           = elig.to_year || 'next year';
+      var enrollmentStatus = elig.enrollment_status || 'requested';
+      var toYear           = elig.to_year || 'next year';
+      var toYearStrong     = '<strong style="' + strongStyle + '">' + toYear + '</strong>';
 
       if (enrollmentStatus === 'promoted') {
-        // PROMOTED — green success, no action needed
-        container.innerHTML = `
-          <div style="background:rgba(20,160,80,0.13);border:1px solid rgba(20,160,80,0.45);border-radius:12px;padding:16px 20px;display:flex;align-items:center;gap:14px;margin-bottom:18px;">
-            <div style="font-size:22px;flex-shrink:0;">🎓</div>
-            <div style="flex:1;min-width:0;">
-              <div style="font-weight:700;color:rgba(255,255,255,0.92);font-size:14px;margin-bottom:2px;">Year Progression Approved</div>
-              <div style="font-size:12px;color:rgba(180,255,200,0.75);">You have been promoted to <strong>${toYear}</strong>. Your academic record has been updated.</div>
-            </div>
-          </div>`;
+        html = wrap(
+          'var(--green-light)', 'rgba(26,92,58,0.25)',
+          'promoted', '#1A5C3A',
+          'Year Progression Complete',
+          'You have been promoted to ' + toYearStrong + '. Your academic record has been updated.'
+        );
       } else if (enrollmentStatus === 'approved') {
-        // APPROVED but not yet promoted (should be rare with new code)
-        container.innerHTML = `
-          <div style="background:rgba(20,160,80,0.10);border:1px solid rgba(20,160,80,0.35);border-radius:12px;padding:16px 20px;display:flex;align-items:center;gap:14px;margin-bottom:18px;">
-            <div style="font-size:22px;flex-shrink:0;">✅</div>
-            <div style="flex:1;min-width:0;">
-              <div style="font-weight:700;color:rgba(255,255,255,0.92);font-size:14px;margin-bottom:2px;">Enrollment Approved</div>
-              <div style="font-size:12px;color:rgba(255,255,255,0.6);">Your progression to <strong>${toYear}</strong> has been approved and will be processed shortly.</div>
-            </div>
-          </div>`;
+        html = wrap(
+          'var(--green-light)', 'rgba(26,92,58,0.2)',
+          'approved', '#1A7A48',
+          'Enrollment Approved',
+          'Your progression to ' + toYearStrong + ' has been approved and will be processed shortly.'
+        );
       } else if (enrollmentStatus === 'rejected') {
-        // REJECTED — show clearly so student knows they can resubmit
-        container.innerHTML = `
-          <div style="background:rgba(180,30,30,0.13);border:1px solid rgba(180,30,30,0.35);border-radius:12px;padding:16px 20px;display:flex;align-items:center;gap:14px;margin-bottom:18px;">
-            <div style="font-size:22px;flex-shrink:0;">❌</div>
-            <div style="flex:1;min-width:0;">
-              <div style="font-weight:700;color:rgba(255,255,255,0.92);font-size:14px;margin-bottom:2px;">Enrollment Request Rejected</div>
-              <div style="font-size:12px;color:rgba(255,200,200,0.75);">Your request was not approved. Please contact the registrar for more information.</div>
-            </div>
-          </div>`;
+        html = wrap(
+          'var(--crimson-light)', 'rgba(139,26,46,0.22)',
+          'rejected', 'var(--crimson)',
+          'Enrollment Request Rejected',
+          'Your request was not approved. Please contact the Registrar for more information.'
+        );
       } else {
-        // REQUESTED — under review
-        container.innerHTML = `
-          <div style="background:rgba(30,90,200,0.13);border:1px solid rgba(30,90,200,0.35);border-radius:12px;padding:16px 20px;display:flex;align-items:center;gap:14px;margin-bottom:18px;">
-            <div style="font-size:22px;flex-shrink:0;">🕐</div>
-            <div style="flex:1;min-width:0;">
-              <div style="font-weight:700;color:rgba(255,255,255,0.92);font-size:14px;margin-bottom:2px;">Enrollment Request Pending</div>
-              <div style="font-size:12px;color:rgba(255,255,255,0.6);">Your request to advance to the next year of study is under review. Closes ${closeDate}.</div>
-            </div>
-          </div>`;
+        html = wrap(
+          'rgba(59,130,246,0.08)', 'rgba(59,130,246,0.22)',
+          'requested', '#2563EB',
+          'Enrollment Request Pending',
+          'Your request to advance to the next year of study is under review. Closes ' + closeDate + '.'
+        );
       }
+
     } else if (elig.eligible) {
-      // ELIGIBLE state — green with Enroll Now button
-      container.innerHTML = `
-        <div style="background:rgba(20,160,80,0.13);border:1px solid rgba(20,160,80,0.35);border-radius:12px;padding:16px 20px;display:flex;align-items:center;gap:14px;margin-bottom:18px;">
-          <div style="font-size:22px;flex-shrink:0;">✅</div>
-          <div style="flex:1;min-width:0;">
-            <div style="font-weight:700;color:rgba(255,255,255,0.92);font-size:14px;margin-bottom:2px;">Year Progression Available</div>
-            <div style="font-size:12px;color:rgba(255,255,255,0.6);">You are eligible to enroll for the next year of study. Enrollment closes ${closeDate}.</div>
-          </div>
-          <button id="enrollBtn" onclick="submitEnrollmentRequest('${period.id}','${student.id}')"
-            style="flex-shrink:0;background:rgba(20,160,80,0.75);border:1px solid rgba(20,160,80,0.6);color:#fff;font-size:13px;font-weight:600;padding:8px 18px;border-radius:8px;cursor:pointer;">
-            Enroll Now
-          </button>
-        </div>`;
+      var enrollBtnStyle = [
+        'flex-shrink:0',
+        'background:var(--green)',
+        'border:none',
+        'color:#fff',
+        'font-size:13px',
+        'font-weight:600',
+        'padding:9px 20px',
+        'border-radius:8px',
+        'cursor:pointer',
+        'font-family:\'DM Sans\',sans-serif',
+        'letter-spacing:.2px',
+        'transition:opacity .15s'
+      ].join(';');
+
+      html = '<div style="background:var(--green-light);border:1px solid rgba(26,92,58,0.22);border-radius:12px;padding:16px 20px;display:flex;align-items:center;gap:14px;margin-bottom:18px;">'
+           + _enrollIconWrap('eligible', 'var(--green)')
+           + '<div style="flex:1;min-width:0;">'
+           + '  <div style="' + titleStyle + '">Year Progression Available</div>'
+           + '  <div style="' + subStyle + '">You are eligible to enroll for the next year of study. Enrollment closes ' + closeDate + '.</div>'
+           + '</div>'
+           + '<button id="enrollBtn" onclick="submitEnrollmentRequest(\'' + period.id + '\',\'' + student.id + '\')" style="' + enrollBtnStyle + '">'
+           + '  Enroll Now'
+           + '</button>'
+           + '</div>';
+
     } else {
-      // INELIGIBLE state — amber with reasons list
-      const reasonsList = (elig.reasons || []).map(r => `<li style="margin-bottom:2px;">${r}</li>`).join('');
-      container.innerHTML = `
-        <div style="background:rgba(200,130,20,0.13);border:1px solid rgba(200,130,20,0.35);border-radius:12px;padding:16px 20px;margin-bottom:18px;">
-          <div style="display:flex;align-items:center;gap:14px;">
-            <div style="font-size:22px;flex-shrink:0;">⚠️</div>
-            <div style="flex:1;min-width:0;">
-              <div style="font-weight:700;color:rgba(255,255,255,0.92);font-size:14px;margin-bottom:2px;">Not Yet Eligible for Year Progression</div>
-              <div style="font-size:12px;color:rgba(255,255,255,0.6);">Enrollment closes ${closeDate}. Please resolve the following before the deadline:</div>
-            </div>
-          </div>
-          ${reasonsList ? `<ul style="margin:10px 0 0 36px;padding:0;font-size:12px;color:rgba(255,210,100,0.85);">${reasonsList}</ul>` : ''}
-        </div>`;
+      var reasonsList = (elig.reasons || []).map(function(r) {
+        return '<li style="margin-bottom:3px;color:var(--ink2);">' + r + '</li>';
+      }).join('');
+
+      html = '<div style="background:var(--gold-light);border:1px solid rgba(154,123,47,0.25);border-radius:12px;padding:16px 20px;margin-bottom:18px;">'
+           + '<div style="display:flex;align-items:center;gap:14px;">'
+           + _enrollIconWrap('ineligible', 'var(--gold)')
+           + '<div style="flex:1;min-width:0;">'
+           + '  <div style="' + titleStyle + '">Not Yet Eligible for Year Progression</div>'
+           + '  <div style="' + subStyle + '">Enrollment closes ' + closeDate + '. Please resolve the following before the deadline:</div>'
+           + '</div>'
+           + '</div>'
+           + (reasonsList ? '<ul style="margin:10px 0 0 50px;padding:0;font-size:12px;list-style:disc;">' + reasonsList + '</ul>' : '')
+           + '</div>';
     }
+
+    container.innerHTML = html;
     container.style.display = 'block';
   });
 }
@@ -6679,14 +6717,13 @@ window.submitEnrollmentRequest = async function(periodId, studentId) {
       ['enrollmentBanner', 'enrollmentBannerGrades'].forEach(id => {
         const container = document.getElementById(id);
         if (!container) return;
-        container.innerHTML = `
-          <div style="background:rgba(30,90,200,0.13);border:1px solid rgba(30,90,200,0.35);border-radius:12px;padding:16px 20px;display:flex;align-items:center;gap:14px;margin-bottom:18px;">
-            <div style="font-size:22px;flex-shrink:0;">🕐</div>
-            <div style="flex:1;min-width:0;">
-              <div style="font-weight:700;color:rgba(255,255,255,0.92);font-size:14px;margin-bottom:2px;">Enrollment Request Submitted</div>
-              <div style="font-size:12px;color:rgba(255,255,255,0.6);">Your request to advance to the next year of study has been submitted and is under review.</div>
-            </div>
-          </div>`;
+        container.innerHTML = '<div style="background:rgba(59,130,246,0.08);border:1px solid rgba(59,130,246,0.22);border-radius:12px;padding:16px 20px;display:flex;align-items:center;gap:14px;margin-bottom:18px;">'
+          + _enrollIconWrap('requested', '#2563EB')
+          + '<div style="flex:1;min-width:0;">'
+          + '  <div style="font-weight:700;font-size:14px;margin-bottom:3px;color:var(--ink);">Enrollment Request Submitted</div>'
+          + '  <div style="font-size:12px;line-height:1.6;color:var(--ink2);">Your request to advance to the next year of study has been submitted and is under review.</div>'
+          + '</div>'
+          + '</div>';
         container.style.display = 'block';
       });
     } else {
