@@ -2074,20 +2074,76 @@ iuc125066,Second Student,,U Father Two,,Daw Mother Two,,2000-05-15,second@email.
         <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--ink3)"><span>0%</span><span>50%</span><span>100%</span></div>
       </div>
 
-      <div class="form-group">
-        <label>Require Core Courses Passed</label>
-        <div style="display:flex;align-items:center;gap:10px;height:36px">
-          <label class="toggle-wrap" style="display:flex;align-items:center;gap:8px;cursor:pointer">
-            <input type="checkbox" id="ep-requireCore" style="display:none" onchange="this.nextElementSibling.textContent=this.checked?'Yes':'No'">
-            <span id="ep-requireCoreTrack" onclick="epToggle('ep-requireCore','ep-requireCoreTrack')"
-              style="display:inline-flex;width:40px;height:22px;border-radius:11px;background:var(--line);border:1px solid var(--line);align-items:center;cursor:pointer;transition:background .2s;padding:2px">
-              <span style="width:16px;height:16px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.2);transition:transform .2s;transform:translateX(0)"></span>
-            </span>
-            <span id="ep-requireCoreLabel" style="font-size:12px;color:var(--ink2)">No</span>
-          </label>
+      <!-- ── ELIGIBILITY CRITERIA SECTION ── -->
+      <div class="form-group full">
+        <div style="font-size:10px;font-weight:700;letter-spacing:1.4px;text-transform:uppercase;color:var(--ink3);margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid var(--line)">
+          Eligibility Criteria
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+
+          <!-- Require No Failures -->
+          <div style="background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:12px 14px;display:flex;align-items:flex-start;gap:12px">
+            <div style="flex:1">
+              <div style="font-size:12px;font-weight:600;color:var(--ink);margin-bottom:2px">No Failed Courses (F Grade)</div>
+              <div style="font-size:11px;color:var(--ink3)">Student must have zero F grades to enroll</div>
+            </div>
+            <label class="toggle-wrap" style="display:flex;align-items:center;gap:6px;cursor:pointer;flex-shrink:0;margin-top:2px">
+              <input type="checkbox" id="ep-requireNoFailures" style="display:none" checked>
+              <span id="ep-requireNoFailuresTrack" onclick="epToggle('ep-requireNoFailures','ep-requireNoFailuresTrack')"
+                style="display:inline-flex;width:40px;height:22px;border-radius:11px;background:var(--crimson);border:1px solid transparent;align-items:center;cursor:pointer;transition:background .2s;padding:2px">
+                <span style="width:16px;height:16px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.2);transition:transform .2s;transform:translateX(18px)"></span>
+              </span>
+              <span id="ep-requireNoFailuresLabel" style="font-size:12px;color:var(--ink2);min-width:22px">Yes</span>
+            </label>
+          </div>
+
+          <!-- Require All Graded -->
+          <div style="background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:12px 14px;display:flex;align-items:flex-start;gap:12px">
+            <div style="flex:1">
+              <div style="font-size:12px;font-weight:600;color:var(--ink);margin-bottom:2px">All Courses Must Be Graded</div>
+              <div style="font-size:11px;color:var(--ink3)">Block enrollment if any course has no grade yet</div>
+            </div>
+            <label class="toggle-wrap" style="display:flex;align-items:center;gap:6px;cursor:pointer;flex-shrink:0;margin-top:2px">
+              <input type="checkbox" id="ep-requireAllGraded" style="display:none">
+              <span id="ep-requireAllGradedTrack" onclick="epToggle('ep-requireAllGraded','ep-requireAllGradedTrack')"
+                style="display:inline-flex;width:40px;height:22px;border-radius:11px;background:var(--line);border:1px solid var(--line);align-items:center;cursor:pointer;transition:background .2s;padding:2px">
+                <span style="width:16px;height:16px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.2);transition:transform .2s;transform:translateX(0)"></span>
+              </span>
+              <span id="ep-requireAllGradedLabel" style="font-size:12px;color:var(--ink2);min-width:22px">No</span>
+            </label>
+          </div>
+
+          <!-- Require Core -->
+          <div style="background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:12px 14px;display:flex;align-items:flex-start;gap:12px">
+            <div style="flex:1">
+              <div style="font-size:12px;font-weight:600;color:var(--ink);margin-bottom:2px">Core Courses All Passed</div>
+              <div style="font-size:11px;color:var(--ink3)">Require all core-flagged courses to be passed</div>
+            </div>
+            <label class="toggle-wrap" style="display:flex;align-items:center;gap:6px;cursor:pointer;flex-shrink:0;margin-top:2px">
+              <input type="checkbox" id="ep-requireCore" style="display:none">
+              <span id="ep-requireCoreTrack" onclick="epToggle('ep-requireCore','ep-requireCoreTrack')"
+                style="display:inline-flex;width:40px;height:22px;border-radius:11px;background:var(--line);border:1px solid var(--line);align-items:center;cursor:pointer;transition:background .2s;padding:2px">
+                <span style="width:16px;height:16px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.2);transition:transform .2s;transform:translateX(0)"></span>
+              </span>
+              <span id="ep-requireCoreLabel" style="font-size:12px;color:var(--ink2);min-width:22px">No</span>
+            </label>
+          </div>
+
+          <!-- Min Passed Courses -->
+          <div style="background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:12px 14px">
+            <div style="font-size:12px;font-weight:600;color:var(--ink);margin-bottom:2px">Min. Passed Courses</div>
+            <div style="font-size:11px;color:var(--ink3);margin-bottom:8px">Minimum number of passed courses required (0 = disabled)</div>
+            <div style="display:flex;align-items:center;gap:8px">
+              <input type="number" id="ep-minPassedCourses" min="0" max="999" value="0"
+                style="width:80px;min-height:32px;padding:5px 10px;font-size:13px;text-align:center">
+              <span style="font-size:12px;color:var(--ink3)">courses</span>
+            </div>
+          </div>
+
         </div>
       </div>
 
+      <!-- Auto-Promote -->
       <div class="form-group">
         <label>Auto-Promote After Close</label>
         <div style="display:flex;align-items:center;gap:10px;height:36px">
@@ -2121,15 +2177,18 @@ iuc125066,Second Student,,U Father Two,,Daw Mother Two,,2000-05-15,second@email.
             <th>From → To</th>
             <th>Open</th>
             <th>Close</th>
-            <th>Min Pass</th>
+            <th>Min Pass %</th>
+            <th>No Failures</th>
+            <th>All Graded</th>
             <th>Core Req.</th>
+            <th>Min Passed</th>
             <th>Auto-Promote</th>
             <th>Status</th>
             <th>Actions</th>
           </tr>
         </thead>
         <tbody id="epTableBody">
-          <tr><td colspan="9" style="text-align:center;color:var(--ink3);padding:24px">No periods yet</td></tr>
+          <tr><td colspan="13" style="text-align:center;color:var(--ink3);padding:24px">No periods yet</td></tr>
         </tbody>
       </table>
     </div>
@@ -9098,10 +9157,15 @@ function resetEpForm() {
   document.getElementById('ep-minPass').value = 80;
   document.getElementById('ep-minPassFill').style.width = '80%';
   document.getElementById('ep-minPassLabel').textContent = '80';
-  ['ep-requireCore', 'ep-autoPromote'].forEach(id => {
+  document.getElementById('ep-minPassedCourses').value = 0;
+  // Reset toggles: requireNoFailures defaults ON, others OFF
+  ['ep-requireCore', 'ep-requireAllGraded', 'ep-autoPromote'].forEach(id => {
     const cb = document.getElementById(id);
     if (cb && cb.checked) epToggle(id, id + 'Track');
   });
+  // requireNoFailures defaults to ON — ensure it's on after reset
+  const noFail = document.getElementById('ep-requireNoFailures');
+  if (noFail && !noFail.checked) epToggle('ep-requireNoFailures', 'ep-requireNoFailuresTrack');
   const msg = document.getElementById('ep-msg');
   if (msg) msg.style.display = 'none';
 }
@@ -9114,6 +9178,9 @@ async function saveEnrollmentPeriod() {
   const closeAt    = document.getElementById('ep-closeAt').value;
   const minPass    = parseInt(document.getElementById('ep-minPass').value, 10);
   const reqCore    = document.getElementById('ep-requireCore').checked;
+  const reqNoFail  = document.getElementById('ep-requireNoFailures').checked;
+  const reqAllGraded = document.getElementById('ep-requireAllGraded').checked;
+  const minPassedCourses = parseInt(document.getElementById('ep-minPassedCourses').value, 10) || 0;
   const autoPromote= document.getElementById('ep-autoPromote').checked;
   const msg        = document.getElementById('ep-msg');
 
@@ -9129,14 +9196,17 @@ async function saveEnrollmentPeriod() {
   }
 
   const payload = {
-    program_id:    programId,
-    from_year_id:  fromYear,
-    to_year_id:    toYear,
-    open_at:       openAt,
-    close_at:      closeAt,
-    min_pass_rate: minPass / 100,
-    require_core:  reqCore,
-    auto_promote:  autoPromote
+    program_id:           programId,
+    from_year_id:         fromYear,
+    to_year_id:           toYear,
+    open_at:              openAt,
+    close_at:             closeAt,
+    min_pass_rate:        minPass / 100,
+    require_core:         reqCore,
+    require_no_failures:  reqNoFail,
+    require_all_graded:   reqAllGraded,
+    min_passed_courses:   minPassedCourses,
+    auto_promote:         autoPromote
   };
 
   try {
@@ -9185,7 +9255,10 @@ async function renderEpTable() {
       <td>${epFmt(p.open_at)}</td>
       <td>${epFmt(p.close_at)}</td>
       <td>${Math.round((p.min_pass_rate || 0) * 100)}%</td>
-      <td>${p.require_core ? '✓' : '—'}</td>
+      <td>${p.require_no_failures !== false ? '<span class="badge b-green">✓ Yes</span>' : '<span class="badge b-muted">—</span>'}</td>
+      <td>${p.require_all_graded ? '<span class="badge b-blue">✓ Yes</span>' : '<span class="badge b-muted">—</span>'}</td>
+      <td>${p.require_core ? '<span class="badge b-gold">✓ Yes</span>' : '<span class="badge b-muted">—</span>'}</td>
+      <td>${p.min_passed_courses > 0 ? '<span class="badge b-blue">' + p.min_passed_courses + '</span>' : '<span class="badge b-muted">—</span>'}</td>
       <td>${p.auto_promote ? '✓' : '—'}</td>
       <td><span class="badge ${st.cls}">${st.label}</span></td>
       <td>
