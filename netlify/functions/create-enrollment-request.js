@@ -22,7 +22,6 @@ async function supabase(path, options = {}) {
   return JSON.parse(text);
 }
 
-// POST { student_id, period_id }
 exports.handler = async (event) => {
   const headers = {
     'Content-Type': 'application/json',
@@ -56,7 +55,7 @@ exports.handler = async (event) => {
       };
     }
 
-    // 2. Fetch the enrollment period (need from_year_id and to_year_id)
+    // 2. Fetch the enrollment period
     const periods = await supabase(
       `enrollment_periods?id=eq.${period_id}&select=from_year_id,to_year_id&limit=1`,
       { method: 'GET' }
@@ -69,7 +68,7 @@ exports.handler = async (event) => {
       };
     }
 
-    // 3. Resolve from_year_id and to_year_id → name from academic_years
+    // 3. Resolve from_year_id and to_year_id → names
     const yearIds = [period.from_year_id, period.to_year_id].filter(Boolean);
     const academicYears = await supabase(
       `academic_years?id=in.(${yearIds.join(',')})&select=id,name`,
@@ -88,21 +87,28 @@ exports.handler = async (event) => {
       };
     }
 
-    // 4. Run eligibility check to save as snapshot
+    // 4. Run eligibility snapshot BEFORE inserting
+    //    p_skip_already_check = true so we get real eligibility data
     let eligibility_snapshot = null;
     try {
       eligibility_snapshot = await supabase(
         `rpc/check_enrollment_eligibility`, {
           method: 'POST',
-          body: JSON.stringify({ p_student_id: student_id, p_period_id: period_id })
+          body: JSON.stringify({
+            p_student_id:          String(student_id),
+            p_period_id:           String(period_id),
+            p_skip_already_check:  true
+          })
         }
       );
+      console.log('Eligibility snapshot captured:', JSON.stringify(eligibility_snapshot));
     } catch (eligErr) {
-      // Non-fatal — continue without snapshot
-      console.warn('Eligibility snapshot failed:', eligErr.message);
+      console.warn('Eligibility snapshot failed:', eligErr.message,
+        '| student:', student_id,
+        '| period:', period_id);
     }
 
-    // 5. Insert the enrollment request with eligibility snapshot
+    // 5. Insert the enrollment request with snapshot
     const result = await supabase(
       `enrollment_requests`, {
         method: 'POST',
