@@ -6663,9 +6663,12 @@ function renderEnrollmentBanner(period, elig, student) {
 
 window.submitEnrollmentRequest = async function(periodId, studentId) {
   const btn = document.getElementById('enrollBtn');
-  if (btn) btn.disabled = true;
+  if (btn) {
+    btn.disabled = true;
+    btn.textContent = 'Submitting…';
+  }
   try {
-    const res = await fetch('/.netlify/functions/submit-enrollment-request', {
+    const res = await fetch('/.netlify/functions/create-enrollment-request', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ student_id: studentId, period_id: periodId })
@@ -6687,11 +6690,31 @@ window.submitEnrollmentRequest = async function(periodId, studentId) {
         container.style.display = 'block';
       });
     } else {
-      if (btn) btn.disabled = false;
+      if (btn) {
+        btn.disabled = false;
+        btn.textContent = 'Enroll Now';
+      }
+      // Show error inside the banner rather than a silent console warn
+      ['enrollmentBanner', 'enrollmentBannerGrades'].forEach(id => {
+        const container = document.getElementById(id);
+        if (!container) return;
+        const msg = data.message || 'Submission failed. Please try again.';
+        // Append an error note below the existing banner content
+        const errEl = container.querySelector('.enroll-error-msg');
+        if (errEl) { errEl.textContent = msg; return; }
+        const div = document.createElement('div');
+        div.className = 'enroll-error-msg';
+        div.style.cssText = 'margin-top:8px;font-size:12px;color:rgba(255,160,120,0.9);padding:0 4px;';
+        div.textContent = '⚠ ' + msg;
+        container.firstElementChild && container.firstElementChild.appendChild(div);
+      });
       console.warn('Enrollment submission failed:', data);
     }
   } catch(e) {
-    if (btn) btn.disabled = false;
+    if (btn) {
+      btn.disabled = false;
+      btn.textContent = 'Enroll Now';
+    }
     console.warn('Enrollment submission error:', e.message);
   }
 };
