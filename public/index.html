@@ -8247,7 +8247,8 @@ function renderHomeNews(announcements) {
           '<span style="font-size:11px;color:var(--ink3)">' + dateStr + '</span>' +
         '</div>' +
         '<div style="font-size:13px;font-weight:600;color:var(--ink);line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">' + escHtml(a.title) + '</div>' +
-        ${a.author_name ? `<div style="font-size:11px;color:var(--ink3);margin-top:2px">— ${escHtml(a.author_name)}</div>` : ''}
+(a.author_name ? '<div style="font-size:11px;color:var(--ink3);margin-top:2px">— ' + escHtml(a.author_name) + '</div>' : '') +
+(a.body && !compact ? '<div style="font-size:12px;color:var(--ink3);line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">' + escHtml(a.body) + '</div>' : '') +
         (a.body && !compact ? '<div style="font-size:12px;color:var(--ink3);line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">' + escHtml(a.body) + '</div>' : '') +
       '</div>' +
     '</div>';
