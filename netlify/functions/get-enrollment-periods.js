@@ -38,53 +38,65 @@ exports.handler = async (event) => {
 
   try {
     // ── 1. Resolve program name → UUID if needed ──────────────────────────────
-    // If program_id looks like a UUID, use it directly.
-    // Otherwise treat it as a program name and look up the UUID.
     const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
     let resolvedProgramId = program_id;
 
     if (!UUID_RE.test(program_id || '')) {
-      // Look up by name
+      // Try exact name match first
       const progRows = await supabase(
         `degree_programs?name=eq.${encodeURIComponent(program_id)}&select=id&limit=1`
       );
-      if (!progRows || progRows.length === 0) {
-        // Also try matching by program column on students table directly
+      if (progRows && progRows.length > 0) {
+        resolvedProgramId = progRows[0].id;
+      } else {
+        // Try matching via student's joined program
         const stuRows = await supabase(
           `students?id=eq.${encodeURIComponent(student_id)}&select=program,degree_programs(id)&limit=1`
         );
         const prog = stuRows && stuRows[0];
-        // Try nested join result
         if (prog && prog.degree_programs && prog.degree_programs.id) {
           resolvedProgramId = prog.degree_programs.id;
         } else {
-          // Last resort: fetch all degree programs and match by name case-insensitively
+          // Case-insensitive fallback across all programs
           const allProgs = await supabase(`degree_programs?select=id,name`);
           const match = (allProgs || []).find(p =>
             (p.name || '').toLowerCase().trim() === (program_id || '').toLowerCase().trim()
           );
           if (!match) {
-            console.warn('get-enrollment-periods: could not resolve program_id for', program_id);
+            console.warn('[get-enrollment-periods] could not resolve program_id for:', program_id);
             return { statusCode: 200, headers,
                      body: JSON.stringify({ success: true, period: null }) };
           }
           resolvedProgramId = match.id;
         }
-      } else {
-        resolvedProgramId = progRows[0].id;
       }
     }
 
-    // ── 2. Resolve year name → UUID ───────────────────────────────────────────
-    const yearRows = await supabase(
+    // ── 2. Resolve year name → UUID (with fuzzy fallback) ────────────────────
+    // Try exact match first, then case-insensitive match across all years.
+    // This handles mismatches like "Year 3" vs "year 3" or "3rd Year".
+    let yearId = null;
+
+    const yearRowsExact = await supabase(
       `academic_years?name=eq.${encodeURIComponent(current_year)}&select=id&limit=1`
     );
-    if (!yearRows || yearRows.length === 0) {
-      console.warn('get-enrollment-periods: year not found for', current_year);
-      return { statusCode: 200, headers,
-               body: JSON.stringify({ success: true, period: null }) };
+    if (yearRowsExact && yearRowsExact.length > 0) {
+      yearId = yearRowsExact[0].id;
+    } else {
+      // Fetch all years and match case-insensitively
+      const allYears = await supabase(`academic_years?select=id,name`);
+      const normalise = s => (s || '').toLowerCase().replace(/\s+/g, ' ').trim();
+      const target    = normalise(current_year);
+      const match     = (allYears || []).find(y => normalise(y.name) === target);
+      if (match) {
+        yearId = match.id;
+      } else {
+        console.warn('[get-enrollment-periods] year not found for:', current_year,
+                     '| available:', (allYears || []).map(y => y.name));
+        return { statusCode: 200, headers,
+                 body: JSON.stringify({ success: true, period: null }) };
+      }
     }
-    const yearId = yearRows[0].id;
 
     // ── 3. Fetch active period matching program + from_year ───────────────────
     const now = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
@@ -98,6 +110,7 @@ exports.handler = async (event) => {
     );
 
     if (!periods || periods.length === 0) {
+      console.warn('[get-enrollment-periods] no active period for program:', resolvedProgramId, 'year:', yearId, 'date:', now);
       return { statusCode: 200, headers,
                body: JSON.stringify({ success: true, period: null }) };
     }
@@ -140,7 +153,7 @@ exports.handler = async (event) => {
     };
 
   } catch (err) {
-    console.error('get-enrollment-periods error:', err);
+    console.error('[get-enrollment-periods] error:', err);
     return {
       statusCode: 200, headers,
       body: JSON.stringify({ success: false, period: null, error: err.message })
