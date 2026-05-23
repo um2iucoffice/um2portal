@@ -2,7 +2,7 @@
 <html lang="en-MM">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>IRIR System</title>
 <link rel="icon" type="image/png" href="/irirfavicon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -146,6 +146,7 @@ body, input, select, textarea, td, th, span, div, p, strong, button, label {
   position: fixed; inset: 0; z-index: 100;
   display: flex; background: var(--white);
   transition: opacity .4s, visibility .4s;
+  overflow-y: auto; -webkit-overflow-scrolling: touch;
 }
 #loginScreen.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
 .login-left {
@@ -377,6 +378,8 @@ body.theme-light .btn-signout:hover { background: var(--crimson-light); border-c
   min-height: calc(100vh - 56px);
   background: transparent;
   flex: 1;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
 }
 body.theme-light .main { background: var(--surface); }
 .view { display:none; animation:fadeUp .2s ease; }
@@ -502,7 +505,7 @@ input[readonly] { color:var(--ink2); cursor:default; }
 .pipeline-label strong { display:block; color:var(--ink); font-size:12px; }
 
 /* ── MODAL ── */
-.modal-overlay { display:none; position:fixed; inset:0; background:rgba(13,27,42,.55); z-index:500; align-items:center; justify-content:center; }
+.modal-overlay { display:none; position:fixed; inset:0; background:rgba(13,27,42,.55); z-index:500; align-items:center; justify-content:center; overflow-y:auto; -webkit-overflow-scrolling:touch; padding:16px 0; }
 .modal-overlay.open { display:flex; }
 .modal { background:var(--white); border:1px solid var(--line); border-radius:12px; padding:28px; width:600px; max-width:95vw; max-height:90vh; overflow-y:auto; animation:fadeUp .2s ease; box-shadow:0 16px 48px rgba(13,27,42,.18); }
 .modal-lg { width:800px; }
@@ -727,7 +730,7 @@ body.theme-light .mob-nav-btn { color:var(--ink3); }
   .topbar { left:0; }
   .sidebar { transform:translateX(-100%); transition:transform .25s ease; z-index:58; }
   .sidebar.mob-open { transform:translateX(0); }
-  .main { margin-left:0 !important; padding: 76px 14px 72px; }
+  .main { margin-left:0 !important; padding: 76px 14px 80px; overflow-x:hidden; }
   .stat-grid { grid-template-columns:1fr 1fr; }
   .sis-panel { grid-template-columns:1fr; }
   .form-grid { grid-template-columns:1fr; }
@@ -737,13 +740,388 @@ body.theme-light .mob-nav-btn { color:var(--ink3); }
   .mob-menu-btn { display:flex; align-items:center; justify-content:center; }
   .mob-bottom-nav { display:flex; }
   .sync-badge { display:none; }
+  /* Profile page: stack columns */
+  .profile-2col-grid { display:block !important; }
+  #view-myProfile > div[style*="grid-template-columns:260px"] { display:block !important; }
+  #view-myProfile > div[style*="grid-template-columns:260px"] > div:first-child { margin-bottom:16px; }
+  /* Timetable slot rows: stack on mobile */
+  #myTimetableList > div[style*="grid-template-columns"] { display:flex !important; flex-direction:column; gap:6px; padding:12px; }
+  /* Tab bar for timetable tabs */
+  .tt-tab-bar { overflow-x:auto; -webkit-overflow-scrolling:touch; }
 }
 @media (max-width:480px) {
   .doc-grid { grid-template-columns:1fr; }
   .stat-grid { grid-template-columns:1fr 1fr; }
-  .modal { padding:20px 16px; }
+  /* Modal: full screen bottom sheet on mobile */
+  .modal-overlay { align-items:flex-end !important; padding:0 !important; }
+  .modal {
+    padding:20px 16px 32px;
+    border-radius:20px 20px 0 0 !important;
+    width:100vw !important; max-width:100vw !important;
+    max-height:92vh; overflow-y:auto;
+    -webkit-overflow-scrolling:touch;
+  }
   .doc-sig-row { flex-direction:column; align-items:center; gap:20px; }
+  /* Login: stack on mobile */
+  #loginScreen { flex-direction:column; overflow-y:auto; }
+  .login-left { width:100%; min-height:auto; padding:28px 24px 24px; flex-direction:row; align-items:center; justify-content:space-between; }
+  .login-crest { margin-bottom:0; }
+  .login-tagline { font-size:18px; }
+  .login-footer-txt { display:none; }
+  .login-right { padding:20px 16px 40px; align-items:flex-start; }
+  .login-form-wrap { padding:24px 20px; border-radius:14px; }
+  /* Bigger tap targets */
+  .login-input { padding:14px; font-size:16px; margin-bottom:12px; }
+  .login-btn { padding:15px; font-size:16px; }
+  .login-role-btn { padding:12px 8px; font-size:13px; }
+  /* Form inputs: prevent zoom on iOS */
+  .form-input, select, input, textarea { font-size:16px !important; }
+  /* Timetable slot card on small phones */
+  #myTimetableList > div { padding:12px !important; }
+  .tt-ay-combo { flex-wrap:wrap; }
+  .tt-ay-combo select, .tt-ay-combo input { min-width:0; }
 }
+
+/* ════════════════════════════════════════════════════════════
+   MOBILE-FIRST RESPONSIVE IMPROVEMENTS  (injected patch)
+   ════════════════════════════════════════════════════════════ */
+
+/* ── Base smoothness ── */
+html { scroll-behavior: smooth; }
+* { -webkit-tap-highlight-color: transparent; }
+button, [onclick] { cursor: pointer; }
+
+/* ── Topbar: tighter on mobile, always readable ── */
+.topbar { padding: 0 16px; gap: 10px; }
+.topbar-logo { font-size: 14px; }
+
+/* ── Page header: wrap gracefully ── */
+.page-header {
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+.page-header-left { flex: 1; min-width: 0; }
+.page-actions { flex-wrap: wrap; gap: 6px; }
+.page-title { font-size: 20px; }
+
+/* ── Stat cards: always show value clearly ── */
+.stat-value { font-size: 28px; }
+.stat-card { padding: 14px 16px; }
+
+/* ── Cards: consistent padding ── */
+.card { padding: 18px 16px; }
+
+/* ── Buttons: comfortable tap targets ── */
+.btn { min-height: 38px; padding: 8px 16px; border-radius: 8px; }
+.btn-sm { min-height: 32px; padding: 6px 12px; }
+
+/* ── Forms: full-width selects & inputs everywhere ── */
+input, select, textarea { width: 100%; box-sizing: border-box; min-height: 42px; }
+.form-actions { flex-wrap: wrap; gap: 8px; }
+.form-actions .btn { flex: 1; justify-content: center; }
+
+/* ── Search row: stack on narrow ── */
+.search-row { flex-wrap: wrap; gap: 8px; }
+.search-input { max-width: 100%; }
+
+/* ── Tables: card-style on very small screens ── */
+.table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; border-radius: 8px; }
+table { min-width: 520px; }
+
+/* ── Toast: mobile safe ── */
+.notif-toast { bottom: 72px; right: 12px; left: 12px; max-width: 100%; }
+
+/* ── Tabs: scrollable ── */
+.tabs {
+  overflow-x: auto; -webkit-overflow-scrolling: touch;
+  scrollbar-width: none; gap: 0;
+}
+.tabs::-webkit-scrollbar { display: none; }
+.tab { white-space: nowrap; padding: 10px 16px; font-size: 13px; min-height: 42px; }
+
+/* ── Login page: always scrollable ── */
+#loginScreen { overflow-y: auto; -webkit-overflow-scrolling: touch; }
+.login-input { min-height: 48px; font-size: 16px; }
+.login-btn   { min-height: 48px; font-size: 15px; }
+.login-role-btn { min-height: 44px; font-size: 13px; }
+
+/* ── Modals: always scrollable ── */
+.modal-overlay { overflow-y: auto; -webkit-overflow-scrolling: touch; }
+.modal {
+  width: min(600px, 95vw);
+  max-height: 90dvh;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.modal-header { position: sticky; top: 0; background: var(--white); z-index: 2; padding-bottom: 14px; margin-bottom: 0; }
+
+/* ── Profile photo card: centered always ── */
+#staffProfilePhotoWrap { touch-action: manipulation; }
+
+/* ── Timetable slot cards: always readable ── */
+.tt-slot-card { flex-wrap: wrap; gap: 10px; }
+.tt-slot-actions { width: auto; }
+
+/* ── Sidebar: smoother open/close ── */
+.sidebar { transition: transform .22s cubic-bezier(.4,0,.2,1); }
+.sidebar-overlay { transition: opacity .22s; }
+
+/* ── Accordion-style collapse for mobile panels ── */
+.mob-collapsible-header {
+  display: flex; align-items: center; justify-content: space-between;
+  cursor: pointer; user-select: none; padding: 4px 0;
+}
+.mob-collapsible-header svg { transition: transform .2s; flex-shrink: 0; }
+.mob-collapsible-header.collapsed svg { transform: rotate(-90deg); }
+.mob-collapsible-body { overflow: hidden; transition: max-height .25s ease; }
+
+/* ══════════════════════════════════════════════
+   ≤ 900px  (tablet + mobile)
+   ══════════════════════════════════════════════ */
+@media (max-width: 900px) {
+
+  /* Layout */
+  body { font-size: 14px; }
+  .main { padding: 72px 12px 80px; }
+
+  /* Page header */
+  .page-header { margin-bottom: 16px; }
+  .page-title { font-size: 18px; }
+  .page-actions { width: 100%; }
+  .page-actions .btn { flex: 1; justify-content: center; }
+
+  /* Stat grid: 2 cols */
+  .stat-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
+  .stat-value { font-size: 26px; }
+
+  /* Doc grid: 2 cols */
+  .doc-grid { grid-template-columns: 1fr 1fr; }
+
+  /* Table wrapper: always scroll horizontally */
+  .table-wrap { margin: 0 -12px; padding: 0 12px; }
+
+  /* Search row full width */
+  .search-row { gap: 8px; }
+  .search-row .search-input { flex: 1 1 100%; max-width: 100%; }
+  .search-row .btn { flex: 1; }
+
+  /* Cards: tighter */
+  .card { padding: 14px 12px; }
+  .card-title { font-size: 9px; margin-bottom: 10px; }
+
+  /* Profile 2-col → single col */
+  .profile-2col-grid,
+  #view-myProfile > div[style*="grid-template-columns:260px"] {
+    display: block !important;
+  }
+  #view-myProfile > div[style*="grid-template-columns:260px"] > div:first-child {
+    margin-bottom: 12px;
+  }
+
+  /* Profile hero card */
+  .profile-hero-card { flex-direction: column; gap: 12px; padding: 16px; }
+  .profile-meta { gap: 10px; }
+
+  /* Timetable slot: full-width action row */
+  .tt-slot-actions { width: 100%; justify-content: flex-end; border-top: 1px solid var(--line); padding-top: 8px; margin-top: 4px; }
+  .tt-slot-card { padding: 12px; }
+  .tt-slot-meta { gap: 4px; }
+
+  /* Modals */
+  .modal { padding: 20px 14px 28px; }
+  .modal-lg { width: 95vw; }
+
+  /* Timetable tab bar scrollable */
+  .tt-tab-bar { overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+  .tt-tab-bar::-webkit-scrollbar { display: none; }
+  .tt-tab { padding: 10px 14px; font-size: 12px; }
+
+  /* Toast: above bottom nav */
+  .notif-toast { bottom: 68px; }
+
+  /* Form grid: always single column on tablet */
+  .form-grid { grid-template-columns: 1fr; }
+
+  /* Topbar */
+  .topbar { padding: 0 12px; }
+  .topbar-role, .sync-badge { display: none; }
+  .logout-btn { padding: 5px 10px; font-size: 11px; }
+}
+
+/* ══════════════════════════════════════════════
+   ≤ 600px  (phones)
+   ══════════════════════════════════════════════ */
+@media (max-width: 600px) {
+
+  /* Layout */
+  .main { padding: 68px 10px 80px; }
+
+  /* Page header: title + actions stacked */
+  .page-header { gap: 10px; }
+  .page-title { font-size: 17px; }
+  .page-sub { font-size: 11px; }
+
+  /* Stat grid: 2 cols, compact */
+  .stat-grid { gap: 8px; }
+  .stat-card { padding: 12px; }
+  .stat-value { font-size: 24px; }
+  .stat-label { font-size: 10px; }
+
+  /* Doc grid: single col */
+  .doc-grid { grid-template-columns: 1fr; }
+
+  /* Table: scrollable, preserve min-width */
+  .table-wrap { border: 1px solid var(--line); border-radius: 8px; }
+
+  /* Cards */
+  .card { padding: 12px 10px; border-radius: 8px; }
+
+  /* Modal → bottom sheet */
+  .modal-overlay { align-items: flex-end !important; padding: 0 !important; }
+  .modal {
+    border-radius: 18px 18px 0 0 !important;
+    width: 100vw !important; max-width: 100vw !important;
+    max-height: 92dvh; padding: 0 14px 32px;
+  }
+  .modal-header {
+    padding: 16px 0 12px;
+    border-bottom: 1px solid var(--line);
+    margin-bottom: 16px;
+  }
+  .modal-title { font-size: 16px; }
+  .form-actions .btn { min-height: 46px; font-size: 14px; }
+
+  /* Login: stacked */
+  #loginScreen { flex-direction: column; }
+  .login-left {
+    width: 100%; padding: 20px 16px;
+    flex-direction: row; align-items: center;
+    justify-content: flex-start; gap: 14px;
+    min-height: auto;
+  }
+  .login-crest { margin-bottom: 0; }
+  .login-institution { display: none; }
+  .login-tagline { font-size: 16px; line-height: 1.2; }
+  .login-footer-txt { display: none; }
+  .crest-ring { width: 44px; height: 44px; margin-bottom: 0; }
+  .crest-abbr { font-size: 14px; }
+  .login-right { padding: 16px 16px 40px; align-items: stretch; }
+  .login-form-wrap {
+    padding: 20px 16px;
+    border-radius: 14px;
+    width: 100%;
+    max-width: 100%;
+  }
+  .login-form-wrap h2 { font-size: 18px; margin-bottom: 2px; }
+  .login-form-wrap p { font-size: 12px; margin-bottom: 20px; }
+  .login-role-row { gap: 6px; }
+
+  /* Prevent iOS zoom on focus */
+  input, select, textarea, .form-input, .login-input { font-size: 16px !important; }
+
+  /* Timetable slot: stacked */
+  .tt-slot-card { flex-direction: column; gap: 8px; }
+  .tt-slot-day-badge { width: auto; align-self: flex-start; }
+  .tt-slot-actions { padding-top: 8px; }
+
+  /* Form buttons: full width */
+  .form-actions { flex-direction: column; }
+  .form-actions .btn { width: 100%; min-height: 46px; font-size: 14px; }
+
+  /* Academic year combo: wrap */
+  .tt-ay-combo { flex-wrap: wrap; }
+  .tt-ay-combo select, .tt-ay-combo input { min-width: 0; flex: 1; }
+  .tt-ay-toggle { flex: 0 0 auto; }
+
+  /* Profile photo card: comfortable */
+  #staffProfilePhotoWrap { width: 80px !important; height: 80px !important; }
+
+  /* Pipeline: scrollable */
+  .pipeline { overflow-x: auto; -webkit-overflow-scrolling: touch; gap: 0; }
+  .pipeline-step { min-width: 80px; }
+
+  /* Doc sig row: stack */
+  .doc-sig-row { flex-direction: column; align-items: center; gap: 16px; }
+
+  /* Step list */
+  .step-item { padding: 12px; gap: 10px; }
+
+  /* Tabs: scrollable + full height tap */
+  .tab { min-height: 40px; font-size: 12px; padding: 8px 14px; }
+
+  /* Topbar */
+  .topbar-logo { font-size: 13px; }
+  .logout-btn { font-size: 11px; padding: 4px 8px; }
+  .theme-toggle-btn { padding: 4px 6px; }
+}
+
+/* ══════════════════════════════════════════════
+   ≤ 380px  (very small phones)
+   ══════════════════════════════════════════════ */
+@media (max-width: 380px) {
+  .main { padding: 64px 8px 76px; }
+  .stat-grid { grid-template-columns: 1fr 1fr; gap: 6px; }
+  .stat-card { padding: 10px 8px; }
+  .stat-value { font-size: 20px; }
+  .card { padding: 10px 8px; }
+  .page-title { font-size: 16px; }
+  .btn { min-height: 40px; font-size: 12px; padding: 6px 10px; }
+  .tab { padding: 8px 10px; font-size: 11px; }
+}
+/* ── Modal: always single-col form grid ── */
+.modal .form-grid { grid-template-columns: 1fr; }
+.modal .form-group.full { grid-column: 1/-1; }
+
+/* ── Responsive table: on tiny screens, use card layout ── */
+@media (max-width: 520px) {
+  .mob-table-scroll { overflow-x: auto; }
+  .mob-table-scroll table { min-width: 480px; }
+}
+
+/* ── Touch-action optimization ── */
+button, .btn, .nav-item, .tab, .mob-nav-btn, .login-role-btn, .tt-tab {
+  touch-action: manipulation;
+}
+
+/* ── Active states for tap feedback ── */
+.btn:active { opacity: .82; transform: scale(.98); }
+.nav-item:active { background: rgba(139,26,46,.15) !important; }
+.mob-nav-btn:active { opacity: .7; }
+.login-role-btn:active { opacity: .8; }
+.tt-tab:active { opacity: .8; }
+
+/* ── Sidebar overlay: smooth ── */
+.sidebar-overlay {
+  opacity: 0; transition: opacity .22s;
+  background: rgba(0,0,0,.5);
+}
+.sidebar-overlay.open { opacity: 1; }
+
+/* ── Timetable modal: form fields full width ── */
+#timetableModal .form-grid { grid-template-columns: 1fr; }
+#timetableModal .form-group { grid-column: 1/-1; }
+
+/* ── Schedule cards: prevent overflow ── */
+#bookedScheduleGrid > div { word-break: break-word; }
+
+/* ── Upload zone: mobile friendly ── */
+.upload-zone { padding: 24px 16px; }
+
+/* ── Info box: break long URLs ── */
+.info-box { word-break: break-word; }
+
+/* ── Code blocks: horizontal scroll ── */
+.code-block {
+  overflow-x: auto; -webkit-overflow-scrolling: touch;
+  white-space: pre; font-size: 12px;
+}
+
+/* ── Topbar: show only essentials on mobile ── */
+@media (max-width: 600px) {
+  .topbar-logo em { display: none; }
+}
+
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 </head>
@@ -913,12 +1291,12 @@ body.theme-light .mob-nav-btn { color:var(--ink3); }
       </div>
 
       <label class="login-label" for="loginEmail">Staff Email</label>
-      <input class="login-input" type="email" id="loginEmail" placeholder="e.g. registrar@um2.edu.mm" autocomplete="username">
+      <input class="login-input" type="email" id="loginEmail" placeholder="e.g. registrar@um2.edu.mm" autocomplete="email" inputmode="email" enterkeyhint="next">
 
       <label class="login-label" for="loginPass">Password</label>
-      <input class="login-input" type="password" id="loginPass" placeholder="••••••••" autocomplete="current-password">
+      <input class="login-input" type="password" id="loginPass" placeholder="••••••••" autocomplete="current-password" enterkeyhint="go" onkeydown="if(event.key==='Enter')doLogin()">
 
-      <button class="login-btn" onclick="doLogin()">Sign In</button>
+      <button class="login-btn" id="loginSubmitBtn" onclick="doLogin()">Sign In →</button>
       <div class="login-err" id="loginErr" style="display:none"></div>
 
       <div style="margin-top:18px;padding-top:14px;border-top:1px solid var(--line);font-size:11px;color:var(--ink3);text-align:center">
@@ -1123,7 +1501,7 @@ body.theme-light .mob-nav-btn { color:var(--ink3); }
     </select>
   </div>
   <div class="card" style="padding:0">
-    <div class="table-wrap"><table id="studentTable">
+    <div class="table-wrap mob-table-scroll"><table id="studentTable" class="responsive-table">
       <thead><tr>
         <th style="width:36px;padding:9px 8px"><input type="checkbox" id="selectAllStudents" onclick="toggleSelectAllStudents(this)" title="Select / Deselect all visible"></th><th>Student / Alumni ID</th><th>Full Name</th><th>Father Name</th>
         <th>Email</th><th>Program</th><th>Level</th><th>Year</th><th>Gender</th><th>GPA</th><th>Status</th>
@@ -2327,7 +2705,7 @@ ALTER TABLE academic_years ADD COLUMN IF NOT EXISTS program_id text REFERENCES d
   <!-- Publish status banner -->
   <div id="profileStatusBanner" style="display:none;margin-bottom:20px;padding:12px 18px;border-radius:8px;font-size:13px;display:flex;align-items:center;gap:10px"></div>
 
-  <div style="display:grid;grid-template-columns:260px 1fr;gap:20px;align-items:start">
+  <div class="profile-2col-grid" style="display:grid;grid-template-columns:260px 1fr;gap:20px;align-items:start">
     <!-- Left: photo + basic -->
     <div>
       <div class="card" style="text-align:center;padding:28px 20px">
@@ -2419,27 +2797,89 @@ ALTER TABLE academic_years ADD COLUMN IF NOT EXISTS program_id text REFERENCES d
         </div>
       </div>
 
-      <!-- Timetable / Room Booking -->
-      <div class="card" style="margin-top:16px">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
-          <div class="card-title" style="margin-bottom:0">Teaching Schedule & Room Booking</div>
-          <button class="btn btn-primary btn-sm" onclick="openTimetableModal()">+ Add Slot</button>
-        </div>
-        <p style="font-size:12px;color:var(--ink3);margin-bottom:14px">Book a course, room and time slot. Conflicts are checked live — a room cannot be double-booked.</p>
-        <div id="myTimetableList" style="display:flex;flex-direction:column;gap:8px"></div>
-        <div id="myTimetableEmpty" style="text-align:center;padding:24px;color:var(--ink3);font-size:13px">No slots booked yet. Click "+ Add Slot" to start.</div>
-      </div>
+    </div><!-- /right col -->
+  </div><!-- /grid -->
 
-      <!-- Booked Schedule Summary -->
-      <div class="card" style="margin-top:16px">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
-          <div class="card-title" style="margin-bottom:0">Booked Schedule Overview</div>
-          <div id="bookedScheduleAcYear" style="font-size:11px;color:var(--ink3);background:var(--surface);border:1px solid var(--line);border-radius:4px;padding:3px 10px"></div>
-        </div>
-        <p style="font-size:12px;color:var(--ink3);margin-bottom:14px">All confirmed room bookings across academic year sessions, grouped by day.</p>
-        <div id="bookedScheduleGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px">
-          <div style="color:var(--ink3);font-size:13px;padding:8px 0">No bookings yet.</div>
-        </div>
+  <!-- ── TIMETABLE SECTION (full width, tabbed) ── -->
+  <style>
+  .tt-tab-bar {
+    display:flex; gap:0; border-bottom:2px solid var(--line);
+    margin:24px 0 0; overflow-x:auto; -webkit-overflow-scrolling:touch;
+    scrollbar-width:none;
+  }
+  .tt-tab-bar::-webkit-scrollbar { display:none; }
+  .tt-tab {
+    padding:10px 20px; font-size:13px; font-weight:600; cursor:pointer;
+    border-bottom:2px solid transparent; margin-bottom:-2px;
+    color:var(--ink3); white-space:nowrap; transition:all .15s;
+    background:none; border-top:none; border-left:none; border-right:none;
+    font-family:'DM Sans',sans-serif;
+  }
+  .tt-tab.active { color:var(--crimson); border-bottom-color:var(--crimson); }
+  .tt-tab:hover:not(.active) { color:var(--ink2); }
+  .tt-tab-panel { display:none; padding:20px 0 0; }
+  .tt-tab-panel.active { display:block; }
+
+  /* Slot card */
+  .tt-slot-card {
+    background:var(--white); border:1px solid var(--line); border-radius:10px;
+    padding:14px 16px; display:flex; align-items:flex-start; gap:14px;
+    transition:box-shadow .15s;
+  }
+  .tt-slot-card:hover { box-shadow:0 4px 16px rgba(13,27,42,.08); }
+  .tt-slot-day-badge {
+    background:var(--crimson); color:#fff; border-radius:6px;
+    padding:6px 10px; font-size:11px; font-weight:700; letter-spacing:.5px;
+    text-align:center; min-width:44px; flex-shrink:0;
+  }
+  .tt-slot-body { flex:1; min-width:0; }
+  .tt-slot-course { font-size:14px; font-weight:600; color:var(--ink); margin-bottom:2px; }
+  .tt-slot-topic { font-size:12px; color:var(--ink2); font-style:italic; margin-bottom:4px; }
+  .tt-slot-meta { display:flex; flex-wrap:wrap; gap:6px; align-items:center; }
+  .tt-slot-badge { font-size:10px; font-weight:600; border-radius:3px; padding:2px 7px; }
+  .tt-slot-time { font-size:11px; font-family:monospace; color:var(--ink3); }
+  .tt-slot-actions { display:flex; gap:6px; flex-shrink:0; }
+  @media(max-width:600px){
+    .tt-slot-card { flex-wrap:wrap; }
+    .tt-slot-actions { width:100%; justify-content:flex-end; margin-top:4px; }
+  }
+  </style>
+
+  <div class="card" style="margin-top:0">
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px">
+      <div>
+        <div class="card-title" style="margin-bottom:2px">Teaching Schedule</div>
+        <div style="font-size:12px;color:var(--ink3)">Manage your lecture slots and room bookings</div>
+      </div>
+      <button class="btn btn-primary btn-sm" onclick="openTimetableModal()" style="display:flex;align-items:center;gap:6px">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Add Slot
+      </button>
+    </div>
+
+    <!-- Tab bar -->
+    <div class="tt-tab-bar">
+      <button class="tt-tab active" id="ttTab-list" onclick="switchTTTab('list')">📋 My Slots</button>
+      <button class="tt-tab" id="ttTab-schedule" onclick="switchTTTab('schedule')">📅 Weekly View</button>
+    </div>
+
+    <!-- Tab: Slot List -->
+    <div class="tt-tab-panel active" id="ttPanel-list">
+      <div id="myTimetableList" style="display:flex;flex-direction:column;gap:10px"></div>
+      <div id="myTimetableEmpty" style="text-align:center;padding:32px;color:var(--ink3);font-size:13px">
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" style="margin:0 auto 12px;display:block;opacity:.3"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        No slots booked yet.<br>Tap <strong>Add Slot</strong> to get started.
+      </div>
+    </div>
+
+    <!-- Tab: Weekly Overview -->
+    <div class="tt-tab-panel" id="ttPanel-schedule">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px">
+        <div style="font-size:12px;color:var(--ink3)">All confirmed bookings grouped by day</div>
+        <div id="bookedScheduleAcYear" style="font-size:11px;color:var(--ink3);background:var(--surface);border:1px solid var(--line);border-radius:4px;padding:3px 10px"></div>
+      </div>
+      <div id="bookedScheduleGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(min(260px,100%),1fr));gap:12px">
+        <div style="color:var(--ink3);font-size:13px;padding:8px 0">No bookings yet.</div>
       </div>
     </div>
   </div>
@@ -3181,7 +3621,8 @@ async function doLogin() {
   if (!email || !pass) { showLoginErr('Please enter email and password.'); return; }
 
   showLoginErr('Signing in…');
-  document.querySelector('.login-btn').disabled = true;
+  const _lbtn = document.querySelector('.login-btn');
+  if (_lbtn) { _lbtn.disabled = true; _lbtn.textContent = 'Signing in…'; }
   _dbg('doLogin: signing in as ' + email);
 
   const { data, error } = await db.auth.signInWithPassword({ email, password: pass });
@@ -3189,13 +3630,15 @@ async function doLogin() {
   if (error) {
     _dbg('signIn FAILED: ' + error.message);
     showLoginErr(error.message || 'Invalid credentials.');
-    document.querySelector('.login-btn').disabled = false;
+    const _lbtnR = document.querySelector('.login-btn');
+    if (_lbtnR) { _lbtnR.disabled = false; _lbtnR.textContent = 'Sign In →'; }
     return;
   }
 
   _dbg('signIn OK, session=' + (data.session ? 'yes' : 'null'));
   _sessionHandled = true;
-  document.querySelector('.login-btn').disabled = false;
+  const _lbtnS = document.querySelector('.login-btn');
+  if (_lbtnS) { _lbtnS.disabled = false; _lbtnS.textContent = 'Sign In →'; }
   await _bootApp(data.session);
 }
 
@@ -3745,6 +4188,16 @@ async function loadMyTimetable() {
   renderMyTimetable();
 }
 
+function switchTTTab(tab) {
+  document.querySelectorAll('.tt-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tt-tab-panel').forEach(p => p.classList.remove('active'));
+  const tabEl = document.getElementById('ttTab-' + tab);
+  const panelEl = document.getElementById('ttPanel-' + tab);
+  if (tabEl) tabEl.classList.add('active');
+  if (panelEl) panelEl.classList.add('active');
+  if (tab === 'schedule') renderBookedSchedule();
+}
+
 function renderMyTimetable() {
   const list  = document.getElementById('myTimetableList');
   const empty = document.getElementById('myTimetableEmpty');
@@ -3762,21 +4215,32 @@ function renderMyTimetable() {
     const acYear = _academicYears.find(a => a.id === slot.academic_year_id);
     const cName  = course ? (course.name || course.id) : slot.course_id;
     const rName  = room   ? (room.subject || room.id) : slot.room_id;
-    const ayBadge= acYear ? `<span style="font-size:10px;background:var(--blue-light);color:var(--blue);border-radius:3px;padding:1px 6px;font-weight:600;margin-right:4px">${acYear.name}</span>` : '';
-    const dateStr= slot.session_date ? `<span style="font-size:11px;color:var(--ink3);font-family:monospace">${slot.session_date}</span>` : '';
-    return `<div style="display:grid;grid-template-columns:1fr 1fr 80px 130px 72px;gap:8px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:10px 14px">
-      <div>
-        <div style="font-size:13px;font-weight:500;color:var(--ink)">${cName}</div>
-        ${slot.sub_topic ? '<div style="font-size:12px;color:var(--ink2);margin-top:2px;font-style:italic">' + slot.sub_topic + '</div>' : ''}
-        <div style="margin-top:3px">${ayBadge}${dateStr}</div>
+    const ayBadge= acYear
+      ? `<span class="tt-slot-badge" style="background:var(--blue-light);color:var(--blue)">${acYear.name}</span>`
+      : (slot.academic_year_id ? `<span class="tt-slot-badge" style="background:var(--blue-light);color:var(--blue)">${slot.academic_year_id}</span>` : '');
+    const dateStr= slot.session_date ? `<span class="tt-slot-badge" style="background:var(--gold-light);color:var(--gold)">${slot.session_date}</span>` : '';
+    const roomBadge = `<span class="tt-slot-badge" style="background:var(--surface);color:var(--ink2);border:1px solid var(--line)">📍 ${rName}</span>`;
+    return `<div class="tt-slot-card">
+      <div class="tt-slot-day-badge">${slot.day}</div>
+      <div class="tt-slot-body">
+        <div class="tt-slot-course">${cName}</div>
+        ${slot.sub_topic ? `<div class="tt-slot-topic">${slot.sub_topic}</div>` : ''}
+        <div class="tt-slot-meta">
+          ${ayBadge}${dateStr}${roomBadge}
+          <span class="tt-slot-time">${slot.time_start||''} – ${slot.time_end||''}</span>
+        </div>
       </div>
-      <div style="font-size:12px;color:var(--ink2)">${rName}</div>
-      <div style="font-size:12px;font-weight:600;color:var(--blue)">${slot.day}</div>
-      <div style="font-size:12px;color:var(--ink3);font-family:monospace">${slot.time_start} – ${slot.time_end}</div>
-      <div style="display:flex;gap:6px">
-        <button class="btn btn-outline btn-sm" onclick="openTimetableModal('${slot.id}')">Edit</button>
-        <button class="btn btn-danger btn-sm" onclick="deleteTimetableSlot('${slot.id}')">
-          <svg style="width:12px;height:12px;stroke:currentColor;stroke-width:2;fill:none;stroke-linecap:round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      <div class="tt-slot-actions">
+        <button class="btn btn-outline btn-sm" onclick="openTimetableModal('${slot.id}')" title="Edit slot"
+          style="display:flex;align-items:center;gap:4px;padding:7px 12px">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          Edit
+        </button>
+        <button onclick="deleteTimetableSlot('${slot.id}')" title="Delete slot"
+          style="background:none;border:1px solid rgba(139,26,46,.25);border-radius:var(--r);color:var(--crimson);cursor:pointer;padding:7px 10px;display:flex;align-items:center;gap:4px;font-size:12px;font-weight:600;font-family:'DM Sans',sans-serif;transition:all .15s"
+          onmouseover="this.style.background='var(--crimson-light)'" onmouseout="this.style.background='none'">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+          Delete
         </button>
       </div>
     </div>`;
@@ -3901,12 +4365,15 @@ async function saveTimetableSlot() {
 }
 
 async function deleteTimetableSlot(slotId) {
-  if (!confirm('Delete this timetable slot?')) return;
+  const slot = _myTimetable.find(s => s.id === slotId);
+  const course = slot ? (_profileCourses.find(c => c.id === slot.course_id) || {}) : {};
+  const label = course.name || (slot && slot.course_id) || 'this slot';
+  if (!confirm('Delete "' + label + '" (' + (slot && slot.day || '') + ')? This cannot be undone.')) return;
   const { error } = await db.from('lecture_timetable').delete().eq('id', slotId);
   if (error) { toast('Delete failed: ' + error.message, '✗'); return; }
   _myTimetable = _myTimetable.filter(s => s.id !== slotId);
   renderMyTimetable();
-  toast('Slot removed.', '🗑');
+  toast('Slot deleted.', '🗑');
 }
 
 function toggleProfilePublish() {
@@ -6825,6 +7292,9 @@ function copySchema() {
 // NAVIGATION & TABS
 // ══════════════════════════════════════════
 function showView(id) {
+  // Close mobile sidebar when navigating
+  document.querySelector('.sidebar')?.classList.remove('mob-open');
+  document.querySelector('.sidebar-overlay')?.classList.remove('open');
   showViewTitled(id);
   document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
