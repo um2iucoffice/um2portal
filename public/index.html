@@ -1293,6 +1293,9 @@ body.dashboard-active {
   margin-left: 256px;
   flex: 1;
   min-height: 100vh;
+  height: 100vh;
+  overflow-y: auto;
+  overflow-x: hidden;
   display: flex;
   flex-direction: column;
   background: #0e1420;
@@ -5598,7 +5601,8 @@ if (id === 'editinfo') { try { onSwitchToEditInfo(); } catch(e) {} }
 if (id === 'comms') { try { loadCommsSection(); } catch(e) {} }
 if (id === 'lecturerooms') { try { loadLectureRooms(); } catch(e) {} }
   // Scroll to top
-  window.scrollTo(0, 0);
+  const _dm = document.querySelector('.dash-main');
+  if (_dm) _dm.scrollTop = 0;
   // Close sidebar on mobile
   closeSidebar();
 }
@@ -6879,7 +6883,8 @@ function mobSwitchTab(section, btn) {
     if (t) t.classList.add('active');
   }
   // Scroll to top
-  window.scrollTo(0, 0);
+  const _dm2 = document.querySelector('.dash-main');
+  if (_dm2) _dm2.scrollTop = 0;
 }
 
 function toggleMobMore(btn) {
