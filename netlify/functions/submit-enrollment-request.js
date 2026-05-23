@@ -1,7 +1,7 @@
 const SUPABASE_URL         = process.env.SUPABASE_URL;
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY;
 
-async function supabase(path, options = {}, useServiceKey = false) {
+async function supabase(path, options = {}) {
   const key = SUPABASE_SERVICE_KEY;
   const url  = `${SUPABASE_URL}/rest/v1/${path}`;
   const res  = await fetch(url, {
@@ -19,14 +19,11 @@ async function supabase(path, options = {}, useServiceKey = false) {
   }
   const text = await res.text();
   if (!text || !text.trim()) return null;
-  try {
-    return JSON.parse(text);
-  } catch (e) {
-    throw new Error(`Supabase non-JSON response on ${path}: ${text}`);
-  }
+  return JSON.parse(text);
 }
 
-// POST { student_id, period_id }
+// POST { request_id, action, reviewed_by, override_reason, notes }
+// action: 'approve' | 'reject' | 'override'
 exports.handler = async (event) => {
   const headers = {
     'Content-Type': 'application/json',
@@ -38,70 +35,64 @@ exports.handler = async (event) => {
   }
 
   try {
-    const { student_id, period_id } = JSON.parse(event.body || '{}');
-    if (!student_id || !period_id) {
+    const { request_id, action, reviewed_by,
+            override_reason, notes } = JSON.parse(event.body || '{}');
+
+    const isApproval = action === 'approve' || action === 'override';
+    const status     = isApproval ? 'promoted' : 'rejected';
+    const now        = new Date().toISOString();
+
+    // 1. Fetch the enrollment request to get student_id + to_year
+    const rows = await supabase(
+      `enrollment_requests?id=eq.${request_id}&limit=1`,
+      { method: 'GET' }
+    );
+    const request = rows && rows[0];
+    if (!request) {
       return {
         statusCode: 200, headers,
-        body: JSON.stringify({ success: false, message: 'Missing student_id or period_id' })
+        body: JSON.stringify({ success: false, message: 'Request not found' })
       };
     }
 
-    // Re-run eligibility server-side
-    const eligibility = await supabase(`rpc/check_enrollment_eligibility`, {
-      method: 'POST',
-      body: JSON.stringify({ p_student_id: student_id, p_period_id: period_id })
-    }, true);
-
-    if (!eligibility) {
-      return {
-        statusCode: 200, headers,
-        body: JSON.stringify({ success: false, message: 'Eligibility check returned no data' })
-      };
-    }
-
-    if (!eligibility.eligible && !eligibility.already_requested) {
-      return {
-        statusCode: 200, headers,
-        body: JSON.stringify({ success: false, message: 'Not eligible', reasons: eligibility.reasons })
-      };
-    }
-
-    // Get period for from_year_id / to_year_id
-    const periods = await supabase(
-      `enrollment_periods?id=eq.${period_id}&limit=1`, {}, true);
-    const period = periods[0];
-    if (!period) {
-      return {
-        statusCode: 200, headers,
-        body: JSON.stringify({ success: false, message: 'Period not found' })
-      };
-    }
-
-    // Delete any prior rejected row so the INSERT below won't hit a duplicate
+    // 2. Update enrollment_request → promoted (or rejected)
     await supabase(
-      `enrollment_requests?period_id=eq.${period_id}&student_id=eq.${student_id}&status=eq.rejected`,
-      { method: 'DELETE', headers: { 'Prefer': 'return=minimal' } },
-      true
+      `enrollment_requests?id=eq.${request_id}`, {
+        method: 'PATCH',
+        headers: { 'Prefer': 'return=minimal' },
+        body: JSON.stringify({
+          status,
+          reviewed_by,
+          reviewed_at:          now,
+          promoted_at:          isApproval ? now : null,
+          eligibility_override: action === 'override',
+          override_reason:      override_reason || null,
+          notes:                notes || null
+        })
+      }
     );
 
-    // Insert fresh request
-    await supabase(`enrollment_requests`, {
-      method: 'POST',
-      headers: { 'Prefer': 'return=minimal' },
-      body: JSON.stringify({
-        student_id,
-        period_id,
-        from_year:            period.from_year_id,
-        to_year:              period.to_year_id,
-        status:               'requested',
-        eligibility_snapshot: eligibility
-      })
-    }, true);
+    // 3. If approving, update the student's year immediately
+    if (isApproval && request.student_id && request.to_year) {
+      await supabase(
+        `students?id=eq.${request.student_id}`, {
+          method: 'PATCH',
+          headers: { 'Prefer': 'return=minimal' },
+          body: JSON.stringify({
+            year:       request.to_year,
+            updated_at: now
+          })
+        }
+      );
+    }
 
-    return { statusCode: 200, headers, body: JSON.stringify({ success: true }) };
+    return {
+      statusCode: 200, headers,
+      body: JSON.stringify({ success: true, status })
+    };
 
   } catch (err) {
-    console.error('submit-enrollment-request error:', err);
+    console.error('review-enrollment-request error:', err);
     return {
       statusCode: 200, headers,
       body: JSON.stringify({ success: false, message: err.message })
