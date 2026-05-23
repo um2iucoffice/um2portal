@@ -5135,7 +5135,7 @@ body.theme-light .comms-ch-btn-gp { color: inherit; }
         </div>
         <div class="ts-divider"></div>
         <div class="ts-item">
-          <span class="ts-lbl">Years on Record</span>
+          <span class="ts-lbl" id="tsYearsLbl">Study Duration</span>
           <span class="ts-val" id="tsYears">—</span>
         </div>
         <div class="ts-divider"></div>
@@ -6600,7 +6600,36 @@ function renderGrades(grades, student) {
     summaryEl.style.display = 'flex';
     document.getElementById('tsCredits').textContent = creditsKnown ? totalCredits : (totalCredits > 0 ? totalCredits + '+' : 'TBD');
     document.getElementById('tsCourses').textContent = totalCourses;
-    document.getElementById('tsYears').textContent   = order.length;
+
+    // Calculate total duration from academic_years duration_months for years in the student's record
+    (function() {
+      var ayData = window._academicYears || [];
+      var totalMonths = 0;
+      var matched = 0;
+      order.forEach(function(yearLabel) {
+        var ayRow = ayData.find(function(ay) { return ay.name === yearLabel; });
+        if (ayRow && ayRow.durationMonths != null) {
+          totalMonths += Number(ayRow.durationMonths);
+          matched++;
+        }
+      });
+      var yearsEl = document.getElementById('tsYears');
+      var yearsLblEl = document.getElementById('tsYearsLbl');
+      if (matched > 0 && totalMonths > 0) {
+        // Express as years+months e.g. "6 yrs" or "4 yrs 6 mo"
+        var yrs = Math.floor(totalMonths / 12);
+        var mo  = totalMonths % 12;
+        var txt;
+        if (yrs > 0 && mo === 0)  txt = yrs + ' yrs';
+        else if (yrs > 0 && mo > 0) txt = yrs + ' yrs ' + mo + ' mo';
+        else txt = totalMonths + ' mo';
+        if (yearsEl) yearsEl.textContent = txt;
+        if (yearsLblEl) yearsLblEl.textContent = 'Study Duration';
+      } else {
+        if (yearsEl) yearsEl.textContent = order.length;
+        if (yearsLblEl) yearsLblEl.textContent = 'Study Duration';
+      }
+    })();
     const tsGpa = document.getElementById('tsGpa');
     if (tsGpa) tsGpa.textContent = overallGpa;
   }
@@ -8072,7 +8101,7 @@ function printDocument(type) {
         <td style="${TD}${bg}text-align:center;color:#444;font-size:6.5pt">${r.assess || '—'}</td>
         <td style="${TD}${bg}text-align:center;color:#333;font-size:7.5pt">${r.score || '—'}</td>
         <td style="${TD}${bg}text-align:center;color:#444">${r.date || '—'}</td>
-        <td style="${TD}${bg}text-align:center;font-weight:bold;font-size:7.5pt">${r.grade || '—'}</td>
+        <td style="${TD}${bg}text-align:center;font-weight:bold;font-size:8pt;font-family:'Courier New',monospace;letter-spacing:.5px;min-width:36px">${r.grade || '—'}</td>
         <td style="${TD}${bg}font-size:6.5pt;color:#555;font-style:italic">${r.note || ''}</td>
       </tr>`;
     });
@@ -8089,7 +8118,7 @@ function printDocument(type) {
             <th style="${TDH}width:14%;text-align:center">Assessment Type</th>
             <th style="${TDH}width:8%;text-align:center">Score</th>
             <th style="${TDH}width:8%;text-align:center">Year</th>
-            <th style="${TDH}width:8%;text-align:center">Grade</th>
+            <th style="${TDH}width:8%;text-align:center;min-width:48px">Grade</th>
             <th style="${TDH}width:22%">Note</th>
           </tr></thead>
           <tbody>${rows}</tbody>
