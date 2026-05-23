@@ -17,7 +17,13 @@ async function supabase(path, options = {}, useServiceKey = false) {
     const err = await res.text();
     throw new Error(`Supabase error on ${path}: ${err}`);
   }
-  return res.json();
+  const text = await res.text();
+  if (!text || !text.trim()) return null;
+  try {
+    return JSON.parse(text);
+  } catch (e) {
+    throw new Error(`Supabase non-JSON response on ${path}: ${text}`);
+  }
 }
 
 // POST { student_id, period_id }
@@ -45,6 +51,13 @@ exports.handler = async (event) => {
       method: 'POST',
       body: JSON.stringify({ p_student_id: student_id, p_period_id: period_id })
     }, true);
+
+    if (!eligibility) {
+      return {
+        statusCode: 200, headers,
+        body: JSON.stringify({ success: false, message: 'Eligibility check returned no data' })
+      };
+    }
 
     if (!eligibility.eligible && !eligibility.already_requested) {
       return {
