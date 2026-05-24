@@ -1075,6 +1075,123 @@ table { min-width: 520px; }
 .modal .form-grid { grid-template-columns: 1fr; }
 .modal .form-group.full { grid-column: 1/-1; }
 
+/* ══════════════════════════════════════════
+   DOCUMENT OFFICE GRID
+   ══════════════════════════════════════════ */
+.doc-office-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  align-items: stretch;
+}
+.doc-office-card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.doc-office-btn {
+  margin-top: auto;
+  align-self: flex-start;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+@media (max-width: 900px) {
+  .doc-office-grid { grid-template-columns: 1fr; }
+  .doc-office-btn { align-self: stretch; justify-content: center; min-height: 44px; }
+}
+
+/* ══════════════════════════════════════════
+   STUDENT FILTERS — stack on mobile
+   ══════════════════════════════════════════ */
+.student-filter-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+.student-filter-row .search-input { flex: 1 1 100%; }
+.student-filter-row select { flex: 1 1 calc(33% - 8px); min-width: 0; }
+@media (max-width: 600px) {
+  .student-filter-row select { flex: 1 1 100%; width: 100% !important; }
+}
+
+/* ══════════════════════════════════════════
+   STUDENT TABLE CHECKBOX — tighter on mobile
+   ══════════════════════════════════════════ */
+@media (max-width: 900px) {
+  #studentTable th:first-child,
+  #studentTable td:first-child { width: 28px !important; padding: 6px 4px !important; }
+  #studentTable input[type=checkbox] { width: 14px; height: 14px; }
+}
+
+/* ══════════════════════════════════════════
+   STUDENT CARD LIST — replaces table on mobile
+   ══════════════════════════════════════════ */
+@media (max-width: 700px) {
+  /* Hide the desktop table entirely */
+  #view-students .table-wrap { display: none !important; }
+  /* Show the mobile card list */
+  #studentCardList { display: block !important; }
+}
+@media (min-width: 701px) {
+  #studentCardList { display: none !important; }
+}
+
+/* Card list container */
+#studentCardList { margin-top: 0; }
+
+/* Program group header */
+.scard-prog-header {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 14px; margin-bottom: 4px;
+  background: rgba(139,26,46,0.07);
+  border: 1px solid rgba(139,26,46,0.15);
+  border-radius: 8px; cursor: pointer;
+  user-select: none;
+}
+.scard-prog-header .scard-chevron { flex-shrink: 0; transition: transform .2s; }
+.scard-prog-header.open .scard-chevron { transform: rotate(180deg); }
+.scard-prog-label { font-size: 11px; font-weight: 800; letter-spacing: 1.2px; text-transform: uppercase; color: var(--crimson); flex: 1; }
+.scard-prog-count { font-size: 11px; color: var(--ink3); }
+
+/* Year sub-header */
+.scard-year-header {
+  display: flex; align-items: center; gap: 8px;
+  padding: 7px 12px 7px 24px; margin-bottom: 3px;
+  background: rgba(30,58,110,0.04);
+  border: 1px solid rgba(30,58,110,0.08);
+  border-radius: 6px; cursor: pointer;
+  user-select: none;
+}
+.scard-year-header .scard-chevron { flex-shrink: 0; transition: transform .2s; }
+.scard-year-header.open .scard-chevron { transform: rotate(180deg); }
+.scard-year-label { font-size: 11px; font-weight: 700; letter-spacing: .8px; text-transform: uppercase; color: var(--blue); flex: 1; }
+.scard-year-count { font-size: 11px; color: var(--ink3); }
+
+/* Individual student card */
+.scard {
+  background: var(--white); border: 1px solid var(--line); border-radius: 8px;
+  padding: 12px 14px; margin-bottom: 6px; cursor: pointer;
+  transition: border-color .15s, box-shadow .15s;
+  display: flex; align-items: center; gap: 12px;
+}
+.scard:active { border-color: var(--crimson); box-shadow: 0 2px 8px rgba(139,26,46,.1); }
+.scard-avatar {
+  width: 36px; height: 36px; border-radius: 8px; flex-shrink: 0;
+  background: var(--crimson-light); display: flex; align-items: center; justify-content: center;
+  font-family: 'Libre Baskerville', serif; font-size: 13px; font-weight: 700; color: var(--crimson);
+  overflow: hidden;
+}
+.scard-avatar img { width: 100%; height: 100%; object-fit: cover; border-radius: 8px; }
+.scard-body { flex: 1; min-width: 0; }
+.scard-name { font-size: 13px; font-weight: 600; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.scard-id { font-size: 11px; font-family: monospace; color: var(--crimson); margin-top: 1px; }
+.scard-meta { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 5px; }
+.scard-right { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; flex-shrink: 0; }
+.scard-gpa { font-size: 15px; font-weight: 700; }
+.scard-gpa-den { font-size: 9px; color: var(--ink3); }
+
 /* ── Responsive table: on tiny screens, use card layout ── */
 @media (max-width: 520px) {
   .mob-table-scroll { overflow-x: auto; }
@@ -1119,6 +1236,90 @@ button, .btn, .nav-item, .tab, .mob-nav-btn, .login-role-btn, .tt-tab {
 
 /* ── Info box: break long URLs ── */
 .info-box { word-break: break-word; }
+
+/* ══════════════════════════════════════════
+   OUR CHRONICLES
+   ══════════════════════════════════════════ */
+
+/* Chronicle card */
+.chronicle-card {
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  transition: box-shadow .18s, transform .18s;
+  cursor: default;
+}
+.chronicle-card:hover {
+  box-shadow: 0 6px 24px rgba(13,27,42,.09);
+  transform: translateY(-2px);
+}
+
+/* Image area */
+.chronicle-card-img {
+  width: 100%; height: 160px;
+  object-fit: cover;
+  background: var(--surface);
+  display: flex; align-items: center; justify-content: center;
+  color: var(--ink3); flex-shrink: 0;
+}
+.chronicle-card-img img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.chronicle-card-img-placeholder {
+  width: 100%; height: 160px;
+  background: linear-gradient(135deg, rgba(139,26,46,.06) 0%, rgba(30,58,110,.06) 100%);
+  display: flex; align-items: center; justify-content: center;
+}
+
+/* Card body */
+.chronicle-card-body { padding: 16px; display: flex; flex-direction: column; gap: 8px; flex: 1; }
+.chronicle-card-meta { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.chronicle-card-date { font-size: 11px; color: var(--ink3); font-family: monospace; }
+.chronicle-card-title { font-family: 'Libre Baskerville', serif; font-size: 15px; font-weight: 700; color: var(--ink); line-height: 1.35; }
+.chronicle-card-body-text { font-size: 12px; color: var(--ink3); line-height: 1.6; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; }
+.chronicle-card-author { font-size: 11px; color: var(--ink3); margin-top: auto; padding-top: 8px; border-top: 1px solid var(--line); }
+.chronicle-card-author strong { color: var(--ink2); }
+
+/* Event info strip */
+.chronicle-event-strip {
+  display: flex; align-items: center; gap: 6px; flex-wrap: wrap;
+  font-size: 11px; color: var(--ink2);
+  padding: 6px 10px; background: var(--blue-light); border-radius: 6px;
+}
+
+/* Type badge */
+.chronicle-badge {
+  font-size: 9px; font-weight: 800; letter-spacing: .8px; text-transform: uppercase;
+  padding: 2px 8px; border-radius: 4px; display: inline-block;
+}
+.chronicle-badge-news         { background: var(--crimson-light); color: var(--crimson); }
+.chronicle-badge-event        { background: var(--blue-light);    color: var(--blue); }
+.chronicle-badge-announcement { background: var(--gold-light);    color: var(--gold); }
+.chronicle-badge-pending      { background: rgba(154,123,47,.15); color: var(--gold); }
+
+/* Card admin actions */
+.chronicle-card-actions { display: flex; gap: 6px; padding: 10px 16px; border-top: 1px solid var(--line); background: var(--surface); }
+
+/* Unpublished overlay */
+.chronicle-card.unpublished { opacity: .65; }
+.chronicle-card.unpublished .chronicle-card-body::before {
+  content: 'DRAFT'; font-size: 9px; font-weight: 800; letter-spacing: 1px;
+  color: var(--ink3); background: var(--surface); border: 1px solid var(--line);
+  border-radius: 4px; padding: 1px 7px; display: inline-block; margin-bottom: 2px;
+}
+
+/* IRIR footer */
+.irir-footer {
+  margin-top: 48px;
+  padding: 18px 0 4px;
+  border-top: 2px solid var(--crimson);
+  display: flex; align-items: center; gap: 10px;
+  font-size: 12px; color: var(--ink3);
+}
+.irir-footer-dot { color: var(--ink3); }
+.irir-footer-brand { color: var(--crimson); font-weight: 700; letter-spacing: .3px; }
+body.theme-light .irir-footer { border-top-color: var(--crimson); }
 
 /* ── Code blocks: horizontal scroll ── */
 .code-block {
@@ -1414,6 +1615,7 @@ button, .btn, .nav-item, .tab, .mob-nav-btn, .login-role-btn, .tt-tab {
   <div class="nav-item registrar-only" id="nav-bulkYears" onclick="showView('bulkYears')"><span class="nav-icon"><svg class="nav-svg"><use href="#i-package"></use></svg></span>Bulk Import Years</div>
 
   <div class="sidebar-section staff-visible">Community</div>
+  <div class="nav-item staff-visible" id="nav-chronicles" onclick="showView('chronicles')"><span class="nav-icon"><svg class="nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg></span>Our Chronicles</div>
   <div class="nav-item staff-visible" id="nav-channels" onclick="showView('channels')"><span class="nav-icon"><svg class="nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span>Channels</div>
   <div class="nav-item staff-visible" id="nav-lectureRooms" onclick="showView('lectureRooms')"><span class="nav-icon"><svg class="nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg></span>Lecture Rooms</div>
 
@@ -1544,19 +1746,22 @@ button, .btn, .nav-item, .tab, .mob-nav-btn, .login-role-btn, .tt-tab {
       <button class="btn btn-outline btn-sm" onclick="exportStudentsCSV()">Export CSV</button>
     </div>
   </div>
-  <div class="search-row">
+  <div class="student-filter-row">
     <input id="studentSearchInput" class="search-input" placeholder="Search by name or student ID…" oninput="filterStudents(this.value)">
-    <select id="studentProgramFilter" style="width:180px" onchange="filterStudents(document.getElementById('studentSearchInput').value)">
+    <select id="studentProgramFilter" onchange="filterStudents(document.getElementById('studentSearchInput').value)">
       <option value="">All Programs</option>
     </select>
-    <select id="studentYearFilter" style="width:160px" onchange="filterStudents(document.getElementById('studentSearchInput').value)">
+    <select id="studentYearFilter" onchange="filterStudents(document.getElementById('studentSearchInput').value)">
       <option value="">All Years</option>
     </select>
-    <select id="studentStatusFilter" style="width:140px" onchange="filterStudents(document.getElementById('studentSearchInput').value)">
+    <select id="studentStatusFilter" onchange="filterStudents(document.getElementById('studentSearchInput').value)">
       <option value="">All Status</option>
       <option>Active</option><option>Degree Awarded</option><option>Inactive</option>
     </select>
   </div>
+  <!-- Mobile card list (shown ≤700px) -->
+  <div id="studentCardList" style="display:none"></div>
+  <!-- Desktop table (shown >700px) -->
   <div class="card" style="padding:0">
     <div class="table-wrap mob-table-scroll"><table id="studentTable" class="responsive-table">
       <thead><tr>
@@ -3018,60 +3223,60 @@ ALTER TABLE academic_years ADD COLUMN IF NOT EXISTS program_id text REFERENCES d
     </div>
   </div>
 
-  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;align-items:stretch">
+  <div class="doc-office-grid">
 
     <!-- Confirmation of Service -->
-    <div class="card" style="display:flex;flex-direction:column;gap:12px">
+    <div class="card doc-office-card">
       <div style="display:flex;align-items:center;gap:12px">
         <div style="width:42px;height:42px;border-radius:10px;background:var(--blue-light);display:flex;align-items:center;justify-content:center;flex-shrink:0">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--blue)" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="13" y2="17"/></svg>
         </div>
         <div>
           <div style="font-size:14px;font-weight:600;color:var(--ink)">Confirmation of Service</div>
-          <div style="font-size:12px;color:var(--ink3);margin-top:2px">Official letter confirming your active service at UM2</div>
+          <div style="font-size:12px;color:var(--ink3);margin-top:2px">Official letter confirming active service at UM2</div>
         </div>
       </div>
-      <button class="btn btn-outline btn-sm" onclick="printStaffConfirmation()" style="margin-top:auto;align-self:flex-start;display:flex;align-items:center;gap:6px">
+      <button class="btn btn-outline btn-sm doc-office-btn" onclick="printStaffConfirmation()">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
         Print Letter
       </button>
     </div>
 
     <!-- Good Standing Certificate -->
-    <div class="card" style="display:flex;flex-direction:column;gap:12px">
+    <div class="card doc-office-card">
       <div style="display:flex;align-items:center;gap:12px">
         <div style="width:42px;height:42px;border-radius:10px;background:var(--green-light);display:flex;align-items:center;justify-content:center;flex-shrink:0">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11"/></svg>
         </div>
         <div>
           <div style="font-size:14px;font-weight:600;color:var(--ink)">Good Standing Certificate</div>
-          <div style="font-size:12px;color:var(--ink3);margin-top:2px">Certificate confirming good academic and disciplinary standing</div>
+          <div style="font-size:12px;color:var(--ink3);margin-top:2px">Confirms good academic and disciplinary standing</div>
         </div>
       </div>
-      <button class="btn btn-outline btn-sm" onclick="printStaffGoodStanding()" style="margin-top:auto;align-self:flex-start;display:flex;align-items:center;gap:6px">
+      <button class="btn btn-outline btn-sm doc-office-btn" onclick="printStaffGoodStanding()">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
         Print Certificate
       </button>
     </div>
 
     <!-- Faculty Member Information Record -->
-    <div class="card" style="display:flex;flex-direction:column;gap:12px">
+    <div class="card doc-office-card">
       <div style="display:flex;align-items:center;gap:12px">
         <div style="width:42px;height:42px;border-radius:10px;background:var(--gold-light);display:flex;align-items:center;justify-content:center;flex-shrink:0">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="18" rx="2"/><line x1="8" y1="10" x2="16" y2="10"/><line x1="8" y1="14" x2="13" y2="14"/><circle cx="17" cy="17" r="3"/><path d="M20 20l1.5 1.5"/></svg>
         </div>
         <div>
-          <div style="font-size:14px;font-weight:600;color:var(--ink)">Faculty Member Information Record</div>
-          <div style="font-size:12px;color:var(--ink3);margin-top:2px">Auto-generated official record of faculty profile and service details</div>
+          <div style="font-size:14px;font-weight:600;color:var(--ink)">Faculty Information Record</div>
+          <div style="font-size:12px;color:var(--ink3);margin-top:2px">Official record of faculty profile and service details</div>
         </div>
       </div>
-      <button class="btn btn-outline btn-sm" onclick="printFacultyInfoRecord()" style="margin-top:auto;align-self:flex-start;display:flex;align-items:center;gap:6px">
+      <button class="btn btn-outline btn-sm doc-office-btn" onclick="printFacultyInfoRecord()">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
         Print Record
       </button>
     </div>
 
-  </div><!-- /doc grid -->
+  </div><!-- /doc-office-grid -->
 </div><!-- /view-docOffice -->
 
 <div class="view" id="view-myProfile">
@@ -3291,8 +3496,127 @@ ALTER TABLE academic_years ADD COLUMN IF NOT EXISTS program_id text REFERENCES d
   </div>
 </div>
 
+<!-- ═══════ OUR CHRONICLES ═══════ -->
+<div class="view" id="view-chronicles">
+
+  <div class="page-header">
+    <div class="page-header-left">
+      <div class="page-title">Our Chronicles</div>
+      <div class="page-sub">News, announcements and events from UM2 — University of Medicine 2, Yangon</div>
+    </div>
+    <div class="page-actions">
+      <button class="btn btn-outline btn-sm" onclick="openChronicleModal(null)">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        New Post
+      </button>
+    </div>
+  </div>
+
+  <!-- Filter tabs -->
+  <div class="tabs" style="margin-bottom:20px" id="chronicleTypeTabs">
+    <div class="tab active" onclick="filterChronicles('all',this)">All</div>
+    <div class="tab" onclick="filterChronicles('news',this)">News</div>
+    <div class="tab" onclick="filterChronicles('event',this)">Events</div>
+    <div class="tab" onclick="filterChronicles('announcement',this)">Announcements</div>
+  </div>
+
+  <!-- Pending approvals banner — registrar only -->
+  <div id="chroniclePendingBanner" class="registrar-only" style="display:none;margin-bottom:16px;padding:12px 16px;background:var(--gold-light);border:1px solid rgba(154,123,47,.3);border-radius:var(--r);display:flex;align-items:center;gap:10px;font-size:13px;color:var(--gold)">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+    <span id="chroniclePendingText">— posts pending approval</span>
+    <button class="btn btn-sm" style="margin-left:auto;background:var(--gold);color:#fff;border:none;border-radius:var(--r);padding:5px 14px;cursor:pointer;font-size:12px;font-weight:600" onclick="filterChronicles('pending',document.getElementById('chroniclePendingBanner'))">Review</button>
+  </div>
+
+  <!-- Cards grid -->
+  <div id="chronicleGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(min(300px,100%),1fr));gap:18px">
+    <div style="grid-column:1/-1;text-align:center;padding:48px;color:var(--ink3)">
+      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="opacity:.3;margin-bottom:12px"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+      <div>Loading chronicles…</div>
+    </div>
+  </div>
+
+  <!-- IRIR footer bar -->
+  <div class="irir-footer">
+    <span>Institutional Records &amp; Information System</span>
+    <span class="irir-footer-dot">·</span>
+    <span class="irir-footer-brand">UM2 · IUC</span>
+  </div>
+
+</div><!-- /view-chronicles -->
+
 </main>
 </div><!-- /appShell -->
+
+<!-- ════════════════════════════════════════ -->
+<!-- CHRONICLE MODAL -->
+<!-- ════════════════════════════════════════ -->
+<div class="modal-overlay" id="chronicleModalOverlay" style="display:none" onclick="if(event.target===this)closeChronicleModal()">
+  <div class="modal modal-lg" style="max-width:680px">
+    <div class="modal-header">
+      <div class="modal-title" id="chronicleModalTitle">New Chronicle Post</div>
+      <button class="modal-close" onclick="closeChronicleModal()">✕</button>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px" class="form-grid">
+      <!-- Type -->
+      <div class="form-group">
+        <label class="form-label">Type</label>
+        <select class="form-input" id="ch-type">
+          <option value="news">News</option>
+          <option value="event">Event</option>
+          <option value="announcement">Announcement</option>
+        </select>
+      </div>
+      <!-- Published date -->
+      <div class="form-group">
+        <label class="form-label">Date</label>
+        <input type="date" class="form-input" id="ch-event-date">
+      </div>
+      <!-- Title (full width) -->
+      <div class="form-group full" style="grid-column:1/-1">
+        <label class="form-label">Title <span style="color:var(--crimson)">*</span></label>
+        <input type="text" class="form-input" id="ch-title" placeholder="e.g. Spring Ceremony 2026">
+      </div>
+      <!-- Body (full width) -->
+      <div class="form-group full" style="grid-column:1/-1">
+        <label class="form-label">Body / Description</label>
+        <textarea class="form-input" id="ch-body" rows="4" placeholder="Write the full content here…" style="resize:vertical"></textarea>
+      </div>
+      <!-- Image URL -->
+      <div class="form-group full" style="grid-column:1/-1">
+        <label class="form-label">Image URL <span style="font-size:10px;color:var(--ink3);font-weight:400">(paste a direct image link, or upload to Supabase Storage first)</span></label>
+        <input type="text" class="form-input" id="ch-image-url" placeholder="https://…">
+      </div>
+      <!-- Event fields -->
+      <div class="form-group" id="ch-time-wrap">
+        <label class="form-label">Event Time</label>
+        <input type="text" class="form-input" id="ch-event-time" placeholder="e.g. 9:00 AM – 12:00 PM">
+      </div>
+      <div class="form-group" id="ch-loc-wrap">
+        <label class="form-label">Location</label>
+        <input type="text" class="form-input" id="ch-event-location" placeholder="e.g. Grand Hall, UM2">
+      </div>
+      <!-- Author name -->
+      <div class="form-group">
+        <label class="form-label">Author Name</label>
+        <input type="text" class="form-input" id="ch-author-name" placeholder="e.g. Secretariat's Office">
+      </div>
+      <!-- Published toggle -->
+      <div class="form-group" style="display:flex;flex-direction:column;justify-content:flex-end">
+        <label class="form-label">Visibility</label>
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;padding:10px 13px;background:var(--surface);border:1.5px solid var(--line);border-radius:var(--r)">
+          <input type="checkbox" id="ch-published" checked style="width:16px;height:16px;accent-color:var(--crimson)">
+          <span style="font-size:13px;color:var(--ink)">Publish immediately</span>
+        </label>
+      </div>
+    </div>
+
+    <div class="form-actions" style="margin-top:20px">
+      <button class="btn btn-outline" onclick="closeChronicleModal()">Cancel</button>
+      <button class="btn btn-primary" id="chronicleSaveBtn" onclick="saveChronicle()">Save Post</button>
+    </div>
+  </div>
+</div>
 
 <!-- Hidden print area — must be inside body -->
 <div id="printArea" style="display:none"></div>
@@ -4315,7 +4639,7 @@ function showViewTitled(viewId) {
     bulkYears:'Bulk Import Years', channels:'Channels', lectureRooms:'Lecture Rooms',
     editRequests:'Edit Requests', notifications:'Email Log', setup:'Setup Guide',
     myProfile:'My Profile', profile:'Student Profile', userList:'System Users',
-    docOffice:'Document Office',
+    docOffice:'Document Office', chronicles:'Our Chronicles',
   };
   const tb = document.getElementById('topbarTitle');
   if (tb && titles[viewId]) tb.textContent = titles[viewId];
@@ -5087,6 +5411,7 @@ async function populateTables() {
   await loadAcademicYears();
   await loadChannels();
   await loadLectureRooms();
+  await loadChronicles();
 }
 
 function normalizeAttRecord(r) {
@@ -5259,6 +5584,100 @@ function renderStudentTable(data) {
   });
 
   tb.innerHTML = html;
+  // Also render mobile card list
+  renderStudentCardList(data);
+}
+
+// ── Mobile card list renderer (shown ≤700px) ──
+function renderStudentCardList(data) {
+  const container = document.getElementById('studentCardList');
+  if (!container) return;
+  if (!data.length) {
+    container.innerHTML = `<div style="text-align:center;padding:32px;color:var(--ink3)">No students found.</div>`;
+    return;
+  }
+
+  // Group by Program → Year (same as table)
+  const byProgram = {};
+  data.forEach(s => {
+    const prog = s.program || 'Unknown Program';
+    const yr   = s.year   || 'Unknown Year';
+    if (!byProgram[prog]) byProgram[prog] = {};
+    if (!byProgram[prog][yr]) byProgram[prog][yr] = [];
+    byProgram[prog][yr].push(s);
+  });
+
+  let html = '';
+  Object.entries(byProgram).forEach(([prog, years], pi) => {
+    const progTotal = Object.values(years).reduce((n, arr) => n + arr.length, 0);
+    const progId = `scp-${pi}`;
+    html += `
+      <div class="scard-prog-header" id="${progId}-hdr" onclick="toggleScardProg('${progId}')">
+        <svg class="scard-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--crimson)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+        <span class="scard-prog-label">${prog}</span>
+        <span class="scard-prog-count">${progTotal} student${progTotal!==1?'s':''}</span>
+      </div>
+      <div id="${progId}-body" style="display:none;padding-left:0">`;
+
+    Object.entries(years).forEach(([yr, studs], yi) => {
+      const yearId = `scy-${pi}-${yi}`;
+      html += `
+        <div class="scard-year-header" id="${yearId}-hdr" onclick="toggleScardYear('${yearId}')">
+          <svg class="scard-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--blue)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+          <span class="scard-year-label">${yr}</span>
+          <span class="scard-year-count">${studs.length} student${studs.length!==1?'s':''}</span>
+        </div>
+        <div id="${yearId}-body" style="display:none;padding-left:8px">`;
+
+      studs.forEach(s => {
+        const gpa = Number(s.gpa) || 0;
+        const gpaColor = gpa >= 3.5 ? 'var(--green)' : gpa >= 2.0 ? 'var(--gold)' : 'var(--crimson)';
+        const statusBadge = s.status === 'Active' ? 'b-green' : s.status === 'Degree Awarded' ? 'b-blue' : 'b-red';
+        const initials = (s.name_en || '?').split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+        const photoUrl = s.photo ? `${SUPABASE_URL}/storage/v1/object/public/student-photos/${s.photo}` : '';
+        const avatarInner = photoUrl
+          ? `<img src="${photoUrl}" onerror="this.style.display='none';this.parentElement.textContent='${initials}'">`
+          : initials;
+        html += `
+          <div class="scard" onclick="showProfile('${s.id}')">
+            <div class="scard-avatar">${avatarInner}</div>
+            <div class="scard-body">
+              <div class="scard-name">${s.name_en}</div>
+              <div class="scard-id">${s.id}</div>
+              <div class="scard-meta">
+                <span class="badge ${statusBadge}" style="font-size:10px">${s.status}</span>
+                ${s.program ? `<span class="badge b-muted" style="font-size:10px">${s.program}</span>` : ''}
+              </div>
+            </div>
+            <div class="scard-right">
+              <div class="scard-gpa" style="color:${gpaColor}">${gpa.toFixed(1)}</div>
+              <div class="scard-gpa-den">/ 4.00</div>
+            </div>
+          </div>`;
+      });
+      html += `</div>`; // year body
+    });
+    html += `</div>`; // prog body
+  });
+
+  container.innerHTML = html;
+}
+
+function toggleScardProg(id) {
+  const body = document.getElementById(id + '-body');
+  const hdr  = document.getElementById(id + '-hdr');
+  if (!body) return;
+  const open = body.style.display !== 'none';
+  body.style.display = open ? 'none' : 'block';
+  if (hdr) hdr.classList.toggle('open', !open);
+}
+function toggleScardYear(id) {
+  const body = document.getElementById(id + '-body');
+  const hdr  = document.getElementById(id + '-hdr');
+  if (!body) return;
+  const open = body.style.display !== 'none';
+  body.style.display = open ? 'none' : 'block';
+  if (hdr) hdr.classList.toggle('open', !open);
 }
 
 // Toggle Program accordion
@@ -8010,6 +8429,7 @@ function showView(id) {
     enrollPeriods: 'more', enrollRequests: 'more', grades: 'more', attendance: 'more',
     courses: 'more', bulkCourses: 'more', degrees: 'more', years: 'more',
     bulkYears: 'more', channels: 'more', lectureRooms: 'more', teachingSchedule: 'more',
+    chronicles: 'more',
     userList: 'more', editRequests: 'more', notifications: 'more', setup: 'more',
   };
   setMobNav(mobNavMap[id] || 'more');
@@ -8017,6 +8437,7 @@ function showView(id) {
   if (id === 'degrees') renderDegreeGrid();
   if (id === 'myProfile') loadStaffProfile();
   if (id === 'userList') loadUserList();
+  if (id === 'chronicles') loadChronicles();
   if (id === 'teachingSchedule') { loadStaffProfile(); renderTimetableList(); renderBookedSchedule(); }
   if (id === 'enrollPeriods') initEnrollPeriodsView();
   if (id === 'enrollRequests') initEnrollRequestsView();
@@ -8802,6 +9223,208 @@ function toggleSelectGroup(groupCb, groupKey) {
     row = row.nextElementSibling;
   }
   onStudentCheckChange();
+}
+
+// ══════════════════════════════════════════
+// OUR CHRONICLES
+// ══════════════════════════════════════════
+let chronicles = [];
+let _chronicleFilter = 'all';
+let _editingChronicleId = null;
+
+async function loadChronicles() {
+  const grid = document.getElementById('chronicleGrid');
+  if (grid) grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:48px;color:var(--ink3)">Loading…</div>`;
+
+  try {
+    const { data, error } = await db
+      .from('announcements')
+      .select('*')
+      .order('published_at', { ascending: false });
+    if (error) throw error;
+    chronicles = data || [];
+  } catch(e) {
+    chronicles = [];
+    if (grid) grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:32px;color:var(--crimson)">Could not load chronicles: ${e.message}</div>`;
+    return;
+  }
+  renderChronicles();
+  updateChroniclePendingBanner();
+}
+
+function updateChroniclePendingBanner() {
+  const banner = document.getElementById('chroniclePendingBanner');
+  const txt    = document.getElementById('chroniclePendingText');
+  if (!banner || currentRole !== 'registrar') return;
+  const pending = chronicles.filter(c => !c.is_approved && c.is_published);
+  if (pending.length > 0) {
+    banner.style.display = 'flex';
+    txt.textContent = `${pending.length} post${pending.length !== 1 ? 's' : ''} pending approval`;
+  } else {
+    banner.style.display = 'none';
+  }
+}
+
+function filterChronicles(type, btn) {
+  _chronicleFilter = type;
+  document.querySelectorAll('#chronicleTypeTabs .tab').forEach(t => t.classList.remove('active'));
+  if (btn && btn.classList) btn.classList.add('active');
+  renderChronicles();
+}
+
+function renderChronicles() {
+  const grid = document.getElementById('chronicleGrid');
+  if (!grid) return;
+
+  let list = chronicles;
+  if (_chronicleFilter === 'pending') {
+    list = chronicles.filter(c => !c.is_approved && c.is_published);
+  } else if (_chronicleFilter !== 'all') {
+    list = chronicles.filter(c => c.type === _chronicleFilter);
+  }
+  // Non-registrar: only show published+approved
+  if (currentRole !== 'registrar') {
+    list = list.filter(c => c.is_published && c.is_approved);
+  }
+
+  if (!list.length) {
+    grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:48px;color:var(--ink3)">
+      <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="opacity:.25;margin-bottom:12px"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+      <div>No posts yet</div>
+    </div>`;
+    return;
+  }
+
+  const badgeClass = { news: 'chronicle-badge-news', event: 'chronicle-badge-event', announcement: 'chronicle-badge-announcement' };
+  const badgeLabel = { news: 'News', event: 'Event', announcement: 'Announcement' };
+
+  grid.innerHTML = list.map(c => {
+    const bc   = badgeClass[c.type] || 'chronicle-badge-news';
+    const bl   = badgeLabel[c.type] || c.type;
+    const date = c.event_date || (c.published_at ? c.published_at.slice(0,10) : '');
+    const unpublished = !c.is_published || !c.is_approved;
+    const pendingTag  = (!c.is_approved && c.is_published && currentRole === 'registrar')
+      ? `<span class="chronicle-badge chronicle-badge-pending">Pending</span>` : '';
+
+    const imgHtml = c.image_url
+      ? `<div class="chronicle-card-img"><img src="${c.image_url}" alt="${c.title}" loading="lazy" onerror="this.parentElement.innerHTML='<div class=chronicle-card-img-placeholder><svg width=32 height=32 viewBox=\\'0 0 24 24\\' fill=none stroke=currentColor stroke-width=1.5 stroke-linecap=round><path d=\\'M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z\\'/><path d=\\'M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z\\'/></svg></div>'"></div>`
+      : `<div class="chronicle-card-img-placeholder"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="opacity:.3"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg></div>`;
+
+    const eventStrip = (c.type === 'event' && (c.event_time || c.event_location)) ? `
+      <div class="chronicle-event-strip">
+        ${c.event_time ? `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>${c.event_time}` : ''}
+        ${c.event_location ? `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s-8-4.5-8-11.8A8 8 0 0 1 12 2a8 8 0 0 1 8 8.2c0 7.3-8 11.8-8 11.8z"/><circle cx="12" cy="10" r="3"/></svg>${c.event_location}` : ''}
+      </div>` : '';
+
+    const adminActions = currentRole === 'registrar' ? `
+      <div class="chronicle-card-actions">
+        ${!c.is_approved ? `<button class="btn btn-sm" style="background:var(--green);color:#fff;border:none;border-radius:var(--r);padding:5px 12px;cursor:pointer;font-size:11px;font-weight:600" onclick="approveChronicle(${c.id})">Approve</button>` : '<span style="font-size:11px;color:var(--green);font-weight:600;padding:5px 2px">✓ Approved</span>'}
+        <button class="btn btn-outline btn-sm" onclick="openChronicleModal(${c.id})" style="margin-left:auto">Edit</button>
+        <button class="btn btn-danger btn-sm" onclick="deleteChronicle(${c.id})"><svg style="width:12px;height:12px;stroke:currentColor;stroke-width:2;fill:none;stroke-linecap:round;stroke-linejoin:round"><use href="#i-trash"></use></svg></button>
+      </div>` : '';
+
+    return `<div class="chronicle-card${unpublished ? ' unpublished' : ''}">
+      ${imgHtml}
+      <div class="chronicle-card-body">
+        <div class="chronicle-card-meta">
+          <span class="chronicle-badge ${bc}">${bl}</span>
+          ${pendingTag}
+          ${date ? `<span class="chronicle-card-date">${date}</span>` : ''}
+        </div>
+        <div class="chronicle-card-title">${c.title}</div>
+        ${c.body ? `<div class="chronicle-card-body-text">${c.body}</div>` : ''}
+        ${eventStrip}
+        ${c.author_name ? `<div class="chronicle-card-author">By <strong>${c.author_name}</strong></div>` : ''}
+      </div>
+      ${adminActions}
+    </div>`;
+  }).join('');
+}
+
+function openChronicleModal(id) {
+  _editingChronicleId = id;
+  const c = id ? chronicles.find(x => x.id === id) : null;
+  document.getElementById('chronicleModalTitle').textContent = id ? 'Edit Chronicle Post' : 'New Chronicle Post';
+  document.getElementById('ch-type').value            = c ? (c.type || 'news') : 'news';
+  document.getElementById('ch-title').value           = c ? (c.title || '') : '';
+  document.getElementById('ch-body').value            = c ? (c.body || '') : '';
+  document.getElementById('ch-image-url').value       = c ? (c.image_url || '') : '';
+  document.getElementById('ch-event-date').value      = c ? (c.event_date || '') : '';
+  document.getElementById('ch-event-time').value      = c ? (c.event_time || '') : '';
+  document.getElementById('ch-event-location').value  = c ? (c.event_location || '') : '';
+  document.getElementById('ch-author-name').value     = c ? (c.author_name || '') : (currentUser ? currentUser.name : '');
+  document.getElementById('ch-published').checked     = c ? !!c.is_published : true;
+  document.getElementById('chronicleModalOverlay').style.display = 'flex';
+}
+
+function closeChronicleModal() {
+  document.getElementById('chronicleModalOverlay').style.display = 'none';
+  _editingChronicleId = null;
+}
+
+async function saveChronicle() {
+  const title = document.getElementById('ch-title').value.trim();
+  if (!title) { toast('Title is required', '⚠'); return; }
+
+  const btn = document.getElementById('chronicleSaveBtn');
+  btn.disabled = true; btn.textContent = 'Saving…';
+
+  const payload = {
+    type:            document.getElementById('ch-type').value,
+    title,
+    body:            document.getElementById('ch-body').value.trim() || null,
+    image_url:       document.getElementById('ch-image-url').value.trim() || null,
+    event_date:      document.getElementById('ch-event-date').value || null,
+    event_time:      document.getElementById('ch-event-time').value.trim() || null,
+    event_location:  document.getElementById('ch-event-location').value.trim() || null,
+    author_name:     document.getElementById('ch-author-name').value.trim() || null,
+    is_published:    document.getElementById('ch-published').checked,
+    created_by:      currentUser ? currentUser.staff_id : null,
+    author_type:     'admin',
+    // Auto-approve if registrar, else needs approval
+    is_approved:     currentRole === 'registrar',
+  };
+
+  try {
+    let error;
+    if (_editingChronicleId) {
+      ({ error } = await db.from('announcements').update(payload).eq('id', _editingChronicleId));
+    } else {
+      ({ error } = await db.from('announcements').insert(payload));
+    }
+    if (error) throw error;
+    toast(_editingChronicleId ? 'Post updated ✓' : 'Post published ✓', '✓');
+    closeChronicleModal();
+    await loadChronicles();
+  } catch(e) {
+    toast('Error saving post: ' + e.message, '✗');
+  } finally {
+    btn.disabled = false; btn.textContent = 'Save Post';
+  }
+}
+
+async function approveChronicle(id) {
+  try {
+    const { error } = await db.from('announcements').update({ is_approved: true }).eq('id', id);
+    if (error) throw error;
+    toast('Post approved ✓', '✓');
+    await loadChronicles();
+  } catch(e) {
+    toast('Could not approve: ' + e.message, '✗');
+  }
+}
+
+async function deleteChronicle(id) {
+  const c = chronicles.find(x => x.id === id);
+  if (!confirm(`Delete "${c ? c.title : 'this post'}"? This cannot be undone.`)) return;
+  try {
+    const { error } = await db.from('announcements').delete().eq('id', id);
+    if (error) throw error;
+    toast('Post deleted', '✓');
+    await loadChronicles();
+  } catch(e) {
+    toast('Could not delete: ' + e.message, '✗');
+  }
 }
 
 // ══════════════════════════════════════════
