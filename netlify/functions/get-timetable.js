@@ -64,7 +64,7 @@ exports.handler = async (event) => {
   try {
     // ── 1. Verify student credentials ───────────────────────
     const students = await supabase(
-      `students?id=eq.${encodeURIComponent(normId)}&select=id,master_password,program,year&limit=1`
+      `students?id=eq.${encodeURIComponent(normId)}&select=id,master_password,program,year,status&limit=1`
     );
     if (!students || students.length === 0) {
       return { statusCode: 200, headers: CORS_HEADERS, body: JSON.stringify({ success: false, message: 'Student not found.' }) };
