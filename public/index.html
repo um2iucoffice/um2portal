@@ -9850,7 +9850,11 @@ function ttFmt(t) {
     grid.innerHTML = '';
  
     try {
-      var res  = await fetch('/.netlify/functions/get-documents');
+      var res = await fetch('/.netlify/functions/get-documents', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({ student_id: window._currentStudentId || '' })
+});
       var data = await res.json();
  
       loading.style.display = 'none';
