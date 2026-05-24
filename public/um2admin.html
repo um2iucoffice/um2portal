@@ -10576,16 +10576,55 @@ function _getStaffForPrint() {
    DOCUMENT OFFICE — full feature set
    ══════════════════════════════════════════════════════════ */
 
-/* ── Role-based type filtering ── */
+/* ── Title → allowed doc types ── */
+const _TITLE_ACCESS = {
+  'head':                ['MEM','NOT','LTR','RPT','CIR','POL','DIR','COS','GSC','FIR','STM'],
+  'coordinator':         ['MEM','NOT','LTR','COS','GSC','FIR','STM'],
+  'guest lecturer':      ['STM'],
+  'lecturer':            ['LTR','COS','GSC','FIR','STM'],
+  'tutor':               ['STM'],
+  'demonstrator':        ['STM'],
+};
+
+/* ── Titles that can sign as Individual OR Department ── */
+const _TITLE_DEPT_SIGN = ['head','coordinator'];
+
+/* ── Get normalised title of current user ── */
+function _getCurrentTitle() {
+  return (document.getElementById('sp-title')?.value || '').trim().toLowerCase();
+}
+
+/* ── Role-based + title-based type filtering ── */
 function dofApplyRoleTypes() {
-  const role = (typeof currentRole !== 'undefined') ? currentRole : 'staff';
-  const sel = document.getElementById('dof-type');
+  const role  = (typeof currentRole !== 'undefined') ? currentRole : 'staff';
+  const title = _getCurrentTitle();
+  const sel   = document.getElementById('dof-type');
   if (!sel) return;
+
+  if (role === 'registrar') {
+    /* Registrar sees everything */
+    Array.from(sel.options).forEach(opt => { if (opt.value) opt.hidden = false; });
+    return;
+  }
+
+  /* Staff: find matching title rule (partial match so "Associate Head" still matches "head") */
+  const allowed = Object.entries(_TITLE_ACCESS).find(([key]) => title.includes(key))?.[1] || ['STM'];
+
   Array.from(sel.options).forEach(opt => {
     if (!opt.value) return;
-    const allowed = (opt.dataset.roles || '').split(',');
-    opt.hidden = !allowed.includes(role);
+    opt.hidden = !allowed.includes(opt.value);
   });
+
+  /* Reset selection if current value is now hidden */
+  if (sel.value && !allowed.includes(sel.value)) sel.value = '';
+}
+
+/* ── Check if current user can sign as department ── */
+function _canSignAsDept() {
+  const role  = (typeof currentRole !== 'undefined') ? currentRole : 'staff';
+  if (role === 'registrar') return false; // registrar always uses Secretariat's Office
+  const title = _getCurrentTitle();
+  return _TITLE_DEPT_SIGN.some(t => title.includes(t));
 }
 
 /* ── Ref number: fetch sequence from DB, build ref string ── */
@@ -10684,12 +10723,10 @@ async function dofUpdateRef() {
   const signingWrap = document.getElementById('dof-signing-wrap');
   const signingModeWrap = document.getElementById('dof-signing-mode-wrap');
   if (signingWrap) signingWrap.style.display = (type && !fixedTypes.includes(type)) ? '' : 'none';
-  /* Show individual/dept toggle only for senior roles */
+  /* Show individual/dept toggle only for eligible titles */
   if (signingModeWrap) {
-    const title = (document.getElementById('sp-title')?.value || '').toLowerCase();
-    const isSenior = /coordinator|head|associate professor/i.test(title);
     const isRegistrar = (typeof currentRole !== 'undefined') && currentRole === 'registrar';
-    signingModeWrap.style.display = (!isRegistrar && isSenior && type && !fixedTypes.includes(type)) ? '' : 'none';
+    signingModeWrap.style.display = (!isRegistrar && _canSignAsDept() && type && !fixedTypes.includes(type)) ? '' : 'none';
   }
   const bodyWrap = document.getElementById('dof-body-wrap');
   const subjectEnWrap = document.getElementById('dof-subject-en')?.closest('.form-group');
