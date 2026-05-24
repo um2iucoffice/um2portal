@@ -332,7 +332,7 @@ body.theme-light #appsToggleBtn:hover {
 }
 /* End light theme overrides */
 
-/* ── OUR CHRONICLES AT SPRING — Panel & Card Styles ── */
+/* ── OUR CHRONICLES IN SPRING — Panel & Card Styles ── */
 :root {
   --chr-spring: #2D6A4F;
   --chr-spring-light: #D8F3DC;
@@ -4251,7 +4251,7 @@ body.theme-light .comms-ch-btn-gp { color: inherit; }
     </button>
     <button class="mob-more-item" onclick="mobSwitchTab('news',null);closeMobMore()">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2z"/><line x1="8" y1="10" x2="16" y2="10"/><line x1="8" y1="14" x2="13" y2="14"/></svg>
-      Our Chronicles at Spring
+      Our Chronicles in Spring
     </button>
     <button class="mob-more-item" onclick="mobSwitchTab('share',null);closeMobMore()">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
@@ -4344,7 +4344,7 @@ body.theme-light .comms-ch-btn-gp { color: inherit; }
 
       <button class="sbnav-item" data-section="news" onclick="switchSection('news',this)" id="navNews" style="display:none">
         <svg class="sbnav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2z"/><line x1="8" y1="10" x2="16" y2="10"/><line x1="8" y1="14" x2="13" y2="14"/></svg>
-        <span class="sbnav-label">Our Chronicles at Spring</span>
+        <span class="sbnav-label">Our Chronicles in Spring</span>
       </button>
 
       <button class="sbnav-item" data-section="share" onclick="switchSection('share',this)" id="navShare">
@@ -4527,7 +4527,7 @@ body.theme-light .comms-ch-btn-gp { color: inherit; }
       <!-- News feed (mobile home only — shown via CSS on ≤700px) -->
       <div class="mob-news-quick" style="display:none;margin-bottom:20px;flex-direction:column;gap:0">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
-          <div class="home-section-label" style="margin-bottom:0">Our Chronicles at Spring</div>
+          <div class="home-section-label" style="margin-bottom:0">Our Chronicles in Spring</div>
           <button onclick="switchTab('news')" style="font-family:'DM Sans',sans-serif;font-size:12px;color:var(--crimson);background:none;border:none;cursor:pointer;padding:0;opacity:.8">See all →</button>
         </div>
         <div id="mobHomeNewsCards" style="display:flex;flex-direction:column;gap:10px">
@@ -4580,6 +4580,18 @@ body.theme-light .comms-ch-btn-gp { color: inherit; }
               <div class="aq-body">
                 <div class="aq-title">Mark Book</div>
                 <div class="aq-sub">Internal assessment &amp; test marks</div>
+              </div>
+              <div class="aq-arrow">→</div>
+            </div>
+
+            <div class="aq aq-primary" onclick="switchTab('timetable')">
+              <div class="aq-accent" style="--accent:rgba(96,165,250,0.18);--accent-border:rgba(96,165,250,0.35);--accent-glow:rgba(96,165,250,0.15);--accent-icon:rgba(96,165,250,0.2);--accent-stroke:#60a5fa"></div>
+              <div class="aq-icon-wrap">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--aq-stroke)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="8" y1="14" x2="8" y2="14"/><line x1="12" y1="14" x2="12" y2="14"/><line x1="16" y1="14" x2="16" y2="14"/><line x1="8" y1="18" x2="8" y2="18"/><line x1="12" y1="18" x2="12" y2="18"/></svg>
+              </div>
+              <div class="aq-body">
+                <div class="aq-title">Timetable</div>
+                <div class="aq-sub">Lecture &amp; discussion schedule</div>
               </div>
               <div class="aq-arrow">→</div>
             </div>
@@ -4836,7 +4848,7 @@ body.theme-light .comms-ch-btn-gp { color: inherit; }
         display: grid;
         gap: 14px;
       }
-      .app-grid-primary   { grid-template-columns: repeat(3, 1fr); }
+      .app-grid-primary   { grid-template-columns: repeat(4, 1fr); }
       .app-grid-secondary { grid-template-columns: repeat(4, 1fr); }
       .app-grid-utility   { grid-template-columns: repeat(4, 1fr); }
 
@@ -5010,6 +5022,7 @@ body.theme-light .comms-ch-btn-gp { color: inherit; }
 
       /* ── RESPONSIVE ── */
       @media(max-width:960px) {
+        .app-grid-primary   { grid-template-columns: repeat(2, 1fr); }
         .app-grid-secondary,
         .app-grid-utility   { grid-template-columns: repeat(3, 1fr); }
       }
@@ -5040,10 +5053,10 @@ body.theme-light .comms-ch-btn-gp { color: inherit; }
       <div id="appsGridMore" style="display:none"></div>
       <div id="appsToggleBtn" style="display:none"></div>
 
-      <!-- ── OUR CHRONICLES AT SPRING (home preview) ── -->
+      <!-- ── OUR CHRONICLES IN SPRING (home preview) ── -->
       <div id="homeNewsFeed" style="margin-bottom:20px">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
-          <div class="chr-home-label" style="margin-bottom:0">Our Chronicles at Spring</div>
+          <div class="chr-home-label" style="margin-bottom:0">Our Chronicles in Spring</div>
           <button onclick="switchTab('news')" style="font-family:'DM Sans',sans-serif;font-size:12px;color:var(--chr-spring);background:none;border:none;cursor:pointer;padding:0;opacity:.8;transition:opacity .15s" onmouseenter="this.style.opacity='1'" onmouseleave="this.style.opacity='.8'">Read all →</button>
         </div>
         <div id="homeNewsCards" class="chr-home-strip">
@@ -5565,7 +5578,7 @@ body.theme-light .comms-ch-btn-gp { color: inherit; }
     <!-- NEWS & EVENTS -->
     <div class="section" id="panel-news">
       <div class="sec-head">
-        <h2>Our Chronicles at Spring</h2>
+        <h2>Our Chronicles in Spring</h2>
         <p>Stories, events and voices from our university community.</p>
       </div>
       <div id="newsContent">
@@ -7304,7 +7317,7 @@ const SECTION_TITLES = {
   coursesession: 'Academic Session',
   timetable:     'Lecture & Discussion Timetable',
   markbook:      'Mark Book',
-  news:          'Our Chronicles at Spring',
+  news:          'Our Chronicles in Spring',
   share:         'Contribute to Chronicles',
   docs:          'Document Office',
   idcard:        'ID Card',
@@ -9233,7 +9246,7 @@ function doSignOut() {
   setTimeout(() => { dash.classList.add('show'); _resolveInitialHash(); }, 100);
 })();
 
-// ── Our Chronicles at Spring — render functions ──────────────
+// ── Our Chronicles in Spring — render functions ──────────────
 function renderNews(announcements) {
   var container = document.getElementById('newsContent');
   if (!container) return;
@@ -9282,7 +9295,7 @@ function renderNews(announcements) {
       + '</style></head><body>'
       + '<div class="art-header">'
       + '  <button class="art-back" onclick="window.close()">&#8592; Back</button>'
-      + '  <span class="art-brand">Our Chronicles at Spring</span>'
+      + '  <span class="art-brand">Our Chronicles in Spring</span>'
       + '</div>'
       + '<div class="art-wrap">'
       + '  <div class="art-badge" style="' + typeBadgeColor + '">' + badgeTxt + '</div>'
@@ -9291,7 +9304,7 @@ function renderNews(announcements) {
       + '  <div class="art-divider"></div>'
       + (a.image_url ? '  <img class="art-img" src="' + escHtml(a.image_url) + '" alt="" draggable="false" oncontextmenu="return false" style="pointer-events:none;user-select:none;-webkit-user-select:none">' : '')
       + '  <div class="art-body">' + escHtml(a.body || '').replace(/\n/g, '<br>') + '</div>'
-      + '  <div class="art-footer">Our Chronicles at Spring · UM2IUC · IRIS</div>'
+      + '  <div class="art-footer">Our Chronicles in Spring · UM2IUC · IRIS</div>'
       + '</div></body></html>';
     var w = window.open('', '_blank', 'width=820,height=720');
     if (w) { w.document.write(html); w.document.close(); }
