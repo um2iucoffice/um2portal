@@ -59,8 +59,19 @@
 
 /* ── PRINT STYLES ── */
 @media print {
-  @page { size: A4 portrait; margin: 18mm 20mm; }
-  html, body { width: 210mm !important; margin: 0 !important; padding: 0 !important; background: #fff !important; }
+  @page {
+    size: A4 portrait;
+    margin: 18mm 20mm;
+    /* Suppress browser-injected URL and title headers/footers */
+    margin-header: 0; margin-footer: 0;
+  }
+  html, body {
+    width: 210mm !important;
+    margin: 0 !important; padding: 0 !important;
+    background: #fff !important;
+    height: auto !important;
+    overflow: visible !important;
+  }
   body * { visibility: hidden !important; }
   #printArea, #printArea * { visibility: visible !important; }
   #printArea {
@@ -72,7 +83,11 @@
     color: #000 !important; background: #fff !important;
     font-size: 12pt !important; line-height: 1.6 !important;
     box-sizing: border-box !important;
+    overflow: visible !important;
+    height: auto !important;
   }
+  /* Hide everything else so no blank second page */
+  #appShell, #loginScreen { display: none !important; }
 }
 #printArea { display: none; }
 </style>
@@ -10967,10 +10982,8 @@ function _dofBuildDocHtml(type, refNo, subjectEn, subjectMm, lang, s, body, sign
   const [labelEn, labelMm] = typeLabels[type] || [type, type];
   const titleDisplay = bilingual ? `${labelEn}  |  ${labelMm}` : (showEn ? labelEn : labelMm);
 
-  /* Closing phrase — use custom if provided, else language default */
-  const closingPhrase = closing
-    ? closing
-    : (bilingual ? 'Yours faithfully / လေးစားစွာဖြင့်' : (showEn ? 'Yours faithfully,' : 'လေးစားစွာဖြင့်'));
+  /* Closing phrase — only render if user provided one */
+  const closingPhrase = closing || '';
 
   const dept = document.getElementById('dof-dept')?.value || 'SEC';
   return `
@@ -10988,7 +11001,7 @@ function _dofBuildDocHtml(type, refNo, subjectEn, subjectMm, lang, s, body, sign
     ${docTitle ? `<div style="text-align:center;margin-bottom:18px"><span style="font-size:13pt;font-weight:bold;text-transform:uppercase;letter-spacing:1.2px;text-decoration:underline">${docTitle}</span></div>` : ''}
     ${subjectLine ? `<div style="margin-bottom:16px;font-size:10.5pt"><strong>${showEn ? 'Subject' : 'အကြောင်းအရာ'}${bilingual ? ' / အကြောင်းအရာ' : ''}:</strong> ${subjectLine}</div>` : ''}
     ${_bodyHtml(body)}
-    <p style="margin-bottom:4px;font-size:10.5pt">${closingPhrase}</p>
+    ${closingPhrase ? `<p style="margin-bottom:4px;font-size:10.5pt">${closingPhrase}</p>` : ''}
     ${_signatureBlockDynamic(s, signMode, signLeft, null)}
   `;
 }
@@ -11011,9 +11024,8 @@ function _dofTemplateSTM(refNo, bilingual, showEn, showMm, s, body, signMode, si
         .map(p => `<p style="margin-bottom:14px;text-align:justify;line-height:1.9;font-size:10.5pt;text-indent:2em">${p.trim()}</p>`)
         .join('')
     : `<p style="margin-bottom:20px;font-size:10.5pt">&nbsp;</p>`;
-  const closingPhrase = closing
-    ? closing
-    : (bilingual ? 'Yours faithfully / လေးစားစွာဖြင့်' : (showEn ? 'Yours faithfully,' : 'လေးစားစွာဖြင့်'));
+  /* Closing phrase — only render if user provided one */
+  const closingPhrase = closing || '';
   const dept = document.getElementById('dof-dept')?.value || 'SEC';
   const lang = bilingual ? 'bilingual' : (showMm ? 'mm' : 'en');
   return `
@@ -11027,9 +11039,8 @@ function _dofTemplateSTM(refNo, bilingual, showEn, showMm, s, body, signMode, si
       </div>
     </div>
     ${docTitle ? `<div style="text-align:center;margin-bottom:18px"><span style="font-size:13pt;font-weight:bold;text-transform:uppercase;letter-spacing:1.2px;text-decoration:underline">${docTitle}</span></div>` : ''}
-    <p style="margin-bottom:20px;font-size:10.5pt">${bilingual ? 'To Whom It May Concern,' : (showEn ? 'To Whom It May Concern,' : 'သက်ဆိုင်ရာသူများသို့')}</p>
     ${_bodyHtml(body)}
-    <p style="margin-bottom:4px;font-size:10.5pt">${closingPhrase}</p>
+    ${closingPhrase ? `<p style="margin-bottom:4px;font-size:10.5pt">${closingPhrase}</p>` : ''}
     ${_signatureBlockDynamic(s, signMode, signLeft, null)}`;
 }
 
@@ -11156,7 +11167,8 @@ function _dofTemplateFIR(refNo, subjectLine, bilingual, showEn, showMm, s, signL
 function _todayFormattedMM() {
   const d = new Date();
   const months = ['ဇန်နဝါရီ','ဖေဖော်ဝါရီ','မတ်','ဧပြီ','မေ','ဇွန်','ဇူလိုင်','သြဂုတ်','စက်တင်ဘာ','အောက်တိုဘာ','နိုဝင်ဘာ','ဒီဇင်ဘာ'];
-  return `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}`;
+  const toMM = n => String(n).replace(/[0-9]/g, x => '၀၁၂၃၄၅၆၇၈၉'[x]);
+  return `${toMM(d.getDate())} ${months[d.getMonth()]} ${toMM(d.getFullYear())}`;
 }
 
 /* ── Document Log: load from Supabase ── */
