@@ -61,7 +61,7 @@
 @media print {
   @page {
     size: A4 portrait;
-    margin: 18mm 20mm;
+    margin: 22mm 28mm;
     /* Suppress browser-injected URL and title headers/footers */
     margin-header: 0; margin-footer: 0;
   }
@@ -1313,7 +1313,36 @@ button, .btn, .nav-item, .tab, .mob-nav-btn, .login-role-btn, .tt-tab {
 .chronicle-badge-news         { background: var(--crimson-light); color: var(--crimson); }
 .chronicle-badge-event        { background: var(--blue-light);    color: var(--blue); }
 .chronicle-badge-announcement { background: var(--gold-light);    color: var(--gold); }
+.chronicle-badge-article      { background: var(--green-light);   color: var(--green); }
 .chronicle-badge-pending      { background: rgba(154,123,47,.15); color: var(--gold); }
+
+/* ── Dashboard chronicles grid ── */
+.dash-chronicle-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(280px,100%), 1fr));
+  gap: 16px;
+}
+@media (max-width: 640px) {
+  .dash-chronicle-grid {
+    display: flex;
+    flex-direction: row;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    gap: 12px;
+    padding-bottom: 8px;
+    /* negative margin trick so cards touch screen edge */
+    margin-left: -16px;
+    margin-right: -16px;
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+  .dash-chronicle-grid .chronicle-card {
+    flex: 0 0 76vw;
+    max-width: 300px;
+    scroll-snap-align: start;
+  }
+}
 
 /* Card admin actions */
 .chronicle-card-actions { display: flex; gap: 6px; padding: 10px 16px; border-top: 1px solid var(--line); background: var(--surface); }
@@ -1735,6 +1764,24 @@ body.theme-light .irir-footer { border-top-color: var(--crimson); }
         <div class="pipeline-step"><div class="pipeline-dot active"><svg style="width:14px;height:14px;stroke:currentColor;stroke-width:1.9;fill:none;stroke-linecap:round;stroke-linejoin:round"><use href="#i-mail"></use></svg></div><div class="pipeline-label"><strong>Email Sent</strong>student notified</div></div>
       </div>
     </div>
+
+    <!-- Chronicles preview — bottom of home page -->
+    <div style="margin-top:28px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+        <div style="display:flex;align-items:center;gap:10px">
+          <span style="width:9px;height:9px;border-radius:50%;background:var(--green);display:inline-block;box-shadow:0 0 0 3px rgba(26,92,58,.18)"></span>
+          <span style="font-size:10px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:var(--ink3)">Our Chronicles in Spring</span>
+        </div>
+        <button class="btn btn-ghost btn-sm" onclick="showView('chronicles');setMobNav('chronicles')" style="font-size:12px;color:var(--crimson)">Read all →</button>
+      </div>
+      <!-- Desktop: grid | Mobile: horizontal scroll snapping -->
+      <div id="dashChronicleGrid" class="dash-chronicle-grid">
+        <div style="text-align:center;padding:32px;color:var(--ink3);min-width:100%">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="opacity:.25;margin-bottom:8px"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+          <div style="font-size:13px">Loading…</div>
+        </div>
+      </div>
+    </div>
   </div>
 
   <!-- ── TAB: Activity ── -->
@@ -1750,22 +1797,7 @@ body.theme-light .irir-footer { border-top-color: var(--crimson); }
         </tbody>
       </table></div>
     </div>
-    <!-- Chronicles preview -->
-    <div>
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
-        <div style="display:flex;align-items:center;gap:10px">
-          <span style="width:9px;height:9px;border-radius:50%;background:var(--green);display:inline-block;box-shadow:0 0 0 3px rgba(26,92,58,.18)"></span>
-          <span style="font-size:10px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:var(--ink3)">Our Chronicles in Spring</span>
-        </div>
-        <button class="btn btn-ghost btn-sm" onclick="showView('chronicles');setMobNav('chronicles')" style="font-size:12px;color:var(--crimson)">View all →</button>
-      </div>
-      <div id="dashChronicleGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(min(280px,100%),1fr));gap:16px">
-        <div style="grid-column:1/-1;text-align:center;padding:32px;color:var(--ink3)">
-          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="opacity:.25;margin-bottom:8px"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
-          <div style="font-size:13px">Loading…</div>
-        </div>
-      </div>
-    </div>
+    <!-- Chronicles preview moved to Quick Actions tab -->
   </div>
 
 </div>
@@ -3800,6 +3832,7 @@ CREATE POLICY IF NOT EXISTS &quot;Authenticated read all announcements&quot; ON 
     <div class="tab" onclick="filterChronicles('news',this)">News</div>
     <div class="tab" onclick="filterChronicles('event',this)">Events</div>
     <div class="tab" onclick="filterChronicles('announcement',this)">Announcements</div>
+    <div class="tab" onclick="filterChronicles('article',this)">Articles</div>
   </div>
 
   <!-- Pending approvals banner — registrar only -->
@@ -3847,6 +3880,7 @@ CREATE POLICY IF NOT EXISTS &quot;Authenticated read all announcements&quot; ON 
           <option value="news">News</option>
           <option value="event">Event</option>
           <option value="announcement">Announcement</option>
+          <option value="article">Article</option>
         </select>
       </div>
       <!-- Published date -->
@@ -4516,9 +4550,16 @@ let _editGradeId    = null;
 // ══════════════════════════════════════════
 // PASSWORD UTILITIES
 // ══════════════════════════════════════════
-function generateMasterPassword() {
+ffunction generateMasterPassword() {
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789';
-  return Array.from({length: 12}, () => chars[Math.floor(Math.random() * chars.length)]).join('');
+  const arr = new Uint8Array(12);
+  crypto.getRandomValues(arr);
+  return Array.from(arr, b => chars[b % chars.length]).join('');
+}
+
+async function hashPassword(plain) {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(plain));
+  return Array.from(new Uint8Array(buf), b => b.toString(16).padStart(2,'0')).join('');
 }
 
 function togglePwVisibility(inputId, btn) {
@@ -6374,7 +6415,12 @@ async function saveNewStudent() {
     graduation_id_my: document.getElementById('ns-gradIdMy').value.trim() || null,
     graduation_date: getDateValue('ns-gradDate') || null,
     graduation_date_my: document.getElementById('ns-gradDateMy').value.trim() || null,
-    master_password: (document.getElementById('ns-masterPw').value.trim()) || generateMasterPassword(),
+   master_password: await (async () => {
+  const plain = document.getElementById('ns-masterPw').value.trim() || generateMasterPassword();
+  document.getElementById('ns-masterPw').value = plain;
+  alert(' Save this password for the student:\n\n' + plain + '\n\nIt cannot be recovered after saving.');
+  return await hashPassword(plain);
+})(),
     gpa: 0.0
   };
 
@@ -6482,7 +6528,10 @@ async function saveEdit() {
   };
   // Only update master_password if a new value was typed
   const newPw = (document.getElementById('em-masterPw').value || '').trim();
-  if (newPw) updates.master_password = newPw;
+  if (newPw) {
+  alert('Save this new password for the student:\n\n' + newPw + '\n\nIt cannot be recovered after saving.');
+  updates.master_password = await hashPassword(newPw);
+}
 
   const { error } = await db.from('students').update(updates).eq('id', sid);
   if (error) { toast('Update failed: ' + error.message, 'DB Error'); return; }
@@ -6602,7 +6651,8 @@ async function submitBulkStudents() {
     const resolvedStatus = (row.enrollment_status || row.status || (existing ? existing.status : '') || 'Active').trim();
     const resolvedGpa    = existing ? (existing.gpa ?? 0.0) : 0.0;
     const newPw          = (row.master_password || '').trim();
-    const resolvedPw     = newPw || (existing ? existing.master_password : null) || generateMasterPassword();
+    const resolvedPw     = newPw || generateMasterPassword();
+const resolvedPwHash = await hashPassword(resolvedPw);
 
     const record = {
       id:         sid,
@@ -6628,7 +6678,7 @@ async function submitBulkStudents() {
       graduation_id_my: row.graduation_id_my  || (existing ? existing.graduation_id_my : null) || null,
       graduation_date: row.graduation_date   || (existing ? existing.graduation_date : null) || null,
       graduation_date_my: row.graduation_date_my || (existing ? existing.graduation_date_my : null) || (row.graduation_date ? toBurmeseDate(row.graduation_date) : null) || null,
-      master_password: resolvedPw,
+      master_password: resolvedPwHash,
       updated_at: new Date().toISOString()
     };
     validRecords.push({ record, existing, row });
@@ -9761,8 +9811,8 @@ function renderChronicles() {
     return;
   }
 
-  const badgeClass = { news: 'chronicle-badge-news', event: 'chronicle-badge-event', announcement: 'chronicle-badge-announcement' };
-  const badgeLabel = { news: 'News', event: 'Event', announcement: 'Announcement' };
+  const badgeClass = { news: 'chronicle-badge-news', event: 'chronicle-badge-event', announcement: 'chronicle-badge-announcement', article: 'chronicle-badge-article' };
+  const badgeLabel = { news: 'News', event: 'Event', announcement: 'Announcement', article: 'Article' };
 
   grid.innerHTML = list.map(c => {
     const bc   = badgeClass[c.type] || 'chronicle-badge-news';
@@ -9812,15 +9862,15 @@ function renderDashChronicles() {
   const grid = document.getElementById('dashChronicleGrid');
   if (!grid) return;
 
-  const badgeClass = { news: 'chronicle-badge-news', event: 'chronicle-badge-event', announcement: 'chronicle-badge-announcement' };
-  const badgeLabel = { news: 'News', event: 'Event', announcement: 'Announcement' };
+  const badgeClass = { news: 'chronicle-badge-news', event: 'chronicle-badge-event', announcement: 'chronicle-badge-announcement', article: 'chronicle-badge-article' };
+  const badgeLabel = { news: 'News', event: 'Event', announcement: 'Announcement', article: 'Article' };
 
   const list = chronicles
     .filter(c => c.is_published && c.is_approved)
     .slice(0, 3);
 
   if (!list.length) {
-    grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:32px;color:var(--ink3);font-size:13px">No posts yet — <button class="btn btn-ghost btn-sm" style="color:var(--crimson)" onclick="openChronicleModal(null)">write the first one</button></div>`;
+    grid.innerHTML = `<div style="text-align:center;padding:32px;color:var(--ink3);font-size:13px;min-width:100%">No posts yet — <button class="btn btn-ghost btn-sm" style="color:var(--crimson)" onclick="openChronicleModal(null)">write the first one</button></div>`;
     return;
   }
 
@@ -11471,9 +11521,14 @@ function _signatureBlockDynamic(s, signMode, signLeft, _unused) {
   const leftPos   = signLeft?.pos   || (signMode === 'department' ? deptOfficeName : '');
   const authPhrase = signLeft?.auth || '';
 
+  const eSignBadge = authPhrase
+    ? `<div style="display:inline-flex;align-items:center;gap:5px;background:#EBF5F0;border:1px solid #1A5C3A;border-radius:4px;padding:3px 9px;margin-bottom:8px;font-size:8pt;color:#1A5C3A;font-weight:600;letter-spacing:.3px">
+        <span style="font-size:9pt">✔</span> Electronically Signed · ဒစ်ဂျစ်တယ်လက်မှတ်
+      </div>` : '';
   return `
-    <div style="margin-top:64px;display:flex;justify-content:flex-start;align-items:flex-end;gap:40px">
+    <div style="margin-top:64px;display:flex;justify-content:flex-end;align-items:flex-end;gap:40px">
       <div style="text-align:center;min-width:200px">
+        ${eSignBadge}
         ${authPhrase ? `<div style="font-size:9.5pt;font-style:italic;color:#555;margin-bottom:10px">${authPhrase}</div>` : ''}
         <div style="border-top:1px solid #000;padding-top:6px;font-size:10.5pt;font-weight:600">${leftName}</div>
         ${leftTitle ? `<div style="font-size:9.5pt;color:#444">${leftTitle}</div>` : ''}
