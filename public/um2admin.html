@@ -3313,7 +3313,7 @@ ALTER TABLE academic_years ADD COLUMN IF NOT EXISTS program_id text REFERENCES d
 
       <div class="form-group">
         <label>Output Language · ဘာသာစကား</label>
-        <select id="dof-lang">
+        <select id="dof-lang" onchange="dofUpdateRef()">
           <option value="en">English only</option>
           <option value="mm">Myanmar only · မြန်မာသာ</option>
           <option value="bilingual" selected>Bilingual · နှစ်ဘာသာ</option>
@@ -3348,6 +3348,37 @@ ALTER TABLE academic_years ADD COLUMN IF NOT EXISTS program_id text REFERENCES d
         <textarea id="dof-body" class="form-input" rows="8"
           style="resize:vertical;line-height:1.8;font-size:13px"
           placeholder="Write your statement here. Each paragraph will be indented automatically. · ဤနေရာတွင် ရေးပါ။ စာပိုဒ်တိုင်း အလိုအလျောက် indent ပေးမည်။"></textarea>
+      </div>
+    </div>
+
+    <!-- Signing options (shown for non-COS/GSC/FIR types) -->
+    <div id="dof-signing-wrap" style="display:none;margin-bottom:14px">
+      <div style="background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:12px 14px">
+        <div style="font-size:10px;font-weight:700;letter-spacing:1.4px;text-transform:uppercase;color:var(--ink3);margin-bottom:10px">
+          Signing As · လက်မှတ်ထိုးသူ
+        </div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-start">
+          <!-- Individual / Department toggle (only shown for Coordinator / Head / Assoc Prof) -->
+          <div id="dof-signing-mode-wrap" style="display:none">
+            <label style="font-size:11px;font-weight:600;color:var(--ink2);display:block;margin-bottom:5px">Statement Type</label>
+            <div style="display:flex;gap:6px">
+              <button id="dof-sign-individual-btn" onclick="dofSetSigningMode('individual')"
+                class="btn btn-primary btn-sm" style="font-size:11px">
+                Individual · တစ်ဦးချင်း
+              </button>
+              <button id="dof-sign-dept-btn" onclick="dofSetSigningMode('department')"
+                class="btn btn-outline btn-sm" style="font-size:11px">
+                Department · ဌာန
+              </button>
+            </div>
+          </div>
+          <!-- Optional display name override -->
+          <div style="flex:1;min-width:160px">
+            <label style="font-size:11px;font-weight:600;color:var(--ink2);display:block;margin-bottom:5px">Name on letter (optional) · စာပေါ်ရမည့်နာမည်</label>
+            <input type="text" id="dof-sign-name" class="form-input" placeholder="Leave blank to use profile name"
+              style="font-size:12px;padding:7px 10px">
+          </div>
+        </div>
       </div>
     </div>
 
@@ -10606,7 +10637,13 @@ const _DEPT_MM = {
   SEC: 'ရုံး',
 };
 
-function dofBuildRef(docType, dept, seq) {
+function dofBuildRefEN(docType, dept, seq) {
+  const year   = new Date().getFullYear();
+  const padded = String(seq).padStart(4, '0');
+  return `UM2-${docType}-${dept}-${year}-${padded}`;
+}
+
+function dofBuildRefMM(docType, dept, seq) {
   const year   = new Date().getFullYear();
   const typeMM = _DOC_TYPE_MM[docType] || docType;
   const deptMM = _DEPT_MM[dept]        || dept;
@@ -10615,7 +10652,25 @@ function dofBuildRef(docType, dept, seq) {
   return `ဆ၂တကစ-${typeMM}-${deptMM}-${yearMM}-${seqMM}`;
 }
 
+function dofBuildRef(docType, dept, seq, lang) {
+  const l = lang || document.getElementById('dof-lang')?.value || 'bilingual';
+  const en = dofBuildRefEN(docType, dept, seq);
+  const mm = dofBuildRefMM(docType, dept, seq);
+  if (l === 'en')       return en;
+  if (l === 'mm')       return mm;
+  return `${en}  ·  ${mm}`; // bilingual
+}
+
 let _dofCurrentSeq = null;
+let _dofSigningMode = 'individual'; // 'individual' | 'department'
+
+function dofSetSigningMode(mode) {
+  _dofSigningMode = mode;
+  document.getElementById('dof-sign-individual-btn')?.classList.toggle('btn-primary', mode === 'individual');
+  document.getElementById('dof-sign-individual-btn')?.classList.toggle('btn-outline', mode !== 'individual');
+  document.getElementById('dof-sign-dept-btn')?.classList.toggle('btn-primary', mode === 'department');
+  document.getElementById('dof-sign-dept-btn')?.classList.toggle('btn-outline', mode !== 'department');
+}
 
 async function dofUpdateRef() {
   const type = document.getElementById('dof-type')?.value;
@@ -10624,7 +10679,18 @@ async function dofUpdateRef() {
   const previewBtn = document.getElementById('dof-preview-btn');
   const printBtn = document.getElementById('dof-print-btn');
 
-  /* Show/hide body textarea */
+  /* Show/hide signing options — not needed for COS, GSC, FIR */
+  const fixedTypes = ['COS','GSC','FIR'];
+  const signingWrap = document.getElementById('dof-signing-wrap');
+  const signingModeWrap = document.getElementById('dof-signing-mode-wrap');
+  if (signingWrap) signingWrap.style.display = (type && !fixedTypes.includes(type)) ? '' : 'none';
+  /* Show individual/dept toggle only for senior roles */
+  if (signingModeWrap) {
+    const title = (document.getElementById('sp-title')?.value || '').toLowerCase();
+    const isSenior = /coordinator|head|associate professor/i.test(title);
+    const isRegistrar = (typeof currentRole !== 'undefined') && currentRole === 'registrar';
+    signingModeWrap.style.display = (!isRegistrar && isSenior && type && !fixedTypes.includes(type)) ? '' : 'none';
+  }
   const bodyWrap = document.getElementById('dof-body-wrap');
   const subjectEnWrap = document.getElementById('dof-subject-en')?.closest('.form-group');
   const subjectMmWrap = document.getElementById('dof-subject-mm')?.closest('.form-group');
@@ -10642,7 +10708,8 @@ async function dofUpdateRef() {
   }
   if (display) display.textContent = 'Generating… · ထုတ်နေသည်';
   _dofCurrentSeq = await dofGetNextSeq(type);
-  const ref = dofBuildRef(type, dept, _dofCurrentSeq);
+  const lang = document.getElementById('dof-lang')?.value || 'bilingual';
+  const ref = dofBuildRef(type, dept, _dofCurrentSeq, lang);
   if (display) display.textContent = ref;
   if (previewBtn) previewBtn.disabled = false;
   if (printBtn) printBtn.disabled = false;
@@ -10694,6 +10761,8 @@ async function dofGenerateAndPrint(mode) {
   const priority = document.getElementById('dof-priority')?.value || 'normal';
   const dist     = document.getElementById('dof-dist')?.value     || 'internal';
   const body     = (document.getElementById('dof-body')?.value    || '').trim();
+  const signName = (document.getElementById('dof-sign-name')?.value || '').trim();
+  const signMode = _dofSigningMode;
 
   if (!type) { toast('Please select a document type · အမျိုးအစားရွေးပါ', '⚠'); return; }
 
@@ -10703,7 +10772,7 @@ async function dofGenerateAndPrint(mode) {
   const s = _getStaffForPrint();
 
   /* Build the HTML for the printed document */
-  const docHtml = _dofBuildDocHtml(type, refNo, subjectEn, subjectMm, lang, s, body);
+  const docHtml = _dofBuildDocHtml(type, refNo, subjectEn, subjectMm, lang, s, body, signMode, signName);
 
   if (mode === 'print') {
     /* Save first, then print */
@@ -10721,7 +10790,7 @@ async function dofGenerateAndPrint(mode) {
 }
 
 /* ── Build document HTML based on type ── */
-function _dofBuildDocHtml(type, refNo, subjectEn, subjectMm, lang, s, body) {
+function _dofBuildDocHtml(type, refNo, subjectEn, subjectMm, lang, s, body, signMode, signName) {
   const bilingual = lang === 'bilingual';
   const showMm    = lang === 'mm' || bilingual;
   const showEn    = lang === 'en' || bilingual;
@@ -10730,11 +10799,11 @@ function _dofBuildDocHtml(type, refNo, subjectEn, subjectMm, lang, s, body) {
     ? `${subjectEn || ''}${subjectEn && subjectMm ? ' · ' : ''}${subjectMm || ''}`
     : (showEn ? subjectEn : subjectMm) || '';
 
-  /* Special templates for COS, GSC, FIR */
+  /* Special templates — fixed secretariat signature */
   if (type === 'COS') return _dofTemplateCOS(refNo, subjectLine, bilingual, showEn, showMm, s);
   if (type === 'GSC') return _dofTemplateGSC(refNo, subjectLine, bilingual, showEn, showMm, s);
   if (type === 'FIR') return _dofTemplateFIR(refNo, subjectLine, bilingual, showEn, showMm, s);
-  if (type === 'STM') return _dofTemplateSTM(refNo, bilingual, showEn, showMm, s, body);
+  if (type === 'STM') return _dofTemplateSTM(refNo, bilingual, showEn, showMm, s, body, signMode, signName);
 
   /* Helper: render body text as indented paragraphs */
   const _bodyHtml = (txt) => txt
@@ -10776,7 +10845,7 @@ function _dofBuildDocHtml(type, refNo, subjectEn, subjectMm, lang, s, body) {
     ${subjectLine ? `<div style="margin-bottom:16px;font-size:10.5pt"><strong>${showEn ? 'Subject' : 'အကြောင်းအရာ'}${bilingual ? ' / အကြောင်းအရာ' : ''}:</strong> ${subjectLine}</div>` : ''}
     ${_bodyHtml(body)}
     <p style="margin-bottom:4px;font-size:10.5pt">${bilingual ? 'Yours faithfully / လေးစားစွာဖြင့်' : (showEn ? 'Yours faithfully,' : 'လေးစားစွာဖြင့်')}</p>
-    ${_signatureBlock()}
+    ${_signatureBlockDynamic(s, signMode, signName)}
   `;
 }
 
@@ -10797,7 +10866,7 @@ function _letterHeadWithStaff(s) {
     </div>`;
 }
 
-function _dofTemplateSTM(refNo, bilingual, showEn, showMm, s, body) {
+function _dofTemplateSTM(refNo, bilingual, showEn, showMm, s, body, signMode, signName) {
   const _bodyHtml = (txt) => txt
     ? txt.split(/\n+/).filter(p => p.trim())
         .map(p => `<p style="margin-bottom:14px;text-align:justify;line-height:1.9;font-size:10.5pt;text-indent:2em">${p.trim()}</p>`)
@@ -10821,14 +10890,7 @@ function _dofTemplateSTM(refNo, bilingual, showEn, showMm, s, body) {
     <p style="margin-bottom:20px;font-size:10.5pt">${bilingual ? 'To Whom It May Concern,' : (showEn ? 'To Whom It May Concern,' : 'သက်ဆိုင်ရာသူများသို့')}</p>
     ${_bodyHtml(body)}
     <p style="margin-bottom:4px;font-size:10.5pt">${bilingual ? 'Yours faithfully / လေးစားစွာဖြင့်' : (showEn ? 'Yours faithfully,' : 'လေးစားစွာဖြင့်')}</p>
-    <div style="margin-top:64px">
-      <div style="display:inline-block;text-align:center;min-width:200px">
-        <div style="border-top:1px solid #000;padding-top:6px;font-size:10.5pt;font-weight:600">${s.name}</div>
-        <div style="font-size:9.5pt;color:#444">${s.title}</div>
-        ${s.dept ? `<div style="font-size:9pt;color:#666">Department of ${s.dept}</div>` : ''}
-        <div style="font-size:9pt;color:#888;margin-top:2px">${_todayFormatted()}</div>
-      </div>
-    </div>
+    ${_signatureBlockDynamic(s, signMode, signName)}
     <div style="margin-top:36px;font-size:7.5pt;color:#999;text-align:center;border-top:1px solid #ddd;padding-top:8px">
       Generated by UM2 IRIR System on ${_todayFormatted()}. This statement is self-issued and for official purposes only.
     </div>`;
@@ -11056,6 +11118,51 @@ function _letterHead() {
         <div style="font-size:17pt;font-weight:bold;font-family:'Times New Roman',serif;color:#8B1A2E">UM2 MBBS Programme</div>
         <div style="font-size:8.5pt;color:#777;margin-top:2px">Secretariat's Office &nbsp;·&nbsp; sisportal.um2campus.edu.mm</div>
       </div>
+    </div>`;
+}
+
+/* ── Dynamic signature block for non-COS/GSC/FIR documents ── */
+function _signatureBlockDynamic(s, signMode, signName) {
+  const isRegistrar = (typeof currentRole !== 'undefined') && currentRole === 'registrar';
+  const sealImg = `<img src="${_SEAL_URL}" alt="Official Seal"
+    style="width:120px;height:120px;object-fit:contain;display:block;margin:0 auto 4px"
+    onerror="this.style.display='none'">`;
+
+  if (isRegistrar || signMode === 'department') {
+    /* Secretariat / department style — same layout as fixed block */
+    const preparedLabel = isRegistrar ? 'Secretariat\'s Office' : `Department of ${s.dept}`;
+    return `
+      <div style="margin-top:64px;display:flex;justify-content:space-between">
+        <div style="text-align:center;width:200px">
+          <div style="border-top:1px solid #000;padding-top:6px;font-size:10pt">Prepared by</div>
+          <div style="font-size:9pt;color:#444">${preparedLabel}</div>
+        </div>
+        <div style="text-align:center">${sealImg}</div>
+        <div style="text-align:center;width:200px">
+          <div style="border-top:1px solid #000;padding-top:6px;font-size:10pt">Authorised by</div>
+          <div style="font-size:9pt;color:#444">Vice Chancellor</div>
+        </div>
+      </div>
+      <div style="margin-top:36px;font-size:7.5pt;color:#999;text-align:center;border-top:1px solid #ddd;padding-top:8px">
+        Generated by UM2 IRIR System on ${_todayFormatted()}. Valid only with official stamp and authorised signature.
+      </div>`;
+  }
+
+  /* Individual style */
+  const displayName = signName || s.name;
+  return `
+    <div style="margin-top:64px;display:flex;justify-content:space-between;align-items:flex-end">
+      <div style="text-align:center;min-width:220px">
+        <div style="border-top:1px solid #000;padding-top:6px;font-size:10.5pt;font-weight:600">${displayName}</div>
+        <div style="font-size:9.5pt;color:#444">${s.title}</div>
+        ${s.dept && s.dept !== '—' ? `<div style="font-size:9pt;color:#666">Department of ${s.dept}</div>` : ''}
+        <div style="font-size:9pt;color:#888;margin-top:2px">${_todayFormatted()}</div>
+      </div>
+      <div style="text-align:center">${sealImg}</div>
+      <div style="width:220px"></div>
+    </div>
+    <div style="margin-top:36px;font-size:7.5pt;color:#999;text-align:center;border-top:1px solid #ddd;padding-top:8px">
+      Generated by UM2 IRIR System on ${_todayFormatted()}. Valid only with official stamp and authorised signature.
     </div>`;
 }
 
