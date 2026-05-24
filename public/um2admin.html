@@ -734,7 +734,7 @@ body.theme-light .mob-nav-btn { color:var(--ink3); }
   .topbar { left:0; }
   .sidebar { transform:translateX(-100%); transition:transform .25s ease; z-index:58; }
   .sidebar.mob-open { transform:translateX(0); }
-  .main { margin-left:0 !important; padding: 76px 14px 20px; overflow-x:hidden; }
+  .main { margin-left:0 !important; padding: 76px 14px 72px; overflow-x:hidden; }
   .stat-grid { grid-template-columns:1fr 1fr; }
   .sis-panel { grid-template-columns:1fr; }
   .form-grid { grid-template-columns:1fr; }
@@ -742,7 +742,7 @@ body.theme-light .mob-nav-btn { color:var(--ink3); }
   .profile-hero-card { flex-direction:column; gap:16px; }
   .profile-info-grid { grid-template-columns:1fr; }
   .mob-menu-btn { display:flex; align-items:center; justify-content:center; }
-  .mob-bottom-nav { display:none !important; }
+  .mob-bottom-nav { display:flex !important; }
   .sync-badge { display:none; }
   /* Profile page: stack columns */
   .profile-2col-grid { display:block !important; }
@@ -887,7 +887,7 @@ table { min-width: 520px; }
 
   /* Layout */
   body { font-size: 14px; }
-  .main { padding: 72px 12px 20px; }
+  .main { padding: 72px 12px 72px; }
 
   /* Page header */
   .page-header { margin-bottom: 16px; }
@@ -960,8 +960,6 @@ table { min-width: 520px; }
 
   /* Layout */
   .main { padding: 68px 10px 80px; }
-
-  /* Page header: title + actions stacked */
   .page-header { gap: 10px; }
   .page-title { font-size: 17px; }
   .page-sub { font-size: 11px; }
@@ -1081,6 +1079,13 @@ table { min-width: 520px; }
 @media (max-width: 520px) {
   .mob-table-scroll { overflow-x: auto; }
   .mob-table-scroll table { min-width: 480px; }
+}
+
+/* ── Search row selects: override inline widths on mobile ── */
+@media (max-width: 600px) {
+  .search-row { flex-wrap: wrap; }
+  .search-row select[style*="width"] { width: 100% !important; flex: 1 1 calc(50% - 4px); min-width: 0; }
+  .search-row .search-input { flex: 1 1 100%; }
 }
 
 /* ── Touch-action optimization ── */
@@ -1337,9 +1342,9 @@ button, .btn, .nav-item, .tab, .mob-nav-btn, .login-role-btn, .tt-tab {
 <nav class="mob-bottom-nav" id="mobBottomNav">
   <button class="mob-nav-btn active" id="mbn-dashboard" onclick="showView('dashboard');setMobNav('dashboard')">
     <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
-    Quick
+    Home
   </button>
-  <button class="mob-nav-btn" id="mbn-students" onclick="showView('students');setMobNav('students')">
+  <button class="mob-nav-btn staff-visible" id="mbn-students" onclick="showView('students');setMobNav('students')">
     <svg viewBox="0 0 24 24"><circle cx="9" cy="7" r="3.5"/><path d="M2 21c0-3.866 3.134-7 7-7s7 3.134 7 7"/><circle cx="18" cy="8" r="2.5"/><path d="M22 21c0-2.761-1.79-5-4-5"/></svg>
     Students
   </button>
@@ -4261,7 +4266,7 @@ function showLoadErrBanner() {
   if (existing) existing.remove();
   const errBanner = document.createElement('div');
   errBanner.id = 'loadErrBanner';
-  errBanner.style.cssText = 'position:fixed;top:56px;left:220px;right:0;z-index:900;background:#fff3f3;border-bottom:2px solid var(--crimson);padding:12px 24px;display:flex;align-items:center;gap:12px;font-size:13px;color:var(--crimson)';
+  errBanner.style.cssText = 'position:fixed;top:56px;left:0;right:0;z-index:900;background:#fff3f3;border-bottom:2px solid var(--crimson);padding:12px 24px;display:flex;align-items:center;gap:12px;font-size:13px;color:var(--crimson)';
   errBanner.innerHTML = `
     <strong style="display:flex;align-items:center;gap:5px"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> Could not load student data.</strong>
     <span style="color:var(--ink2);flex:1">Database returned no records — check your Supabase connection and RLS policies.</span>
@@ -7995,6 +8000,19 @@ function showView(id) {
   if (v) v.classList.add('active');
   const ni = document.getElementById('nav-' + id);
   if (ni) ni.classList.add('active');
+  // Sync bottom nav — map sub-views to their nearest bottom nav tab
+  const mobNavMap = {
+    dashboard: 'dashboard',
+    students: 'students', profile: 'students',
+    myProfile: 'myProfile',
+    docOffice: 'docOffice',
+    enroll: 'more', bulkEnroll: 'more', addStudent: 'more', bulkStudent: 'more',
+    enrollPeriods: 'more', enrollRequests: 'more', grades: 'more', attendance: 'more',
+    courses: 'more', bulkCourses: 'more', degrees: 'more', years: 'more',
+    bulkYears: 'more', channels: 'more', lectureRooms: 'more', teachingSchedule: 'more',
+    userList: 'more', editRequests: 'more', notifications: 'more', setup: 'more',
+  };
+  setMobNav(mobNavMap[id] || 'more');
   if (id === 'setup') renderSchemaSQL();
   if (id === 'degrees') renderDegreeGrid();
   if (id === 'myProfile') loadStaffProfile();
