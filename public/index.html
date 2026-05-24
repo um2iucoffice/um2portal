@@ -7533,6 +7533,7 @@ function switchSection(id, btn, _fromHash) {
   if (id === 'comms') { try { loadCommsSection(); } catch(e) {} }
   if (id === 'lecturerooms') { try { loadLectureRooms(); } catch(e) {} }
   if (id === 'timetable') { try { loadTimetableIfNeeded(); } catch(e) {} }
+  if (id === 'docs') { try { loadOfficeDocsIfNeeded(); } catch(e) {} }
 
   // Scroll to top
   const _dm = document.querySelector('.dash-main');
