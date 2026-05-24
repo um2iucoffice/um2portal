@@ -65,38 +65,29 @@ exports.handler = async (event) => {
       return { statusCode: 200, headers: CORS_HEADERS, body: JSON.stringify({ success: false, message: 'Incorrect password.' }) };
     }
 
-    // ── 2. Get all enrollments to know which programs ────────
+    // ── 2. Enrollments + year resolution in parallel ─────────
     let programIds = raw.program ? [raw.program] : [];
-    try {
-      const enrollRows = await supabase(
-        `enrollments?student_id=eq.${encodeURIComponent(normId)}&select=program_id`,
-        {}, true
-      );
-      (enrollRows || []).forEach(function(e) {
-        const pid = e.program_id;
-        if (pid && !programIds.includes(pid)) programIds.push(pid);
-      });
-    } catch (e) {
-      console.warn('Could not fetch enrollments for timetable:', e.message);
-    }
-
-    // ── 2b. Resolve student year name → academic_year_id ────
     let yearId = null;
-    if (raw.year) {
-      try {
-        const yearRows = await supabase(
-          `academic_years?name=eq.${encodeURIComponent(raw.year)}&select=id&limit=1`,
-          {}, true
-        );
-        if (yearRows && yearRows.length > 0) yearId = yearRows[0].id;
-      } catch(e) {}
-    }
-console.log('[TT] student year:', raw.year, '→ yearId:', yearId, '| status:', raw.status);
+
+    await Promise.all([
+      supabase(`enrollments?student_id=eq.${encodeURIComponent(normId)}&select=program_id`, {}, true)
+        .then(rows => (rows || []).forEach(e => {
+          const pid = e.program_id;
+          if (pid && !programIds.includes(pid)) programIds.push(pid);
+        }))
+        .catch(e => console.warn('Could not fetch enrollments:', e.message)),
+
+      raw.year
+        ? supabase(`academic_years?name=eq.${encodeURIComponent(raw.year)}&select=id&limit=1`, {}, true)
+            .then(rows => { if (rows && rows.length > 0) yearId = rows[0].id; })
+            .catch(() => {})
+        : Promise.resolve(),
+    ]);
+
     // ── 3. Fetch & filter timetable rows ─────────────────────
-    //  Logic:
-    //   - academic_year_id = specific year ID  → only that year's students
-    //   - academic_year_id = 'All Academic Year' → active students only
-    //   - academic_year_id = null or anything else → everyone
+    //  - academic_year_id = specific year ID    → only that year's students
+    //  - academic_year_id = 'All Academic Year' → active students only
+    //  - academic_year_id = null                → everyone
     let ttRows = [];
     try {
       const rawRows = await supabase(
@@ -108,17 +99,9 @@ console.log('[TT] student year:', raw.year, '→ yearId:', yearId, '| status:', 
 
       ttRows = (rawRows || []).filter(row => {
         const ayid = (row.academic_year_id || '').trim();
-
-        // null or unrecognised → show to everyone
         if (!ayid) return true;
-
-        // specific year → only matching students
         if (ayid === yearId) return true;
-
-        // "All Academic Year" → active students only
         if (ayid === 'All Academic Year') return !isAlumni;
-
-        // row belongs to a different specific year → hide
         return false;
       });
     } catch (e) {
@@ -132,34 +115,25 @@ console.log('[TT] student year:', raw.year, '→ yearId:', yearId, '| status:', 
       };
     }
 
-    // ── 4. Enrich with course names ──────────────────────────
+    // ── 4. Enrich with course + room names in parallel ───────
     const courseIds = [...new Set(ttRows.map(r => r.course_id).filter(Boolean))];
+    const roomIds   = [...new Set(ttRows.map(r => r.room_id).filter(Boolean))];
     const courseMap = {};
-    if (courseIds.length > 0) {
-      try {
-        const courseRows = await supabase(
-          `courses?id=in.(${courseIds.map(encodeURIComponent).join(',')})&select=id,name`
-        );
-        (courseRows || []).forEach(c => { courseMap[c.id] = c.name; });
-      } catch (e) {
-        console.warn('Could not fetch course names for timetable:', e.message);
-      }
-    }
+    const roomMap   = {};
 
-    // ── 4b. Enrich with room names ───────────────────────────
-    const roomIds = [...new Set(ttRows.map(r => r.room_id).filter(Boolean))];
-    const roomMap = {};
-    if (roomIds.length > 0) {
-      try {
-        const roomRows = await supabase(
-          `lecture_rooms?id=in.(${roomIds.join(',')})&select=id,subject`,
-          {}, true
-        );
-        (roomRows || []).forEach(r => { roomMap[r.id] = r.subject; });
-      } catch (e) {
-        console.warn('Could not fetch room names:', e.message);
-      }
-    }
+    await Promise.all([
+      courseIds.length > 0
+        ? supabase(`courses?id=in.(${courseIds.map(encodeURIComponent).join(',')})&select=id,name`)
+            .then(rows => (rows || []).forEach(c => { courseMap[c.id] = c.name; }))
+            .catch(e => console.warn('Could not fetch course names:', e.message))
+        : Promise.resolve(),
+
+      roomIds.length > 0
+        ? supabase(`lecture_rooms?id=in.(${roomIds.join(',')})&select=id,subject`, {}, true)
+            .then(rows => (rows || []).forEach(r => { roomMap[r.id] = r.subject; }))
+            .catch(e => console.warn('Could not fetch room names:', e.message))
+        : Promise.resolve(),
+    ]);
 
     // ── 5. Map rows ──────────────────────────────────────────
     const timetable = ttRows.map(r => ({
