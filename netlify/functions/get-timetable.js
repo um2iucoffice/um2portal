@@ -78,11 +78,11 @@ exports.handler = async (event) => {
     let programIds = raw.program ? [raw.program] : [];
     try {
       const enrollRows = await supabase(
-        `enrollments?student_id=eq.${encodeURIComponent(normId)}&select=degree_program_id,program_id`,
+        `enrollments?student_id=eq.${encodeURIComponent(normId)}&select=program_id`,
         {}, true
       );
       (enrollRows || []).forEach(function(e) {
-        const pid = e.degree_program_id || e.program_id;
+        const pid = e.program_id;
         if (pid && !programIds.includes(pid)) programIds.push(pid);
       });
     } catch (e) {
@@ -131,7 +131,7 @@ const roomMap = {};
 if (roomIds.length > 0) {
   try {
     const roomRows = await supabase(
-      `rooms?id=in.(${roomIds.map(encodeURIComponent).join(',')})&select=id,name`
+      `lecture_rooms?id=in.(${roomIds.map(encodeURIComponent).join(',')})&select=id,name`
     );
     (roomRows || []).forEach(r => { roomMap[r.id] = r.name; });
   } catch (e) {
