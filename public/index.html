@@ -5963,9 +5963,9 @@ function handleAuth(r) {
     return;
   }
   try {
-    console.log('DEBUG login response announcements:', r.announcements);
+   
     window._announcements = r.announcements || [];
-    console.log('DEBUG window._announcements set to:', window._announcements);
+    
     populate(r.student, r.grades || [], r.courses || {}, r.program_meta || null, r.enrollments || [], r.academicYears || [], r.markbook || []);
   } catch(e) {
     const errEl = document.getElementById('accessError');
@@ -5981,8 +5981,6 @@ function handleAuth(r) {
     window._sessionToken = r.token;
 sessionStorage.setItem('iris_session', JSON.stringify({
   token: window._sessionToken,
-  ...
-}));
   studentData  : r.student,
   grades       : r.grades || [],
   courses      : r.courses || {},
@@ -6471,7 +6469,7 @@ async function uploadPhoto() {
       body: JSON.stringify({
         studentId,
         safeFilename,          // backend uses this for the Storage path
-        password:  window._sessionPassword || '',
+        token: window._sessionToken ||'',
         imageBase64: base64,
         mimeType:    file.type
       })
@@ -8226,8 +8224,8 @@ function printDegreeCertificate(enrollIdx) {
       justify-content: center;
     }
     .cert-seal img {
-      width: 100%;
-      height: 100%;
+      width: 200%;
+      height: 200%;
       object-fit: contain;
     }
     /* ── Photo overlay seal ── */
@@ -8363,20 +8361,13 @@ function printDegreeCertificate(enrollIdx) {
       </div>
     </div>
 
-    <!-- Photo (centered above bottom strip) -->
-    <div style="display:flex;justify-content:center;width:88%;margin-top:2mm;margin-bottom:6mm;">
-      <div class="cert-photo-area" style="position:relative;">
-        <div class="cert-photo-box">
-          ${photo
-            ? `<img src="${photo}" alt="Student Photo" onerror="this.parentElement.innerHTML='<span style=\\'font-size:7pt;color:#aaa;text-align:center;padding:4px\\'>Photo</span>'">`
-            : '<span style="font-size:7pt;color:#aaa;text-align:center;padding:4px">Photo</span>'}
-          <div class="cert-photo-seal-overlay">
-            <img src="/Seal.svg" alt="Seal" onerror="this.style.display='none'">
-          </div>
-        </div>
-        <div class="cert-photo-label">Photo</div>
-      </div>
-    </div>
+  <!-- Center seal -->
+<div style="display:flex;justify-content:center;width:88%;margin-top:4mm;margin-bottom:6mm;">
+  <div class="cert-seal">
+    <img src="/Seal.svg" alt="Seal" onerror="this.style.display='none'">
+  </div>
+</div>
+
 
     <!-- QR + Date/Reg info side by side at bottom-left -->
     <div style="display:flex;align-items:flex-start;gap:4mm;width:88%;margin-top:2mm;">
@@ -8974,7 +8965,7 @@ function toggleTheme() {
 
 async function loadEditInfoSection() {
   const sid = (document.getElementById('loginStudentId').value || '').trim().toLowerCase();
-  const pwd = window._sessionPassword || '';
+ const pwd = window._sessionToken || ''
   if (!sid) return;
 
   try {
@@ -9035,7 +9026,7 @@ async function loadEditInfoSection() {
 
 async function submitInfoEditRequest() {
   const sid = (document.getElementById('loginStudentId').value || '').trim().toLowerCase();
-  const pwd = window._sessionPassword || '';
+  const pwd = window._sessionToken || '';
   if (!sid) { alert('Session expired. Please log in again.'); return; }
 
   const saved = window._currentStudent || {};
@@ -9293,7 +9284,7 @@ async function loadLectureRooms() {
 
   try {
     const s   = window._currentStudent || {};
-    const pwd = window._sessionPassword || '';
+    const pwd = window._sessionToken || ''
 
     const res  = await fetch('/.netlify/functions/get-lecture-rooms', {
       method:  'POST',
