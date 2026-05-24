@@ -1744,6 +1744,126 @@ table.gt * {
   transition: border-color .15s, box-shadow .15s;
 }
 .doc-card:hover { border-color: rgba(139,26,46,.25); box-shadow: 0 4px 16px rgba(139,26,46,.07); }
+    CSS — paste inside any <style> block (or append at bottom)
+     ════════════════════════════════════════════════════════════ -->
+<style>
+@keyframes spin { to { transform: rotate(360deg); } }
+ 
+.odoc-card {
+  background: var(--doc-card-bg, var(--white));
+  border: 1px solid var(--doc-card-border, var(--line));
+  border-radius: 10px;
+  padding: 22px 22px 18px;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  box-shadow: var(--shadow-sm);
+  transition: border-color .15s, box-shadow .15s;
+}
+.odoc-card:hover {
+  border-color: rgba(139,26,46,.25);
+  box-shadow: 0 4px 16px rgba(139,26,46,.07);
+}
+.odoc-card::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 3px;
+  background: var(--crimson);
+  border-radius: 3px 0 0 3px;
+}
+.odoc-icon {
+  width: 40px; height: 40px;
+  border-radius: 8px;
+  background: var(--crimson-light);
+  display: flex; align-items: center; justify-content: center;
+  margin-bottom: 14px;
+  flex-shrink: 0;
+}
+.odoc-icon svg { width: 20px; height: 20px; stroke: var(--crimson); fill: none; stroke-width: 1.8; }
+.odoc-title {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--doc-title-color, var(--ink));
+  margin-bottom: 6px;
+  line-height: 1.3;
+}
+.odoc-desc {
+  font-size: 12px;
+  color: var(--doc-desc-color, var(--ink3));
+  line-height: 1.55;
+  margin-bottom: 14px;
+  flex: 1;
+}
+.odoc-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 14px;
+  flex-wrap: wrap;
+}
+.odoc-category {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  padding: 3px 8px;
+  border-radius: 3px;
+  border: 1px solid rgba(139,26,46,.2);
+  color: var(--crimson);
+  background: var(--crimson-light);
+}
+.odoc-filetype {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: .8px;
+  text-transform: uppercase;
+  padding: 3px 8px;
+  border-radius: 3px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  color: var(--ink3);
+}
+.odoc-btn {
+  width: 100%;
+  padding: 11px 0;
+  background: var(--crimson);
+  border: none;
+  border-radius: 7px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  color: #fff;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  text-decoration: none;
+  transition: opacity .15s, transform .1s;
+}
+.odoc-btn:hover { opacity: .88; transform: translateY(-1px); }
+.odoc-btn svg { width: 14px; height: 14px; stroke: #fff; fill: none; stroke-width: 2.2; flex-shrink: 0; }
+ 
+/* Dark mode overrides */
+body:not(.theme-light) .odoc-card {
+  background: rgba(255,255,255,0.03);
+  border-color: rgba(255,255,255,0.07);
+}
+body:not(.theme-light) .odoc-card:hover {
+  background: rgba(139,26,46,0.04);
+  border-color: rgba(139,26,46,0.3);
+}
+body:not(.theme-light) .odoc-filetype {
+  background: rgba(255,255,255,0.06);
+  border-color: rgba(255,255,255,0.08);
+  color: rgba(255,255,255,0.4);
+}
+</style>
+ 
 .doc-card::before {
   content: '';
   position: absolute;
@@ -5128,6 +5248,28 @@ body.theme-light .comms-ch-btn-gp { color: inherit; }
 
       <!-- Cards are generated dynamically per enrollment by renderDocCards() -->
       <div id="docCardsContainer"></div>
+
+      <!-- § Office Downloads -->
+<div id="officeDocsSection" style="margin-top:32px;display:none">
+  <div class="sec-head" style="margin-bottom:18px">
+    <h2 style="font-size:16px">Office Downloads</h2>
+    <p>Official documents &amp; forms published by the university.</p>
+  </div>
+ 
+  <!-- Loading -->
+  <div id="officeDocsLoading" style="display:flex;align-items:center;gap:10px;padding:20px 0;color:var(--ink3);font-size:13px">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="animation:spin 1s linear infinite"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
+    Loading documents…
+  </div>
+ 
+  <!-- Error -->
+  <div id="officeDocsError" style="display:none;color:var(--crimson);font-size:13px;padding:12px 0"></div>
+ 
+  <!-- Grid -->
+  <div class="doc-grid" id="officeDocsGrid"></div>
+</div>
+ 
+ 
 
       <!-- Degree Certificate(s) — shown when student has graduated -->
       <div id="certSection" style="display:none">
@@ -9683,7 +9825,99 @@ function ttFmt(t) {
   var parts = t.split(':');
   return parts[0] + ':' + parts[1];
 }
-
+  JS — paste inside any <script> block (or append at bottom)
+     ════════════════════════════════════════════════════════════ -->
+<script>
+(function() {
+ 
+  var _docsLoaded = false;
+ 
+  // Call this when Document Office panel becomes visible
+  window.loadOfficeDocsIfNeeded = function() {
+    if (_docsLoaded) return;
+    _docsLoaded = true;
+    _loadOfficeDocs();
+  };
+ 
+  async function _loadOfficeDocs() {
+    var section  = document.getElementById('officeDocsSection');
+    var loading  = document.getElementById('officeDocsLoading');
+    var errorEl  = document.getElementById('officeDocsError');
+    var grid     = document.getElementById('officeDocsGrid');
+    if (!section) return;
+ 
+    section.style.display = 'block';
+    loading.style.display = 'flex';
+    errorEl.style.display = 'none';
+    grid.innerHTML = '';
+ 
+    try {
+      var res  = await fetch('/.netlify/functions/get-documents');
+      var data = await res.json();
+ 
+      loading.style.display = 'none';
+ 
+      if (!data.success) {
+        errorEl.textContent = data.error || 'Failed to load documents.';
+        errorEl.style.display = 'block';
+        return;
+      }
+ 
+      var docs = data.documents || [];
+      if (docs.length === 0) {
+        grid.innerHTML = '<p style="font-size:13px;color:var(--ink3);padding:8px 0">No documents published yet.</p>';
+        return;
+      }
+ 
+      grid.innerHTML = docs.map(function(doc) {
+        var icon = _iconForType(doc.file_type);
+        var cat  = doc.category
+          ? '<span class="odoc-category">' + _esc(doc.category) + '</span>'
+          : '';
+        var ft   = doc.file_type
+          ? '<span class="odoc-filetype">' + _esc(doc.file_type.toUpperCase()) + '</span>'
+          : '';
+        return [
+          '<div class="odoc-card">',
+            '<div class="odoc-icon">' + icon + '</div>',
+            '<div class="odoc-title">' + _esc(doc.title) + '</div>',
+            doc.description
+              ? '<div class="odoc-desc">' + _esc(doc.description) + '</div>'
+              : '<div class="odoc-desc"></div>',
+            '<div class="odoc-meta">' + cat + ft + '</div>',
+            '<a class="odoc-btn" href="' + _esc(doc.file_url) + '" target="_blank" rel="noopener">',
+              '<svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>',
+              'Download',
+            '</a>',
+          '</div>',
+        ].join('');
+      }).join('');
+ 
+    } catch (err) {
+      loading.style.display = 'none';
+      errorEl.textContent = 'Connection error. Please try again.';
+      errorEl.style.display = 'block';
+    }
+  }
+ 
+  function _iconForType(type) {
+    var t = (type || '').toLowerCase();
+    if (t === 'pdf') {
+      return '<svg viewBox="0 0 24 24" fill="none" stroke="var(--crimson)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>';
+    }
+    if (t === 'docx' || t === 'doc') {
+      return '<svg viewBox="0 0 24 24" fill="none" stroke="var(--crimson)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>';
+    }
+    // default
+    return '<svg viewBox="0 0 24 24" fill="none" stroke="var(--crimson)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><polyline points="13 2 13 9 20 9"/></svg>';
+  }
+ 
+  function _esc(str) {
+    return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+ 
+})();
+</script>
 function ttFmtDate(d) {
   if (!d) return '';
   try {
