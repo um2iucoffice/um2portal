@@ -3761,15 +3761,7 @@ CREATE POLICY IF NOT EXISTS &quot;Authenticated read all announcements&quot; ON 
               <span id="sp-title-lock" style="display:none;font-size:10px;font-weight:500;color:var(--ink3);background:var(--surface);border:1px solid var(--line);border-radius:4px;padding:2px 7px;margin-left:6px;letter-spacing:.3px"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" ><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg> Registrar only</span>
             </label>
             <select class="form-input" id="sp-title">
-              <option value="">Select title…</option>
-              <option>Professor</option>
-              <option>Associate Professor</option>
-              <option>Lecturer</option>
-              <option>Assistant Lecturer</option>
-              <option>Demonstrator</option>
-              <option>Tutor</option>
-              <option>Head of Department</option>
-              <option>Administrative Staff</option>
+              <option value="">Loading titles…</option>
             </select>
             <div id="sp-title-readonly" style="display:none;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:10px 13px;font-size:13px;color:var(--ink2)">—</div>
           </div>
@@ -5511,6 +5503,25 @@ async function loadDepartments() {
     data.map(d => `<option value="${d.name}" ${d.name === cur ? 'selected' : ''}>${d.name}</option>`).join('');
 }
 
+async function loadTitles() {
+  const sel = document.getElementById('sp-title');
+  if (!sel) return;
+  sel.innerHTML = '<option value="">Loading titles…</option>';
+  let titlesData, titlesError;
+  try {
+    const res = await db.from('staff_titles').select('title').eq('is_active', true).order('sort_order').order('title');
+    titlesData = res.data; titlesError = res.error;
+  } catch(e) { titlesError = e; }
+  if (titlesError || !titlesData) {
+    sel.innerHTML = '<option value="">Could not load titles</option>';
+    console.error('loadTitles error:', titlesError);
+    return;
+  }
+  const cur = sel.dataset.current || '';
+  sel.innerHTML = '<option value="">Select title…</option>' +
+    titlesData.map(t => `<option value="${t.title}" ${t.title === cur ? 'selected' : ''}>${t.title}</option>`).join('');
+}
+
 async function loadStaffProfile() {
   if (!currentUser) return;
   // Fetch profile first so we can set dataset.current BEFORE loadDepartments renders options
@@ -5533,17 +5544,19 @@ async function loadStaffProfile() {
     staffProfilePublished = !!data.published;
     updatePublishUI();
     if (data.photo_url) setStaffPhoto(data.photo_url);
-    // Set dataset.current BEFORE loadDepartments() so it pre-selects the correct option
+    // Set dataset.current BEFORE loadDepartments/loadTitles() so they pre-select correctly
     const depSel = document.getElementById('sp-department');
     if (depSel && data.department) depSel.dataset.current = data.department;
+    const titleSel = document.getElementById('sp-title');
+    if (titleSel && data.title) titleSel.dataset.current = data.title;
     // Populate readonly fallback displays
     const deptRo = document.getElementById('sp-dept-readonly');
     if (deptRo) deptRo.textContent = data.department || '—';
     const titleRo = document.getElementById('sp-title-readonly');
     if (titleRo) titleRo.textContent = data.title || '—';
   }
-  // Now load departments — it will read dataset.current and pre-select correctly
-  await loadDepartments();
+  // Now load departments + titles — they read dataset.current and pre-select correctly
+  await Promise.all([loadDepartments(), loadTitles()]);
   await loadAcademicYearsForModal();
   await loadMyTimetable();
   applyProfileFieldLocks();
