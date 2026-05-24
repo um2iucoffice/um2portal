@@ -125,7 +125,19 @@ exports.handler = async (event) => {
         console.warn('Could not fetch course names for timetable:', e.message);
       }
     }
-
+// ── 4b. Enrich with room names ─────────────────────────────
+const roomIds = [...new Set(ttRows.map(r => r.room_id).filter(Boolean))];
+const roomMap = {};
+if (roomIds.length > 0) {
+  try {
+    const roomRows = await supabase(
+      `rooms?id=in.(${roomIds.map(encodeURIComponent).join(',')})&select=id,name`
+    );
+    (roomRows || []).forEach(r => { roomMap[r.id] = r.name; });
+  } catch (e) {
+    console.warn('Could not fetch room names:', e.message);
+  }
+}
     // ── 5. Map rows ──────────────────────────────────────────
     const timetable = ttRows.map(r => ({
       id:              r.id              || '',
