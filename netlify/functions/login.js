@@ -10,6 +10,8 @@
 //                          to the browser)
 // ============================================================
 
+const crypto = require('crypto');
+
 const SUPABASE_URL         = process.env.SUPABASE_URL;
 const SUPABASE_ANON_KEY    = process.env.SUPABASE_ANON_KEY;
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY;
@@ -108,8 +110,43 @@ function mapAcademicYear(row) {
   };
 }
 
+// ── Store session token in Supabase ──────────────────────────
+async function storeSessionToken(studentId, token) {
+  const expiresAt = new Date(Date.now() + 8 * 60 * 60 * 1000).toISOString(); // 8 hours
+  try {
+    await supabase(
+      'sessions',
+      {
+        method: 'POST',
+        body: JSON.stringify({
+          student_id:  studentId,
+          token:       token,
+          expires_at:  expiresAt,
+        })
+      },
+      true // use service key
+    );
+  } catch (e) {
+    // Non-fatal: sessions table may not exist yet.
+    // Token will still work client-side; server-side validation
+    // will simply be skipped until you create the table.
+    console.warn('Could not store session token (sessions table may not exist):', e.message);
+  }
+}
+
 // ── Netlify handler ──────────────────────────────────────────
 exports.handler = async (event) => {
+  if (event.httpMethod === 'OPTIONS') {
+    return {
+      statusCode: 204,
+      headers: {
+        'Access-Control-Allow-Origin':  '*',
+        'Access-Control-Allow-Methods': 'POST, OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type',
+      }
+    };
+  }
+
   if (event.httpMethod !== 'POST') {
     return { statusCode: 405, body: JSON.stringify({ error: 'Method not allowed' }) };
   }
@@ -118,10 +155,6 @@ exports.handler = async (event) => {
     'Access-Control-Allow-Origin': '*',
     'Content-Type': 'application/json'
   };
-
-  if (event.httpMethod === 'OPTIONS') {
-    return { statusCode: 204, headers };
-  }
 
   let studentId, password;
   try {
@@ -156,17 +189,26 @@ exports.handler = async (event) => {
     const raw = students[0];
 
     // ── 2. Verify master_password ────────────────────────────
-   const { createHash } = await import('crypto');
-const inputHash  = createHash('sha256').update(normPass).digest('hex');
-const storedHash = String(raw.master_password || '').trim();
-if (storedHash !== inputHash) {
-  return {
-    statusCode: 200, headers,
-    body: JSON.stringify({ success: false, message: 'Incorrect password. Please try again.' })
-  };
-}
+    const { createHash } = await import('crypto');
+    const inputHash  = createHash('sha256').update(normPass).digest('hex');
+    const storedHash = String(raw.master_password || '').trim();
+    if (storedHash !== inputHash) {
+      return {
+        statusCode: 200, headers,
+        body: JSON.stringify({ success: false, message: 'Incorrect password. Please try again.' })
+      };
+    }
 
-    // ── 3. Fetch degree program name for primary enrollment ──
+    // ── 3. Generate session token ────────────────────────────
+    // A cryptographically random token is issued after successful auth.
+    // The plaintext password is NEVER returned to or stored by the client.
+    const sessionToken = crypto.randomBytes(32).toString('hex');
+
+    // Persist token to Supabase `sessions` table (optional but recommended).
+    // Create the table with: id, student_id, token, expires_at, created_at
+    await storeSessionToken(normId, sessionToken);
+
+    // ── 4. Fetch degree program name for primary enrollment ──
     let programName = raw.program || '';
     if (raw.program) {
       try {
@@ -181,10 +223,10 @@ if (storedHash !== inputHash) {
       }
     }
 
-    // ── 4. Map student ───────────────────────────────────────
+    // ── 5. Map student ───────────────────────────────────────
     const student = mapStudent(raw, programName);
 
-    // ── 5. Fetch grades ──────────────────────────────────────
+    // ── 6. Fetch grades ──────────────────────────────────────
     const gradeRows = await supabase(
       `grades?student_id=eq.${encodeURIComponent(raw.id)}&select=*&order=course_id.asc`,
       {},
@@ -192,7 +234,7 @@ if (storedHash !== inputHash) {
     );
     const grades = (gradeRows || []).map(mapGrade);
 
-    // ── 6. Fetch all courses ─────────────────────────────────
+    // ── 7. Fetch all courses ─────────────────────────────────
     let courses = {};
     try {
       const courseRows = await supabase(
@@ -211,7 +253,7 @@ if (storedHash !== inputHash) {
       console.warn('Could not fetch courses:', e.message);
     }
 
-    // ── 7. Fetch enrollments ─────────────────────────────────
+    // ── 8. Fetch enrollments ─────────────────────────────────
     let enrollments = [];
     try {
       const enrollmentRows = await supabase(
@@ -250,7 +292,7 @@ if (storedHash !== inputHash) {
       console.warn('Could not fetch enrollments (table may not exist):', e.message);
     }
 
-    // ── 8. Fallback: synthesise enrollment from students row ─
+    // ── 9. Fallback: synthesise enrollment from students row ─
     if (enrollments.length === 0) {
       enrollments = [{
         id:               '',
@@ -269,7 +311,7 @@ if (storedHash !== inputHash) {
       }];
     }
 
-    // ── 9. Fetch markbook ────────────────────────────────────
+    // ── 10. Fetch markbook ───────────────────────────────────
     let markbook = [];
     try {
       const markbookRows = await supabase(
@@ -293,12 +335,12 @@ if (storedHash !== inputHash) {
       console.warn('Could not fetch markbook (table may not exist):', e.message);
     }
 
-    // ── 10. Build photo URL if needed ────────────────────────
+    // ── 11. Build photo URL if needed ────────────────────────
     if (student.photo && !student.photo.startsWith('http')) {
       student.photo = `${SUPABASE_URL}/storage/v1/object/public/student-photos/${student.photo}`;
     }
 
-    // ── 11. Fetch announcements ──────────────────────────────
+    // ── 12. Fetch announcements ──────────────────────────────
     let announcements = [];
     try {
       const announcementRows = await supabase(
@@ -323,23 +365,25 @@ if (storedHash !== inputHash) {
       console.warn('Could not fetch announcements:', e.message);
     }
 
-    // ── 12. Fetch academic years ─────────────────────────────
+    // ── 13. Fetch academic years ─────────────────────────────
     let academicYears = [];
     try {
       const yearRows = await supabase(
         `academic_years?select=id,name,sort_order,program_id,duration_months&order=sort_order.asc`,
         {},
-        true  // use service key — academic_years table has RLS
+        true
       );
       academicYears = (yearRows || []).map(mapAcademicYear);
     } catch (e) {
       console.warn('Could not fetch academic years:', e.message);
     }
 
+    // ── 14. Return — token included, password never returned ─
     return {
       statusCode: 200, headers,
       body: JSON.stringify({
         success:       true,
+        token:         sessionToken,   // ← replaces password on client
         student,
         grades,
         courses,
