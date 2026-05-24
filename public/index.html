@@ -9724,8 +9724,8 @@ function renderTimetable(rows, dayFilter) {
       var courseIdDisp = escHtml(r.course_id || '');
       var courseName   = escHtml((r.course_name || r.course_id || ''));
       var subtopic     = escHtml(r.sub_topic || '');
-      var room         = escHtml(r.room_id || '—');
-
+      var room = escHtml(r.room_name || r.room_id || '—');
+      
       html += '<div class="tt-row">'
             +   '<div class="tt-time-col">'
             +     '<div class="tt-time-start">' + ttFmt(r.time_start) + '</div>'
