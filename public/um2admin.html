@@ -88,6 +88,9 @@
   }
   /* Hide everything else so no blank second page */
   #appShell, #loginScreen { display: none !important; }
+  /* Suppress browser URL/title in header and footer (Chrome/Edge support) */
+  head, header, footer { display: none !important; }
+  a[href]::after { content: none !important; }
 }
 #printArea { display: none; }
 </style>
@@ -11421,13 +11424,6 @@ function _signatureBlock(signLeft, signRight) {
 }
 
 function _printDoc(html, docLabel) {
-  /* Build a meaningful filename: "<DocType/Label> — <Profile Name>" */
-  const profileName = (
-    document.getElementById('sp-realname')?.value.trim() ||
-    document.getElementById('sp-nickname')?.value.trim() ||
-    (typeof currentUser !== 'undefined' && currentUser?.name) ||
-    ''
-  );
   const typeVal  = document.getElementById('dof-type')?.value || '';
   const typeLabels = {
     LTR:'Official Letter', DIR:'Directive', STM:'Statement',
@@ -11435,10 +11431,10 @@ function _printDoc(html, docLabel) {
     FIR:'Faculty Info Record',
   };
   const label = docLabel || typeLabels[typeVal] || typeVal || 'Document';
-  const filename = profileName ? `${label} — ${profileName}` : label;
 
   const prevTitle = document.title;
-  document.title  = filename;
+  /* Set title to just the doc type — no name appended, so PDF filename is clean */
+  document.title  = label;
 
   const area = document.getElementById('printArea');
   area.innerHTML = html;
