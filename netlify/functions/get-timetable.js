@@ -91,7 +91,7 @@ exports.handler = async (event) => {
         if (yearRows && yearRows.length > 0) yearId = yearRows[0].id;
       } catch(e) {}
     }
-
+console.log('[TT] student year:', raw.year, '→ yearId:', yearId, '| status:', raw.status);
     // ── 3. Fetch & filter timetable rows ─────────────────────
     //  Logic:
     //   - academic_year_id = specific year ID  → only that year's students
