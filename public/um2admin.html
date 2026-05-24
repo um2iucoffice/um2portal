@@ -3282,15 +3282,27 @@ ALTER TABLE academic_years ADD COLUMN IF NOT EXISTS program_id text REFERENCES d
       <!-- Department -->
       <div class="form-group">
         <label>Department · ဌာန</label>
-        <select id="dof-dept" onchange="dofUpdateRef()">
-          <option value="OPS">Operations · စီမံခန့်ခွဲမှု</option>
-          <option value="HR">Human Resources · လူ့စွမ်းအားအရင်းအမြစ်</option>
-          <option value="ACO">Academic Office · ပညာရေးဌာန</option>
-          <option value="FIN">Finance · ဘဏ္ဍာရေး</option>
-          <option value="IT">IT · သတင်းပညာ</option>
-          <option value="LGL">Legal · ဥပဒေ</option>
-          <option value="MED">Medical · ဆေးဘက်</option>
+        <select id="dof-dept" onchange="dofUpdateRef(); dofApplyRoleTypes();">
           <option value="SEC">Secretariat · အတွင်းရေး</option>
+          <option value="ADM">Administration · အုပ်ချုပ်ရေးဌာန</option>
+          <option value="ANA">Anatomy · ခန္ဓာဗေဒဌာန</option>
+          <option value="PHY">Physiology · ဇီဝကမ္မဗေဒဌာန</option>
+          <option value="BIO">Biochemistry · ဇီဝဓာတုဗေဒဌာန</option>
+          <option value="PHA">Pharmacology · ဆေးဝါးဗေဒဌာန</option>
+          <option value="PAT">Pathology · ရောဂါဗေဒဌာန</option>
+          <option value="MIC">Microbiology · အဏုဇီဝဗေဒဌာန</option>
+          <option value="PSM">Preventive &amp; Social Medicine · ကြိုတင်ကာကွယ်ရေးနှင့် လူမှုဆေးပညာဌာန</option>
+          <option value="FOR">Forensic Medicine · မှုခင်းဆေးပညာဌာန</option>
+          <option value="IMD">Internal Medicine · အထွေထွေဆေးပညာဌာန</option>
+          <option value="SUR">Surgery · ခွဲစိတ်ကုသရေးဌာန</option>
+          <option value="OBG">Obstetrics &amp; Gynaecology · သားဖွားနှင့် မီးယပ်ပညာဌာန</option>
+          <option value="PED">Paediatrics · ကလေးကျန်းမာပညာဌာန</option>
+          <option value="PSY">Psychiatry · စိတ်ကျန်းမာရေးပညာဌာန</option>
+          <option value="OPH">Ophthalmology · မျက်စိပညာဌာန</option>
+          <option value="ENT">ENT · နား၊ နှာခေါင်း၊ လည်ချောင်းပညာဌာန</option>
+          <option value="ORT">Orthopaedics · အရိုးအထူးကုဌာန</option>
+          <option value="RAD">Radiology · ဓာတ်မှန်နှင့် ပုံရိပ်ဖော်ပညာဌာန</option>
+          <option value="ANE">Anaesthesiology · မေ့ဆေးပညာဌာန</option>
         </select>
       </div>
 
@@ -3314,9 +3326,8 @@ ALTER TABLE academic_years ADD COLUMN IF NOT EXISTS program_id text REFERENCES d
       <div class="form-group">
         <label>Output Language · ဘာသာစကား</label>
         <select id="dof-lang" onchange="dofUpdateRef()">
-          <option value="en">English only</option>
-          <option value="mm">Myanmar only · မြန်မာသာ</option>
-          <option value="bilingual" selected>Bilingual · နှစ်ဘာသာ</option>
+          <option value="en" selected>English</option>
+          <option value="mm">Myanmar · မြန်မာ</option>
         </select>
       </div>
 
@@ -3353,31 +3364,60 @@ ALTER TABLE academic_years ADD COLUMN IF NOT EXISTS program_id text REFERENCES d
 
     <!-- Signing options (shown for non-COS/GSC/FIR types) -->
     <div id="dof-signing-wrap" style="display:none;margin-bottom:14px">
-      <div style="background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:12px 14px">
-        <div style="font-size:10px;font-weight:700;letter-spacing:1.4px;text-transform:uppercase;color:var(--ink3);margin-bottom:10px">
-          Signing As · လက်မှတ်ထိုးသူ
+      <div style="background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:14px 16px">
+        <div style="font-size:10px;font-weight:700;letter-spacing:1.4px;text-transform:uppercase;color:var(--ink3);margin-bottom:12px">
+          Signature Block · လက်မှတ်အပိုင်း
         </div>
-        <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-start">
-          <!-- Individual / Department toggle (only shown for Coordinator / Head / Assoc Prof) -->
-          <div id="dof-signing-mode-wrap" style="display:none">
-            <label style="font-size:11px;font-weight:600;color:var(--ink2);display:block;margin-bottom:5px">Statement Type</label>
-            <div style="display:flex;gap:6px">
-              <button id="dof-sign-individual-btn" onclick="dofSetSigningMode('individual')"
-                class="btn btn-primary btn-sm" style="font-size:11px">
-                Individual · တစ်ဦးချင်း
-              </button>
-              <button id="dof-sign-dept-btn" onclick="dofSetSigningMode('department')"
-                class="btn btn-outline btn-sm" style="font-size:11px">
-                Department · ဌာန
-              </button>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+
+          <!-- LEFT: Prepared by / Signer -->
+          <div>
+            <div style="font-size:11px;font-weight:700;color:var(--crimson);margin-bottom:8px;border-bottom:1px solid var(--line);padding-bottom:4px">
+              ▸ Prepared by · လက်မှတ်ထိုးသူ
+            </div>
+            <div style="display:flex;flex-direction:column;gap:7px">
+              <div>
+                <label style="font-size:10px;font-weight:600;color:var(--ink3);display:block;margin-bottom:3px">Name (Myanmar) · နာမည် (မြန်မာ)</label>
+                <input type="text" id="dof-sign-name-left" class="form-input"
+                  placeholder="ဥပမာ ဒေါ်မြမြ" style="font-size:12px;padding:7px 10px">
+              </div>
+              <div>
+                <label style="font-size:10px;font-weight:600;color:var(--ink3);display:block;margin-bottom:3px">Title · ဘွဲ့ / ဦးစီး</label>
+                <input type="text" id="dof-sign-title-left" class="form-input"
+                  placeholder="ဥပမာ ဒေါ်" style="font-size:12px;padding:7px 10px">
+              </div>
+              <div>
+                <label style="font-size:10px;font-weight:600;color:var(--ink3);display:block;margin-bottom:3px">Position · ရာထူး</label>
+                <input type="text" id="dof-sign-pos-left" class="form-input"
+                  placeholder="ဥပမာ ဌာနမှူး" style="font-size:12px;padding:7px 10px">
+              </div>
             </div>
           </div>
-          <!-- Optional display name override -->
-          <div style="flex:1;min-width:160px">
-            <label style="font-size:11px;font-weight:600;color:var(--ink2);display:block;margin-bottom:5px">Name on letter (optional) · စာပေါ်ရမည့်နာမည်</label>
-            <input type="text" id="dof-sign-name" class="form-input" placeholder="Leave blank to use profile name"
-              style="font-size:12px;padding:7px 10px">
+
+          <!-- RIGHT: Authorised by -->
+          <div>
+            <div style="font-size:11px;font-weight:700;color:var(--crimson);margin-bottom:8px;border-bottom:1px solid var(--line);padding-bottom:4px">
+              ▸ Authorised by · ခွင့်ပြုသူ
+            </div>
+            <div style="display:flex;flex-direction:column;gap:7px">
+              <div>
+                <label style="font-size:10px;font-weight:600;color:var(--ink3);display:block;margin-bottom:3px">Name (Myanmar) · နာမည် (မြန်မာ)</label>
+                <input type="text" id="dof-sign-name-right" class="form-input"
+                  placeholder="ဥပမာ ပါမောက္ခချုပ်" style="font-size:12px;padding:7px 10px">
+              </div>
+              <div>
+                <label style="font-size:10px;font-weight:600;color:var(--ink3);display:block;margin-bottom:3px">Title · ဘွဲ့ / ဦးစီး</label>
+                <input type="text" id="dof-sign-title-right" class="form-input"
+                  placeholder="ဥပမာ ပါမောက္ခ" style="font-size:12px;padding:7px 10px">
+              </div>
+              <div>
+                <label style="font-size:10px;font-weight:600;color:var(--ink3);display:block;margin-bottom:3px">Position · ရာထူး</label>
+                <input type="text" id="dof-sign-pos-right" class="form-input"
+                  placeholder="ဥပမာ ဒုတိယပါမောက္ခချုပ်" style="font-size:12px;padding:7px 10px">
+              </div>
+            </div>
           </div>
+
         </div>
       </div>
     </div>
@@ -10577,11 +10617,12 @@ function _getStaffForPrint() {
    ══════════════════════════════════════════════════════════ */
 
 /* ── Title → allowed doc types ── */
+/* Staff role: all titles restricted to Departmental Statement (GSC) and Personal Statement (STM) only */
 const _TITLE_ACCESS = {
-  'head':                ['MEM','NOT','LTR','RPT','CIR','POL','DIR','COS','GSC','FIR','STM'],
-  'coordinator':         ['MEM','NOT','LTR','COS','GSC','FIR','STM'],
+  'head':                ['GSC','STM'],
+  'coordinator':         ['GSC','STM'],
   'guest lecturer':      ['STM'],
-  'lecturer':            ['LTR','COS','GSC','FIR','STM'],
+  'lecturer':            ['GSC','STM'],
   'tutor':               ['STM'],
   'demonstrator':        ['STM'],
 };
@@ -10596,18 +10637,33 @@ function _getCurrentTitle() {
 
 /* ── Role-based + title-based type filtering ── */
 function dofApplyRoleTypes() {
-  const role  = (typeof currentRole !== 'undefined') ? currentRole : 'staff';
-  const title = _getCurrentTitle();
-  const sel   = document.getElementById('dof-type');
+  const role     = (typeof currentRole !== 'undefined') ? currentRole : 'staff';
+  const title    = _getCurrentTitle();
+  const sel      = document.getElementById('dof-type');
+  const deptSel  = document.getElementById('dof-dept');
   if (!sel) return;
 
   if (role === 'registrar') {
-    /* Registrar sees everything */
+    /* Registrar sees everything, dept dropdown fully free */
     Array.from(sel.options).forEach(opt => { if (opt.value) opt.hidden = false; });
+    if (deptSel) { deptSel.disabled = false; deptSel.style.opacity = ''; }
     return;
   }
 
-  /* Staff: find matching title rule (partial match so "Associate Head" still matches "head") */
+  /* ── Staff: lock department dropdown to their own profile department ── */
+  const staffDept = (document.getElementById('sp-department')?.value || '').trim().toUpperCase();
+  if (deptSel && staffDept) {
+    /* Set the dept dropdown to match the staff's own department */
+    Array.from(deptSel.options).forEach(opt => {
+      opt.hidden = (opt.value !== staffDept);
+    });
+    deptSel.value = staffDept;
+    deptSel.disabled = true;
+    deptSel.style.opacity = '0.75';
+  }
+
+  /* ── Staff: find allowed doc types by title ── */
+  /* GSC (Departmental Statement) is only available if selected dept === staff's own dept */
   const allowed = Object.entries(_TITLE_ACCESS).find(([key]) => title.includes(key))?.[1] || ['STM'];
 
   Array.from(sel.options).forEach(opt => {
@@ -10666,14 +10722,26 @@ const _DOC_TYPE_MM = {
 
 /* ── Department → Myanmar label map ── */
 const _DEPT_MM = {
-  OPS: 'စီမံ',
-  HR:  'လူ့စွမ်း',
-  ACO: 'ပညာရေး',
-  FIN: 'ဘဏ္ဍာ',
-  IT:  'သတင်းပညာ',
-  LGL: 'ဥပဒေ',
-  MED: 'ဆေးဘက်',
-  SEC: 'ရုံး',
+  SEC: 'အတွင်းရေး',
+  ADM: 'အုပ်ချုပ်ရေး',
+  ANA: 'ခန္ဓာဗေဒ',
+  PHY: 'ဇီဝကမ္မဗေဒ',
+  BIO: 'ဇီဝဓာတုဗေဒ',
+  PHA: 'ဆေးဝါးဗေဒ',
+  PAT: 'ရောဂါဗေဒ',
+  MIC: 'အဏုဇီဝဗေဒ',
+  PSM: 'ကြိုတင်ကာကွယ်ရေး',
+  FOR: 'မှုခင်းဆေးပညာ',
+  IMD: 'အထွေထွေဆေးပညာ',
+  SUR: 'ခွဲစိတ်ကုသရေး',
+  OBG: 'သားဖွားနှင့်မီးယပ်',
+  PED: 'ကလေးကျန်းမာ',
+  PSY: 'စိတ်ကျန်းမာရေး',
+  OPH: 'မျက်စိပညာ',
+  ENT: 'နားနှာလည်ချောင်း',
+  ORT: 'အရိုးအထူးကု',
+  RAD: 'ဓာတ်မှန်',
+  ANE: 'မေ့ဆေးပညာ',
 };
 
 function dofBuildRefEN(docType, dept, seq) {
@@ -10692,12 +10760,12 @@ function dofBuildRefMM(docType, dept, seq) {
 }
 
 function dofBuildRef(docType, dept, seq, lang) {
-  const l = lang || document.getElementById('dof-lang')?.value || 'bilingual';
+  const l = lang || document.getElementById('dof-lang')?.value || 'en';
   const en = dofBuildRefEN(docType, dept, seq);
   const mm = dofBuildRefMM(docType, dept, seq);
   if (l === 'en')       return en;
   if (l === 'mm')       return mm;
-  return `${en}  ·  ${mm}`; // bilingual
+  return en; // fallback to English
 }
 
 let _dofCurrentSeq = null;
@@ -10745,7 +10813,7 @@ async function dofUpdateRef() {
   }
   if (display) display.textContent = 'Generating… · ထုတ်နေသည်';
   _dofCurrentSeq = await dofGetNextSeq(type);
-  const lang = document.getElementById('dof-lang')?.value || 'bilingual';
+  const lang = document.getElementById('dof-lang')?.value || 'en';
   const ref = dofBuildRef(type, dept, _dofCurrentSeq, lang);
   if (display) display.textContent = ref;
   if (previewBtn) previewBtn.disabled = false;
@@ -10794,11 +10862,16 @@ async function dofGenerateAndPrint(mode) {
   const dept     = document.getElementById('dof-dept')?.value || 'OPS';
   const subjectEn= (document.getElementById('dof-subject-en')?.value || '').trim();
   const subjectMm= (document.getElementById('dof-subject-mm')?.value || '').trim();
-  const lang     = document.getElementById('dof-lang')?.value     || 'bilingual';
+  const lang     = document.getElementById('dof-lang')?.value     || 'en';
   const priority = document.getElementById('dof-priority')?.value || 'normal';
   const dist     = document.getElementById('dof-dist')?.value     || 'internal';
   const body     = (document.getElementById('dof-body')?.value    || '').trim();
-  const signName = (document.getElementById('dof-sign-name')?.value || '').trim();
+  const signNameLeft  = (document.getElementById('dof-sign-name-left')?.value  || '').trim();
+  const signTitleLeft = (document.getElementById('dof-sign-title-left')?.value || '').trim();
+  const signPosLeft   = (document.getElementById('dof-sign-pos-left')?.value   || '').trim();
+  const signNameRight  = (document.getElementById('dof-sign-name-right')?.value  || '').trim();
+  const signTitleRight = (document.getElementById('dof-sign-title-right')?.value || '').trim();
+  const signPosRight   = (document.getElementById('dof-sign-pos-right')?.value   || '').trim();
   const signMode = _dofSigningMode;
 
   if (!type) { toast('Please select a document type · အမျိုးအစားရွေးပါ', '⚠'); return; }
@@ -10808,8 +10881,11 @@ async function dofGenerateAndPrint(mode) {
 
   const s = _getStaffForPrint();
 
+  const signLeft  = { name: signNameLeft,  title: signTitleLeft,  pos: signPosLeft };
+  const signRight = { name: signNameRight, title: signTitleRight, pos: signPosRight };
+
   /* Build the HTML for the printed document */
-  const docHtml = _dofBuildDocHtml(type, refNo, subjectEn, subjectMm, lang, s, body, signMode, signName);
+  const docHtml = _dofBuildDocHtml(type, refNo, subjectEn, subjectMm, lang, s, body, signMode, signLeft, signRight);
 
   if (mode === 'print') {
     /* Save first, then print */
@@ -10827,7 +10903,7 @@ async function dofGenerateAndPrint(mode) {
 }
 
 /* ── Build document HTML based on type ── */
-function _dofBuildDocHtml(type, refNo, subjectEn, subjectMm, lang, s, body, signMode, signName) {
+function _dofBuildDocHtml(type, refNo, subjectEn, subjectMm, lang, s, body, signMode, signLeft, signRight) {
   const bilingual = lang === 'bilingual';
   const showMm    = lang === 'mm' || bilingual;
   const showEn    = lang === 'en' || bilingual;
@@ -10837,10 +10913,10 @@ function _dofBuildDocHtml(type, refNo, subjectEn, subjectMm, lang, s, body, sign
     : (showEn ? subjectEn : subjectMm) || '';
 
   /* Special templates — fixed secretariat signature */
-  if (type === 'COS') return _dofTemplateCOS(refNo, subjectLine, bilingual, showEn, showMm, s);
-  if (type === 'GSC') return _dofTemplateGSC(refNo, subjectLine, bilingual, showEn, showMm, s);
-  if (type === 'FIR') return _dofTemplateFIR(refNo, subjectLine, bilingual, showEn, showMm, s);
-  if (type === 'STM') return _dofTemplateSTM(refNo, bilingual, showEn, showMm, s, body, signMode, signName);
+  if (type === 'COS') return _dofTemplateCOS(refNo, subjectLine, bilingual, showEn, showMm, s, signLeft, signRight);
+  if (type === 'GSC') return _dofTemplateGSC(refNo, subjectLine, bilingual, showEn, showMm, s, signLeft, signRight);
+  if (type === 'FIR') return _dofTemplateFIR(refNo, subjectLine, bilingual, showEn, showMm, s, signLeft, signRight);
+  if (type === 'STM') return _dofTemplateSTM(refNo, bilingual, showEn, showMm, s, body, signMode, signLeft, signRight);
 
   /* Helper: render body text as indented paragraphs */
   const _bodyHtml = (txt) => txt
@@ -10876,13 +10952,10 @@ function _dofBuildDocHtml(type, refNo, subjectEn, subjectMm, lang, s, body, sign
         ${showMm ? `<div><strong>ရက်စွဲ:</strong> ${_todayFormattedMM()}</div>` : ''}
       </div>
     </div>
-    <div style="text-align:center;margin-bottom:24px">
-      <span style="font-size:14pt;font-weight:bold;text-decoration:underline;text-transform:uppercase;letter-spacing:1.5px">${titleDisplay}</span>
-    </div>
     ${subjectLine ? `<div style="margin-bottom:16px;font-size:10.5pt"><strong>${showEn ? 'Subject' : 'အကြောင်းအရာ'}${bilingual ? ' / အကြောင်းအရာ' : ''}:</strong> ${subjectLine}</div>` : ''}
     ${_bodyHtml(body)}
     <p style="margin-bottom:4px;font-size:10.5pt">${bilingual ? 'Yours faithfully / လေးစားစွာဖြင့်' : (showEn ? 'Yours faithfully,' : 'လေးစားစွာဖြင့်')}</p>
-    ${_signatureBlockDynamic(s, signMode, signName)}
+    ${_signatureBlockDynamic(s, signMode, signLeft, signRight)}
   `;
 }
 
@@ -10903,7 +10976,7 @@ function _letterHeadWithStaff(s) {
     </div>`;
 }
 
-function _dofTemplateSTM(refNo, bilingual, showEn, showMm, s, body, signMode, signName) {
+function _dofTemplateSTM(refNo, bilingual, showEn, showMm, s, body, signMode, signLeft, signRight) {
   const _bodyHtml = (txt) => txt
     ? txt.split(/\n+/).filter(p => p.trim())
         .map(p => `<p style="margin-bottom:14px;text-align:justify;line-height:1.9;font-size:10.5pt;text-indent:2em">${p.trim()}</p>`)
@@ -10919,21 +10992,16 @@ function _dofTemplateSTM(refNo, bilingual, showEn, showMm, s, body, signMode, si
         ${showMm ? `<strong>ရက်စွဲ ။</strong> ${_todayFormattedMM()}` : ''}
       </div>
     </div>
-    <div style="text-align:center;margin-bottom:28px">
-      <span style="font-size:14pt;font-weight:bold;text-decoration:underline;text-transform:uppercase;letter-spacing:1.5px">
-        ${bilingual ? 'Personal Statement  |  ကိုယ်ပိုင်ထုတ်ပြန်ချက်' : (showEn ? 'Personal Statement' : 'ကိုယ်ပိုင်ထုတ်ပြန်ချက်')}
-      </span>
-    </div>
     <p style="margin-bottom:20px;font-size:10.5pt">${bilingual ? 'To Whom It May Concern,' : (showEn ? 'To Whom It May Concern,' : 'သက်ဆိုင်ရာသူများသို့')}</p>
     ${_bodyHtml(body)}
     <p style="margin-bottom:4px;font-size:10.5pt">${bilingual ? 'Yours faithfully / လေးစားစွာဖြင့်' : (showEn ? 'Yours faithfully,' : 'လေးစားစွာဖြင့်')}</p>
-    ${_signatureBlockDynamic(s, signMode, signName)}
+    ${_signatureBlockDynamic(s, signMode, signLeft, signRight)}
     <div style="margin-top:36px;font-size:7.5pt;color:#999;text-align:center;border-top:1px solid #ddd;padding-top:8px">
       Generated by UM2 IRIR System on ${_todayFormatted()}. This statement is self-issued and for official purposes only.
     </div>`;
 }
 
-function _dofTemplateCOS(refNo, subjectLine, bilingual, showEn, showMm, s) {
+function _dofTemplateCOS(refNo, subjectLine, bilingual, showEn, showMm, s, signLeft, signRight) {
   return `
     ${_letterHead()}
     <div style="display:flex;justify-content:flex-end;margin-bottom:28px;font-size:10pt">
@@ -10961,11 +11029,11 @@ function _dofTemplateCOS(refNo, subjectLine, bilingual, showEn, showMm, s) {
       ${showMm ? 'ဤစာသည် ဝန်ထမ်း၏ တောင်းဆိုချက်အရ တရားဝင်ရည်ရွယ်ချက်များအတွက် ထုတ်ပေးခြင်းဖြစ်သည်။ အတွင်းရေးမှူးဌာနမှ အထက်ဖော်ပြပါ အချက်အလက်များ၏ မှန်ကန်မှုကို ထုတ်ပေးသည့်ရက်စွဲ ၌ အတည်ပြုပါသည်။' : ''}
     </p>
     <p style="margin-bottom:4px;font-size:10.5pt">${bilingual ? 'Yours faithfully / လေးစားစွာဖြင့်' : (showEn ? 'Yours faithfully,' : 'လေးစားစွာဖြင့်')}</p>
-    ${_signatureBlock()}
+    ${_signatureBlock(signLeft, signRight)}
   `;
 }
 
-function _dofTemplateGSC(refNo, subjectLine, bilingual, showEn, showMm, s) {
+function _dofTemplateGSC(refNo, subjectLine, bilingual, showEn, showMm, s, signLeft, signRight) {
   return `
     ${_letterHead()}
     <div style="display:flex;justify-content:flex-end;margin-bottom:28px;font-size:10pt">
@@ -10975,11 +11043,6 @@ function _dofTemplateGSC(refNo, subjectLine, bilingual, showEn, showMm, s) {
         ${bilingual ? '<br>' : ''}
         ${showMm ? `<strong>ရက်စွဲ ။</strong> ${_todayFormattedMM()}` : ''}
       </div>
-    </div>
-    <div style="text-align:center;margin-bottom:28px">
-      <span style="font-size:14pt;font-weight:bold;text-decoration:underline;text-transform:uppercase;letter-spacing:1.5px">
-        ${bilingual ? 'Certificate of Good Standing  |  ကောင်းမွန်မှု သက်သေချက်' : (showEn ? 'Certificate of Good Standing' : 'ကောင်းမွန်မှု သက်သေချက်')}
-      </span>
     </div>
     <p style="margin-bottom:16px;font-size:10.5pt">${bilingual ? 'To Whom It May Concern,' : (showEn ? 'To Whom It May Concern,' : 'သက်ဆိုင်ရာသူများသို့')}</p>
     <p style="margin-bottom:16px;text-align:justify;line-height:1.9;font-size:10.5pt">
@@ -10998,11 +11061,11 @@ function _dofTemplateGSC(refNo, subjectLine, bilingual, showEn, showMm, s) {
       ${showMm ? 'ဤသက်သေချက်သည် ဝန်ထမ်း၏ တောင်းဆိုချက်အရ ထုတ်ပေးခြင်းဖြစ်ပြီး တရားဝင်လက်မှတ်နှင့် တံဆိပ်တပ်မှသာ တရားဝင်ပါသည်။' : ''}
     </p>
     <p style="margin-bottom:4px;font-size:10.5pt">${bilingual ? 'Yours faithfully / လေးစားစွာဖြင့်' : (showEn ? 'Yours faithfully,' : 'လေးစားစွာဖြင့်')}</p>
-    ${_signatureBlock()}
+    ${_signatureBlock(signLeft, signRight)}
   `;
 }
 
-function _dofTemplateFIR(refNo, subjectLine, bilingual, showEn, showMm, s) {
+function _dofTemplateFIR(refNo, subjectLine, bilingual, showEn, showMm, s, signLeft, signRight) {
   const yearsOfService = (() => {
     const rawDate = document.getElementById('sp-startdate')?.value;
     if (!rawDate) return '—';
@@ -11048,7 +11111,7 @@ function _dofTemplateFIR(refNo, subjectLine, bilingual, showEn, showMm, s) {
       </tbody>
     </table>
     <p style="margin-bottom:4px;font-size:10.5pt">${bilingual ? 'Prepared by / ပြုစုသူ' : (showEn ? 'Prepared by,' : 'ပြုစုသူ')}</p>
-    ${_signatureBlock()}
+    ${_signatureBlock(signLeft, signRight)}
   `;
 }
 
@@ -11158,66 +11221,92 @@ function _letterHead() {
     </div>`;
 }
 
-/* ── Dynamic signature block for non-COS/GSC/FIR documents ── */
-function _signatureBlockDynamic(s, signMode, signName) {
-  const isRegistrar = (typeof currentRole !== 'undefined') && currentRole === 'registrar';
-  const sealImg = `<img src="${_SEAL_URL}" alt="Official Seal"
+/* ── Department code → SVG seal filename (departmentname all lowercase no space .svg) ── */
+const _DEPT_SEAL = {
+  SEC: 'secretariat.svg',
+  ADM: 'administration.svg',
+  ANA: 'anatomy.svg',
+  PHY: 'physiology.svg',
+  BIO: 'biochemistry.svg',
+  PHA: 'pharmacology.svg',
+  PAT: 'pathology.svg',
+  MIC: 'microbiology.svg',
+  PSM: 'preventiveandsocialmedicine.svg',
+  FOR: 'forensicmedicine.svg',
+  IMD: 'internalmedicine.svg',
+  SUR: 'surgery.svg',
+  OBG: 'obstetricsandgynaecology.svg',
+  PED: 'paediatrics.svg',
+  PSY: 'psychiatry.svg',
+  OPH: 'ophthalmology.svg',
+  ENT: 'ent.svg',
+  ORT: 'orthopaedics.svg',
+  RAD: 'radiology.svg',
+  ANE: 'anaesthesiology.svg',
+};
+
+/* ── Dynamic signature block for all documents ── */
+function _signatureBlockDynamic(s, signMode, signLeft, signRight) {
+  const dept      = document.getElementById('dof-dept')?.value || s.dept || '';
+  const sealFile  = _DEPT_SEAL[dept] || 'secretariat.svg';
+  const sealImg   = `<img src="${sealFile}" alt="Department Seal"
     style="width:120px;height:120px;object-fit:contain;display:block;margin:0 auto 4px"
-    onerror="this.style.display='none'">`;
+    onerror="this.onerror=null;this.src='${_SEAL_URL}'">`;
 
-  if (isRegistrar || signMode === 'department') {
-    /* Secretariat / department style — same layout as fixed block */
-    const preparedLabel = isRegistrar ? 'Secretariat\'s Office' : `Department of ${s.dept}`;
-    return `
-      <div style="margin-top:64px;display:flex;justify-content:space-between">
-        <div style="text-align:center;width:200px">
-          <div style="border-top:1px solid #000;padding-top:6px;font-size:10pt">Prepared by</div>
-          <div style="font-size:9pt;color:#444">${preparedLabel}</div>
-        </div>
-        <div style="text-align:center">${sealImg}</div>
-        <div style="text-align:center;width:200px">
-          <div style="border-top:1px solid #000;padding-top:6px;font-size:10pt">Authorised by</div>
-          <div style="font-size:9pt;color:#444">Vice Chancellor</div>
-        </div>
-      </div>
-      <div style="margin-top:36px;font-size:7.5pt;color:#999;text-align:center;border-top:1px solid #ddd;padding-top:8px">
-        Generated by UM2 IRIR System on ${_todayFormatted()}. Valid only with official stamp and authorised signature.
-      </div>`;
-  }
+  const leftName  = signLeft?.name  || s.name  || '';
+  const leftTitle = signLeft?.title || s.title || '';
+  const leftPos   = signLeft?.pos   || '';
 
-  /* Individual style */
-  const displayName = signName || s.name;
+  const rightName  = signRight?.name  || 'ဒုတိယပါမောက္ခချုပ်';
+  const rightTitle = signRight?.title || '';
+  const rightPos   = signRight?.pos   || 'Vice Chancellor';
+
   return `
     <div style="margin-top:64px;display:flex;justify-content:space-between;align-items:flex-end">
-      <div style="text-align:center;min-width:220px">
-        <div style="border-top:1px solid #000;padding-top:6px;font-size:10.5pt;font-weight:600">${displayName}</div>
-        <div style="font-size:9.5pt;color:#444">${s.title}</div>
-        ${s.dept && s.dept !== '—' ? `<div style="font-size:9pt;color:#666">Department of ${s.dept}</div>` : ''}
+      <div style="text-align:center;min-width:200px">
+        <div style="border-top:1px solid #000;padding-top:6px;font-size:10.5pt;font-weight:600">${leftName}</div>
+        ${leftTitle ? `<div style="font-size:9.5pt;color:#444">${leftTitle}</div>` : ''}
+        ${leftPos   ? `<div style="font-size:9pt;color:#666">${leftPos}</div>`   : ''}
         <div style="font-size:9pt;color:#888;margin-top:2px">${_todayFormatted()}</div>
       </div>
       <div style="text-align:center">${sealImg}</div>
-      <div style="width:220px"></div>
+      <div style="text-align:center;min-width:200px">
+        <div style="border-top:1px solid #000;padding-top:6px;font-size:10.5pt;font-weight:600">${rightName}</div>
+        ${rightTitle ? `<div style="font-size:9.5pt;color:#444">${rightTitle}</div>` : ''}
+        ${rightPos   ? `<div style="font-size:9pt;color:#666">${rightPos}</div>`   : ''}
+        <div style="font-size:9pt;color:#888;margin-top:2px">${_todayFormatted()}</div>
+      </div>
     </div>
     <div style="margin-top:36px;font-size:7.5pt;color:#999;text-align:center;border-top:1px solid #ddd;padding-top:8px">
       Generated by UM2 IRIR System on ${_todayFormatted()}. Valid only with official stamp and authorised signature.
     </div>`;
 }
 
-function _signatureBlock() {
+function _signatureBlock(signLeft, signRight) {
+  const dept     = document.getElementById('dof-dept')?.value || 'SEC';
+  const sealFile = _DEPT_SEAL[dept] || 'secretariat.svg';
+  const leftName  = signLeft?.name  || 'Secretariat\'s Office';
+  const leftTitle = signLeft?.title || '';
+  const leftPos   = signLeft?.pos   || '';
+  const rightName  = signRight?.name  || '';
+  const rightTitle = signRight?.title || '';
+  const rightPos   = signRight?.pos   || 'Vice Chancellor';
   return `
-    <div style="margin-top:64px;display:flex;justify-content:space-between">
+    <div style="margin-top:64px;display:flex;justify-content:space-between;align-items:flex-end">
       <div style="text-align:center;width:200px">
-        <div style="border-top:1px solid #000;padding-top:6px;font-size:10pt">Prepared by</div>
-        <div style="font-size:9pt;color:#444">Secretariat's Office</div>
+        <div style="border-top:1px solid #000;padding-top:6px;font-size:10pt;font-weight:600">${leftName}</div>
+        ${leftTitle ? `<div style="font-size:9.5pt;color:#444">${leftTitle}</div>` : ''}
+        ${leftPos   ? `<div style="font-size:9pt;color:#666">${leftPos}</div>` : ''}
       </div>
       <div style="text-align:center">
-        <img src="${_SEAL_URL}" alt="Official Seal"
+        <img src="${sealFile}" alt="Department Seal"
           style="width:160px;height:160px;object-fit:contain;display:block;margin:0 auto 4px"
-          onerror="this.onerror=null;this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 120 120\'><circle cx=\'60\' cy=\'60\' r=\'56\' fill=\'none\' stroke=\'%238B1A2E\' stroke-width=\'2.5\'/><circle cx=\'60\' cy=\'60\' r=\'48\' fill=\'none\' stroke=\'%238B1A2E\' stroke-width=\'1\'/><path d=\'M60 22 L63 32 L74 32 L65 39 L68 50 L60 43 L52 50 L55 39 L46 32 L57 32 Z\' fill=\'%238B1A2E\'/><text x=\'60\' y=\'68\' text-anchor=\'middle\' font-family=\'serif\' font-size=\'7\' fill=\'%238B1A2E\'>UNIVERSITY OF MEDICINE (2)</text><text x=\'60\' y=\'78\' text-anchor=\'middle\' font-family=\'serif\' font-size=\'6.5\' fill=\'%238B1A2E\'>YANGON · UM2</text></svg>'">
+          onerror="this.onerror=null;this.src='${_SEAL_URL}'">
       </div>
       <div style="text-align:center;width:200px">
-        <div style="border-top:1px solid #000;padding-top:6px;font-size:10pt">Authorised by</div>
-        <div style="font-size:9pt;color:#444">Vice Chancellor</div>
+        <div style="border-top:1px solid #000;padding-top:6px;font-size:10pt;font-weight:600">${rightName}</div>
+        ${rightTitle ? `<div style="font-size:9.5pt;color:#444">${rightTitle}</div>` : ''}
+        ${rightPos   ? `<div style="font-size:9pt;color:#666">${rightPos}</div>` : ''}
       </div>
     </div>
     <div style="margin-top:36px;font-size:7.5pt;color:#999;text-align:center;border-top:1px solid #ddd;padding-top:8px">
@@ -11270,7 +11359,7 @@ function printConfirmationOfStudy() {
       certifies the accuracy of the above information as of the date of issue.
     </p>
     <p style="margin-bottom:4px">Yours faithfully,</p>
-    ${_signatureBlock()}
+    ${_signatureBlock(null, null)}
   `);
 }
 
@@ -11314,7 +11403,7 @@ function printGoodStanding() {
       accompanied by an authorised signature and the university's official stamp.
     </p>
     <p style="margin-bottom:4px">Yours faithfully,</p>
-    ${_signatureBlock()}
+    ${_signatureBlock(null, null)}
   `);
 }
 </script>
