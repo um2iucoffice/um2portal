@@ -99,29 +99,27 @@ if (raw.year) {
     if (yearRows && yearRows.length > 0) yearId = yearRows[0].id;
   } catch(e) {}
 }
-    // ── 3. Fetch timetable rows ──────────────────────────────
-    //  We fetch ALL rows (no RLS student-filter needed; the table
-    //  is school-wide). Filter by academic_year_id matching
-    //  programs if possible; otherwise return all rows.
-    let ttRows = [];
-    try {
-      // Fetch rows ordered by day then time_start
-      const rawRows = await supabase(
-        `lecture_timetable?${yearId ? 'academic_year_id=eq.'+yearId+'&' : ''}select=id,course_id,room_id,day,time_start,time_end,academic_year_id,session_date,sub_topic&order=day.asc,time_start.asc`,
-        {}, true
-      );
-      ttRows = rawRows || [];
-    } catch (e) {
-      throw new Error('Could not fetch timetable: ' + e.message);
-    }
+    const rawRows = await supabase(
+  `lecture_timetable?select=id,course_id,room_id,day,time_start,time_end,academic_year_id,session_date,sub_topic&order=day.asc,time_start.asc`,
+  {}, true
+);
+ttRows = (rawRows || []).filter(row => {
+  const ayid = (row.academic_year_id || '').trim();
 
-    if (ttRows.length === 0) {
-      return {
-        statusCode: 200, headers: CORS_HEADERS,
-        body: JSON.stringify({ success: true, timetable: [] })
-      };
-    }
+  // null or unrecognised value → show to everyone
+  if (!ayid || (ayid !== 'All Academic Year' && ayid !== yearId)) return true;
 
+  // specific year → only matching students
+  if (ayid === yearId) return true;
+
+  // "All Academic Year" → only active students (not completed/alumni)
+  if (ayid === 'All Academic Year') {
+    const status = (raw.year || '').toLowerCase();
+    return status !== 'completed' && status !== 'alumni' && status !== 'graduated';
+  }
+
+  return false;
+});
     // ── 4. Enrich with course names ──────────────────────────
     const courseIds = [...new Set(ttRows.map(r => r.course_id).filter(Boolean))];
     const courseMap = {};
