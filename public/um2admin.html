@@ -1127,6 +1127,7 @@ button, .btn, .nav-item, .tab, .mob-nav-btn, .login-role-btn, .tt-tab {
 }
 
 </style>
+<script src="config.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 </head>
 <body>
@@ -3758,8 +3759,13 @@ ALTER TABLE academic_years ADD COLUMN IF NOT EXISTS program_id text REFERENCES d
 // ── Paste your Supabase credentials below ──
 // ══════════════════════════════════════════
 
-const SUPABASE_URL      = 'https://klukqyxytxpshclnpilq.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtsdWtxeXh5dHhwc2hjbG5waWxxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkyMjM2MTUsImV4cCI6MjA5NDc5OTYxNX0.pEi7w1MNJI82gsq2O2KiP9JkR-gxNghpms9HgTOEO2g';
+// ── Credentials are loaded from config.js (never hardcode here) ──
+if (!window.APP_CONFIG) {
+  document.body.innerHTML = '<div style="font-family:sans-serif;padding:40px;color:#8B1A2E"><h2>Missing config.js</h2><p>Place <strong>config.js</strong> in the same folder as this HTML file before opening it.</p></div>';
+  throw new Error('APP_CONFIG not found. Did you forget to include config.js?');
+}
+const SUPABASE_URL      = window.APP_CONFIG.supabaseUrl;
+const SUPABASE_ANON_KEY = window.APP_CONFIG.supabaseAnonKey;
 
 // ── Init client ──
 const { createClient } = supabase;
