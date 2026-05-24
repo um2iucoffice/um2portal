@@ -10972,7 +10972,6 @@ function printStaffConfirmation() { dofQuick('COS', 'Confirmation of Active Serv
 function printStaffGoodStanding() { dofQuick('GSC', 'Certificate of Good Standing',   'ကောင်းမွန်မှု သက်သေချက်'); }
 function printFacultyInfoRecord() { dofQuick('FIR', 'Faculty Member Information Record','ဝန်ထမ်းအချက်အလက် မှတ်တမ်း'); }
 
-
 function _getStudentForPrint() {
   const s = students.find(x => x.id === currentProfileId);
   if (!s) { toast('No student selected.', '⚠'); return null; }
