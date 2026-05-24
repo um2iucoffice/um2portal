@@ -11,4 +11,3 @@
 [functions]
   node_bundler = "zisi"
   external_node_modules = ["sharp"]
-  timeout = 30
