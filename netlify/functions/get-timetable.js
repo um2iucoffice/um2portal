@@ -131,9 +131,9 @@ const roomMap = {};
 if (roomIds.length > 0) {
   try {
     const roomRows = await supabase(
-      `lecture_rooms?id=in.(${roomIds.map(encodeURIComponent).join(',')})&select=id,name`
+      `lecture_rooms?id=in.(${roomIds.map(encodeURIComponent).join(',')})&select=id,subject`
     );
-    (roomRows || []).forEach(r => { roomMap[r.id] = r.name; });
+    (roomRows || []).forEach(r => { roomMap[r.id] = r.subject; });
   } catch (e) {
     console.warn('Could not fetch room names:', e.message);
   }
