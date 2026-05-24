@@ -64,7 +64,7 @@ exports.handler = async (event) => {
   try {
     // ── 1. Verify student credentials ───────────────────────
     const students = await supabase(
-      `students?id=eq.${encodeURIComponent(normId)}&select=id,master_password,program&limit=1`
+      `students?id=eq.${encodeURIComponent(normId)}&select=id,master_password,program,year&limit=1`
     );
     if (!students || students.length === 0) {
       return { statusCode: 200, headers: CORS_HEADERS, body: JSON.stringify({ success: false, message: 'Student not found.' }) };
@@ -88,7 +88,17 @@ exports.handler = async (event) => {
     } catch (e) {
       console.warn('Could not fetch enrollments for timetable:', e.message);
     }
-
+// ── 2b. Resolve student year to academic_year_id ────────────
+let yearId = null;
+if (raw.year) {
+  try {
+    const yearRows = await supabase(
+      `academic_years?name=eq.${encodeURIComponent(raw.year)}&select=id&limit=1`,
+      {}, true
+    );
+    if (yearRows && yearRows.length > 0) yearId = yearRows[0].id;
+  } catch(e) {}
+}
     // ── 3. Fetch timetable rows ──────────────────────────────
     //  We fetch ALL rows (no RLS student-filter needed; the table
     //  is school-wide). Filter by academic_year_id matching
@@ -97,7 +107,7 @@ exports.handler = async (event) => {
     try {
       // Fetch rows ordered by day then time_start
       const rawRows = await supabase(
-        `lecture_timetable?select=id,course_id,room_id,day,time_start,time_end,academic_year_id,session_date,sub_topic&order=day.asc,time_start.asc`,
+        `lecture_timetable?${yearId ? 'academic_year_id=eq.'+yearId+'&' : ''}select=id,course_id,room_id,day,time_start,time_end,academic_year_id,session_date,sub_topic&order=day.asc,time_start.asc`,
         {}, true
       );
       ttRows = rawRows || [];
