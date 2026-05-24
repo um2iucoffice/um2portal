@@ -9689,7 +9689,7 @@ function renderTimetable(rows, dayFilter) {
   var grouped = {};
   TT_DAY_ORDER.forEach(function(d) { grouped[d] = []; });
   rows.forEach(function(r) {
-    var d = r.day || 'Other';
+   var d = ({'Monday':'Monday','Tuesday':'Tuesday','Wednesday':'Wednesday','Thursday':'Thursday','Friday':'Friday','Saturday':'Saturday','Sunday':'Sunday'})[r.day] || ({'mon':'Monday','tue':'Tuesday','wed':'Wednesday','thu':'Thursday','fri':'Friday','sat':'Saturday','sun':'Sunday'})[( r.day||'').toLowerCase().slice(0,3)] || 'Other';
     if (!grouped[d]) grouped[d] = [];
     grouped[d].push(r);
   });
