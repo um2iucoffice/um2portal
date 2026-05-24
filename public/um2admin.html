@@ -3263,18 +3263,14 @@ ALTER TABLE academic_years ADD COLUMN IF NOT EXISTS program_id text REFERENCES d
         <label>Document Type · စာရွက်အမျိုးအစား</label>
         <select id="dof-type" onchange="dofUpdateRef()">
           <option value="" disabled selected>— select type —</option>
-          <!-- registrar sees all; staff sees subset — filtered by dofApplyRoleTypes() on load -->
-          <option value="MEM" data-roles="registrar">Memorandum (MEM) · မှတ်တမ်း</option>
-          <option value="NOT" data-roles="registrar">Notice (NOT) · အသိပေးစာ</option>
-          <option value="LTR" data-roles="registrar">Official Letter (LTR) · စာလွှာ</option>
-          <option value="RPT" data-roles="registrar">Report (RPT) · အစီရင်ခံစာ</option>
-          <option value="CIR" data-roles="registrar">Circular (CIR) · ကြေညာစာ / လှည့်လည်အသိပေးစာ</option>
-          <option value="POL" data-roles="registrar">Policy (POL) · မူဝါဒစာတမ်း</option>
-          <option value="DIR" data-roles="registrar">Directive (DIR) · ညွှန်ကြားချက်</option>
-          <option value="COS" data-roles="registrar,staff">Confirmation of Service (COS) · 🔒 Auto-generated · EN only</option>
-          <option value="GSC" data-roles="registrar,staff">Departmental Statement (GSC) · 🔒 Auto-generated · EN only</option>
-          <option value="FIR" data-roles="registrar,staff">Faculty Info Record (FIR) · 🔒 Auto-generated · EN only</option>
-          <option value="STM" data-roles="registrar,staff">Personal Statement (STM) · ကြေညာချက် / ထုတ်ပြန်ချက်</option>
+          <!-- Customizable: registrar only -->
+          <option value="STM" data-roles="registrar">Statement (STM) · ကြေညာချက်</option>
+          <option value="LTR" data-roles="registrar">Official Letter (LTR) · စာ</option>
+          <option value="DIR" data-roles="registrar">Directive (DIR) · ညွှန်ကြားလွှာ</option>
+          <!-- Uncustomizable / auto-generated: all staff -->
+          <option value="COS" data-roles="registrar,staff">Confirmation of Service (COS) · 🔒 Auto-generated</option>
+          <option value="GSC" data-roles="registrar,staff">Good Standing (GSC) · 🔒 Auto-generated</option>
+          <option value="FIR" data-roles="registrar,staff">Faculty Info (FIR) · 🔒 Auto-generated</option>
         </select>
       </div>
 
@@ -3347,29 +3343,29 @@ ALTER TABLE academic_years ADD COLUMN IF NOT EXISTS program_id text REFERENCES d
       <!-- Centered document title (optional) -->
       <div class="form-group" style="margin-bottom:10px">
         <label class="form-label">Document Title <span style="font-weight:400;color:var(--ink3)">(optional — centered heading printed above subject)</span></label>
-        <input type="text" id="dof-doc-title" class="form-input" placeholder="e.g. NOTICE TO ALL STAFF · အသိပေးချက်">
+        <input type="text" id="dof-doc-title" class="form-input" placeholder="">
       </div>
       <!-- Subject EN -->
       <div id="dof-subject-en-wrap" class="form-group" style="margin-bottom:10px">
         <label class="form-label">Subject (English) · အကြောင်းအရာ (အင်္ဂလိပ်)</label>
-        <input type="text" id="dof-subject-en" class="form-input" placeholder="e.g. Confirmation of Active Service" oninput="dofUpdateRef()">
+        <input type="text" id="dof-subject-en" class="form-input" placeholder="" oninput="dofUpdateRef()">
       </div>
       <!-- Subject MM (hidden when English only) -->
       <div id="dof-subject-mm-wrap" class="form-group" style="margin-bottom:10px;display:none">
         <label class="form-label">Subject (Myanmar) · အကြောင်းအရာ (မြန်မာ)</label>
-        <input type="text" id="dof-subject-mm" class="form-input" placeholder="ဥပမာ - တက်ကြွသောဝန်ဆောင်မှု အတည်ပြုချက်" oninput="dofUpdateRef()">
+        <input type="text" id="dof-subject-mm" class="form-input" placeholder="" oninput="dofUpdateRef()">
       </div>
       <!-- Body -->
       <div class="form-group" style="margin-bottom:10px">
         <label class="form-label">Body · စာအကြောင်းအရာ</label>
         <textarea id="dof-body-title" class="form-input" rows="6"
           style="resize:vertical;line-height:1.8;font-size:13px"
-          placeholder="Write the document body here. Each paragraph will be indented automatically. · ဤနေရာတွင် ရေးပါ။"></textarea>
+          placeholder=""></textarea>
       </div>
       <!-- Closing phrase (optional) -->
       <div class="form-group" style="margin-bottom:0">
         <label class="form-label">Closing Phrase <span style="font-weight:400;color:var(--ink3)">(optional — replaces "Yours faithfully")</span></label>
-        <input type="text" id="dof-closing" class="form-input" placeholder="e.g. Yours faithfully, / လေးစားစွာဖြင့် / Respectfully,">
+        <input type="text" id="dof-closing" class="form-input" placeholder="">
       </div>
     </div>
 
@@ -3462,16 +3458,12 @@ ALTER TABLE academic_years ADD COLUMN IF NOT EXISTS program_id text REFERENCES d
         <input type="text" id="dof-log-search" class="form-input" placeholder="Search ref / subject…" style="width:180px;font-size:12px;padding:6px 10px;min-height:unset" oninput="dofFilterLog()">
         <select id="dof-log-filter" style="font-size:12px;padding:6px 10px;min-height:unset;width:auto" onchange="dofFilterLog()">
           <option value="">All types</option>
-          <option value="MEM">MEM</option>
-          <option value="NOT">NOT</option>
-          <option value="LTR">LTR</option>
-          <option value="COS">COS</option>
-          <option value="GSC">GSC</option>
-          <option value="FIR">FIR</option>
-          <option value="RPT">RPT</option>
-          <option value="CIR">CIR</option>
-          <option value="POL">POL</option>
-          <option value="DIR">DIR</option>
+          <option value="STM">STM — Statement</option>
+          <option value="LTR">LTR — Official Letter</option>
+          <option value="DIR">DIR — Directive</option>
+          <option value="COS">COS — Confirmation of Service</option>
+          <option value="GSC">GSC — Good Standing</option>
+          <option value="FIR">FIR — Faculty Info</option>
         </select>
       </div>
     </div>
@@ -10619,19 +10611,19 @@ function _getStaffForPrint() {
    ══════════════════════════════════════════════════════════ */
 
 /* ── Title → allowed doc types ── */
-/* COS, GSC, FIR are system-generated and available to ALL staff regardless of title.
-   GSC (Departmental Statement) is additionally restricted to staff's own department (enforced in dofApplyRoleTypes).
-   STM (Personal Statement) is available to all staff. */
+/* COS, GSC, FIR are system-generated and available to ALL staff.
+   STM, LTR, DIR are customizable and registrar-only.
+   Staff may NEVER select department freely — locked to own dept. */
 const _TITLE_ACCESS = {
-  'head':                ['COS','GSC','FIR','STM'],
-  'coordinator':         ['COS','GSC','FIR','STM'],
-  'guest lecturer':      ['COS','GSC','FIR','STM'],
-  'lecturer':            ['COS','GSC','FIR','STM'],
-  'tutor':               ['COS','GSC','FIR','STM'],
-  'demonstrator':        ['COS','GSC','FIR','STM'],
-  'professor':           ['COS','GSC','FIR','STM'],
-  'associate professor': ['COS','GSC','FIR','STM'],
-  'administrative':      ['COS','GSC','FIR','STM'],
+  'head':                ['COS','GSC','FIR'],
+  'coordinator':         ['COS','GSC','FIR'],
+  'guest lecturer':      ['COS','GSC','FIR'],
+  'lecturer':            ['COS','GSC','FIR'],
+  'tutor':               ['COS','GSC','FIR'],
+  'demonstrator':        ['COS','GSC','FIR'],
+  'professor':           ['COS','GSC','FIR'],
+  'associate professor': ['COS','GSC','FIR'],
+  'administrative':      ['COS','GSC','FIR'],
 };
 
 /* ── Titles that can sign as Individual OR Department ── */
@@ -10651,7 +10643,7 @@ function dofApplyRoleTypes() {
   if (!sel) return;
 
   if (role === 'registrar') {
-    /* Registrar sees everything, dept dropdown fully free */
+    /* Registrar sees everything (STM, LTR, DIR + COS, GSC, FIR), dept dropdown fully free */
     Array.from(sel.options).forEach(opt => { if (opt.value) opt.hidden = false; });
     if (deptSel) { deptSel.disabled = false; deptSel.style.opacity = ''; }
     return;
@@ -10669,16 +10661,16 @@ function dofApplyRoleTypes() {
     deptSel.style.opacity = '0.75';
   }
 
-  /* ── Staff: find allowed doc types by title (fallback: all 4 system types) ── */
-  const allowed = Object.entries(_TITLE_ACCESS).find(([key]) => title.includes(key))?.[1] || ['COS','GSC','FIR','STM'];
+  /* ── Staff: only auto-generated types (COS, GSC, FIR) ── */
+  const staffAllowed = ['COS','GSC','FIR'];
 
   Array.from(sel.options).forEach(opt => {
     if (!opt.value) return;
-    opt.hidden = !allowed.includes(opt.value);
+    opt.hidden = !staffAllowed.includes(opt.value);
   });
 
   /* Reset selection if current value is now hidden */
-  if (sel.value && !allowed.includes(sel.value)) sel.value = '';
+  if (sel.value && !staffAllowed.includes(sel.value)) sel.value = '';
 }
 
 /* ── Check if current user can sign as department ── */
@@ -10713,17 +10705,12 @@ function _toMyanmarNumerals(n) {
 
 /* ── Doc type → Myanmar label map ── */
 const _DOC_TYPE_MM = {
-  MEM: 'မှတ်တမ်း',
-  NOT: 'အသိပေးစာ',
-  LTR: 'စာလွှာ',
-  RPT: 'အစီရင်ခံစာ',
-  CIR: 'ကြေညာစာ',
-  POL: 'မူဝါဒစာတမ်း',
-  DIR: 'ညွှန်ကြားချက်',
-  COS: 'သဘောတူညီချက်',
-  GSC: 'အထွေထွေကြေညာချက်',
-  FIR: 'ကနဦးအစီရင်ခံစာ',
+  LTR: 'စာ',
+  DIR: 'ညွှန်ကြားလွှာ',
   STM: 'ကြေညာချက်',
+  COS: 'ဝန်ဆောင်မှုအတည်ပြုချက်',
+  GSC: 'ကောင်းမွန်မှုသက်သေချက်',
+  FIR: 'ကနဦးအစီရင်ခံစာ',
 };
 
 /* ── Department → Myanmar label map ── */
@@ -10957,15 +10944,11 @@ function _dofBuildDocHtml(type, refNo, subjectEn, subjectMm, lang, s, body, sign
         .join('')
     : `<p style="margin-bottom:20px;font-size:10.5pt">&nbsp;</p>`;
 
-  /* Generic template for MEM, NOT, LTR, RPT, CIR, POL, DIR */
+  /* Generic template for STM, LTR, DIR */
   const typeLabels = {
-    MEM: ['MEMORANDUM', 'အမှာစာ'],
-    NOT: ['NOTICE', 'အသိပေးချက်'],
     LTR: ['OFFICIAL LETTER', 'တရားဝင်ပေးစာ'],
-    RPT: ['REPORT', 'အစီရင်ခံစာ'],
-    CIR: ['CIRCULAR', 'လှည့်ပတ်ကြေညာချက်'],
-    POL: ['POLICY DOCUMENT', 'မူဝါဒ'],
-    DIR: ['DIRECTIVE', 'ညွှန်ကြားချက်'],
+    DIR: ['DIRECTIVE', 'ညွှန်ကြားလွှာ'],
+    STM: ['STATEMENT', 'ကြေညာချက်'],
   };
   const [labelEn, labelMm] = typeLabels[type] || [type, type];
   const titleDisplay = bilingual ? `${labelEn}  |  ${labelMm}` : (showEn ? labelEn : labelMm);
@@ -11349,14 +11332,9 @@ function dofToggleLangFields() {
   }
 }
 
-/* ── Dynamic signature block — single signer with centred seal ── */
+/* ── Dynamic signature block — single signer, NO seal (customizable letters) ── */
 function _signatureBlockDynamic(s, signMode, signLeft, _unused) {
   const dept      = document.getElementById('dof-dept')?.value || s.dept || '';
-  const sealFile  = _DEPT_SEAL[dept] || 'secretariat.svg';
-  const sealImg   = `<img src="${sealFile}" alt="Department Seal"
-    style="width:100px;height:100px;object-fit:contain;display:block;margin:0 auto 4px"
-    onerror="this.onerror=null;this.src='${_SEAL_URL}'">`;
-
   const signerEmail    = (document.getElementById('dof-sign-email-left')?.value || '').trim();
   const deptOfficeName = _getDeptOfficeName(dept);
 
@@ -11373,7 +11351,6 @@ function _signatureBlockDynamic(s, signMode, signLeft, _unused) {
         ${signerEmail ? `<div style="font-size:8.5pt;color:#888;margin-top:1px">${signerEmail}</div>` : ''}
         <div style="font-size:9pt;color:#888;margin-top:2px">${_todayFormatted()}</div>
       </div>
-      <div style="text-align:center">${sealImg}</div>
     </div>
     <div style="margin-top:36px;font-size:7.5pt;color:#999;text-align:center;border-top:1px solid #ddd;padding-top:8px">
       Generated by UM2 IRIR System on ${_todayFormatted()}. Valid only with official stamp and authorised signature.
@@ -11423,10 +11400,9 @@ function _printDoc(html, docLabel) {
   );
   const typeVal  = document.getElementById('dof-type')?.value || '';
   const typeLabels = {
-    MEM:'Memorandum', NOT:'Notice', LTR:'Official Letter', RPT:'Report',
-    CIR:'Circular',   POL:'Policy', DIR:'Directive',
-    COS:'Confirmation of Service', GSC:'Departmental Statement',
-    FIR:'Faculty Info Record',     STM:'Personal Statement',
+    LTR:'Official Letter', DIR:'Directive', STM:'Statement',
+    COS:'Confirmation of Service', GSC:'Good Standing',
+    FIR:'Faculty Info Record',
   };
   const label = docLabel || typeLabels[typeVal] || typeVal || 'Document';
   const filename = profileName ? `${label} — ${profileName}` : label;
