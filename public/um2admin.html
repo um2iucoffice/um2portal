@@ -4550,7 +4550,7 @@ let _editGradeId    = null;
 // ══════════════════════════════════════════
 // PASSWORD UTILITIES
 // ══════════════════════════════════════════
-ffunction generateMasterPassword() {
+function generateMasterPassword() {
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789';
   const arr = new Uint8Array(12);
   crypto.getRandomValues(arr);
