@@ -3,30 +3,29 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <!-- Fix 3: Content Security Policy -->
+  <!-- Content Security Policy
+       NOTE: frame-ancestors is intentionally omitted here — it only works
+       as an HTTP response header (X-Frame-Options or CSP header), not in a
+       <meta> tag. Set it on your Netlify server via netlify.toml:
+         [[headers]]
+           for = "/*"
+           [headers.values]
+             X-Frame-Options = "DENY"
+             Content-Security-Policy = "frame-ancestors 'none'"
+  -->
 <meta http-equiv="Content-Security-Policy" content="
   default-src 'self';
-  script-src 'self' https://cdnjs.cloudflare.com;
+  script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com;
   style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
   font-src https://fonts.gstatic.com;
   img-src 'self' data: blob: https:;
   connect-src 'self' https://*.supabase.co https://*.netlify.app;
-  frame-ancestors 'none';
 ">
 <title>IRIS System - UM2IUC</title>
 <link rel="icon" type="image/png" sizes="40x40" href="/favicon.png">
 <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
-<!-- Fix 4: Subresource Integrity -->
-<script 
-  src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"
-  integrity="sha384-lbHtOLFujPpNTjMjJFbKBkAYfIUfGP+sRFNqJ5BtAAZaox1OsRMK5IQVFKZQ1Zv"
-  crossorigin="anonymous">
-</script>
-  
-  
-  
-  
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<!-- QR Code library (single load, no stale integrity hash) -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -6923,7 +6922,16 @@ async function checkEnrollmentEligibility(student) {
     });
     const data = await res.json();
     console.log('[ENROLL] response:', JSON.stringify(data));
-    if (!data.period) { console.warn('[ENROLL] no period returned'); return; }
+    if (!data.period) {
+      console.warn('[ENROLL] no period returned — full response:', JSON.stringify(data));
+      ['enrollmentBanner','enrollmentBannerGrades'].forEach(function(id){
+        var el = document.getElementById(id);
+        if (!el) return;
+        el.innerHTML = '<div style="padding:14px 18px;border-radius:8px;background:var(--gold-light,#FBF6E8);border:1px solid rgba(154,123,47,0.25);color:var(--gold,#9A7B2F);font-size:13px;display:flex;align-items:center;gap:10px;">No active enrollment period found for your program. Please contact the registrar if you believe this is an error.</div>';
+        el.style.display = 'block';
+      });
+      return;
+    }
     renderEnrollmentBanner(data.period, data.eligibility, student);
     console.log('[ENROLL] banner rendered');
   } catch(e) {
