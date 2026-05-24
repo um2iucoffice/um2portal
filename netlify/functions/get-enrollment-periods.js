@@ -23,7 +23,6 @@ async function supabase(path, options = {}) {
 }
 
 // POST { student_id, program_id, current_year }
-// Note: program_id may be a UUID or a program name string — we handle both
 exports.handler = async (event) => {
   const headers = {
     'Content-Type': 'application/json',
@@ -35,71 +34,105 @@ exports.handler = async (event) => {
   }
 
   const { student_id, program_id, current_year } = JSON.parse(event.body || '{}');
+  console.log('[get-enrollment-periods] input:', { student_id, program_id, current_year });
 
   try {
-    // ── 1. Resolve program name → UUID if needed ──────────────────────────────
+    // ── 1. Resolve program_id → the value stored in enrollment_periods ────────
+    // enrollment_periods.program_id may store a short id (e.g. "1002"), a UUID,
+    // or a name. We try in order:
+    //   a) use as-is if it already matches something in degree_programs.id
+    //   b) match by degree_programs.name (exact, then case-insensitive)
+    //   c) look up via the student row's foreign key join
     const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
     let resolvedProgramId = program_id;
 
     if (!UUID_RE.test(program_id || '')) {
-      // Try exact name match first
-      const progRows = await supabase(
-        `degree_programs?name=eq.${encodeURIComponent(program_id)}&select=id&limit=1`
+      // (a) Try matching degree_programs.id directly (handles short ids like "1002")
+      const progById = await supabase(
+        `degree_programs?id=eq.${encodeURIComponent(program_id)}&select=id&limit=1`
       );
-      if (progRows && progRows.length > 0) {
-        resolvedProgramId = progRows[0].id;
+      if (progById && progById.length > 0) {
+        resolvedProgramId = progById[0].id;
+        console.log('[get-enrollment-periods] program resolved by id:', resolvedProgramId);
       } else {
-        // Try matching via student's joined program
-        const stuRows = await supabase(
-          `students?id=eq.${encodeURIComponent(student_id)}&select=program,degree_programs(id)&limit=1`
+        // (b) Try exact name match
+        const progByName = await supabase(
+          `degree_programs?name=eq.${encodeURIComponent(program_id)}&select=id&limit=1`
         );
-        const prog = stuRows && stuRows[0];
-        if (prog && prog.degree_programs && prog.degree_programs.id) {
-          resolvedProgramId = prog.degree_programs.id;
+        if (progByName && progByName.length > 0) {
+          resolvedProgramId = progByName[0].id;
+          console.log('[get-enrollment-periods] program resolved by exact name:', resolvedProgramId);
         } else {
-          // Case-insensitive fallback across all programs
-          const allProgs = await supabase(`degree_programs?select=id,name`);
-          const match = (allProgs || []).find(p =>
-            (p.name || '').toLowerCase().trim() === (program_id || '').toLowerCase().trim()
+          // (c) Try via student row join
+          const stuRows = await supabase(
+            `students?id=eq.${encodeURIComponent(student_id)}&select=program,degree_programs(id)&limit=1`
           );
-          if (!match) {
-            console.warn('[get-enrollment-periods] could not resolve program_id for:', program_id);
-            return { statusCode: 200, headers,
-                     body: JSON.stringify({ success: true, period: null }) };
+          const prog = stuRows && stuRows[0];
+          if (prog && prog.degree_programs && prog.degree_programs.id) {
+            resolvedProgramId = prog.degree_programs.id;
+            console.log('[get-enrollment-periods] program resolved via student join:', resolvedProgramId);
+          } else {
+            // (d) Case-insensitive name fallback
+            const allProgs = await supabase(`degree_programs?select=id,name`);
+            const match = (allProgs || []).find(p =>
+              (p.name || '').toLowerCase().trim() === (program_id || '').toLowerCase().trim()
+            );
+            if (!match) {
+              console.warn('[get-enrollment-periods] could not resolve program_id for:', program_id);
+              return { statusCode: 200, headers,
+                       body: JSON.stringify({ success: true, period: null }) };
+            }
+            resolvedProgramId = match.id;
+            console.log('[get-enrollment-periods] program resolved by fuzzy name:', resolvedProgramId);
           }
-          resolvedProgramId = match.id;
         }
       }
     }
 
-    // ── 2. Resolve year name → UUID (with fuzzy fallback) ────────────────────
-    // Try exact match first, then case-insensitive match across all years.
-    // This handles mismatches like "Year 3" vs "year 3" or "3rd Year".
+    // ── 2. Resolve current_year → the value stored in enrollment_periods ──────
+    // enrollment_periods.from_year_id may store a short id (e.g. "AY001"), a UUID,
+    // or a name. We try in order:
+    //   a) use as-is if it matches academic_years.id directly
+    //   b) match by academic_years.name (exact, then case-insensitive)
     let yearId = null;
 
-    const yearRowsExact = await supabase(
-      `academic_years?name=eq.${encodeURIComponent(current_year)}&select=id&limit=1`
+    // (a) Try matching academic_years.id directly (handles "AY001" etc.)
+    const yearById = await supabase(
+      `academic_years?id=eq.${encodeURIComponent(current_year)}&select=id&limit=1`
     );
-    if (yearRowsExact && yearRowsExact.length > 0) {
-      yearId = yearRowsExact[0].id;
+    if (yearById && yearById.length > 0) {
+      yearId = yearById[0].id;
+      console.log('[get-enrollment-periods] year resolved by id:', yearId);
     } else {
-      // Fetch all years and match case-insensitively
-      const allYears = await supabase(`academic_years?select=id,name`);
-      const normalise = s => (s || '').toLowerCase().replace(/\s+/g, ' ').trim();
-      const target    = normalise(current_year);
-      const match     = (allYears || []).find(y => normalise(y.name) === target);
-      if (match) {
-        yearId = match.id;
+      // (b) Try exact name match
+      const yearByName = await supabase(
+        `academic_years?name=eq.${encodeURIComponent(current_year)}&select=id&limit=1`
+      );
+      if (yearByName && yearByName.length > 0) {
+        yearId = yearByName[0].id;
+        console.log('[get-enrollment-periods] year resolved by exact name:', yearId);
       } else {
-        console.warn('[get-enrollment-periods] year not found for:', current_year,
-                     '| available:', (allYears || []).map(y => y.name));
-        return { statusCode: 200, headers,
-                 body: JSON.stringify({ success: true, period: null }) };
+        // (c) Case-insensitive name fallback
+        const allYears = await supabase(`academic_years?select=id,name`);
+        const normalise = s => (s || '').toLowerCase().replace(/\s+/g, ' ').trim();
+        const target    = normalise(current_year);
+        const match     = (allYears || []).find(y => normalise(y.name) === target);
+        if (match) {
+          yearId = match.id;
+          console.log('[get-enrollment-periods] year resolved by fuzzy name:', yearId);
+        } else {
+          console.warn('[get-enrollment-periods] year not found for:', current_year,
+                       '| available ids+names:', (allYears || []).map(y => `${y.id}/${y.name}`));
+          return { statusCode: 200, headers,
+                   body: JSON.stringify({ success: true, period: null }) };
+        }
       }
     }
 
     // ── 3. Fetch active period matching program + from_year ───────────────────
     const now = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
+    console.log('[get-enrollment-periods] querying period for program:', resolvedProgramId, 'year:', yearId, 'date:', now);
+
     const periods = await supabase(
       `enrollment_periods` +
       `?program_id=eq.${encodeURIComponent(resolvedProgramId)}` +
@@ -118,7 +151,6 @@ exports.handler = async (event) => {
     const period = periods[0];
 
     // ── 4. Fetch existing enrollment request status ───────────────────────────
-    // Done BEFORE the eligibility RPC so we can short-circuit if already promoted.
     const requests = await supabase(
       `enrollment_requests` +
       `?student_id=eq.${encodeURIComponent(student_id)}` +
@@ -126,12 +158,10 @@ exports.handler = async (event) => {
       `&limit=1`
     );
     const existingRequest  = requests && requests[0];
-    const enrollmentStatus = existingRequest ? existingRequest.status  : null;
+    const enrollmentStatus = existingRequest ? existingRequest.status : null;
     const toYear           = existingRequest ? existingRequest.to_year : null;
 
     // ── 5. Short-circuit: already promoted → hide the banner ─────────────────
-    // Once a student is promoted the "Year Progression Complete" notice has
-    // served its purpose. Return period: null so the front-end renders nothing.
     if (enrollmentStatus === 'promoted') {
       return {
         statusCode: 200, headers,
