@@ -3237,16 +3237,140 @@ ALTER TABLE academic_years ADD COLUMN IF NOT EXISTS program_id text REFERENCES d
 <!-- ═══════ MY PROFILE (Staff/Faculty) ═══════ -->
 <!-- ══ DOCUMENT OFFICE ══ -->
 <div class="view" id="view-docOffice">
+
   <div class="page-header">
     <div class="page-header-left">
       <div class="page-title">Document Office</div>
-      <div class="page-sub">Your personal document space — print official letters and certificates</div>
+      <div class="page-sub">စာရွက်စာတမ်း ထုတ်ပေးခြင်း · Generate and issue official documents</div>
+    </div>
+    <div class="page-actions">
+      <button class="btn btn-outline btn-sm registrar-only" onclick="loadDocLog()" style="gap:6px">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.33"/></svg>
+        Refresh Log · မှတ်တမ်း ပြန်ဆွဲမည်
+      </button>
     </div>
   </div>
 
-  <div class="doc-office-grid">
+  <!-- ── Generate Form ── -->
+  <div class="card" style="margin-bottom:16px">
+    <div style="font-size:10px;font-weight:700;letter-spacing:1.6px;text-transform:uppercase;color:var(--ink3);margin-bottom:16px">
+      စာရွက်စာတမ်း ဖန်တီးခြင်း · Generate document
+    </div>
 
-    <!-- Confirmation of Service -->
+    <div class="form-grid" style="margin-bottom:14px">
+
+      <!-- Doc Type -->
+      <div class="form-group">
+        <label>Document Type · စာရွက်အမျိုးအစား</label>
+        <select id="dof-type" onchange="dofUpdateRef()">
+          <option value="" disabled selected>— select type —</option>
+          <!-- registrar sees all; staff sees subset — filtered by dofApplyRoleTypes() on load -->
+          <option value="MEM" data-roles="registrar,staff">Memorandum (MEM) · အမှာစာ</option>
+          <option value="NOT" data-roles="registrar,staff">Notice (NOT) · အသိပေးချက်</option>
+          <option value="LTR" data-roles="registrar,staff">Official Letter (LTR) · တရားဝင်ပေးစာ</option>
+          <option value="RPT" data-roles="registrar">Report (RPT) · အစီရင်ခံစာ</option>
+          <option value="CIR" data-roles="registrar">Circular (CIR) · လှည့်ပတ်ကြေညာချက်</option>
+          <option value="POL" data-roles="registrar">Policy (POL) · မူဝါဒ</option>
+          <option value="DIR" data-roles="registrar">Directive (DIR) · ညွှန်ကြားချက်</option>
+          <option value="COS" data-roles="registrar,staff">Confirmation of Service (COS) · ဝန်ထမ်းခြင်းအတည်ပြုစာ</option>
+          <option value="GSC" data-roles="registrar,staff">Good Standing Certificate (GSC) · ကောင်းမွန်မှုသက်သေချက်</option>
+          <option value="FIR" data-roles="registrar,staff">Faculty Info Record (FIR) · ဝန်ထမ်းအချက်အလက်မှတ်တမ်း</option>
+        </select>
+      </div>
+
+      <!-- Department -->
+      <div class="form-group">
+        <label>Department · ဌာန</label>
+        <select id="dof-dept" onchange="dofUpdateRef()">
+          <option value="OPS">Operations · စီမံခန့်ခွဲမှု</option>
+          <option value="HR">Human Resources · လူ့စွမ်းအားအရင်းအမြစ်</option>
+          <option value="ACO">Academic Office · ပညာရေးဌာန</option>
+          <option value="FIN">Finance · ဘဏ္ဍာရေး</option>
+          <option value="IT">IT · သတင်းပညာ</option>
+          <option value="LGL">Legal · ဥပဒေ</option>
+          <option value="MED">Medical · ဆေးဘက်</option>
+          <option value="SEC">Secretariat · အတွင်းရေး</option>
+        </select>
+      </div>
+
+      <!-- Subject EN -->
+      <div class="form-group">
+        <label>Subject (English) · အကြောင်းအရာ (အင်္ဂလိပ်)</label>
+        <input type="text" id="dof-subject-en" class="form-input" placeholder="e.g. Confirmation of Active Service" oninput="dofUpdateRef()">
+      </div>
+
+      <!-- Subject MM -->
+      <div class="form-group">
+        <label>Subject (Myanmar) · အကြောင်းအရာ (မြန်မာ)</label>
+        <input type="text" id="dof-subject-mm" class="form-input" placeholder="ဥပမာ - တက်ကြွသောဝန်ဆောင်မှု အတည်ပြုချက်" oninput="dofUpdateRef()">
+      </div>
+
+    </div>
+
+    <!-- Language + Priority row -->
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:14px">
+
+      <div class="form-group">
+        <label>Output Language · ဘာသာစကား</label>
+        <select id="dof-lang">
+          <option value="en">English only</option>
+          <option value="mm">Myanmar only · မြန်မာသာ</option>
+          <option value="bilingual" selected>Bilingual · နှစ်ဘာသာ</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Priority · အရေးပေါ်အဆင့်</label>
+        <select id="dof-priority">
+          <option value="normal">Normal · ပုံမှန်</option>
+          <option value="urgent">Urgent · အရေးပေါ်</option>
+          <option value="confidential">Confidential · လျှို့ဝှက်</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Distribution · ဖြန့်ဝေမှု</label>
+        <select id="dof-dist">
+          <option value="internal">Internal only · အတွင်းပိုင်း</option>
+          <option value="department">Department · ဌာန</option>
+          <option value="all_staff">All staff · ဝန်ထမ်းအားလုံး</option>
+          <option value="external">External · ပြင်ပ</option>
+        </select>
+      </div>
+
+    </div>
+
+    <!-- Ref display + action -->
+    <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:12px 14px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r)">
+      <div style="flex:1;min-width:0">
+        <div style="font-size:10px;font-weight:700;letter-spacing:1.4px;text-transform:uppercase;color:var(--ink3);margin-bottom:4px">
+          Reference No · ကိုးကားနံပါတ်
+        </div>
+        <div id="dof-ref-display" style="font-family:monospace;font-size:15px;font-weight:700;color:var(--ink);letter-spacing:.06em">
+          — select type —
+        </div>
+        <div style="font-size:10px;color:var(--ink3);margin-top:3px">
+          Auto-generated from DB sequence · DB မှ အလိုအလျောက် ထုတ်ပေးသည်
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn btn-outline btn-sm" onclick="dofGenerateAndPrint('preview')" id="dof-preview-btn" disabled>
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          Preview · ကြိုကြည့်မည်
+        </button>
+        <button class="btn btn-primary btn-sm" onclick="dofGenerateAndPrint('print')" id="dof-print-btn" disabled>
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+          Generate &amp; Save · ထုတ်မည် &amp; သိမ်းမည်
+        </button>
+      </div>
+    </div>
+
+  </div><!-- /Generate Form card -->
+
+
+  <!-- ── Quick-access cards (original 3, now trigger dofGenerateAndPrint) ── -->
+  <div class="doc-office-grid" style="margin-bottom:16px">
+
     <div class="card doc-office-card">
       <div style="display:flex;align-items:center;gap:12px">
         <div style="width:42px;height:42px;border-radius:10px;background:var(--blue-light);display:flex;align-items:center;justify-content:center;flex-shrink:0">
@@ -3254,16 +3378,15 @@ ALTER TABLE academic_years ADD COLUMN IF NOT EXISTS program_id text REFERENCES d
         </div>
         <div>
           <div style="font-size:14px;font-weight:600;color:var(--ink)">Confirmation of Service</div>
-          <div style="font-size:12px;color:var(--ink3);margin-top:2px">Official letter confirming active service at UM2</div>
+          <div style="font-size:12px;color:var(--ink3);margin-top:2px">ဝန်ထမ်းခြင်း အတည်ပြုစာ</div>
         </div>
       </div>
-      <button class="btn btn-outline btn-sm doc-office-btn" onclick="printStaffConfirmation()">
+      <button class="btn btn-outline btn-sm doc-office-btn" onclick="dofQuick('COS','Confirmation of Active Service','တက်ကြွသောဝန်ဆောင်မှု အတည်ပြုချက်')">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
-        Print Letter
+        Quick Print · ချက်ချင်းထုတ်မည်
       </button>
     </div>
 
-    <!-- Good Standing Certificate -->
     <div class="card doc-office-card">
       <div style="display:flex;align-items:center;gap:12px">
         <div style="width:42px;height:42px;border-radius:10px;background:var(--green-light);display:flex;align-items:center;justify-content:center;flex-shrink:0">
@@ -3271,16 +3394,15 @@ ALTER TABLE academic_years ADD COLUMN IF NOT EXISTS program_id text REFERENCES d
         </div>
         <div>
           <div style="font-size:14px;font-weight:600;color:var(--ink)">Good Standing Certificate</div>
-          <div style="font-size:12px;color:var(--ink3);margin-top:2px">Confirms good academic and disciplinary standing</div>
+          <div style="font-size:12px;color:var(--ink3);margin-top:2px">ကောင်းမွန်မှု သက်သေချက်</div>
         </div>
       </div>
-      <button class="btn btn-outline btn-sm doc-office-btn" onclick="printStaffGoodStanding()">
+      <button class="btn btn-outline btn-sm doc-office-btn" onclick="dofQuick('GSC','Certificate of Good Standing','ကောင်းမွန်မှု သက်သေချက်')">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
-        Print Certificate
+        Quick Print · ချက်ချင်းထုတ်မည်
       </button>
     </div>
 
-    <!-- Faculty Member Information Record -->
     <div class="card doc-office-card">
       <div style="display:flex;align-items:center;gap:12px">
         <div style="width:42px;height:42px;border-radius:10px;background:var(--gold-light);display:flex;align-items:center;justify-content:center;flex-shrink:0">
@@ -3288,16 +3410,64 @@ ALTER TABLE academic_years ADD COLUMN IF NOT EXISTS program_id text REFERENCES d
         </div>
         <div>
           <div style="font-size:14px;font-weight:600;color:var(--ink)">Faculty Information Record</div>
-          <div style="font-size:12px;color:var(--ink3);margin-top:2px">Official record of faculty profile and service details</div>
+          <div style="font-size:12px;color:var(--ink3);margin-top:2px">ဝန်ထမ်းအချက်အလက် မှတ်တမ်း</div>
         </div>
       </div>
-      <button class="btn btn-outline btn-sm doc-office-btn" onclick="printFacultyInfoRecord()">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
-        Print Record
+      <button class="btn btn-outline btn-sm doc-office-btn" onclick="dofQuick('FIR','Faculty Member Information Record','ဝန်ထမ်းအချက်အလက် မှတ်တမ်း')">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+        Quick Print · ချက်ချင်းထုတ်မည်
       </button>
     </div>
 
-  </div><!-- /doc-office-grid -->
+  </div><!-- /quick cards -->
+
+
+  <!-- ── Document Log ── -->
+  <div class="card">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;gap:12px;flex-wrap:wrap">
+      <div style="font-size:10px;font-weight:700;letter-spacing:1.6px;text-transform:uppercase;color:var(--ink3)">
+        Document Log · မှတ်တမ်း
+      </div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <input type="text" id="dof-log-search" class="form-input" placeholder="Search ref / subject…" style="width:180px;font-size:12px;padding:6px 10px;min-height:unset" oninput="dofFilterLog()">
+        <select id="dof-log-filter" style="font-size:12px;padding:6px 10px;min-height:unset;width:auto" onchange="dofFilterLog()">
+          <option value="">All types</option>
+          <option value="MEM">MEM</option>
+          <option value="NOT">NOT</option>
+          <option value="LTR">LTR</option>
+          <option value="COS">COS</option>
+          <option value="GSC">GSC</option>
+          <option value="FIR">FIR</option>
+          <option value="RPT">RPT</option>
+          <option value="CIR">CIR</option>
+          <option value="POL">POL</option>
+          <option value="DIR">DIR</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="table-wrap">
+      <table id="dof-log-table">
+        <thead>
+          <tr>
+            <th>Ref No · ကိုးကားနံပါတ်</th>
+            <th>Type</th>
+            <th>Subject (EN) · ခေါင်းစဉ်</th>
+            <th>Subject (MM) · ခေါင်းစဉ် (မြန်မာ)</th>
+            <th>Lang</th>
+            <th>By · ထုတ်သူ</th>
+            <th>Date · ရက်စွဲ</th>
+          </tr>
+        </thead>
+        <tbody id="dof-log-body">
+          <tr><td colspan="7" style="text-align:center;color:var(--ink3);padding:24px;font-size:13px">
+            Loading… · ခဏစောင့်ပါ
+          </td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div><!-- /log card -->
+
 </div><!-- /view-docOffice -->
 
 <div class="view" id="view-myProfile">
@@ -10413,147 +10583,403 @@ function _getStaffForPrint() {
   return { name, nickname, dept, title, quals, capacity, bio, staffId, startDate, guestLecturer };
 }
 
-function printFacultyInfoRecord() {
+ PART 2 — JAVASCRIPT
+     Paste this into your <script> block.
+     Replace:
+       function printFacultyInfoRecord() { … }   ~line 10416
+       function printStaffConfirmation()  { … }   ~line 10484
+       function printStaffGoodStanding()  { … }   ~line 10519
+     with the entire block below.
+     ═══════════════════════════════════════════════════════ -->
+<script>
+/* ══════════════════════════════════════════════════════════
+   DOCUMENT OFFICE — full feature set
+   ══════════════════════════════════════════════════════════ */
+
+/* ── Role-based type filtering ── */
+function dofApplyRoleTypes() {
+  const role = (typeof currentRole !== 'undefined') ? currentRole : 'staff';
+  const sel = document.getElementById('dof-type');
+  if (!sel) return;
+  Array.from(sel.options).forEach(opt => {
+    if (!opt.value) return;
+    const allowed = (opt.dataset.roles || '').split(',');
+    opt.hidden = !allowed.includes(role);
+  });
+}
+
+/* ── Ref number: fetch sequence from DB, build ref string ── */
+async function dofGetNextSeq(docType) {
+  const year = new Date().getFullYear();
+  try {
+    const { count, error } = await db
+      .from('generated_documents')
+      .select('id', { count: 'exact', head: true })
+      .eq('doc_type', docType)
+      .gte('created_at', `${year}-01-01`)
+      .lt('created_at', `${year + 1}-01-01`);
+    if (error) throw error;
+    return (count || 0) + 1;
+  } catch (e) {
+    return Math.floor(Math.random() * 9000) + 1000;
+  }
+}
+
+function dofBuildRef(docType, dept, seq) {
+  const year = new Date().getFullYear();
+  const padded = String(seq).padStart(4, '0');
+  return `${docType}-${dept}-${year}-${padded}`;
+}
+
+let _dofCurrentSeq = null;
+
+async function dofUpdateRef() {
+  const type = document.getElementById('dof-type')?.value;
+  const dept = document.getElementById('dof-dept')?.value || 'OPS';
+  const display = document.getElementById('dof-ref-display');
+  const previewBtn = document.getElementById('dof-preview-btn');
+  const printBtn = document.getElementById('dof-print-btn');
+  if (!type) {
+    if (display) display.textContent = '— select type —';
+    if (previewBtn) previewBtn.disabled = true;
+    if (printBtn) printBtn.disabled = true;
+    return;
+  }
+  if (display) display.textContent = 'Generating… · ထုတ်နေသည်';
+  _dofCurrentSeq = await dofGetNextSeq(type);
+  const ref = dofBuildRef(type, dept, _dofCurrentSeq);
+  if (display) display.textContent = ref;
+  if (previewBtn) previewBtn.disabled = false;
+  if (printBtn) printBtn.disabled = false;
+}
+
+/* ── Save to Supabase ── */
+async function dofSaveToDb(refNo, docType, subjectEn, subjectMm, lang, priority, dist) {
+  const { error } = await db
+    .from('generated_documents')
+    .insert({
+      ref_no:       refNo,
+      doc_type:     docType,
+      subject_en:   subjectEn || null,
+      subject_mm:   subjectMm || null,
+      language:     lang,
+      priority:     priority,
+      distribution: dist,
+      created_by:   currentUser?.id || null,
+      staff_id:     currentUser?.staff_id || null,
+      staff_name:   currentUser?.name || null
+    });
+  if (error) {
+    toast('DB save failed · သိမ်းမရပါ: ' + error.message, '✗');
+    return false;
+  }
+  toast('Saved · သိမ်းပြီး — ' + refNo, '✓');
+  return true;
+}
+
+/* ── Quick-access shortcut (from the 3 cards) ── */
+async function dofQuick(type, subjectEn, subjectMm) {
+  const typeEl = document.getElementById('dof-type');
+  const enEl   = document.getElementById('dof-subject-en');
+  const mmEl   = document.getElementById('dof-subject-mm');
+  if (typeEl) typeEl.value = type;
+  if (enEl)   enEl.value  = subjectEn;
+  if (mmEl)   mmEl.value  = subjectMm;
+  await dofUpdateRef();
+  await dofGenerateAndPrint('print');
+}
+
+/* ── Main generate + print + save ── */
+async function dofGenerateAndPrint(mode) {
+  const type     = document.getElementById('dof-type')?.value;
+  const dept     = document.getElementById('dof-dept')?.value || 'OPS';
+  const subjectEn= (document.getElementById('dof-subject-en')?.value || '').trim();
+  const subjectMm= (document.getElementById('dof-subject-mm')?.value || '').trim();
+  const lang     = document.getElementById('dof-lang')?.value     || 'bilingual';
+  const priority = document.getElementById('dof-priority')?.value || 'normal';
+  const dist     = document.getElementById('dof-dist')?.value     || 'internal';
+
+  if (!type) { toast('Please select a document type · အမျိုးအစားရွေးပါ', '⚠'); return; }
+
+  if (_dofCurrentSeq === null) { await dofUpdateRef(); }
+  const refNo = dofBuildRef(type, dept, _dofCurrentSeq);
+
   const s = _getStaffForPrint();
-  const refNo = `UM2/HRD/FMIR/${s.staffId}/${new Date().getFullYear()}`;
+
+  /* Build the HTML for the printed document */
+  const docHtml = _dofBuildDocHtml(type, refNo, subjectEn, subjectMm, lang, s);
+
+  if (mode === 'print') {
+    /* Save first, then print */
+    const saved = await dofSaveToDb(refNo, type, subjectEn, subjectMm, lang, priority, dist);
+    if (saved) {
+      _dofCurrentSeq = null; /* reset so next generation gets a fresh sequence */
+      await dofUpdateRef();
+      loadDocLog();
+    }
+    _printDoc(docHtml);
+  } else {
+    /* Preview only — no DB save */
+    _printDoc(docHtml);
+  }
+}
+
+/* ── Build document HTML based on type ── */
+function _dofBuildDocHtml(type, refNo, subjectEn, subjectMm, lang, s) {
+  const bilingual = lang === 'bilingual';
+  const showMm    = lang === 'mm' || bilingual;
+  const showEn    = lang === 'en' || bilingual;
+
+  const subjectLine = bilingual
+    ? `${subjectEn || ''}${subjectEn && subjectMm ? ' · ' : ''}${subjectMm || ''}`
+    : (showEn ? subjectEn : subjectMm) || '';
+
+  /* Special templates for COS, GSC, FIR */
+  if (type === 'COS') return _dofTemplateCOS(refNo, subjectLine, bilingual, showEn, showMm, s);
+  if (type === 'GSC') return _dofTemplateGSC(refNo, subjectLine, bilingual, showEn, showMm, s);
+  if (type === 'FIR') return _dofTemplateFIR(refNo, subjectLine, bilingual, showEn, showMm, s);
+
+  /* Generic template for MEM, NOT, LTR, RPT, CIR, POL, DIR */
+  const typeLabels = {
+    MEM: ['MEMORANDUM', 'အမှာစာ'],
+    NOT: ['NOTICE', 'အသိပေးချက်'],
+    LTR: ['OFFICIAL LETTER', 'တရားဝင်ပေးစာ'],
+    RPT: ['REPORT', 'အစီရင်ခံစာ'],
+    CIR: ['CIRCULAR', 'လှည့်ပတ်ကြေညာချက်'],
+    POL: ['POLICY DOCUMENT', 'မူဝါဒ'],
+    DIR: ['DIRECTIVE', 'ညွှန်ကြားချက်'],
+  };
+  const [labelEn, labelMm] = typeLabels[type] || [type, type];
+  const titleDisplay = bilingual ? `${labelEn}  |  ${labelMm}` : (showEn ? labelEn : labelMm);
+  const certifyEn = 'This is to certify / confirm that:';
+  const certifyMm = 'အထက်အကြောင်းအရာပါကိစ္စနှင့် ပတ်သက်၍';
+
+  return `
+    ${_letterHead()}
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:24px;font-size:10pt">
+      <div style="line-height:1.9">
+        ${showEn ? `<div><strong>Ref No:</strong> ${refNo}</div>` : ''}
+        ${showMm ? `<div><strong>ကြေညာချက်အမှတ်:</strong> ${refNo}</div>` : ''}
+      </div>
+      <div style="text-align:right;line-height:1.9">
+        ${showEn ? `<div><strong>Date:</strong> ${_todayFormatted()}</div>` : ''}
+        ${showMm ? `<div><strong>ရက်စွဲ:</strong> ${_todayFormattedMM()}</div>` : ''}
+      </div>
+    </div>
+    <div style="text-align:center;margin-bottom:24px">
+      <span style="font-size:14pt;font-weight:bold;text-decoration:underline;text-transform:uppercase;letter-spacing:1.5px">${titleDisplay}</span>
+    </div>
+    ${subjectLine ? `<div style="margin-bottom:16px;font-size:10.5pt"><strong>${showEn ? 'Subject' : 'အကြောင်းအရာ'}${bilingual ? ' / အကြောင်းအရာ' : ''}:</strong> ${subjectLine}</div>` : ''}
+    <p style="margin-bottom:16px;font-size:10.5pt;line-height:1.9">${showEn ? certifyEn : ''}${bilingual ? '<br>' + certifyMm : (!showEn ? certifyMm : '')}</p>
+    <p style="margin-bottom:60px;font-size:10.5pt">&nbsp;</p>
+    <p style="margin-bottom:4px;font-size:10.5pt">${bilingual ? 'Yours faithfully / လေးစားစွာဖြင့်' : (showEn ? 'Yours faithfully,' : 'လေးစားစွာဖြင့်')}</p>
+    ${_signatureBlock()}
+  `;
+}
+
+function _dofTemplateCOS(refNo, subjectLine, bilingual, showEn, showMm, s) {
+  return `
+    ${_letterHead()}
+    <div style="display:flex;justify-content:flex-end;margin-bottom:28px;font-size:10pt">
+      <div style="text-align:right;line-height:1.9">
+        <strong>Ref:</strong> ${refNo}<br>
+        ${showEn ? `<strong>Date:</strong> ${_todayFormatted()}` : ''}
+        ${bilingual ? '<br>' : ''}
+        ${showMm ? `<strong>ရက်စွဲ ။</strong> ${_todayFormattedMM()}` : ''}
+      </div>
+    </div>
+    <div style="text-align:center;margin-bottom:28px">
+      <span style="font-size:14pt;font-weight:bold;text-decoration:underline;text-transform:uppercase;letter-spacing:1.5px">
+        ${bilingual ? 'Confirmation of Service  |  ဝန်ထမ်းခြင်း အတည်ပြုစာ' : (showEn ? 'Confirmation of Service' : 'ဝန်ထမ်းခြင်း အတည်ပြုစာ')}
+      </span>
+    </div>
+    <p style="margin-bottom:16px;font-size:10.5pt">${bilingual ? 'To Whom It May Concern,' : (showEn ? 'To Whom It May Concern,' : 'သက်ဆိုင်ရာသူများသို့')}</p>
+    <p style="margin-bottom:16px;text-align:justify;line-height:1.9;font-size:10.5pt">
+      ${showEn ? `This is to confirm that <strong>${s.name}</strong> (known as <strong>${s.nickname}</strong>), Staff ID <strong>${s.staffId}</strong>, is currently serving as <strong>${s.title}</strong> in the <strong>Department of ${s.dept}</strong> at the University of Medicine (2), Yangon, under the UM2 MBBS Programme.` : ''}
+      ${bilingual ? '<br><br>' : ''}
+      ${showMm ? `<strong>${s.name}</strong> (${s.nickname}), ဝန်ထမ်းအမှတ် <strong>${s.staffId}</strong> သည် ရန်ကုန်ဆေးတက္ကသိုလ်(၂) UM2 MBBS ပရိုဂရမ်တွင် <strong>${s.dept}</strong> ဌာန၌ <strong>${s.title}</strong> အဖြစ် တာဝန်ထမ်းဆောင်လျက်ရှိကြောင်း အတည်ပြုအပ်ပါသည်။` : ''}
+    </p>
+    <p style="margin-bottom:28px;text-align:justify;line-height:1.9;font-size:10.5pt">
+      ${showEn ? 'This letter is issued upon the request of the staff member for official purposes. The Secretariat\'s Office certifies the accuracy of the above information as of the date of issue.' : ''}
+      ${bilingual ? '<br><br>' : ''}
+      ${showMm ? 'ဤစာသည် ဝန်ထမ်း၏ တောင်းဆိုချက်အရ တရားဝင်ရည်ရွယ်ချက်များအတွက် ထုတ်ပေးခြင်းဖြစ်သည်။ အတွင်းရေးမှူးဌာနမှ အထက်ဖော်ပြပါ အချက်အလက်များ၏ မှန်ကန်မှုကို ထုတ်ပေးသည့်ရက်စွဲ ၌ အတည်ပြုပါသည်။' : ''}
+    </p>
+    <p style="margin-bottom:4px;font-size:10.5pt">${bilingual ? 'Yours faithfully / လေးစားစွာဖြင့်' : (showEn ? 'Yours faithfully,' : 'လေးစားစွာဖြင့်')}</p>
+    ${_signatureBlock()}
+  `;
+}
+
+function _dofTemplateGSC(refNo, subjectLine, bilingual, showEn, showMm, s) {
+  return `
+    ${_letterHead()}
+    <div style="display:flex;justify-content:flex-end;margin-bottom:28px;font-size:10pt">
+      <div style="text-align:right;line-height:1.9">
+        <strong>Ref:</strong> ${refNo}<br>
+        ${showEn ? `<strong>Date:</strong> ${_todayFormatted()}` : ''}
+        ${bilingual ? '<br>' : ''}
+        ${showMm ? `<strong>ရက်စွဲ ။</strong> ${_todayFormattedMM()}` : ''}
+      </div>
+    </div>
+    <div style="text-align:center;margin-bottom:28px">
+      <span style="font-size:14pt;font-weight:bold;text-decoration:underline;text-transform:uppercase;letter-spacing:1.5px">
+        ${bilingual ? 'Certificate of Good Standing  |  ကောင်းမွန်မှု သက်သေချက်' : (showEn ? 'Certificate of Good Standing' : 'ကောင်းမွန်မှု သက်သေချက်')}
+      </span>
+    </div>
+    <p style="margin-bottom:16px;font-size:10.5pt">${bilingual ? 'To Whom It May Concern,' : (showEn ? 'To Whom It May Concern,' : 'သက်ဆိုင်ရာသူများသို့')}</p>
+    <p style="margin-bottom:16px;text-align:justify;line-height:1.9;font-size:10.5pt">
+      ${showEn ? `This is to certify that <strong>${s.name}</strong> (known as <strong>${s.nickname}</strong>), Staff ID <strong>${s.staffId}</strong>, is currently employed as <strong>${s.title}</strong> in the <strong>Department of ${s.dept}</strong> at the University of Medicine (2), Yangon.` : ''}
+      ${bilingual ? '<br><br>' : ''}
+      ${showMm ? `<strong>${s.name}</strong> (${s.nickname}), ဝန်ထမ်းအမှတ် <strong>${s.staffId}</strong> သည် ရန်ကုန်ဆေးတက္ကသိုလ်(၂)တွင် <strong>${s.dept}</strong> ဌာန၌ <strong>${s.title}</strong> အဖြစ် ယခုအခါ တာဝန်ထမ်းဆောင်လျက်ရှိကြောင်း သက်သေပြုအပ်ပါသည်။` : ''}
+    </p>
+    <p style="margin-bottom:16px;text-align:justify;line-height:1.9;font-size:10.5pt">
+      ${showEn ? 'Based on the records maintained by the Secretariat\'s Office, the above-named staff member is <strong>in good professional and institutional standing</strong> with the university as of the date of this certificate.' : ''}
+      ${bilingual ? '<br><br>' : ''}
+      ${showMm ? 'အတွင်းရေးမှူးဌာန၏ မှတ်တမ်းများအရ အထက်ဖော်ပြပါ ဝန်ထမ်းသည် ဤသက်သေချက် ထုတ်ပေးသည့်ရက်တွင် တက္ကသိုလ်နှင့် <strong>ကောင်းမွန်သော ပညာရှင်ဆိုင်ရာနှင့် အဖွဲ့အစည်းဆိုင်ရာ ရပ်တည်မှု</strong> ရှိကြောင်း အတည်ပြုသည်။' : ''}
+    </p>
+    <p style="margin-bottom:28px;text-align:justify;line-height:1.9;font-size:10.5pt">
+      ${showEn ? 'This certificate is issued at the staff member\'s request and is valid for official purposes only when accompanied by an authorised signature and the university\'s official stamp.' : ''}
+      ${bilingual ? '<br><br>' : ''}
+      ${showMm ? 'ဤသက်သေချက်သည် ဝန်ထမ်း၏ တောင်းဆိုချက်အရ ထုတ်ပေးခြင်းဖြစ်ပြီး တရားဝင်လက်မှတ်နှင့် တံဆိပ်တပ်မှသာ တရားဝင်ပါသည်။' : ''}
+    </p>
+    <p style="margin-bottom:4px;font-size:10.5pt">${bilingual ? 'Yours faithfully / လေးစားစွာဖြင့်' : (showEn ? 'Yours faithfully,' : 'လေးစားစွာဖြင့်')}</p>
+    ${_signatureBlock()}
+  `;
+}
+
+function _dofTemplateFIR(refNo, subjectLine, bilingual, showEn, showMm, s) {
   const yearsOfService = (() => {
     const rawDate = document.getElementById('sp-startdate')?.value;
     if (!rawDate) return '—';
     const start = new Date(rawDate);
     const now = new Date();
     const yrs = now.getFullYear() - start.getFullYear() - (now < new Date(now.getFullYear(), start.getMonth(), start.getDate()) ? 1 : 0);
-    return yrs === 1 ? '1 year' : `${yrs} years`;
+    return yrs === 1 ? '1 year / ၁ နှစ်' : `${yrs} years / ${yrs} နှစ်`;
   })();
-  _printDoc(`
+  return `
     ${_letterHead()}
     <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:24px;font-size:10pt">
       <div></div>
-      <div style="text-align:right;line-height:1.8">
+      <div style="text-align:right;line-height:1.9">
         <strong>Ref:</strong> ${refNo}<br>
-        <strong>Date:</strong> ${_todayFormatted()}
+        <strong>Date${bilingual ? ' / ရက်စွဲ' : (showMm ? ' / ရက်စွဲ' : '')}:</strong> ${_todayFormatted()}${bilingual ? ' · ' + _todayFormattedMM() : (showMm ? '<br>' + _todayFormattedMM() : '')}
       </div>
     </div>
     <div style="text-align:center;margin-bottom:28px">
       <span style="font-size:14pt;font-weight:bold;text-decoration:underline;text-transform:uppercase;letter-spacing:1.5px">
-        Faculty Member Information Record
+        ${bilingual ? 'Faculty Member Information Record  |  ဝန်ထမ်းအချက်အလက် မှတ်တမ်း' : (showEn ? 'Faculty Member Information Record' : 'ဝန်ထမ်းအချက်အလက် မှတ်တမ်း')}
       </span>
     </div>
-
-    <!-- Personal & Service Details Table -->
     <table style="width:100%;border-collapse:collapse;font-size:10.5pt;margin-bottom:24px">
       <colgroup><col style="width:36%"><col style="width:64%"></colgroup>
       <tbody>
-        <tr style="background:#f7eef0">
-          <td colspan="2" style="padding:8px 12px;font-weight:bold;font-size:10pt;color:#8B1A2E;border:1px solid #ddd;letter-spacing:.5px;text-transform:uppercase">Personal Information</td>
-        </tr>
-        <tr><td style="padding:8px 12px;border:1px solid #ddd;color:#555;font-weight:600">Full Name</td><td style="padding:8px 12px;border:1px solid #ddd">${s.name}</td></tr>
-        <tr style="background:#fafafa"><td style="padding:8px 12px;border:1px solid #ddd;color:#555;font-weight:600">Known As (Nickname)</td><td style="padding:8px 12px;border:1px solid #ddd">${s.nickname}</td></tr>
-        <tr><td style="padding:8px 12px;border:1px solid #ddd;color:#555;font-weight:600">Staff ID</td><td style="padding:8px 12px;border:1px solid #ddd;font-family:monospace">${s.staffId}</td></tr>
-        <tr style="background:#fafafa">
-          <td colspan="2" style="padding:8px 12px;font-weight:bold;font-size:10pt;color:#8B1A2E;border:1px solid #ddd;letter-spacing:.5px;text-transform:uppercase">Academic Appointment</td>
-        </tr>
-        <tr><td style="padding:8px 12px;border:1px solid #ddd;color:#555;font-weight:600">Department</td><td style="padding:8px 12px;border:1px solid #ddd">${s.dept}</td></tr>
-        <tr style="background:#fafafa"><td style="padding:8px 12px;border:1px solid #ddd;color:#555;font-weight:600">Title / Position</td><td style="padding:8px 12px;border:1px solid #ddd">${s.title}</td></tr>
-        <tr><td style="padding:8px 12px;border:1px solid #ddd;color:#555;font-weight:600">Guest Lecturer</td><td style="padding:8px 12px;border:1px solid #ddd">${s.guestLecturer}</td></tr>
-        <tr style="background:#fafafa">
-          <td colspan="2" style="padding:8px 12px;font-weight:bold;font-size:10pt;color:#8B1A2E;border:1px solid #ddd;letter-spacing:.5px;text-transform:uppercase">Service Record</td>
-        </tr>
-        <tr><td style="padding:8px 12px;border:1px solid #ddd;color:#555;font-weight:600">Start Date at UM2 IUC</td><td style="padding:8px 12px;border:1px solid #ddd">${s.startDate}</td></tr>
-        <tr style="background:#fafafa"><td style="padding:8px 12px;border:1px solid #ddd;color:#555;font-weight:600">Years of Service</td><td style="padding:8px 12px;border:1px solid #ddd">${yearsOfService}</td></tr>
-        ${s.quals ? `<tr>
-          <td colspan="2" style="padding:8px 12px;font-weight:bold;font-size:10pt;color:#8B1A2E;border:1px solid #ddd;letter-spacing:.5px;text-transform:uppercase;background:#fafafa">Academic Qualifications</td>
-        </tr>
-        <tr><td colspan="2" style="padding:8px 12px;border:1px solid #ddd;line-height:1.7">${s.quals}</td></tr>` : ''}
-        ${s.capacity ? `<tr style="background:#fafafa">
-          <td colspan="2" style="padding:8px 12px;font-weight:bold;font-size:10pt;color:#8B1A2E;border:1px solid #ddd;letter-spacing:.5px;text-transform:uppercase">Capacity / Areas of Expertise</td>
-        </tr>
-        <tr><td colspan="2" style="padding:8px 12px;border:1px solid #ddd;line-height:1.7">${s.capacity}</td></tr>` : ''}
+        <tr style="background:#f7eef0"><td colspan="2" style="padding:8px 12px;font-weight:bold;font-size:10pt;color:#8B1A2E;border:1px solid #ddd">
+          ${bilingual ? 'Personal Information · ကိုယ်ရေးအချက်အလက်' : (showEn ? 'Personal Information' : 'ကိုယ်ရေးအချက်အလက်')}
+        </td></tr>
+        <tr><td style="padding:8px 12px;border:1px solid #ddd;color:#555;font-weight:600">${bilingual ? 'Full Name · အမည်' : (showEn ? 'Full Name' : 'အမည်')}</td><td style="padding:8px 12px;border:1px solid #ddd">${s.name}</td></tr>
+        <tr style="background:#fafafa"><td style="padding:8px 12px;border:1px solid #ddd;color:#555;font-weight:600">${bilingual ? 'Known As · အမည်အတို' : (showEn ? 'Known As' : 'အမည်အတို')}</td><td style="padding:8px 12px;border:1px solid #ddd">${s.nickname}</td></tr>
+        <tr><td style="padding:8px 12px;border:1px solid #ddd;color:#555;font-weight:600">${bilingual ? 'Staff ID · ဝန်ထမ်းအမှတ်' : (showEn ? 'Staff ID' : 'ဝန်ထမ်းအမှတ်')}</td><td style="padding:8px 12px;border:1px solid #ddd;font-family:monospace">${s.staffId}</td></tr>
+        <tr style="background:#fafafa"><td colspan="2" style="padding:8px 12px;font-weight:bold;font-size:10pt;color:#8B1A2E;border:1px solid #ddd">
+          ${bilingual ? 'Academic Appointment · ပညာရေးဆိုင်ရာ ခန့်အပ်မှု' : (showEn ? 'Academic Appointment' : 'ပညာရေးဆိုင်ရာ ခန့်အပ်မှု')}
+        </td></tr>
+        <tr><td style="padding:8px 12px;border:1px solid #ddd;color:#555;font-weight:600">${bilingual ? 'Department · ဌာန' : (showEn ? 'Department' : 'ဌာန')}</td><td style="padding:8px 12px;border:1px solid #ddd">${s.dept}</td></tr>
+        <tr style="background:#fafafa"><td style="padding:8px 12px;border:1px solid #ddd;color:#555;font-weight:600">${bilingual ? 'Title / Position · ရာထူး' : (showEn ? 'Title / Position' : 'ရာထူး')}</td><td style="padding:8px 12px;border:1px solid #ddd">${s.title}</td></tr>
+        <tr style="background:#fafafa"><td colspan="2" style="padding:8px 12px;font-weight:bold;font-size:10pt;color:#8B1A2E;border:1px solid #ddd">
+          ${bilingual ? 'Service Record · ဝန်ဆောင်မှု မှတ်တမ်း' : (showEn ? 'Service Record' : 'ဝန်ဆောင်မှု မှတ်တမ်း')}
+        </td></tr>
+        <tr><td style="padding:8px 12px;border:1px solid #ddd;color:#555;font-weight:600">${bilingual ? 'Start Date · စတင်သည့်ရက်' : (showEn ? 'Start Date at UM2 IUC' : 'UM2 IUC တွင် စတင်သည့်ရက်')}</td><td style="padding:8px 12px;border:1px solid #ddd">${s.startDate}</td></tr>
+        <tr style="background:#fafafa"><td style="padding:8px 12px;border:1px solid #ddd;color:#555;font-weight:600">${bilingual ? 'Years of Service · ဝန်ဆောင်မှုနှစ်' : (showEn ? 'Years of Service' : 'ဝန်ဆောင်မှုနှစ်')}</td><td style="padding:8px 12px;border:1px solid #ddd">${yearsOfService}</td></tr>
+        ${s.quals ? `<tr><td colspan="2" style="padding:8px 12px;font-weight:bold;font-size:10pt;color:#8B1A2E;border:1px solid #ddd;background:#fafafa">${bilingual ? 'Academic Qualifications · ပညာအရည်အချင်း' : (showEn ? 'Academic Qualifications' : 'ပညာအရည်အချင်း')}</td></tr><tr><td colspan="2" style="padding:8px 12px;border:1px solid #ddd;line-height:1.7">${s.quals}</td></tr>` : ''}
       </tbody>
     </table>
-
-    <p style="margin-bottom:16px;text-align:justify;line-height:1.9;font-size:10.5pt">
-      This record is issued by the Secretariat's Office of the University of Medicine (2), Yangon,
-      as an official summary of the above faculty member's profile and service information
-      as maintained in the UM2 IRIR System as of the date of issue.
-    </p>
-    <p style="margin-bottom:4px;font-size:10.5pt">Prepared by,</p>
+    <p style="margin-bottom:4px;font-size:10.5pt">${bilingual ? 'Prepared by / ပြုစုသူ' : (showEn ? 'Prepared by,' : 'ပြုစုသူ')}</p>
     ${_signatureBlock()}
-  `);
+  `;
 }
 
-function printStaffConfirmation() {
-  const s = _getStaffForPrint();
-  const refNo = `UM2/SEC/COS/STAFF/${s.staffId}/${new Date().getFullYear()}`;
-  _printDoc(`
-    ${_letterHead()}
-    <div style="display:flex;justify-content:flex-end;margin-bottom:28px;font-size:10pt">
-      <div style="text-align:right;line-height:1.8">
-        <strong>Ref:</strong> ${refNo}<br>
-        <strong>Date:</strong> ${_todayFormatted()}
-      </div>
-    </div>
-    <div style="text-align:center;margin-bottom:28px">
-      <span style="font-size:14pt;font-weight:bold;text-decoration:underline;text-transform:uppercase;letter-spacing:1.5px">
-        Confirmation of Service
-      </span>
-    </div>
-    <p style="margin-bottom:16px">To Whom It May Concern,</p>
-    <p style="margin-bottom:16px;text-align:justify;line-height:1.9">
-      This is to confirm that <strong>${s.name}</strong> (known as <strong>${s.nickname}</strong>),
-      Staff ID <strong>${s.staffId}</strong>, is currently serving as
-      <strong>${s.title}</strong> in the <strong>Department of ${s.dept}</strong>
-      at the University of Medicine (2), Yangon, under the UM2 MBBS Programme.
-    </p>
-    ${s.quals ? `<p style="margin-bottom:16px;text-align:justify;line-height:1.9">
-      Academic qualifications on record: <strong>${s.quals}</strong>.
-    </p>` : ''}
-    <p style="margin-bottom:28px;text-align:justify;line-height:1.9">
-      This letter is issued upon the request of the staff member for official purposes.
-      The Secretariat's Office certifies the accuracy of the above information as of the date of issue.
-    </p>
-    <p style="margin-bottom:4px">Yours faithfully,</p>
-    ${_signatureBlock()}
-  `);
+/* ── Myanmar date formatter ── */
+function _todayFormattedMM() {
+  const d = new Date();
+  const months = ['ဇန်နဝါရီ','ဖေဖော်ဝါရီ','မတ်','ဧပြီ','မေ','ဇွန်','ဇူလိုင်','သြဂုတ်','စက်တင်ဘာ','အောက်တိုဘာ','နိုဝင်ဘာ','ဒီဇင်ဘာ'];
+  return `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}`;
 }
 
-function printStaffGoodStanding() {
-  const s = _getStaffForPrint();
-  const refNo = `UM2/SEC/GSC/STAFF/${s.staffId}/${new Date().getFullYear()}`;
-  _printDoc(`
-    ${_letterHead()}
-    <div style="display:flex;justify-content:flex-end;margin-bottom:28px;font-size:10pt">
-      <div style="text-align:right;line-height:1.8">
-        <strong>Ref:</strong> ${refNo}<br>
-        <strong>Date:</strong> ${_todayFormatted()}
-      </div>
-    </div>
-    <div style="text-align:center;margin-bottom:28px">
-      <span style="font-size:14pt;font-weight:bold;text-decoration:underline;text-transform:uppercase;letter-spacing:1.5px">
-        Certificate of Good Standing
-      </span>
-    </div>
-    <p style="margin-bottom:16px">To Whom It May Concern,</p>
-    <p style="margin-bottom:16px;text-align:justify;line-height:1.9">
-      This is to certify that <strong>${s.name}</strong> (known as <strong>${s.nickname}</strong>),
-      Staff ID <strong>${s.staffId}</strong>, is currently employed as
-      <strong>${s.title}</strong> in the <strong>Department of ${s.dept}</strong>
-      at the University of Medicine (2), Yangon.
-    </p>
-    <p style="margin-bottom:16px;text-align:justify;line-height:1.9">
-      Based on the records maintained by the Secretariat's Office, the above-named staff member
-      is <strong>in good professional and institutional standing</strong> with the university
-      as of the date of this certificate. There are no outstanding disciplinary proceedings
-      or administrative sanctions recorded against this individual in the university's official registry.
-    </p>
-    <p style="margin-bottom:28px;text-align:justify;line-height:1.9">
-      This certificate is issued at the staff member's request and is valid for official purposes
-      only when accompanied by an authorised signature and the university's official stamp.
-    </p>
-    <p style="margin-bottom:4px">Yours faithfully,</p>
-    ${_signatureBlock()}
-  `);
+/* ── Document Log: load from Supabase ── */
+let _dofLogAll = [];
+
+async function loadDocLog() {
+  const tbody = document.getElementById('dof-log-body');
+  if (!tbody) return;
+  tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--ink3);padding:20px">Loading… · ခဏစောင့်ပါ</td></tr>';
+
+  const role = (typeof currentRole !== 'undefined') ? currentRole : 'staff';
+  let query = db.from('generated_documents').select('*').order('created_at', { ascending: false }).limit(200);
+
+  const { data, error } = await query;
+  if (error) {
+    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;color:var(--ink3);padding:20px">Failed to load · မဆွဲနိုင်ပါ: ${error.message}</td></tr>`;
+    return;
+  }
+  _dofLogAll = data || [];
+  dofRenderLog(_dofLogAll);
 }
 
+function dofRenderLog(rows) {
+  const tbody = document.getElementById('dof-log-body');
+  if (!tbody) return;
+  if (!rows.length) {
+    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--ink3);padding:24px">No documents yet · မှတ်တမ်း မရှိသေးပါ</td></tr>';
+    return;
+  }
+  const langLabel = { en: 'EN', mm: 'MM', bilingual: 'EN+MM' };
+  tbody.innerHTML = rows.map(r => {
+    const d = new Date(r.created_at);
+    const dateStr = d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+    const timeStr = d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+    return `<tr>
+      <td style="font-family:monospace;font-size:12px;white-space:nowrap;font-weight:600;color:var(--crimson)">${r.ref_no || '—'}</td>
+      <td><span style="background:var(--blue-light);color:var(--blue);font-size:10px;font-weight:700;padding:2px 8px;border-radius:4px;letter-spacing:.5px">${r.doc_type || '—'}</span></td>
+      <td style="font-size:12px">${r.subject_en || '—'}</td>
+      <td style="font-size:12px">${r.subject_mm || '—'}</td>
+      <td style="font-size:11px;white-space:nowrap"><span style="background:var(--surface);border:1px solid var(--line);padding:1px 6px;border-radius:4px">${langLabel[r.language] || r.language || '—'}</span></td>
+      <td style="font-size:12px;white-space:nowrap">${r.staff_name || r.staff_id || '—'}</td>
+      <td style="font-size:11px;white-space:nowrap;color:var(--ink3)">${dateStr}<br>${timeStr}</td>
+    </tr>`;
+  }).join('');
+}
+
+function dofFilterLog() {
+  const q = (document.getElementById('dof-log-search')?.value || '').toLowerCase();
+  const t = document.getElementById('dof-log-filter')?.value || '';
+  const filtered = _dofLogAll.filter(r => {
+    const matchType = !t || r.doc_type === t;
+    const matchQ = !q || (r.ref_no || '').toLowerCase().includes(q)
+      || (r.subject_en || '').toLowerCase().includes(q)
+      || (r.subject_mm || '').toLowerCase().includes(q)
+      || (r.staff_name || '').toLowerCase().includes(q);
+    return matchType && matchQ;
+  });
+  dofRenderLog(filtered);
+}
+
+/* ── Hook: init when docOffice view is shown ── */
+const _origShowViewDOF = typeof showView === 'function' ? showView : null;
+if (_origShowViewDOF) {
+  const __showViewPatched = _origShowViewDOF;
+  showView = function(viewId, ...args) {
+    __showViewPatched(viewId, ...args);
+    if (viewId === 'docOffice') {
+      dofApplyRoleTypes();
+      dofUpdateRef();
+      loadDocLog();
+    }
+  };
+}
+
+/* ── Keep original quick-print functions as aliases ── */
+function printStaffConfirmation() { dofQuick('COS', 'Confirmation of Active Service', 'တက်ကြွသောဝန်ဆောင်မှု အတည်ပြုချက်'); }
+function printStaffGoodStanding() { dofQuick('GSC', 'Certificate of Good Standing',   'ကောင်းမွန်မှု သက်သေချက်'); }
+function printFacultyInfoRecord() { dofQuick('FIR', 'Faculty Member Information Record','ဝန်ထမ်းအချက်အလက် မှတ်တမ်း'); }
+</script>
 
 function _getStudentForPrint() {
   const s = students.find(x => x.id === currentProfileId);
