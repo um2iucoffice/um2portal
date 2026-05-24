@@ -2630,16 +2630,24 @@ canvas.photo-canvas, #idcardPhoto canvas, #homeAvatar canvas, #gradesAvatar canv
   .sec-head h2 { font-size: 19px; }
   .sec-head p { font-size: 12px; line-height: 1.5; }
 
-  /* ── HOME: Hero banner — compact horizontal ── */
+  /* ── HOME: Hero banner — single-layer stacked ── */
   .home-hero {
-    flex-direction: row; gap: 14px;
-    padding: 18px 16px; border-radius: 14px; margin-bottom: 18px; align-items: center;
+    flex-direction: column; gap: 0;
+    padding: 20px 18px; border-radius: 14px; margin-bottom: 18px;
+    align-items: flex-start; justify-content: center;
   }
-  .home-hero-avatar { width: 52px; height: 52px; font-size: 20px; border-radius: 10px; flex-shrink: 0; }
-  .home-hero-text { flex: 1; text-align: left; }
-  .home-hero-greeting { font-size: 10px; margin-bottom: 2px; }
-  .home-hero-name { font-size: 17px; margin-bottom: 2px; }
-  .home-hero-sub { font-size: 11px; }
+  .home-hero-avatar { display: none; }
+  .home-hero-text { flex: 1; text-align: left; width: 100%; }
+  .home-hero-greeting { display: none; }
+  .home-hero-name { font-size: 28px; margin-bottom: 6px; line-height: 1.15; }
+  .home-hero-sub {
+    font-size: 12px;
+    display: flex; flex-direction: column; gap: 2px;
+    color: rgba(255,255,255,.45);
+  }
+  .home-hero-sub .hero-year { display: block; }
+  .home-hero-sub .hero-dot { display: none; }
+  .home-hero-sub .hero-degree { display: block; }
   .home-hero-badge { display: none; }
 
   /* ── HOME: Quick-access icon grid (3 cols) ── */
@@ -3452,6 +3460,162 @@ body.theme-light .cs-year-tab.active {
   background: var(--crimson-light); border-color: rgba(139,26,46,0.25); color: var(--crimson);
 }
 
+/* ── COURSE SESSION INNER TABS ── */
+.cs-inner-tabs {
+  display: flex; gap: 0; border-bottom: 2px solid rgba(255,255,255,0.08);
+  margin-bottom: 20px; overflow-x: auto; scrollbar-width: none;
+}
+.cs-inner-tabs::-webkit-scrollbar { display: none; }
+.cs-inner-tab {
+  padding: 10px 20px; font-size: 13px; font-weight: 400;
+  color: rgba(255,255,255,.35); background: none; border: none;
+  border-bottom: 2px solid transparent; margin-bottom: -2px;
+  cursor: pointer; white-space: nowrap;
+  font-family: 'DM Sans', sans-serif;
+  transition: color .15s, border-color .15s;
+}
+.cs-inner-tab:hover { color: rgba(255,255,255,.65); }
+.cs-inner-tab.active { color: #e05470; border-bottom-color: #e05470; font-weight: 500; }
+body.theme-light .cs-inner-tabs { border-bottom-color: var(--line); }
+body.theme-light .cs-inner-tab { color: var(--ink3); }
+body.theme-light .cs-inner-tab:hover { color: var(--ink); }
+body.theme-light .cs-inner-tab.active { color: var(--crimson); border-bottom-color: var(--crimson); }
+
+/* ── TIMETABLE ── */
+.tt-panel { display: none; }
+.tt-panel.active { display: block; }
+
+.tt-filter-bar {
+  display: flex; align-items: center; gap: 10px;
+  margin-bottom: 16px; flex-wrap: wrap;
+}
+.tt-filter-label {
+  font-size: 11px; font-weight: 600; letter-spacing: .5px;
+  text-transform: uppercase; color: rgba(255,255,255,.35);
+  font-family: 'DM Sans', sans-serif;
+}
+body.theme-light .tt-filter-label { color: var(--ink3); }
+.tt-filter-pill {
+  padding: 5px 12px; border-radius: 99px; font-size: 11px;
+  border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.04);
+  color: rgba(255,255,255,0.4); cursor: pointer; font-family: 'DM Sans', sans-serif;
+  transition: all .15s;
+}
+.tt-filter-pill:hover { background: rgba(255,255,255,0.08); color: rgba(255,255,255,.7); }
+.tt-filter-pill.active {
+  background: rgba(139,26,46,0.22); border-color: rgba(139,26,46,0.4); color: #e05470;
+}
+body.theme-light .tt-filter-pill { background: var(--surface); border-color: var(--line); color: var(--ink3); }
+body.theme-light .tt-filter-pill:hover { background: var(--crimson-light); color: var(--crimson); }
+body.theme-light .tt-filter-pill.active { background: var(--crimson-light); border-color: rgba(139,26,46,.25); color: var(--crimson); }
+
+/* Schedule list (mobile-first, grouped by day) */
+.tt-day-group { margin-bottom: 18px; }
+.tt-day-head {
+  display: flex; align-items: center; gap: 10px;
+  padding: 7px 14px; border-radius: 8px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.07);
+  font-size: 11px; font-weight: 700; letter-spacing: 1.2px;
+  text-transform: uppercase; color: rgba(255,255,255,.55);
+  font-family: 'DM Sans', sans-serif; margin-bottom: 8px;
+}
+.tt-day-head.today { background: rgba(139,26,46,0.14); border-color: rgba(139,26,46,0.3); color: #e05470; }
+body.theme-light .tt-day-head { background: var(--surface); border-color: var(--line); color: var(--ink3); }
+body.theme-light .tt-day-head.today { background: var(--crimson-light); border-color: rgba(139,26,46,.2); color: var(--crimson); }
+
+.tt-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: rgba(255,255,255,.25); flex-shrink: 0;
+}
+.tt-day-head.today .tt-dot { background: #e05470; }
+
+.tt-row {
+  display: flex; align-items: flex-start; gap: 12px;
+  padding: 12px 14px; border-radius: 10px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.07);
+  margin-bottom: 6px; transition: border-color .15s;
+}
+.tt-row:hover { border-color: rgba(139,26,46,0.3); }
+body.theme-light .tt-row { background: var(--white); border-color: var(--line); }
+body.theme-light .tt-row:hover { border-color: rgba(139,26,46,.2); }
+
+.tt-time-col {
+  flex-shrink: 0; width: 80px;
+  display: flex; flex-direction: column; align-items: flex-start; gap: 2px;
+}
+.tt-time-start {
+  font-family: 'Libre Baskerville', serif; font-size: 15px; font-weight: 700;
+  color: rgba(255,255,255,.85); line-height: 1.1;
+}
+body.theme-light .tt-time-start { color: var(--ink); }
+.tt-time-end {
+  font-size: 10px; color: rgba(255,255,255,.3); letter-spacing: .3px;
+}
+body.theme-light .tt-time-end { color: var(--ink3); }
+.tt-time-dur {
+  display: inline-block; margin-top: 3px;
+  font-size: 9px; font-weight: 600; letter-spacing: .4px;
+  text-transform: uppercase; padding: 2px 6px; border-radius: 99px;
+  background: rgba(255,255,255,0.06); color: rgba(255,255,255,.3);
+  font-family: 'DM Sans', sans-serif;
+}
+body.theme-light .tt-time-dur { background: var(--surface); color: var(--ink3); }
+
+.tt-body-col { flex: 1; min-width: 0; }
+.tt-course-id {
+  font-size: 10px; font-weight: 700; letter-spacing: .8px;
+  text-transform: uppercase; color: rgba(139,26,46,.8);
+  font-family: 'DM Sans', sans-serif; margin-bottom: 2px;
+}
+body.theme-light .tt-course-id { color: var(--crimson); }
+.tt-course-name {
+  font-size: 13px; font-weight: 600; color: rgba(255,255,255,.88);
+  font-family: 'DM Sans', sans-serif; line-height: 1.3; margin-bottom: 3px;
+}
+body.theme-light .tt-course-name { color: var(--ink); }
+.tt-subtopic {
+  font-size: 11px; color: rgba(255,255,255,.4);
+  font-style: italic; line-height: 1.4; margin-bottom: 4px;
+}
+body.theme-light .tt-subtopic { color: var(--ink3); }
+.tt-room-badge {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-size: 10px; font-weight: 600; letter-spacing: .3px;
+  padding: 3px 8px; border-radius: 6px;
+  background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1);
+  color: rgba(255,255,255,.5); font-family: 'DM Sans', sans-serif;
+}
+body.theme-light .tt-room-badge { background: var(--surface); border-color: var(--line); color: var(--ink3); }
+
+/* Date badge shown when a specific date is set */
+.tt-date-badge {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-size: 10px; color: rgba(154,123,47,0.9);
+  background: rgba(154,123,47,0.1); border: 1px solid rgba(154,123,47,0.25);
+  border-radius: 6px; padding: 2px 8px; margin-left: 6px;
+  font-family: 'DM Sans', sans-serif; font-weight: 500;
+}
+body.theme-light .tt-date-badge { background: var(--gold-light); border-color: rgba(154,123,47,.25); color: var(--gold); }
+
+.tt-empty, .tt-loading, .tt-error {
+  text-align: center; padding: 56px 24px;
+  color: rgba(255,255,255,.2); font-size: 13px;
+}
+body.theme-light .tt-empty, body.theme-light .tt-loading, body.theme-light .tt-error { color: var(--ink3); }
+.tt-loading { display: flex; align-items: center; justify-content: center; gap: 8px; }
+.tt-error { color: rgba(224,84,112,.7); }
+body.theme-light .tt-error { color: var(--crimson); }
+
+@media (max-width: 700px) {
+  .cs-inner-tab { padding: 9px 14px; font-size: 12px; }
+  .tt-time-col { width: 68px; }
+  .tt-time-start { font-size: 13px; }
+  .tt-row { padding: 10px 12px; gap: 10px; }
+  .tt-course-name { font-size: 12px; }
+}
+
 /* ── MARK BOOK ── */
 .mb-year-head {
   background: rgba(255,255,255,0.04);
@@ -4099,7 +4263,7 @@ body.theme-light .comms-ch-btn-gp { color: inherit; }
     </button>
     <button class="mob-more-item" onclick="mobSwitchTab('coursesession',null);closeMobMore()">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
-      Course Session
+      Academic Session
     </button>
     <button class="mob-more-item" onclick="mobSwitchTab('markbook',null);closeMobMore()">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
@@ -4185,7 +4349,7 @@ body.theme-light .comms-ch-btn-gp { color: inherit; }
 
       <button class="sbnav-item" data-section="coursesession" onclick="switchSection('coursesession',this)" id="navCourseSession">
         <svg class="sbnav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
-        <span class="sbnav-label">Course Session</span>
+        <span class="sbnav-label">Academic Session</span>
       </button>
 
       <button class="sbnav-item" data-section="markbook" onclick="switchSection('markbook',this)" id="navMarkbook">
@@ -4285,7 +4449,7 @@ body.theme-light .comms-ch-btn-gp { color: inherit; }
         <div class="home-hero-text">
           <div class="home-hero-greeting">Welcome back</div>
           <div class="home-hero-name" id="welcomeName">—</div>
-          <div class="home-hero-sub">Academic Year 2026–2027 &nbsp;·&nbsp; <span id="homeProgramName"></span></div>
+          <div class="home-hero-sub"><span class="hero-year">Academic Year 2026–2027</span><span class="hero-dot">&nbsp;·&nbsp;</span><span class="hero-degree" id="homeProgramName"></span></div>
         </div>
         <div class="home-hero-badge">
           <div class="home-hero-badge-label" id="homeIdLabel">Student ID</div>
@@ -4444,7 +4608,7 @@ body.theme-light .comms-ch-btn-gp { color: inherit; }
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--aq-stroke)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
               </div>
               <div class="aq-body">
-                <div class="aq-title">Course Session</div>
+                <div class="aq-title">Academic Session</div>
                 <div class="aq-sub">Current year courses &amp; progress</div>
               </div>
               <div class="aq-arrow">→</div>
@@ -5369,24 +5533,68 @@ body.theme-light .comms-ch-btn-gp { color: inherit; }
     <!-- COURSE SESSION -->
     <div class="section" id="panel-coursesession">
       <div class="sec-head">
-        <h2>Course Session</h2>
-        <p id="csPageSub">All courses for your current academic year — completed courses are marked green.</p>
+        <h2>Academic Session</h2>
+        <p id="csPageSub">Courses and timetable for your current academic year.</p>
       </div>
-      <div id="courseSessionWrap" class="cs-wrap" style="display:none">
-        <div class="cs-header">
-          <div class="cs-header-left">
-            <span class="cs-title">Session</span>
-            <span class="cs-year-badge" id="csYearBadge">—</span>
-          </div>
-          <div class="cs-progress-bar-wrap">
-            <span id="csProgressLabel">0 / 0 completed</span>
-            <div class="cs-progress-track">
-              <div class="cs-progress-fill" id="csProgressFill" style="width:0%"></div>
+
+      <!-- Inner tab bar -->
+      <div class="cs-inner-tabs" id="csInnerTabs">
+        <button class="cs-inner-tab active" data-cstab="courses" onclick="switchCsTab('courses',this)">Courses</button>
+        <button class="cs-inner-tab" data-cstab="timetable" onclick="switchCsTab('timetable',this)">Lecture &amp; Discussion Timetable</button>
+      </div>
+
+      <!-- ── COURSES TAB ── -->
+      <div class="tt-panel active" id="csTab-courses">
+        <div id="courseSessionWrap" class="cs-wrap" style="display:none">
+          <div class="cs-header">
+            <div class="cs-header-left">
+              <span class="cs-title">Session</span>
+              <span class="cs-year-badge" id="csYearBadge">—</span>
+            </div>
+            <div class="cs-progress-bar-wrap">
+              <span id="csProgressLabel">0 / 0 completed</span>
+              <div class="cs-progress-track">
+                <div class="cs-progress-fill" id="csProgressFill" style="width:0%"></div>
+              </div>
             </div>
           </div>
+          <div class="cs-year-tabs" id="csYearTabs" style="display:none"></div>
+          <div class="cs-grid" id="csGrid"></div>
         </div>
-        <div class="cs-year-tabs" id="csYearTabs" style="display:none"></div>
-        <div class="cs-grid" id="csGrid"></div>
+      </div>
+
+      <!-- ── TIMETABLE TAB ── -->
+      <div class="tt-panel" id="csTab-timetable">
+        <!-- Day filter pills -->
+        <div class="tt-filter-bar" id="ttFilterBar" style="display:none">
+          <span class="tt-filter-label">Day</span>
+          <button class="tt-filter-pill active" data-day="All" onclick="ttFilterDay('All',this)">All</button>
+          <button class="tt-filter-pill" data-day="Monday"    onclick="ttFilterDay('Monday',this)">Mon</button>
+          <button class="tt-filter-pill" data-day="Tuesday"   onclick="ttFilterDay('Tuesday',this)">Tue</button>
+          <button class="tt-filter-pill" data-day="Wednesday" onclick="ttFilterDay('Wednesday',this)">Wed</button>
+          <button class="tt-filter-pill" data-day="Thursday"  onclick="ttFilterDay('Thursday',this)">Thu</button>
+          <button class="tt-filter-pill" data-day="Friday"    onclick="ttFilterDay('Friday',this)">Fri</button>
+          <button class="tt-filter-pill" data-day="Saturday"  onclick="ttFilterDay('Saturday',this)">Sat</button>
+        </div>
+
+        <!-- Loading -->
+        <div class="tt-loading" id="ttLoading">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
+          Loading timetable…
+        </div>
+
+        <!-- Error -->
+        <div class="tt-error" id="ttError" style="display:none"></div>
+
+        <!-- Content (grouped by day) -->
+        <div id="ttContent" style="display:none"></div>
+
+        <!-- Empty -->
+        <div class="tt-empty" id="ttEmpty" style="display:none">
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.12)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="margin:0 auto 14px;display:block"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          <div style="font-size:14px;font-weight:600;color:rgba(255,255,255,0.25);margin-bottom:4px">No timetable scheduled</div>
+          <div style="font-size:12px;color:rgba(255,255,255,0.15)">Lectures and discussions will appear here once published by the administration.</div>
+        </div>
       </div>
     </div>
 
@@ -7140,7 +7348,7 @@ const SECTION_TITLES = {
   home:          'Home',
   profile:       'My Personal Page',
   grades:        'Academic Record',
-  coursesession: 'Course Session',
+  coursesession: 'Academic Session',
   markbook:      'Mark Book',
   news:          'Our Chronicles at Spring',
   share:         'Contribute to Chronicles',
@@ -7204,6 +7412,7 @@ function switchSection(id, btn, _fromHash) {
   if (id === 'editinfo') { try { onSwitchToEditInfo(); } catch(e) {} }
   if (id === 'comms') { try { loadCommsSection(); } catch(e) {} }
   if (id === 'lecturerooms') { try { loadLectureRooms(); } catch(e) {} }
+  if (id === 'coursesession') { try { loadTimetableIfNeeded(); } catch(e) {} }
 
   // Scroll to top
   const _dm = document.querySelector('.dash-main');
@@ -9414,6 +9623,185 @@ window.submitPost = async function() {
   }
   btn.disabled = false;
 };
+
+// ══════════════════════════════════════════════════════════════
+//  LECTURE & DISCUSSION TIMETABLE
+// ══════════════════════════════════════════════════════════════
+
+var _ttLoaded   = false;
+var _ttAllRows  = [];   // raw timetable rows from server
+var _ttActiveDay = 'All';
+
+// Inner tab switcher (Courses ↔ Timetable)
+window.switchCsTab = function(tab, btn) {
+  document.querySelectorAll('.cs-inner-tab').forEach(function(b) { b.classList.remove('active'); });
+  if (btn) btn.classList.add('active');
+  document.querySelectorAll('.tt-panel').forEach(function(p) { p.classList.remove('active'); });
+  var panel = document.getElementById('csTab-' + tab);
+  if (panel) panel.classList.add('active');
+  if (tab === 'timetable') loadTimetableIfNeeded();
+};
+
+// Only fetch once per session
+function loadTimetableIfNeeded() {
+  if (_ttLoaded) return;
+  _ttLoaded = true;
+  _loadTimetable();
+}
+
+async function _loadTimetable() {
+  var loadEl   = document.getElementById('ttLoading');
+  var errEl    = document.getElementById('ttError');
+  var contentEl= document.getElementById('ttContent');
+  var emptyEl  = document.getElementById('ttEmpty');
+  var filterBar= document.getElementById('ttFilterBar');
+
+  if (!loadEl) return;
+  loadEl.style.display   = 'flex';
+  errEl.style.display    = 'none';
+  contentEl.style.display= 'none';
+  emptyEl.style.display  = 'none';
+  if (filterBar) filterBar.style.display = 'none';
+
+  try {
+    var s   = window._currentStudent || {};
+    var pwd = window._sessionPassword || '';
+    var res = await fetch('/.netlify/functions/get-timetable', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({ studentId: s.id || '', password: pwd })
+    });
+    var data = await res.json();
+    loadEl.style.display = 'none';
+
+    if (!data.success) throw new Error(data.message || 'Failed to load timetable.');
+
+    var rows = data.timetable || [];
+    _ttAllRows = rows;
+
+    if (rows.length === 0) {
+      emptyEl.style.display = 'block';
+      return;
+    }
+
+    if (filterBar) filterBar.style.display = 'flex';
+    renderTimetable(rows, _ttActiveDay);
+    contentEl.style.display = 'block';
+
+  } catch(e) {
+    loadEl.style.display = 'none';
+    errEl.style.display  = 'block';
+    errEl.textContent    = 'Unable to load timetable: ' + e.message;
+    _ttLoaded = false; // allow retry
+  }
+}
+
+var TT_DAY_ORDER = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
+
+function ttDurationLabel(start, end) {
+  // start / end like "08:00:00"
+  try {
+    var s = start.split(':'); var e = end.split(':');
+    var diff = (parseInt(e[0]) * 60 + parseInt(e[1])) - (parseInt(s[0]) * 60 + parseInt(s[1]));
+    if (diff <= 0) return '';
+    var h = Math.floor(diff / 60); var m = diff % 60;
+    return (h ? h + 'h' : '') + (m ? (h ? ' ' : '') + m + 'm' : '');
+  } catch(e) { return ''; }
+}
+
+function ttFmt(t) {
+  // "08:00:00" → "08:00"
+  if (!t) return '—';
+  var parts = t.split(':');
+  return parts[0] + ':' + parts[1];
+}
+
+function ttFmtDate(d) {
+  if (!d) return '';
+  try {
+    var dt = new Date(d + 'T00:00:00');
+    return dt.toLocaleDateString('en-GB', { day:'numeric', month:'short', year:'numeric' });
+  } catch(e) { return d; }
+}
+
+function renderTimetable(rows, dayFilter) {
+  var contentEl = document.getElementById('ttContent');
+  if (!contentEl) return;
+
+  // Group by day
+  var grouped = {};
+  TT_DAY_ORDER.forEach(function(d) { grouped[d] = []; });
+  rows.forEach(function(r) {
+    var d = r.day || 'Other';
+    if (!grouped[d]) grouped[d] = [];
+    grouped[d].push(r);
+  });
+
+  // Sort each day's rows by time_start
+  Object.keys(grouped).forEach(function(d) {
+    grouped[d].sort(function(a,b) { return (a.time_start||'').localeCompare(b.time_start||''); });
+  });
+
+  // Current day-of-week name for "today" highlight
+  var dayNames = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  var todayName = dayNames[new Date().getDay()];
+
+  var html = '';
+  TT_DAY_ORDER.forEach(function(day) {
+    var dayRows = grouped[day] || [];
+    if (dayRows.length === 0) return;
+    if (dayFilter !== 'All' && dayFilter !== day) return;
+
+    var isToday = (day === todayName);
+    html += '<div class="tt-day-group">';
+    html += '<div class="tt-day-head' + (isToday ? ' today' : '') + '">'
+          + '<span class="tt-dot"></span>'
+          + escHtml(day)
+          + (isToday ? ' <span style="font-size:9px;opacity:.7;letter-spacing:.5px">&nbsp;TODAY</span>' : '')
+          + '</div>';
+
+    dayRows.forEach(function(r) {
+      var dur = ttDurationLabel(r.time_start, r.time_end);
+      var hasDate = !!r.session_date;
+      var dateStr = ttFmtDate(r.session_date);
+      var courseIdDisp = escHtml(r.course_id || '');
+      var courseName   = escHtml((r.course_name || r.course_id || ''));
+      var subtopic     = escHtml(r.sub_topic || '');
+      var room         = escHtml(r.room_id || '—');
+
+      html += '<div class="tt-row">'
+            +   '<div class="tt-time-col">'
+            +     '<div class="tt-time-start">' + ttFmt(r.time_start) + '</div>'
+            +     '<div class="tt-time-end">– ' + ttFmt(r.time_end) + '</div>'
+            +     (dur ? '<span class="tt-time-dur">' + escHtml(dur) + '</span>' : '')
+            +   '</div>'
+            +   '<div class="tt-body-col">'
+            +     (courseIdDisp ? '<div class="tt-course-id">' + courseIdDisp + '</div>' : '')
+            +     '<div class="tt-course-name">' + courseName + '</div>'
+            +     (subtopic ? '<div class="tt-subtopic">' + subtopic + '</div>' : '')
+            +     '<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-top:4px">'
+            +       '<span class="tt-room-badge">'
+            +         '<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg>'
+            +         room
+            +       '</span>'
+            +       (hasDate ? '<span class="tt-date-badge">📅 ' + escHtml(dateStr) + '</span>' : '')
+            +     '</div>'
+            +   '</div>'
+            + '</div>';
+    });
+    html += '</div>';
+  });
+
+  contentEl.innerHTML = html || '<div class="tt-empty">No entries for this filter.</div>';
+}
+
+window.ttFilterDay = function(day, btn) {
+  _ttActiveDay = day;
+  document.querySelectorAll('.tt-filter-pill').forEach(function(b) { b.classList.remove('active'); });
+  if (btn) btn.classList.add('active');
+  renderTimetable(_ttAllRows, day);
+};
+
 </script>
 <!-- ── IRIS BRAND BOTTOM BAR ── -->
 <style>
