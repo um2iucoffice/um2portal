@@ -131,7 +131,9 @@ const roomMap = {};
 if (roomIds.length > 0) {
   try {
     const roomRows = await supabase(
-  `lecture_rooms?id=in.(${roomIds.join(',')})&select=id,subject`
+     `lecture_rooms?id=in.(${roomIds.join(',')})&select=id,subject`,
+     {}, true
+    );
 );
     (roomRows || []).forEach(r => { roomMap[r.id] = r.subject; });
   } catch (e) {
