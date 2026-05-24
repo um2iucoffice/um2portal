@@ -10994,7 +10994,7 @@ function _dofBuildDocHtml(type, refNo, subjectEn, subjectMm, lang, s, body, sign
     <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:24px;font-size:10pt">
       <div style="line-height:1.9">
         ${showEn ? `<div><strong>Ref No:</strong> ${refNo}</div>` : ''}
-        ${showMm ? `<div><strong>ကြေညာချက်အမှတ်:</strong> ${refNo}</div>` : ''}
+        ${showMm ? `<div>ကြေညာချက်အမှတ်: ${refNo}</div>` : ''}
       </div>
       <div style="text-align:right;line-height:1.9">
         ${showEn ? `<div><strong>Date:</strong> ${_todayFormatted()}</div>` : ''}
@@ -11062,14 +11062,14 @@ function _dofTemplateCOS(refNo, subjectLine, bilingual, showEn, showMm, s, signL
     </div>
     <div style="text-align:center;margin-bottom:28px">
       <span style="font-size:14pt;font-weight:bold;text-decoration:underline;text-transform:uppercase;letter-spacing:1.5px">
-        ${bilingual ? 'Confirmation of Service  |  ဝန်ထမ်းခြင်း အတည်ပြုစာ' : (showEn ? 'Confirmation of Service' : 'ဝန်ထမ်းခြင်း အတည်ပြုစာ')}
+        ${bilingual ? 'Confirmation of Service  |  အတည်ပြုစာ' : (showEn ? 'Confirmation of Service' : 'အတည်ပြုစာ')}
       </span>
     </div>
     <p style="margin-bottom:16px;font-size:10.5pt">${bilingual ? 'To Whom It May Concern,' : (showEn ? 'To Whom It May Concern,' : 'သက်ဆိုင်ရာသူများသို့')}</p>
     <p style="margin-bottom:16px;text-align:justify;line-height:1.9;font-size:10.5pt">
       ${showEn ? `This is to confirm that <strong>${s.name}</strong> (known as <strong>${s.nickname}</strong>), Staff ID <strong>${s.staffId}</strong>, is currently serving as <strong>${s.title}</strong> in the <strong>Department of ${s.dept}</strong> at the University of Medicine (2), Yangon, under the Interim University Councilme.` : ''}
       ${bilingual ? '<br><br>' : ''}
-      ${showMm ? `<strong>${s.name}</strong> (${s.nickname}), ဝန်ထမ်းအမှတ် <strong>${s.staffId}</strong> သည် ရန်ကုန်ဆေးတက္ကသိုလ်(၂) UM2 MBBS ပရိုဂရမ်တွင် <strong>${s.dept}</strong> ဌာန၌ <strong>${s.title}</strong> အဖြစ် တာဝန်ထမ်းဆောင်လျက်ရှိကြောင်း အတည်ပြုအပ်ပါသည်။` : ''}
+      ${showMm ? `<strong>${s.name}</strong> (${s.nickname}), အိုင်ဒီအမှတ် <strong>${s.staffId}</strong> သည် ရန်ကုန်ဆေးတက္ကသိုလ်(၂) UM2 MBBS ပရိုဂရမ်တွင် <strong>${s.dept}</strong> ဌာန၌ <strong>${s.title}</strong> အဖြစ် တာဝန်ထမ်းဆောင်လျက်ရှိကြောင်း အတည်ပြုအပ်ပါသည်။` : ''}
     </p>
     <p style="margin-bottom:28px;text-align:justify;line-height:1.9;font-size:10.5pt">
       ${showEn ? `This letter is issued upon the request of the staff member for official purposes. The ${deptOfficeName} certifies the accuracy of the above information as of the date of issue.` : ''}
@@ -11098,17 +11098,17 @@ function _dofTemplateGSC(refNo, subjectLine, bilingual, showEn, showMm, s, signL
     <p style="margin-bottom:16px;text-align:justify;line-height:1.9;font-size:10.5pt">
       ${showEn ? `This is to certify that <strong>${s.name}</strong> (known as <strong>${s.nickname}</strong>), Staff ID <strong>${s.staffId}</strong>, is currently employed as <strong>${s.title}</strong> in the <strong>Department of ${s.dept}</strong> at the University of Medicine (2), Yangon.` : ''}
       ${bilingual ? '<br><br>' : ''}
-      ${showMm ? `<strong>${s.name}</strong> (${s.nickname}), ဝန်ထမ်းအမှတ် <strong>${s.staffId}</strong> သည် ရန်ကုန်ဆေးတက္ကသိုလ်(၂)တွင် <strong>${s.dept}</strong> ဌာန၌ <strong>${s.title}</strong> အဖြစ် ယခုအခါ တာဝန်ထမ်းဆောင်လျက်ရှိကြောင်း သက်သေပြုအပ်ပါသည်။` : ''}
+      ${showMm ? `<strong>${s.name}</strong> (${s.nickname}), အိုင်ဒီအမှတ် <strong>${s.staffId}</strong> သည် ရန်ကုန်ဆေးတက္ကသိုလ်(၂)တွင် <strong>${s.dept}</strong> ဌာန၌ <strong>${s.title}</strong> အဖြစ် ယခုအခါ တာဝန်ထမ်းဆောင်လျက်ရှိကြောင်း သက်သေပြုအပ်ပါသည်။` : ''}
     </p>
     <p style="margin-bottom:16px;text-align:justify;line-height:1.9;font-size:10.5pt">
       ${showEn ? `Based on the records maintained by the ${deptOfficeName}, the above-named staff member is <strong>in good professional and institutional standing</strong> with the university as of the date of this certificate.` : ''}
       ${bilingual ? '<br><br>' : ''}
-      ${showMm ? 'အတွင်းရေးမှူးဌာန၏ မှတ်တမ်းများအရ အထက်ဖော်ပြပါ ဝန်ထမ်းသည် ဤသက်သေချက် ထုတ်ပေးသည့်ရက်တွင် တက္ကသိုလ်နှင့် <strong>ကောင်းမွန်သော ပညာရှင်ဆိုင်ရာနှင့် အဖွဲ့အစည်းဆိုင်ရာ ရပ်တည်မှု</strong> ရှိကြောင်း အတည်ပြုသည်။' : ''}
+      ${showMm ? 'အတွင်းရေးမှူးဌာန၏ မှတ်တမ်းများအရ အထက်ဖော်ပြပါ ပုဂ္ဂိုလ် သည် ဤသက်သေချက် ထုတ်ပေးသည့်ရက်တွင် တက္ကသိုလ်နှင့် <strong>ကောင်းမွန်သော ပညာရှင်ဆိုင်ရာနှင့် အဖွဲ့အစည်းဆိုင်ရာ ရပ်တည်မှု</strong> ရှိကြောင်း အတည်ပြုသည်။' : ''}
     </p>
     <p style="margin-bottom:28px;text-align:justify;line-height:1.9;font-size:10.5pt">
       ${showEn ? 'This certificate is issued at the staff member\'s request and is valid for official purposes only when accompanied by an authorised signature and the university\'s official stamp.' : ''}
       ${bilingual ? '<br><br>' : ''}
-      ${showMm ? 'ဤသက်သေချက်သည် ဝန်ထမ်း၏ တောင်းဆိုချက်အရ ထုတ်ပေးခြင်းဖြစ်ပြီး တရားဝင်လက်မှတ်နှင့် တံဆိပ်တပ်မှသာ တရားဝင်ပါသည်။' : ''}
+      ${showMm ? 'ဤစာကို ပုဂ္ဂိုလ်၏ တောင်းဆိုချက်အရ ထုတ်ပေးခြင်းဖြစ်ပြီး တရားဝင်လက်မှတ်နှင့် တံဆိပ်မှသာ တရားဝင်ပါသည်။' : ''}
     </p>
     <p style="margin-bottom:4px;font-size:10.5pt">${bilingual ? 'Yours faithfully / လေးစားစွာဖြင့်' : (showEn ? 'Yours faithfully,' : 'လေးစားစွာဖြင့်')}</p>
     ${_signatureBlock(signLeft, signRight)}
@@ -11136,7 +11136,7 @@ function _dofTemplateFIR(refNo, subjectLine, bilingual, showEn, showMm, s, signL
     </div>
     <div style="text-align:center;margin-bottom:28px">
       <span style="font-size:14pt;font-weight:bold;text-decoration:underline;text-transform:uppercase;letter-spacing:1.5px">
-        ${bilingual ? 'Faculty Member Information Record  |  ဝန်ထမ်းအချက်အလက် မှတ်တမ်း' : (showEn ? 'Faculty Member Information Record' : 'ဝန်ထမ်းအချက်အလက် မှတ်တမ်း')}
+        ${bilingual ? 'Faculty Member Information Record  |  အချက်အလက် မှတ်တမ်း' : (showEn ? 'Faculty Member Information Record' : 'အချက်အလက် မှတ်တမ်း')}
       </span>
     </div>
     <table style="width:100%;border-collapse:collapse;font-size:10.5pt;margin-bottom:24px">
@@ -11147,7 +11147,7 @@ function _dofTemplateFIR(refNo, subjectLine, bilingual, showEn, showMm, s, signL
         </td></tr>
         <tr><td style="padding:8px 12px;border:1px solid #ddd;color:#555;font-weight:600">${bilingual ? 'Full Name · အမည်' : (showEn ? 'Full Name' : 'အမည်')}</td><td style="padding:8px 12px;border:1px solid #ddd">${s.name}</td></tr>
         <tr style="background:#fafafa"><td style="padding:8px 12px;border:1px solid #ddd;color:#555;font-weight:600">${bilingual ? 'Known As · အမည်အတို' : (showEn ? 'Known As' : 'အမည်အတို')}</td><td style="padding:8px 12px;border:1px solid #ddd">${s.nickname}</td></tr>
-        <tr><td style="padding:8px 12px;border:1px solid #ddd;color:#555;font-weight:600">${bilingual ? 'Staff ID · ဝန်ထမ်းအမှတ်' : (showEn ? 'Staff ID' : 'ဝန်ထမ်းအမှတ်')}</td><td style="padding:8px 12px;border:1px solid #ddd;font-family:monospace">${s.staffId}</td></tr>
+        <tr><td style="padding:8px 12px;border:1px solid #ddd;color:#555;font-weight:600">${bilingual ? 'Staff ID · အိုင်ဒီအမှတ်' : (showEn ? 'Staff ID' : 'အိုင်ဒီအမှတ်')}</td><td style="padding:8px 12px;border:1px solid #ddd;font-family:monospace">${s.staffId}</td></tr>
         <tr style="background:#fafafa"><td colspan="2" style="padding:8px 12px;font-weight:bold;font-size:10pt;color:#8B1A2E;border:1px solid #ddd">
           ${bilingual ? 'Academic Appointment · ပညာရေးဆိုင်ရာ ခန့်အပ်မှု' : (showEn ? 'Academic Appointment' : 'ပညာရေးဆိုင်ရာ ခန့်အပ်မှု')}
         </td></tr>
@@ -11248,9 +11248,9 @@ if (_origShowViewDOF) {
 }
 
 /* ── Keep original quick-print functions as aliases ── */
-function printStaffConfirmation() { dofQuick('COS', 'Confirmation of Active Service', 'တက်ကြွသောဝန်ဆောင်မှု အတည်ပြုချက်'); }
-function printStaffGoodStanding() { dofQuick('GSC', 'Certificate of Good Standing',   'ကောင်းမွန်မှု သက်သေချက်'); }
-function printFacultyInfoRecord() { dofQuick('FIR', 'Faculty Member Information Record','ဝန်ထမ်းအချက်အလက် မှတ်တမ်း'); }
+function printStaffConfirmation() { dofQuick('COS', 'Confirmation of Active Service', 'အတည်ပြုချက်'); }
+function printStaffGoodStanding() { dofQuick('GSC', 'Certificate of Good Standing',   'ထောက်ခံစာ'); }
+function printFacultyInfoRecord() { dofQuick('FIR', 'Faculty Member Information Record','အချက်အလက် မှတ်တမ်း'); }
 
 function _getStudentForPrint() {
   const s = students.find(x => x.id === currentProfileId);
