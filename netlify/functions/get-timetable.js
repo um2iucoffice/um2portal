@@ -1,14 +1,5 @@
 // ============================================================
 //  netlify/functions/get-timetable.js
-//  Returns the lecture_timetable rows relevant to the logged-in
-//  student, enriched with course names from the courses table.
-//
-//  POST body: { studentId, password }
-//
-//  Environment variables (same as login.js):
-//    SUPABASE_URL
-//    SUPABASE_ANON_KEY
-//    SUPABASE_SERVICE_KEY
 // ============================================================
 
 const SUPABASE_URL         = process.env.SUPABASE_URL;
@@ -88,38 +79,59 @@ exports.handler = async (event) => {
     } catch (e) {
       console.warn('Could not fetch enrollments for timetable:', e.message);
     }
-// ── 2b. Resolve student year to academic_year_id ────────────
-let yearId = null;
-if (raw.year) {
-  try {
-    const yearRows = await supabase(
-      `academic_years?name=eq.${encodeURIComponent(raw.year)}&select=id&limit=1`,
-      {}, true
-    );
-    if (yearRows && yearRows.length > 0) yearId = yearRows[0].id;
-  } catch(e) {}
-}
-    const rawRows = await supabase(
-  `lecture_timetable?select=id,course_id,room_id,day,time_start,time_end,academic_year_id,session_date,sub_topic&order=day.asc,time_start.asc`,
-  {}, true
-);
-ttRows = (rawRows || []).filter(row => {
-  const ayid = (row.academic_year_id || '').trim();
 
-  // null or unrecognised value → show to everyone
-  if (!ayid || (ayid !== 'All Academic Year' && ayid !== yearId)) return true;
+    // ── 2b. Resolve student year name → academic_year_id ────
+    let yearId = null;
+    if (raw.year) {
+      try {
+        const yearRows = await supabase(
+          `academic_years?name=eq.${encodeURIComponent(raw.year)}&select=id&limit=1`,
+          {}, true
+        );
+        if (yearRows && yearRows.length > 0) yearId = yearRows[0].id;
+      } catch(e) {}
+    }
 
-  // specific year → only matching students
-  if (ayid === yearId) return true;
+    // ── 3. Fetch & filter timetable rows ─────────────────────
+    //  Logic:
+    //   - academic_year_id = specific year ID  → only that year's students
+    //   - academic_year_id = 'All Academic Year' → active students only
+    //   - academic_year_id = null or anything else → everyone
+    let ttRows = [];
+    try {
+      const rawRows = await supabase(
+        `lecture_timetable?select=id,course_id,room_id,day,time_start,time_end,academic_year_id,session_date,sub_topic&order=day.asc,time_start.asc`,
+        {}, true
+      );
+      const studentStatus = (raw.status || '').toLowerCase();
+      const isAlumni = studentStatus === 'degree awarded' || studentStatus === 'graduated' || studentStatus === 'alumni';
 
-  // "All Academic Year" → only active students (not completed/alumni)
-  if (ayid === 'All Academic Year') {
-    const status = (raw.year || '').toLowerCase();
-    return status !== 'completed' && status !== 'alumni' && status !== 'graduated';
-  }
+      ttRows = (rawRows || []).filter(row => {
+        const ayid = (row.academic_year_id || '').trim();
 
-  return false;
-});
+        // null or unrecognised → show to everyone
+        if (!ayid) return true;
+
+        // specific year → only matching students
+        if (ayid === yearId) return true;
+
+        // "All Academic Year" → active students only
+        if (ayid === 'All Academic Year') return !isAlumni;
+
+        // row belongs to a different specific year → hide
+        return false;
+      });
+    } catch (e) {
+      throw new Error('Could not fetch timetable: ' + e.message);
+    }
+
+    if (ttRows.length === 0) {
+      return {
+        statusCode: 200, headers: CORS_HEADERS,
+        body: JSON.stringify({ success: true, timetable: [] })
+      };
+    }
+
     // ── 4. Enrich with course names ──────────────────────────
     const courseIds = [...new Set(ttRows.map(r => r.course_id).filter(Boolean))];
     const courseMap = {};
@@ -133,34 +145,35 @@ ttRows = (rawRows || []).filter(row => {
         console.warn('Could not fetch course names for timetable:', e.message);
       }
     }
-// ── 4b. Enrich with room names ─────────────────────────────
-const roomIds = [...new Set(ttRows.map(r => r.room_id).filter(Boolean))];
-const roomMap = {};
-if (roomIds.length > 0) {
-  try {
-    const roomRows = await supabase(
-      `lecture_rooms?id=in.(${roomIds.join(',')})&select=id,subject`,
-      {},
-      true
-    );
-    (roomRows || []).forEach(r => { roomMap[r.id] = r.subject; });
-  } catch (e) {
-    console.warn('Could not fetch room names:', e.message);
-  }
-}
+
+    // ── 4b. Enrich with room names ───────────────────────────
+    const roomIds = [...new Set(ttRows.map(r => r.room_id).filter(Boolean))];
+    const roomMap = {};
+    if (roomIds.length > 0) {
+      try {
+        const roomRows = await supabase(
+          `lecture_rooms?id=in.(${roomIds.join(',')})&select=id,subject`,
+          {}, true
+        );
+        (roomRows || []).forEach(r => { roomMap[r.id] = r.subject; });
+      } catch (e) {
+        console.warn('Could not fetch room names:', e.message);
+      }
+    }
+
     // ── 5. Map rows ──────────────────────────────────────────
     const timetable = ttRows.map(r => ({
-      id:              r.id              || '',
-      course_id:       r.course_id       || '',
-      course_name:     courseMap[r.course_id] || r.course_id || '',
-      room_id:   r.room_id || '',
-      room_name: roomMap[r.room_id] || r.room_id || '',
-      day:             r.day             || '',
-      time_start:      r.time_start      || '',
-      time_end:        r.time_end        || '',
-      academic_year_id:r.academic_year_id|| null,
-      session_date:    r.session_date    || null,
-      sub_topic:       r.sub_topic       || '',
+      id:               r.id               || '',
+      course_id:        r.course_id        || '',
+      course_name:      courseMap[r.course_id] || r.course_id || '',
+      room_id:          r.room_id          || '',
+      room_name:        roomMap[r.room_id] || r.room_id || '',
+      day:              r.day              || '',
+      time_start:       r.time_start       || '',
+      time_end:         r.time_end         || '',
+      academic_year_id: r.academic_year_id || null,
+      session_date:     r.session_date     || null,
+      sub_topic:        r.sub_topic        || '',
     }));
 
     return {
