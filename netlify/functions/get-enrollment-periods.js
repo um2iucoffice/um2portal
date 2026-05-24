@@ -117,7 +117,29 @@ exports.handler = async (event) => {
 
     const period = periods[0];
 
-    // ── 4. Run eligibility RPC ────────────────────────────────────────────────
+    // ── 4. Fetch existing enrollment request status ───────────────────────────
+    // Done BEFORE the eligibility RPC so we can short-circuit if already promoted.
+    const requests = await supabase(
+      `enrollment_requests` +
+      `?student_id=eq.${encodeURIComponent(student_id)}` +
+      `&period_id=eq.${encodeURIComponent(period.id)}` +
+      `&limit=1`
+    );
+    const existingRequest  = requests && requests[0];
+    const enrollmentStatus = existingRequest ? existingRequest.status  : null;
+    const toYear           = existingRequest ? existingRequest.to_year : null;
+
+    // ── 5. Short-circuit: already promoted → hide the banner ─────────────────
+    // Once a student is promoted the "Year Progression Complete" notice has
+    // served its purpose. Return period: null so the front-end renders nothing.
+    if (enrollmentStatus === 'promoted') {
+      return {
+        statusCode: 200, headers,
+        body: JSON.stringify({ success: true, period: null })
+      };
+    }
+
+    // ── 6. Run eligibility RPC ────────────────────────────────────────────────
     const eligibility = await supabase(
       `rpc/check_enrollment_eligibility`, {
         method: 'POST',
@@ -128,17 +150,6 @@ exports.handler = async (event) => {
         })
       }
     );
-
-    // ── 5. Fetch existing enrollment request status ───────────────────────────
-    const requests = await supabase(
-      `enrollment_requests` +
-      `?student_id=eq.${encodeURIComponent(student_id)}` +
-      `&period_id=eq.${encodeURIComponent(period.id)}` +
-      `&limit=1`
-    );
-    const existingRequest  = requests && requests[0];
-    const enrollmentStatus = existingRequest ? existingRequest.status  : null;
-    const toYear           = existingRequest ? existingRequest.to_year : null;
 
     return {
       statusCode: 200, headers,
