@@ -31,13 +31,16 @@ async function supabase(path, options = {}) {
 
 // ── CORS headers ─────────────────────────────────────────────────────────────
 const HEADERS = {
-  'Content-Type':                'application/json',
-  'Access-Control-Allow-Origin': '*',
+  'Content-Type':                 'application/json',
+  'Access-Control-Allow-Origin':  '*',
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
   'Access-Control-Allow-Headers': 'Content-Type',
 };
 
 // ── Allowed post types ────────────────────────────────────────────────────────
+// Real columns: id, type, title, body, image_url, event_date, event_time,
+//               event_location, published_at, is_published, created_by,
+//               author_type, student_id, is_approved, author_name
 const ALLOWED_TYPES = new Set(['news', 'event', 'article', 'announcement']);
 
 // ── Sanitise a plain string (strip tags, trim, cap length) ───────────────────
@@ -78,7 +81,7 @@ exports.handler = async (event) => {
     const {
       student_id,
       title,
-      body:   postBody,
+      body:           postBody,
       type,
       image_url,
       author_name,
@@ -125,13 +128,13 @@ exports.handler = async (event) => {
       cleanImageUrl = image_url.slice(0, 1000);
     }
 
-    // 8. Validate optional event fields
+    // 8. Validate optional fields
     const cleanAuthorName    = sanitise(author_name, 150);
-    const cleanEventDate     = /^\d{4}-\d{2}-\d{2}$/.test(event_date)     ? event_date     : null;
-    const cleanEventTime     = /^\d{2}:\d{2}(:\d{2})?$/.test(event_time)  ? event_time     : null;
+    const cleanEventDate     = /^\d{4}-\d{2}-\d{2}$/.test(event_date)    ? event_date : null;
+    const cleanEventTime     = /^\d{2}:\d{2}(:\d{2})?$/.test(event_time) ? event_time : null;
     const cleanEventLocation = sanitise(event_location, 300);
 
-    // 9. Insert into announcements table
+    // 9. Insert — only real columns from announcements table
     await supabase('announcements', {
       method:  'POST',
       headers: { Prefer: 'return=minimal' },
@@ -145,7 +148,9 @@ exports.handler = async (event) => {
         event_date:     cleanEventDate,
         event_time:     cleanEventTime,
         event_location: cleanEventLocation,
-        status:         'pending',   // requires admin approval
+        author_type:    'student',
+        is_approved:    false,
+        is_published:   false,
       }),
     });
 
