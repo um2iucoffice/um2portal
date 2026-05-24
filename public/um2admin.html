@@ -3391,24 +3391,37 @@ ALTER TABLE academic_years ADD COLUMN IF NOT EXISTS program_id text REFERENCES d
           </div>
           <div style="display:flex;flex-direction:column;gap:7px">
             <div>
+              <label style="font-size:10px;font-weight:600;color:var(--ink3);display:block;margin-bottom:3px">Authorization Phrase · ခွင့်ပြုချက်</label>
+              <select id="dof-sign-auth" class="form-input" style="font-size:12px;padding:7px 10px">
+                <option value="">— None —</option>
+                <option value="By Order">By Order</option>
+                <option value="By Agreement">By Agreement</option>
+                <option value="By Authority">By Authority</option>
+                <option value="On Behalf of">On Behalf of</option>
+                <option value="As Directed">As Directed</option>
+                <option value="အမိန့်အရ">အမိန့်အရ</option>
+                <option value="သဘောတူညီချက်အရ">သဘောတူညီချက်အရ</option>
+              </select>
+            </div>
+            <div>
               <label style="font-size:10px;font-weight:600;color:var(--ink3);display:block;margin-bottom:3px">Name · နာမည်</label>
               <input type="text" id="dof-sign-name-left" class="form-input"
-                placeholder="ဥပမာ ဒေါ်မြမြ" style="font-size:12px;padding:7px 10px">
+                placeholder="" style="font-size:12px;padding:7px 10px">
             </div>
             <div>
               <label style="font-size:10px;font-weight:600;color:var(--ink3);display:block;margin-bottom:3px">Title · ဘွဲ့ / ဦးစီး</label>
               <input type="text" id="dof-sign-title-left" class="form-input"
-                placeholder="ဥပမာ ဒေါ်" style="font-size:12px;padding:7px 10px">
+                placeholder="" style="font-size:12px;padding:7px 10px">
             </div>
             <div>
               <label style="font-size:10px;font-weight:600;color:var(--ink3);display:block;margin-bottom:3px">Position · ရာထူး</label>
               <input type="text" id="dof-sign-pos-left" class="form-input"
-                placeholder="ဥပမာ ဌာနမှူး" style="font-size:12px;padding:7px 10px">
+                placeholder="" style="font-size:12px;padding:7px 10px">
             </div>
             <div>
               <label style="font-size:10px;font-weight:600;color:var(--ink3);display:block;margin-bottom:3px">Email <span style="font-weight:400;color:var(--ink3)">(optional)</span></label>
               <input type="email" id="dof-sign-email-left" class="form-input"
-                placeholder="e.g. name@um2.edu.mm" style="font-size:12px;padding:7px 10px">
+                placeholder="" style="font-size:12px;padding:7px 10px">
             </div>
           </div>
         </div>
@@ -10795,7 +10808,7 @@ async function dofUpdateRef() {
   let   infoBox       = document.getElementById('dof-fixed-info');
 
   const lang_now = document.getElementById('dof-lang')?.value || 'en';
-  if (signingWrap)   signingWrap.style.display   = isFixed ? 'none' : (type && lang_now !== 'en' ? '' : 'none');
+  if (signingWrap)   signingWrap.style.display   = (isFixed || !type) ? 'none' : '';
   if (bodyWrap)      bodyWrap.style.display       = 'none'; /* body is now in title session */
   if (titleSession)  titleSession.style.display   = isFixed ? 'none' : '';
   if (subjectEnWrap) subjectEnWrap.style.display  = (isFixed || type === 'STM') ? 'none' : '';
@@ -10892,6 +10905,7 @@ async function dofGenerateAndPrint(mode) {
   const signNameLeft  = (document.getElementById('dof-sign-name-left')?.value  || '').trim();
   const signTitleLeft = (document.getElementById('dof-sign-title-left')?.value || '').trim();
   const signPosLeft   = (document.getElementById('dof-sign-pos-left')?.value   || '').trim();
+  const signAuth      = (document.getElementById('dof-sign-auth')?.value       || '').trim();
   const signMode = _dofSigningMode;
 
   if (!type) { toast('Please select a document type · အမျိုးအစားရွေးပါ', '⚠'); return; }
@@ -10901,7 +10915,7 @@ async function dofGenerateAndPrint(mode) {
 
   const s = _getStaffForPrint();
 
-  const signLeft  = { name: signNameLeft, title: signTitleLeft, pos: signPosLeft };
+  const signLeft  = { name: signNameLeft, title: signTitleLeft, pos: signPosLeft, auth: signAuth };
 
   /* Build the HTML for the printed document */
   const docHtml = _dofBuildDocHtml(type, refNo, subjectEn, subjectMm, lang, s, body, signMode, signLeft, null, docTitle, closing);
@@ -11000,8 +11014,10 @@ function _dofTemplateSTM(refNo, bilingual, showEn, showMm, s, body, signMode, si
   const closingPhrase = closing
     ? closing
     : (bilingual ? 'Yours faithfully / လေးစားစွာဖြင့်' : (showEn ? 'Yours faithfully,' : 'လေးစားစွာဖြင့်'));
+  const dept = document.getElementById('dof-dept')?.value || 'SEC';
+  const lang = bilingual ? 'bilingual' : (showMm ? 'mm' : 'en');
   return `
-    ${_letterHeadWithStaff(s)}
+    ${_letterHeadWithDept(dept, lang)}
     <div style="display:flex;justify-content:flex-end;margin-bottom:28px;font-size:10pt">
       <div style="text-align:right;line-height:1.9">
         <strong>Ref:</strong> ${refNo}<br>
@@ -11326,9 +11342,9 @@ function dofToggleLangFields() {
   const signingWrap = document.getElementById('dof-signing-wrap');
   if (enWrap) enWrap.style.display = (isFixed || type === 'STM') ? 'none' : (lang === 'mm' ? 'none' : '');
   if (mmWrap) mmWrap.style.display = (isFixed || type === 'STM' || lang === 'en') ? 'none' : '';
-  /* Signature block only shown for Myanmar / bilingual + non-fixed types */
+  /* Signature block shown for ALL non-fixed types regardless of language */
   if (signingWrap && type && !isFixed) {
-    signingWrap.style.display = lang !== 'en' ? '' : 'none';
+    signingWrap.style.display = '';
   }
 }
 
@@ -11341,10 +11357,12 @@ function _signatureBlockDynamic(s, signMode, signLeft, _unused) {
   const leftName  = signLeft?.name  || s.name  || '';
   const leftTitle = signLeft?.title || s.title || '';
   const leftPos   = signLeft?.pos   || (signMode === 'department' ? deptOfficeName : '');
+  const authPhrase = signLeft?.auth || '';
 
   return `
     <div style="margin-top:64px;display:flex;justify-content:flex-start;align-items:flex-end;gap:40px">
       <div style="text-align:center;min-width:200px">
+        ${authPhrase ? `<div style="font-size:9.5pt;font-style:italic;color:#555;margin-bottom:10px">${authPhrase}</div>` : ''}
         <div style="border-top:1px solid #000;padding-top:6px;font-size:10.5pt;font-weight:600">${leftName}</div>
         ${leftTitle ? `<div style="font-size:9.5pt;color:#444">${leftTitle}</div>` : ''}
         ${leftPos   ? `<div style="font-size:9pt;color:#666">${leftPos}</div>`   : ''}
