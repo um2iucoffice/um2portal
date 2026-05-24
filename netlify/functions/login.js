@@ -156,13 +156,15 @@ exports.handler = async (event) => {
     const raw = students[0];
 
     // ── 2. Verify master_password ────────────────────────────
-    const storedPassword = String(raw.master_password || '').trim();
-    if (storedPassword !== normPass) {
-      return {
-        statusCode: 200, headers,
-        body: JSON.stringify({ success: false, message: 'Incorrect password. Please try again.' })
-      };
-    }
+   const { createHash } = await import('crypto');
+const inputHash  = createHash('sha256').update(normPass).digest('hex');
+const storedHash = String(raw.master_password || '').trim();
+if (storedHash !== inputHash) {
+  return {
+    statusCode: 200, headers,
+    body: JSON.stringify({ success: false, message: 'Incorrect password. Please try again.' })
+  };
+}
 
     // ── 3. Fetch degree program name for primary enrollment ──
     let programName = raw.program || '';
