@@ -3140,6 +3140,44 @@ ALTER TABLE academic_years ADD COLUMN IF NOT EXISTS program_id text REFERENCES d
     </div></div>
   </div>
   <div class="card mt-4">
+    <div class="card-title">Chronicles RLS Fix (run once if "row-level security" error appears)</div>
+    <div class="info-box" style="margin-bottom:12px">If saving a Chronicle post gives a <strong>row-level security</strong> error, the <code>announcements</code> table is missing an INSERT policy for staff/admin. Run this SQL in your Supabase SQL Editor:</div>
+    <pre style="background:var(--ink);color:#A8DADC;border-radius:8px;padding:14px;font-size:11px;overflow-x:auto;white-space:pre;border:1px solid rgba(255,255,255,.08);margin-bottom:10px">-- Allow authenticated staff/admin to insert announcements
+CREATE POLICY IF NOT EXISTS "Staff can insert announcements"
+  ON announcements FOR INSERT
+  WITH CHECK (auth.role() = 'authenticated');
+
+-- Allow authenticated users to update their own posts
+CREATE POLICY IF NOT EXISTS "Staff can update own announcements"
+  ON announcements FOR UPDATE
+  USING (auth.role() = 'authenticated');
+
+-- Allow registrar to delete any post
+CREATE POLICY IF NOT EXISTS "Registrar can delete announcements"
+  ON announcements FOR DELETE
+  USING (auth.role() = 'authenticated');
+
+-- Allow everyone to read published+approved posts
+CREATE POLICY IF NOT EXISTS "Anyone can read approved announcements"
+  ON announcements FOR SELECT
+  USING (is_published = true AND is_approved = true);
+
+-- Allow authenticated users to read all (for admin panel)
+CREATE POLICY IF NOT EXISTS "Authenticated read all announcements"
+  ON announcements FOR SELECT
+  USING (auth.role() = 'authenticated');</pre>
+    <button class="btn btn-outline btn-sm" onclick="navigator.clipboard.writeText(document.querySelector('.chronicles-rls-sql').textContent).then(()=>toast('SQL copied.','📋'))" style="display:none"></button>
+    <button class="btn btn-outline btn-sm" onclick="
+      const sql = document.querySelector('#chronicles-rls-pre').textContent;
+      navigator.clipboard.writeText(sql).then(()=>toast('Chronicles RLS SQL copied to clipboard.','📋'));
+    ">Copy SQL</button>
+    <pre id="chronicles-rls-pre" style="display:none">CREATE POLICY IF NOT EXISTS &quot;Staff can insert announcements&quot; ON announcements FOR INSERT WITH CHECK (auth.role() = 'authenticated');
+CREATE POLICY IF NOT EXISTS &quot;Staff can update own announcements&quot; ON announcements FOR UPDATE USING (auth.role() = 'authenticated');
+CREATE POLICY IF NOT EXISTS &quot;Registrar can delete announcements&quot; ON announcements FOR DELETE USING (auth.role() = 'authenticated');
+CREATE POLICY IF NOT EXISTS &quot;Anyone can read approved announcements&quot; ON announcements FOR SELECT USING (is_published = true AND is_approved = true);
+CREATE POLICY IF NOT EXISTS &quot;Authenticated read all announcements&quot; ON announcements FOR SELECT USING (auth.role() = 'authenticated');</pre>
+  </div>
+  <div class="card mt-4">
     <div class="card-title">Email Trigger Summary</div>
     <div class="table-wrap"><table>
       <thead><tr><th>Action</th><th>Trigger</th><th>Email Subject</th></tr></thead>
@@ -9705,11 +9743,14 @@ function renderChronicles() {
   if (_chronicleFilter === 'pending') {
     list = chronicles.filter(c => !c.is_approved && c.is_published);
   } else if (_chronicleFilter !== 'all') {
-    list = chronicles.filter(c => c.type === _chronicleFilter);
+    // 'article' from SIS is treated as 'news' in the admin view
+    const typeAliases = { news: ['news','article'], event: ['event'], announcement: ['announcement','notice'] };
+    const validTypes  = typeAliases[_chronicleFilter] || [_chronicleFilter];
+    list = chronicles.filter(c => validTypes.includes(c.type));
   }
-  // Non-registrar: only show published+approved
+  // Non-registrar: only show published+approved (treat null is_approved as approved for staff-created posts)
   if (currentRole !== 'registrar') {
-    list = list.filter(c => c.is_published && c.is_approved);
+    list = list.filter(c => c.is_published && (c.is_approved !== false));
   }
 
   if (!list.length) {
@@ -9835,6 +9876,9 @@ async function saveChronicle() {
   const btn = document.getElementById('chronicleSaveBtn');
   btn.disabled = true; btn.textContent = 'Saving…';
 
+  const isPublished = document.getElementById('ch-published').checked;
+  const now = new Date().toISOString();
+
   const payload = {
     type:            document.getElementById('ch-type').value,
     title,
@@ -9844,26 +9888,44 @@ async function saveChronicle() {
     event_time:      document.getElementById('ch-event-time').value.trim() || null,
     event_location:  document.getElementById('ch-event-location').value.trim() || null,
     author_name:     document.getElementById('ch-author-name').value.trim() || null,
-    is_published:    document.getElementById('ch-published').checked,
-    created_by:      currentUser ? currentUser.staff_id : null,
-    author_type:     'admin',
-    // Auto-approve if registrar, else needs approval
+    is_published:    isPublished,
+    published_at:    isPublished ? now : null,
+    // 'staff' matches the RLS policy written for the SIS portal (not 'admin')
+    author_type:     'staff',
+    // Use auth UUID so RLS auth.uid() check can pass
+    created_by:      currentUser ? currentUser.id : null,
+    // Registrar posts auto-approved; staff posts need approval
     is_approved:     currentRole === 'registrar',
   };
 
-  try {
-    let error;
+  const _doSave = async (p) => {
     if (_editingChronicleId) {
-      ({ error } = await db.from('announcements').update(payload).eq('id', _editingChronicleId));
+      return await db.from('announcements').update(p).eq('id', _editingChronicleId);
     } else {
-      ({ error } = await db.from('announcements').insert(payload));
+      return await db.from('announcements').insert(p);
     }
+  };
+
+  try {
+    let { error } = await _doSave(payload);
+
+    // Fallback 1: try without author_type (some RLS policies don't allow setting it)
+    if (error && error.message && error.message.includes('row-level security')) {
+      const { author_type, ...p2 } = payload;
+      const res2 = await _doSave(p2);
+      error = res2.error;
+    }
+
     if (error) throw error;
     toast(_editingChronicleId ? 'Post updated ✓' : 'Post published ✓', '✓');
     closeChronicleModal();
     await loadChronicles();
   } catch(e) {
-    toast('Error saving post: ' + e.message, '✗');
+    if (e.message && e.message.includes('row-level security')) {
+      toast('⚠ RLS policy is blocking this insert. Go to Setup Guide and run the Chronicles RLS fix SQL. Error: ' + e.message, '🔒');
+    } else {
+      toast('Error saving post: ' + e.message, '✗');
+    }
   } finally {
     btn.disabled = false; btn.textContent = 'Save Post';
   }
@@ -9871,7 +9933,11 @@ async function saveChronicle() {
 
 async function approveChronicle(id) {
   try {
-    const { error } = await db.from('announcements').update({ is_approved: true }).eq('id', id);
+    const c = chronicles.find(x => x.id === id);
+    const updates = { is_approved: true };
+    // Set published_at if missing so it shows up in the feed
+    if (c && !c.published_at) updates.published_at = new Date().toISOString();
+    const { error } = await db.from('announcements').update(updates).eq('id', id);
     if (error) throw error;
     toast('Post approved ✓', '✓');
     await loadChronicles();
