@@ -3265,16 +3265,17 @@ ALTER TABLE academic_years ADD COLUMN IF NOT EXISTS program_id text REFERENCES d
         <select id="dof-type" onchange="dofUpdateRef()">
           <option value="" disabled selected>— select type —</option>
           <!-- registrar sees all; staff sees subset — filtered by dofApplyRoleTypes() on load -->
-          <option value="MEM" data-roles="registrar,staff">Memorandum (MEM) · အမှာစာ</option>
-          <option value="NOT" data-roles="registrar,staff">Notice (NOT) · အသိပေးချက်</option>
-          <option value="LTR" data-roles="registrar,staff">Official Letter (LTR) · တရားဝင်ပေးစာ</option>
+          <option value="MEM" data-roles="registrar,staff">Memorandum (MEM) · မှတ်တမ်း</option>
+          <option value="NOT" data-roles="registrar,staff">Notice (NOT) · အသိပေးစာ</option>
+          <option value="LTR" data-roles="registrar,staff">Official Letter (LTR) · စာလွှာ</option>
           <option value="RPT" data-roles="registrar">Report (RPT) · အစီရင်ခံစာ</option>
-          <option value="CIR" data-roles="registrar">Circular (CIR) · လှည့်ပတ်ကြေညာချက်</option>
-          <option value="POL" data-roles="registrar">Policy (POL) · မူဝါဒ</option>
+          <option value="CIR" data-roles="registrar">Circular (CIR) · ကြေညာစာ / လှည့်လည်အသိပေးစာ</option>
+          <option value="POL" data-roles="registrar">Policy (POL) · မူဝါဒစာတမ်း</option>
           <option value="DIR" data-roles="registrar">Directive (DIR) · ညွှန်ကြားချက်</option>
-          <option value="COS" data-roles="registrar,staff">Confirmation of Service (COS) · ဝန်ထမ်းခြင်းအတည်ပြုစာ</option>
-          <option value="GSC" data-roles="registrar,staff">Good Standing Certificate (GSC) · ကောင်းမွန်မှုသက်သေချက်</option>
-          <option value="FIR" data-roles="registrar,staff">Faculty Info Record (FIR) · ဝန်ထမ်းအချက်အလက်မှတ်တမ်း</option>
+          <option value="COS" data-roles="registrar,staff">Confirmation of Service (COS) · သဘောတူညီချက် / ဝန်ဆောင်မှုစာတမ်း</option>
+          <option value="GSC" data-roles="registrar,staff">Good Standing Certificate (GSC) · အထွေထွေကြေညာချက်</option>
+          <option value="FIR" data-roles="registrar,staff">Faculty Info Record (FIR) · ကနဦးအစီရင်ခံစာ</option>
+          <option value="STM" data-roles="registrar,staff">Personal Statement (STM) · ကြေညာချက် / ထုတ်ပြန်ချက်</option>
         </select>
       </div>
 
@@ -3340,6 +3341,16 @@ ALTER TABLE academic_years ADD COLUMN IF NOT EXISTS program_id text REFERENCES d
 
     </div>
 
+    <!-- Body (shown for STM and generic types) -->
+    <div id="dof-body-wrap" style="display:none;margin-bottom:14px">
+      <div class="form-group" style="grid-column:1/-1">
+        <label>Body · စာအကြောင်းအရာ</label>
+        <textarea id="dof-body" class="form-input" rows="8"
+          style="resize:vertical;line-height:1.8;font-size:13px"
+          placeholder="Write your statement here. Each paragraph will be indented automatically. · ဤနေရာတွင် ရေးပါ။ စာပိုဒ်တိုင်း အလိုအလျောက် indent ပေးမည်။"></textarea>
+      </div>
+    </div>
+
     <!-- Ref display + action -->
     <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:12px 14px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r)">
       <div style="flex:1;min-width:0">
@@ -3366,60 +3377,6 @@ ALTER TABLE academic_years ADD COLUMN IF NOT EXISTS program_id text REFERENCES d
     </div>
 
   </div><!-- /Generate Form card -->
-
-
-  <!-- ── Quick-access cards (original 3, now trigger dofGenerateAndPrint) ── -->
-  <div class="doc-office-grid" style="margin-bottom:16px">
-
-    <div class="card doc-office-card">
-      <div style="display:flex;align-items:center;gap:12px">
-        <div style="width:42px;height:42px;border-radius:10px;background:var(--blue-light);display:flex;align-items:center;justify-content:center;flex-shrink:0">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--blue)" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="13" y2="17"/></svg>
-        </div>
-        <div>
-          <div style="font-size:14px;font-weight:600;color:var(--ink)">Confirmation of Service</div>
-          <div style="font-size:12px;color:var(--ink3);margin-top:2px">ဝန်ထမ်းခြင်း အတည်ပြုစာ</div>
-        </div>
-      </div>
-      <button class="btn btn-outline btn-sm doc-office-btn" onclick="dofQuick('COS','Confirmation of Active Service','တက်ကြွသောဝန်ဆောင်မှု အတည်ပြုချက်')">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
-        Quick Print · ချက်ချင်းထုတ်မည်
-      </button>
-    </div>
-
-    <div class="card doc-office-card">
-      <div style="display:flex;align-items:center;gap:12px">
-        <div style="width:42px;height:42px;border-radius:10px;background:var(--green-light);display:flex;align-items:center;justify-content:center;flex-shrink:0">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11"/></svg>
-        </div>
-        <div>
-          <div style="font-size:14px;font-weight:600;color:var(--ink)">Good Standing Certificate</div>
-          <div style="font-size:12px;color:var(--ink3);margin-top:2px">ကောင်းမွန်မှု သက်သေချက်</div>
-        </div>
-      </div>
-      <button class="btn btn-outline btn-sm doc-office-btn" onclick="dofQuick('GSC','Certificate of Good Standing','ကောင်းမွန်မှု သက်သေချက်')">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
-        Quick Print · ချက်ချင်းထုတ်မည်
-      </button>
-    </div>
-
-    <div class="card doc-office-card">
-      <div style="display:flex;align-items:center;gap:12px">
-        <div style="width:42px;height:42px;border-radius:10px;background:var(--gold-light);display:flex;align-items:center;justify-content:center;flex-shrink:0">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="18" rx="2"/><line x1="8" y1="10" x2="16" y2="10"/><line x1="8" y1="14" x2="13" y2="14"/><circle cx="17" cy="17" r="3"/><path d="M20 20l1.5 1.5"/></svg>
-        </div>
-        <div>
-          <div style="font-size:14px;font-weight:600;color:var(--ink)">Faculty Information Record</div>
-          <div style="font-size:12px;color:var(--ink3);margin-top:2px">ဝန်ထမ်းအချက်အလက် မှတ်တမ်း</div>
-        </div>
-      </div>
-      <button class="btn btn-outline btn-sm doc-office-btn" onclick="dofQuick('FIR','Faculty Member Information Record','ဝန်ထမ်းအချက်အလက် မှတ်တမ်း')">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
-        Quick Print · ချက်ချင်းထုတ်မည်
-      </button>
-    </div>
-
-  </div><!-- /quick cards -->
 
 
   <!-- ── Document Log ── -->
@@ -10617,10 +10574,45 @@ async function dofGetNextSeq(docType) {
   }
 }
 
+/* ── Myanmar numeral converter ── */
+function _toMyanmarNumerals(n) {
+  return String(n).replace(/[0-9]/g, d => '၀၁၂၃၄၅၆၇၈၉'[d]);
+}
+
+/* ── Doc type → Myanmar label map ── */
+const _DOC_TYPE_MM = {
+  MEM: 'မှတ်တမ်း',
+  NOT: 'အသိပေးစာ',
+  LTR: 'စာလွှာ',
+  RPT: 'အစီရင်ခံစာ',
+  CIR: 'ကြေညာစာ',
+  POL: 'မူဝါဒစာတမ်း',
+  DIR: 'ညွှန်ကြားချက်',
+  COS: 'သဘောတူညီချက်',
+  GSC: 'အထွေထွေကြေညာချက်',
+  FIR: 'ကနဦးအစီရင်ခံစာ',
+  STM: 'ကြေညာချက်',
+};
+
+/* ── Department → Myanmar label map ── */
+const _DEPT_MM = {
+  OPS: 'စီမံ',
+  HR:  'လူ့စွမ်း',
+  ACO: 'ပညာရေး',
+  FIN: 'ဘဏ္ဍာ',
+  IT:  'သတင်းပညာ',
+  LGL: 'ဥပဒေ',
+  MED: 'ဆေးဘက်',
+  SEC: 'ရုံး',
+};
+
 function dofBuildRef(docType, dept, seq) {
-  const year = new Date().getFullYear();
-  const padded = String(seq).padStart(4, '0');
-  return `${docType}-${dept}-${year}-${padded}`;
+  const year   = new Date().getFullYear();
+  const typeMM = _DOC_TYPE_MM[docType] || docType;
+  const deptMM = _DEPT_MM[dept]        || dept;
+  const yearMM = _toMyanmarNumerals(year);
+  const seqMM  = _toMyanmarNumerals(String(seq).padStart(4, '0'));
+  return `ဆ၂တကစ-${typeMM}-${deptMM}-${yearMM}-${seqMM}`;
 }
 
 let _dofCurrentSeq = null;
@@ -10631,6 +10623,17 @@ async function dofUpdateRef() {
   const display = document.getElementById('dof-ref-display');
   const previewBtn = document.getElementById('dof-preview-btn');
   const printBtn = document.getElementById('dof-print-btn');
+
+  /* Show/hide body textarea */
+  const bodyWrap = document.getElementById('dof-body-wrap');
+  const subjectEnWrap = document.getElementById('dof-subject-en')?.closest('.form-group');
+  const subjectMmWrap = document.getElementById('dof-subject-mm')?.closest('.form-group');
+  const genericTypes = ['MEM','NOT','LTR','RPT','CIR','POL','DIR','STM'];
+  if (bodyWrap) bodyWrap.style.display = (type && genericTypes.includes(type)) ? '' : 'none';
+  /* For STM: subject fields are for filing only — hide them from the form */
+  if (subjectEnWrap) subjectEnWrap.style.display = (type === 'STM') ? 'none' : '';
+  if (subjectMmWrap) subjectMmWrap.style.display = (type === 'STM') ? 'none' : '';
+
   if (!type) {
     if (display) display.textContent = '— select type —';
     if (previewBtn) previewBtn.disabled = true;
@@ -10690,6 +10693,7 @@ async function dofGenerateAndPrint(mode) {
   const lang     = document.getElementById('dof-lang')?.value     || 'bilingual';
   const priority = document.getElementById('dof-priority')?.value || 'normal';
   const dist     = document.getElementById('dof-dist')?.value     || 'internal';
+  const body     = (document.getElementById('dof-body')?.value    || '').trim();
 
   if (!type) { toast('Please select a document type · အမျိုးအစားရွေးပါ', '⚠'); return; }
 
@@ -10699,7 +10703,7 @@ async function dofGenerateAndPrint(mode) {
   const s = _getStaffForPrint();
 
   /* Build the HTML for the printed document */
-  const docHtml = _dofBuildDocHtml(type, refNo, subjectEn, subjectMm, lang, s);
+  const docHtml = _dofBuildDocHtml(type, refNo, subjectEn, subjectMm, lang, s, body);
 
   if (mode === 'print') {
     /* Save first, then print */
@@ -10717,7 +10721,7 @@ async function dofGenerateAndPrint(mode) {
 }
 
 /* ── Build document HTML based on type ── */
-function _dofBuildDocHtml(type, refNo, subjectEn, subjectMm, lang, s) {
+function _dofBuildDocHtml(type, refNo, subjectEn, subjectMm, lang, s, body) {
   const bilingual = lang === 'bilingual';
   const showMm    = lang === 'mm' || bilingual;
   const showEn    = lang === 'en' || bilingual;
@@ -10730,6 +10734,14 @@ function _dofBuildDocHtml(type, refNo, subjectEn, subjectMm, lang, s) {
   if (type === 'COS') return _dofTemplateCOS(refNo, subjectLine, bilingual, showEn, showMm, s);
   if (type === 'GSC') return _dofTemplateGSC(refNo, subjectLine, bilingual, showEn, showMm, s);
   if (type === 'FIR') return _dofTemplateFIR(refNo, subjectLine, bilingual, showEn, showMm, s);
+  if (type === 'STM') return _dofTemplateSTM(refNo, bilingual, showEn, showMm, s, body);
+
+  /* Helper: render body text as indented paragraphs */
+  const _bodyHtml = (txt) => txt
+    ? txt.split(/\n+/).filter(p => p.trim())
+        .map(p => `<p style="margin-bottom:14px;text-align:justify;line-height:1.9;font-size:10.5pt;text-indent:2em">${p.trim()}</p>`)
+        .join('')
+    : `<p style="margin-bottom:60px;font-size:10.5pt">&nbsp;</p>`;
 
   /* Generic template for MEM, NOT, LTR, RPT, CIR, POL, DIR */
   const typeLabels = {
@@ -10762,11 +10774,64 @@ function _dofBuildDocHtml(type, refNo, subjectEn, subjectMm, lang, s) {
       <span style="font-size:14pt;font-weight:bold;text-decoration:underline;text-transform:uppercase;letter-spacing:1.5px">${titleDisplay}</span>
     </div>
     ${subjectLine ? `<div style="margin-bottom:16px;font-size:10.5pt"><strong>${showEn ? 'Subject' : 'အကြောင်းအရာ'}${bilingual ? ' / အကြောင်းအရာ' : ''}:</strong> ${subjectLine}</div>` : ''}
-    <p style="margin-bottom:16px;font-size:10.5pt;line-height:1.9">${showEn ? certifyEn : ''}${bilingual ? '<br>' + certifyMm : (!showEn ? certifyMm : '')}</p>
-    <p style="margin-bottom:60px;font-size:10.5pt">&nbsp;</p>
+    ${_bodyHtml(body)}
     <p style="margin-bottom:4px;font-size:10.5pt">${bilingual ? 'Yours faithfully / လေးစားစွာဖြင့်' : (showEn ? 'Yours faithfully,' : 'လေးစားစွာဖြင့်')}</p>
     ${_signatureBlock()}
   `;
+}
+
+function _letterHeadWithStaff(s) {
+  return `
+    <div style="display:flex;align-items:center;gap:20px;border-bottom:2.5px solid #8B1A2E;padding-bottom:16px;margin-bottom:8px">
+      <img src="${_LOGO_URL}" alt="UM2 Logo" style="height:72px;width:auto;flex-shrink:0" onerror="this.style.display='none'">
+      <div style="flex:1">
+        <div style="font-size:9pt;letter-spacing:2px;text-transform:uppercase;color:#555;margin-bottom:2px">University of Medicine (2), Yangon</div>
+        <div style="font-size:17pt;font-weight:bold;font-family:'Times New Roman',serif;color:#8B1A2E">UM2 MBBS Programme</div>
+        <div style="font-size:8.5pt;color:#777;margin-top:2px">Secretariat's Office &nbsp;·&nbsp; sisportal.um2campus.edu.mm</div>
+      </div>
+    </div>
+    <div style="padding:10px 0 18px 0;border-bottom:1px solid #e0e0e0;margin-bottom:24px">
+      <div style="font-size:12pt;font-weight:700;color:#0D1B2A">${s.name}</div>
+      <div style="font-size:10pt;color:#3D4A5C;margin-top:2px">${s.title}${s.dept ? ' &nbsp;·&nbsp; Department of ' + s.dept : ''}</div>
+      ${s.staffId && s.staffId !== '—' ? `<div style="font-size:9pt;color:#7A8599;margin-top:2px">Staff ID: ${s.staffId}</div>` : ''}
+    </div>`;
+}
+
+function _dofTemplateSTM(refNo, bilingual, showEn, showMm, s, body) {
+  const _bodyHtml = (txt) => txt
+    ? txt.split(/\n+/).filter(p => p.trim())
+        .map(p => `<p style="margin-bottom:14px;text-align:justify;line-height:1.9;font-size:10.5pt;text-indent:2em">${p.trim()}</p>`)
+        .join('')
+    : `<p style="margin-bottom:60px;font-size:10.5pt">&nbsp;</p>`;
+  return `
+    ${_letterHeadWithStaff(s)}
+    <div style="display:flex;justify-content:flex-end;margin-bottom:28px;font-size:10pt">
+      <div style="text-align:right;line-height:1.9">
+        <strong>Ref:</strong> ${refNo}<br>
+        ${showEn ? `<strong>Date:</strong> ${_todayFormatted()}` : ''}
+        ${bilingual ? '<br>' : ''}
+        ${showMm ? `<strong>ရက်စွဲ ။</strong> ${_todayFormattedMM()}` : ''}
+      </div>
+    </div>
+    <div style="text-align:center;margin-bottom:28px">
+      <span style="font-size:14pt;font-weight:bold;text-decoration:underline;text-transform:uppercase;letter-spacing:1.5px">
+        ${bilingual ? 'Personal Statement  |  ကိုယ်ပိုင်ထုတ်ပြန်ချက်' : (showEn ? 'Personal Statement' : 'ကိုယ်ပိုင်ထုတ်ပြန်ချက်')}
+      </span>
+    </div>
+    <p style="margin-bottom:20px;font-size:10.5pt">${bilingual ? 'To Whom It May Concern,' : (showEn ? 'To Whom It May Concern,' : 'သက်ဆိုင်ရာသူများသို့')}</p>
+    ${_bodyHtml(body)}
+    <p style="margin-bottom:4px;font-size:10.5pt">${bilingual ? 'Yours faithfully / လေးစားစွာဖြင့်' : (showEn ? 'Yours faithfully,' : 'လေးစားစွာဖြင့်')}</p>
+    <div style="margin-top:64px">
+      <div style="display:inline-block;text-align:center;min-width:200px">
+        <div style="border-top:1px solid #000;padding-top:6px;font-size:10.5pt;font-weight:600">${s.name}</div>
+        <div style="font-size:9.5pt;color:#444">${s.title}</div>
+        ${s.dept ? `<div style="font-size:9pt;color:#666">Department of ${s.dept}</div>` : ''}
+        <div style="font-size:9pt;color:#888;margin-top:2px">${_todayFormatted()}</div>
+      </div>
+    </div>
+    <div style="margin-top:36px;font-size:7.5pt;color:#999;text-align:center;border-top:1px solid #ddd;padding-top:8px">
+      Generated by UM2 IRIR System on ${_todayFormatted()}. This statement is self-issued and for official purposes only.
+    </div>`;
 }
 
 function _dofTemplateCOS(refNo, subjectLine, bilingual, showEn, showMm, s) {
