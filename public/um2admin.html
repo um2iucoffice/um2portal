@@ -3339,10 +3339,15 @@ ALTER TABLE academic_years ADD COLUMN IF NOT EXISTS program_id text REFERENCES d
 
     </div>
 
-    <!-- ── Title Session: Subject + Body ── -->
+    <!-- ── Centered Title (optional, shown above subject in print) ── -->
     <div id="dof-title-session" style="background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:14px 16px;margin-bottom:14px">
       <div style="font-size:10px;font-weight:700;letter-spacing:1.4px;text-transform:uppercase;color:var(--ink3);margin-bottom:12px">
         Title Session · ခေါင်းစဉ်
+      </div>
+      <!-- Centered document title (optional) -->
+      <div class="form-group" style="margin-bottom:10px">
+        <label class="form-label">Document Title <span style="font-weight:400;color:var(--ink3)">(optional — centered heading printed above subject)</span></label>
+        <input type="text" id="dof-doc-title" class="form-input" placeholder="e.g. NOTICE TO ALL STAFF · အသိပေးချက်">
       </div>
       <!-- Subject EN -->
       <div id="dof-subject-en-wrap" class="form-group" style="margin-bottom:10px">
@@ -3354,16 +3359,21 @@ ALTER TABLE academic_years ADD COLUMN IF NOT EXISTS program_id text REFERENCES d
         <label class="form-label">Subject (Myanmar) · အကြောင်းအရာ (မြန်မာ)</label>
         <input type="text" id="dof-subject-mm" class="form-input" placeholder="ဥပမာ - တက်ကြွသောဝန်ဆောင်မှု အတည်ပြုချက်" oninput="dofUpdateRef()">
       </div>
-      <!-- Body (always shown inside Title Session) -->
-      <div class="form-group" style="margin-bottom:0">
+      <!-- Body -->
+      <div class="form-group" style="margin-bottom:10px">
         <label class="form-label">Body · စာအကြောင်းအရာ</label>
         <textarea id="dof-body-title" class="form-input" rows="6"
           style="resize:vertical;line-height:1.8;font-size:13px"
           placeholder="Write the document body here. Each paragraph will be indented automatically. · ဤနေရာတွင် ရေးပါ။"></textarea>
       </div>
+      <!-- Closing phrase (optional) -->
+      <div class="form-group" style="margin-bottom:0">
+        <label class="form-label">Closing Phrase <span style="font-weight:400;color:var(--ink3)">(optional — replaces "Yours faithfully")</span></label>
+        <input type="text" id="dof-closing" class="form-input" placeholder="e.g. Yours faithfully, / လေးစားစွာဖြင့် / Respectfully,">
+      </div>
     </div>
 
-    <!-- Body (shown for STM and generic types — legacy wrapper kept for show/hide logic) -->
+    <!-- Body (legacy wrapper kept hidden — logic uses dof-body-title) -->
     <div id="dof-body-wrap" style="display:none;margin-bottom:14px">
       <div class="form-group" style="grid-column:1/-1">
         <label>Body · စာအကြောင်းအရာ</label>
@@ -3373,68 +3383,44 @@ ALTER TABLE academic_years ADD COLUMN IF NOT EXISTS program_id text REFERENCES d
       </div>
     </div>
 
-    <!-- Signing options (shown for non-COS/GSC/FIR types) -->
+    <!-- Signing options — single signer, hidden when English language -->
     <div id="dof-signing-wrap" style="display:none;margin-bottom:14px">
       <div style="background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:14px 16px">
         <div style="font-size:10px;font-weight:700;letter-spacing:1.4px;text-transform:uppercase;color:var(--ink3);margin-bottom:12px">
           Signature Block · လက်မှတ်အပိုင်း
         </div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
-
-          <!-- LEFT: Prepared by / Signer -->
-          <div>
-            <div style="font-size:11px;font-weight:700;color:var(--crimson);margin-bottom:8px;border-bottom:1px solid var(--line);padding-bottom:4px">
-              ▸ Prepared by · လက်မှတ်ထိုးသူ
+        <div style="max-width:480px">
+          <div style="font-size:11px;font-weight:700;color:var(--crimson);margin-bottom:8px;border-bottom:1px solid var(--line);padding-bottom:4px">
+            ▸ Prepared by · လက်မှတ်ထိုးသူ
+          </div>
+          <div style="display:flex;flex-direction:column;gap:7px">
+            <div>
+              <label style="font-size:10px;font-weight:600;color:var(--ink3);display:block;margin-bottom:3px">Name · နာမည်</label>
+              <input type="text" id="dof-sign-name-left" class="form-input"
+                placeholder="ဥပမာ ဒေါ်မြမြ" style="font-size:12px;padding:7px 10px">
             </div>
-            <div style="display:flex;flex-direction:column;gap:7px">
-              <div>
-                <label style="font-size:10px;font-weight:600;color:var(--ink3);display:block;margin-bottom:3px">Name (Myanmar) · နာမည် (မြန်မာ)</label>
-                <input type="text" id="dof-sign-name-left" class="form-input"
-                  placeholder="ဥပမာ ဒေါ်မြမြ" style="font-size:12px;padding:7px 10px">
-              </div>
-              <div>
-                <label style="font-size:10px;font-weight:600;color:var(--ink3);display:block;margin-bottom:3px">Title · ဘွဲ့ / ဦးစီး</label>
-                <input type="text" id="dof-sign-title-left" class="form-input"
-                  placeholder="ဥပမာ ဒေါ်" style="font-size:12px;padding:7px 10px">
-              </div>
-              <div>
-                <label style="font-size:10px;font-weight:600;color:var(--ink3);display:block;margin-bottom:3px">Position · ရာထူး</label>
-                <input type="text" id="dof-sign-pos-left" class="form-input"
-                  placeholder="ဥပမာ ဌာနမှူး" style="font-size:12px;padding:7px 10px">
-              </div>
-              <div>
-                <label style="font-size:10px;font-weight:600;color:var(--ink3);display:block;margin-bottom:3px">Email <span style="font-weight:400;color:var(--ink3)">(optional)</span></label>
-                <input type="email" id="dof-sign-email-left" class="form-input"
-                  placeholder="e.g. name@um2.edu.mm" style="font-size:12px;padding:7px 10px">
-              </div>
+            <div>
+              <label style="font-size:10px;font-weight:600;color:var(--ink3);display:block;margin-bottom:3px">Title · ဘွဲ့ / ဦးစီး</label>
+              <input type="text" id="dof-sign-title-left" class="form-input"
+                placeholder="ဥပမာ ဒေါ်" style="font-size:12px;padding:7px 10px">
+            </div>
+            <div>
+              <label style="font-size:10px;font-weight:600;color:var(--ink3);display:block;margin-bottom:3px">Position · ရာထူး</label>
+              <input type="text" id="dof-sign-pos-left" class="form-input"
+                placeholder="ဥပမာ ဌာနမှူး" style="font-size:12px;padding:7px 10px">
+            </div>
+            <div>
+              <label style="font-size:10px;font-weight:600;color:var(--ink3);display:block;margin-bottom:3px">Email <span style="font-weight:400;color:var(--ink3)">(optional)</span></label>
+              <input type="email" id="dof-sign-email-left" class="form-input"
+                placeholder="e.g. name@um2.edu.mm" style="font-size:12px;padding:7px 10px">
             </div>
           </div>
-
-          <!-- RIGHT: Authorised by -->
-          <div>
-            <div style="font-size:11px;font-weight:700;color:var(--crimson);margin-bottom:8px;border-bottom:1px solid var(--line);padding-bottom:4px">
-              ▸ Authorised by · ခွင့်ပြုသူ
-            </div>
-            <div style="display:flex;flex-direction:column;gap:7px">
-              <div>
-                <label style="font-size:10px;font-weight:600;color:var(--ink3);display:block;margin-bottom:3px">Name (Myanmar) · နာမည် (မြန်မာ)</label>
-                <input type="text" id="dof-sign-name-right" class="form-input"
-                  placeholder="ဥပမာ ပါမောက္ခချုပ်" style="font-size:12px;padding:7px 10px">
-              </div>
-              <div>
-                <label style="font-size:10px;font-weight:600;color:var(--ink3);display:block;margin-bottom:3px">Title · ဘွဲ့ / ဦးစီး</label>
-                <input type="text" id="dof-sign-title-right" class="form-input"
-                  placeholder="ဥပမာ ပါမောက္ခ" style="font-size:12px;padding:7px 10px">
-              </div>
-              <div>
-                <label style="font-size:10px;font-weight:600;color:var(--ink3);display:block;margin-bottom:3px">Position · ရာထူး</label>
-                <input type="text" id="dof-sign-pos-right" class="form-input"
-                  placeholder="ဥပမာ ဒုတိယပါမောက္ခချုပ်" style="font-size:12px;padding:7px 10px">
-              </div>
-            </div>
-          </div>
-
         </div>
+
+        <!-- Hidden right-side fields kept for JS compatibility -->
+        <input type="hidden" id="dof-sign-name-right">
+        <input type="hidden" id="dof-sign-title-right">
+        <input type="hidden" id="dof-sign-pos-right">
       </div>
     </div>
 
@@ -10767,7 +10753,9 @@ const _DEPT_MM = {
 function dofBuildRefEN(docType, dept, seq) {
   const year   = new Date().getFullYear();
   const padded = String(seq).padStart(4, '0');
-  return `UM2-${docType}-${dept}-${year}-${padded}`;
+  /* Use full English dept name in UPPERCASE, spaces replaced with hyphens */
+  const deptLabel = (_DEPT_EN_NAME[dept] || dept).toUpperCase().replace(/[^A-Z0-9]/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '');
+  return `UM2-${docType}-${deptLabel}-${year}-${padded}`;
 }
 
 function dofBuildRefMM(docType, dept, seq) {
@@ -10819,7 +10807,8 @@ async function dofUpdateRef() {
   const priorityGrid  = document.getElementById('dof-priority-grid');
   let   infoBox       = document.getElementById('dof-fixed-info');
 
-  if (signingWrap)   signingWrap.style.display   = isFixed ? 'none' : (type ? '' : 'none');
+  const lang_now = document.getElementById('dof-lang')?.value || 'en';
+  if (signingWrap)   signingWrap.style.display   = isFixed ? 'none' : (type && lang_now !== 'en' ? '' : 'none');
   if (bodyWrap)      bodyWrap.style.display       = 'none'; /* body is now in title session */
   if (titleSession)  titleSession.style.display   = isFixed ? 'none' : '';
   if (subjectEnWrap) subjectEnWrap.style.display  = (isFixed || type === 'STM') ? 'none' : '';
@@ -10910,13 +10899,12 @@ async function dofGenerateAndPrint(mode) {
   const lang     = document.getElementById('dof-lang')?.value     || 'en';
   const priority = document.getElementById('dof-priority')?.value || 'normal';
   const dist     = document.getElementById('dof-dist')?.value     || 'internal';
-  const body     = (document.getElementById('dof-body-title')?.value || document.getElementById('dof-body')?.value    || '').trim();
+  const body     = (document.getElementById('dof-body-title')?.value || document.getElementById('dof-body')?.value || '').trim();
+  const docTitle = (document.getElementById('dof-doc-title')?.value  || '').trim();
+  const closing  = (document.getElementById('dof-closing')?.value    || '').trim();
   const signNameLeft  = (document.getElementById('dof-sign-name-left')?.value  || '').trim();
   const signTitleLeft = (document.getElementById('dof-sign-title-left')?.value || '').trim();
   const signPosLeft   = (document.getElementById('dof-sign-pos-left')?.value   || '').trim();
-  const signNameRight  = (document.getElementById('dof-sign-name-right')?.value  || '').trim();
-  const signTitleRight = (document.getElementById('dof-sign-title-right')?.value || '').trim();
-  const signPosRight   = (document.getElementById('dof-sign-pos-right')?.value   || '').trim();
   const signMode = _dofSigningMode;
 
   if (!type) { toast('Please select a document type · အမျိုးအစားရွေးပါ', '⚠'); return; }
@@ -10926,11 +10914,10 @@ async function dofGenerateAndPrint(mode) {
 
   const s = _getStaffForPrint();
 
-  const signLeft  = { name: signNameLeft,  title: signTitleLeft,  pos: signPosLeft };
-  const signRight = { name: signNameRight, title: signTitleRight, pos: signPosRight };
+  const signLeft  = { name: signNameLeft, title: signTitleLeft, pos: signPosLeft };
 
   /* Build the HTML for the printed document */
-  const docHtml = _dofBuildDocHtml(type, refNo, subjectEn, subjectMm, lang, s, body, signMode, signLeft, signRight);
+  const docHtml = _dofBuildDocHtml(type, refNo, subjectEn, subjectMm, lang, s, body, signMode, signLeft, null, docTitle, closing);
 
   if (mode === 'print') {
     /* Save first, then print */
@@ -10948,7 +10935,7 @@ async function dofGenerateAndPrint(mode) {
 }
 
 /* ── Build document HTML based on type ── */
-function _dofBuildDocHtml(type, refNo, subjectEn, subjectMm, lang, s, body, signMode, signLeft, signRight) {
+function _dofBuildDocHtml(type, refNo, subjectEn, subjectMm, lang, s, body, signMode, signLeft, signRight, docTitle, closing) {
   const bilingual = lang === 'bilingual';
   const showMm    = lang === 'mm' || bilingual;
   const showEn    = lang === 'en' || bilingual;
@@ -10961,7 +10948,7 @@ function _dofBuildDocHtml(type, refNo, subjectEn, subjectMm, lang, s, body, sign
   if (type === 'COS') return _dofTemplateCOS(refNo, subjectLine, bilingual, showEn, showMm, s, signLeft, signRight);
   if (type === 'GSC') return _dofTemplateGSC(refNo, subjectLine, bilingual, showEn, showMm, s, signLeft, signRight);
   if (type === 'FIR') return _dofTemplateFIR(refNo, subjectLine, bilingual, showEn, showMm, s, signLeft, signRight);
-  if (type === 'STM') return _dofTemplateSTM(refNo, bilingual, showEn, showMm, s, body, signMode, signLeft, signRight);
+  if (type === 'STM') return _dofTemplateSTM(refNo, bilingual, showEn, showMm, s, body, signMode, signLeft, signRight, docTitle, closing);
 
   /* Helper: render body text as indented paragraphs */
   const _bodyHtml = (txt) => txt
@@ -10982,11 +10969,15 @@ function _dofBuildDocHtml(type, refNo, subjectEn, subjectMm, lang, s, body, sign
   };
   const [labelEn, labelMm] = typeLabels[type] || [type, type];
   const titleDisplay = bilingual ? `${labelEn}  |  ${labelMm}` : (showEn ? labelEn : labelMm);
-  const certifyEn = 'This is to certify / confirm that:';
-  const certifyMm = 'အထက်အကြောင်းအရာပါကိစ္စနှင့် ပတ်သက်၍';
 
+  /* Closing phrase — use custom if provided, else language default */
+  const closingPhrase = closing
+    ? closing
+    : (bilingual ? 'Yours faithfully / လေးစားစွာဖြင့်' : (showEn ? 'Yours faithfully,' : 'လေးစားစွာဖြင့်'));
+
+  const dept = document.getElementById('dof-dept')?.value || 'SEC';
   return `
-    ${_letterHead()}
+    ${_letterHeadWithDept(dept, lang)}
     <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:24px;font-size:10pt">
       <div style="line-height:1.9">
         ${showEn ? `<div><strong>Ref No:</strong> ${refNo}</div>` : ''}
@@ -10997,23 +10988,19 @@ function _dofBuildDocHtml(type, refNo, subjectEn, subjectMm, lang, s, body, sign
         ${showMm ? `<div><strong>ရက်စွဲ:</strong> ${_todayFormattedMM()}</div>` : ''}
       </div>
     </div>
+    ${docTitle ? `<div style="text-align:center;margin-bottom:18px"><span style="font-size:13pt;font-weight:bold;text-transform:uppercase;letter-spacing:1.2px;text-decoration:underline">${docTitle}</span></div>` : ''}
     ${subjectLine ? `<div style="margin-bottom:16px;font-size:10.5pt"><strong>${showEn ? 'Subject' : 'အကြောင်းအရာ'}${bilingual ? ' / အကြောင်းအရာ' : ''}:</strong> ${subjectLine}</div>` : ''}
     ${_bodyHtml(body)}
-    <p style="margin-bottom:4px;font-size:10.5pt">${bilingual ? 'Yours faithfully / လေးစားစွာဖြင့်' : (showEn ? 'Yours faithfully,' : 'လေးစားစွာဖြင့်')}</p>
-    ${_signatureBlockDynamic(s, signMode, signLeft, signRight)}
+    <p style="margin-bottom:4px;font-size:10.5pt">${closingPhrase}</p>
+    ${_signatureBlockDynamic(s, signMode, signLeft, null)}
   `;
 }
 
 function _letterHeadWithStaff(s) {
+  const dept = document.getElementById('dof-dept')?.value || 'SEC';
+  const lang = document.getElementById('dof-lang')?.value || 'en';
   return `
-    <div style="display:flex;align-items:center;gap:20px;border-bottom:2.5px solid #8B1A2E;padding-bottom:16px;margin-bottom:8px">
-      <img src="${_LOGO_URL}" alt="UM2 Logo" style="height:72px;width:auto;flex-shrink:0" onerror="this.style.display='none'">
-      <div style="flex:1">
-        <div style="font-size:9pt;letter-spacing:2px;text-transform:uppercase;color:#555;margin-bottom:2px">University of Medicine (2), Yangon</div>
-        <div style="font-size:17pt;font-weight:bold;font-family:'Times New Roman',serif;color:#8B1A2E">Interim University Councilme</div>
-        <div style="font-size:8.5pt;color:#777;margin-top:2px">Secretariat's Office &nbsp;·&nbsp; sisportal.um2campus.edu.mm</div>
-      </div>
-    </div>
+    ${_letterHeadWithDept(dept, lang)}
     <div style="padding:10px 0 18px 0;border-bottom:1px solid #e0e0e0;margin-bottom:24px">
       <div style="font-size:12pt;font-weight:700;color:#0D1B2A">${s.name}</div>
       <div style="font-size:10pt;color:#3D4A5C;margin-top:2px">${s.title}${s.dept ? ' &nbsp;·&nbsp; Department of ' + s.dept : ''}</div>
@@ -11021,12 +11008,15 @@ function _letterHeadWithStaff(s) {
     </div>`;
 }
 
-function _dofTemplateSTM(refNo, bilingual, showEn, showMm, s, body, signMode, signLeft, signRight) {
+function _dofTemplateSTM(refNo, bilingual, showEn, showMm, s, body, signMode, signLeft, signRight, docTitle, closing) {
   const _bodyHtml = (txt) => txt
     ? txt.split(/\n+/).filter(p => p.trim())
         .map(p => `<p style="margin-bottom:14px;text-align:justify;line-height:1.9;font-size:10.5pt;text-indent:2em">${p.trim()}</p>`)
         .join('')
     : `<p style="margin-bottom:20px;font-size:10.5pt">&nbsp;</p>`;
+  const closingPhrase = closing
+    ? closing
+    : (bilingual ? 'Yours faithfully / လေးစားစွာဖြင့်' : (showEn ? 'Yours faithfully,' : 'လေးစားစွာဖြင့်'));
   return `
     ${_letterHeadWithStaff(s)}
     <div style="display:flex;justify-content:flex-end;margin-bottom:28px;font-size:10pt">
@@ -11037,17 +11027,18 @@ function _dofTemplateSTM(refNo, bilingual, showEn, showMm, s, body, signMode, si
         ${showMm ? `<strong>ရက်စွဲ ။</strong> ${_todayFormattedMM()}` : ''}
       </div>
     </div>
+    ${docTitle ? `<div style="text-align:center;margin-bottom:18px"><span style="font-size:13pt;font-weight:bold;text-transform:uppercase;letter-spacing:1.2px;text-decoration:underline">${docTitle}</span></div>` : ''}
     <p style="margin-bottom:20px;font-size:10.5pt">${bilingual ? 'To Whom It May Concern,' : (showEn ? 'To Whom It May Concern,' : 'သက်ဆိုင်ရာသူများသို့')}</p>
     ${_bodyHtml(body)}
-    <p style="margin-bottom:4px;font-size:10.5pt">${bilingual ? 'Yours faithfully / လေးစားစွာဖြင့်' : (showEn ? 'Yours faithfully,' : 'လေးစားစွာဖြင့်')}</p>
-    ${_signatureBlockDynamic(s, signMode, signLeft, signRight)}`;
+    <p style="margin-bottom:4px;font-size:10.5pt">${closingPhrase}</p>
+    ${_signatureBlockDynamic(s, signMode, signLeft, null)}`;
 }
 
 function _dofTemplateCOS(refNo, subjectLine, bilingual, showEn, showMm, s, signLeft, signRight) {
   const dept = document.getElementById('dof-dept')?.value || 'SEC';
   const deptOfficeName = _getDeptOfficeName(dept);
   return `
-    ${_letterHead()}
+    ${_letterHeadWithDept(dept, bilingual ? 'bilingual' : (showMm ? 'mm' : 'en'))}
     <div style="display:flex;justify-content:flex-end;margin-bottom:28px;font-size:10pt">
       <div style="text-align:right;line-height:1.9">
         <strong>Ref:</strong> ${refNo}<br>
@@ -11081,7 +11072,7 @@ function _dofTemplateGSC(refNo, subjectLine, bilingual, showEn, showMm, s, signL
   const dept = document.getElementById('dof-dept')?.value || 'SEC';
   const deptOfficeName = _getDeptOfficeName(dept);
   return `
-    ${_letterHead()}
+    ${_letterHeadWithDept(dept, bilingual ? 'bilingual' : (showMm ? 'mm' : 'en'))}
     <div style="display:flex;justify-content:flex-end;margin-bottom:28px;font-size:10pt">
       <div style="text-align:right;line-height:1.9">
         <strong>Ref:</strong> ${refNo}<br>
@@ -11120,8 +11111,9 @@ function _dofTemplateFIR(refNo, subjectLine, bilingual, showEn, showMm, s, signL
     const yrs = now.getFullYear() - start.getFullYear() - (now < new Date(now.getFullYear(), start.getMonth(), start.getDate()) ? 1 : 0);
     return yrs === 1 ? '1 year / ၁ နှစ်' : `${yrs} years / ${yrs} နှစ်`;
   })();
+  const dept = document.getElementById('dof-dept')?.value || 'SEC';
   return `
-    ${_letterHead()}
+    ${_letterHeadWithDept(dept, bilingual ? 'bilingual' : (showMm ? 'mm' : 'en'))}
     <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:24px;font-size:10pt">
       <div></div>
       <div style="text-align:right;line-height:1.9">
@@ -11257,13 +11249,28 @@ function _todayFormatted() {
 }
 
 function _letterHead() {
+  const dept = document.getElementById('dof-dept')?.value || 'SEC';
+  return _letterHeadWithDept(dept, 'en');
+}
+
+/* ── Letterhead with department name shown ── */
+function _letterHeadWithDept(deptCode, lang) {
+  const deptName = _getDeptOfficeName(deptCode || 'SEC');
+  const showMm = lang === 'mm' || lang === 'bilingual';
+  const deptMM = _DEPT_MM[deptCode] || '';
+  const deptLine = (deptCode === 'SEC' || deptCode === 'ADM')
+    ? (showMm ? `UM2 IUC Secretariat${deptMM ? ' · ' + deptMM : ''}` : 'UM2 IUC Secretariat')
+    : (showMm && deptMM
+        ? `Department of ${deptName} · ${deptMM} ဌာန`
+        : `Department of ${deptName}`);
   return `
     <div style="display:flex;align-items:center;gap:20px;border-bottom:2.5px solid #8B1A2E;padding-bottom:16px;margin-bottom:24px">
       <img src="${_LOGO_URL}" alt="UM2 Logo" style="height:72px;width:auto;flex-shrink:0" onerror="this.style.display='none'">
       <div style="flex:1">
         <div style="font-size:9pt;letter-spacing:2px;text-transform:uppercase;color:#555;margin-bottom:2px">University of Medicine (2), Yangon</div>
         <div style="font-size:17pt;font-weight:bold;font-family:'Times New Roman',serif;color:#8B1A2E">Interim University Councilme</div>
-        <div style="font-size:8.5pt;color:#777;margin-top:2px">Secretariat's Office &nbsp;·&nbsp; sisportal.um2campus.edu.mm</div>
+        <div style="font-size:9pt;color:#8B1A2E;font-weight:600;margin-top:3px">${deptLine}</div>
+        <div style="font-size:8pt;color:#777;margin-top:1px">sisportal.um2campus.edu.mm</div>
       </div>
     </div>`;
 }
@@ -11333,31 +11340,32 @@ function dofToggleLangFields() {
   const isFixed = fixedTypes.includes(type);
   const enWrap = document.getElementById('dof-subject-en-wrap');
   const mmWrap = document.getElementById('dof-subject-mm-wrap');
+  const signingWrap = document.getElementById('dof-signing-wrap');
   if (enWrap) enWrap.style.display = (isFixed || type === 'STM') ? 'none' : (lang === 'mm' ? 'none' : '');
   if (mmWrap) mmWrap.style.display = (isFixed || type === 'STM' || lang === 'en') ? 'none' : '';
+  /* Signature block only shown for Myanmar / bilingual + non-fixed types */
+  if (signingWrap && type && !isFixed) {
+    signingWrap.style.display = lang !== 'en' ? '' : 'none';
+  }
 }
 
-/* ── Dynamic signature block for all documents ── */
-function _signatureBlockDynamic(s, signMode, signLeft, signRight) {
+/* ── Dynamic signature block — single signer with centred seal ── */
+function _signatureBlockDynamic(s, signMode, signLeft, _unused) {
   const dept      = document.getElementById('dof-dept')?.value || s.dept || '';
   const sealFile  = _DEPT_SEAL[dept] || 'secretariat.svg';
   const sealImg   = `<img src="${sealFile}" alt="Department Seal"
-    style="width:120px;height:120px;object-fit:contain;display:block;margin:0 auto 4px"
+    style="width:100px;height:100px;object-fit:contain;display:block;margin:0 auto 4px"
     onerror="this.onerror=null;this.src='${_SEAL_URL}'">`;
 
-  const signerEmail = (document.getElementById('dof-sign-email-left')?.value || '').trim();
+  const signerEmail    = (document.getElementById('dof-sign-email-left')?.value || '').trim();
   const deptOfficeName = _getDeptOfficeName(dept);
 
   const leftName  = signLeft?.name  || s.name  || '';
   const leftTitle = signLeft?.title || s.title || '';
   const leftPos   = signLeft?.pos   || (signMode === 'department' ? deptOfficeName : '');
 
-  const rightName  = signRight?.name  || 'ဒုတိယပါမောက္ခချုပ်';
-  const rightTitle = signRight?.title || '';
-  const rightPos   = signRight?.pos   || 'Vice Chancellor';
-
   return `
-    <div style="margin-top:64px;display:flex;justify-content:space-between;align-items:flex-end">
+    <div style="margin-top:64px;display:flex;justify-content:flex-start;align-items:flex-end;gap:40px">
       <div style="text-align:center;min-width:200px">
         <div style="border-top:1px solid #000;padding-top:6px;font-size:10.5pt;font-weight:600">${leftName}</div>
         ${leftTitle ? `<div style="font-size:9.5pt;color:#444">${leftTitle}</div>` : ''}
@@ -11366,12 +11374,6 @@ function _signatureBlockDynamic(s, signMode, signLeft, signRight) {
         <div style="font-size:9pt;color:#888;margin-top:2px">${_todayFormatted()}</div>
       </div>
       <div style="text-align:center">${sealImg}</div>
-      <div style="text-align:center;min-width:200px">
-        <div style="border-top:1px solid #000;padding-top:6px;font-size:10.5pt;font-weight:600">${rightName}</div>
-        ${rightTitle ? `<div style="font-size:9.5pt;color:#444">${rightTitle}</div>` : ''}
-        ${rightPos   ? `<div style="font-size:9pt;color:#666">${rightPos}</div>`   : ''}
-        <div style="font-size:9pt;color:#888;margin-top:2px">${_todayFormatted()}</div>
-      </div>
     </div>
     <div style="margin-top:36px;font-size:7.5pt;color:#999;text-align:center;border-top:1px solid #ddd;padding-top:8px">
       Generated by UM2 IRIR System on ${_todayFormatted()}. Valid only with official stamp and authorised signature.
@@ -11411,13 +11413,37 @@ function _signatureBlock(signLeft, signRight) {
     </div>`;
 }
 
-function _printDoc(html) {
+function _printDoc(html, docLabel) {
+  /* Build a meaningful filename: "<DocType/Label> — <Profile Name>" */
+  const profileName = (
+    document.getElementById('sp-realname')?.value.trim() ||
+    document.getElementById('sp-nickname')?.value.trim() ||
+    (typeof currentUser !== 'undefined' && currentUser?.name) ||
+    ''
+  );
+  const typeVal  = document.getElementById('dof-type')?.value || '';
+  const typeLabels = {
+    MEM:'Memorandum', NOT:'Notice', LTR:'Official Letter', RPT:'Report',
+    CIR:'Circular',   POL:'Policy', DIR:'Directive',
+    COS:'Confirmation of Service', GSC:'Departmental Statement',
+    FIR:'Faculty Info Record',     STM:'Personal Statement',
+  };
+  const label = docLabel || typeLabels[typeVal] || typeVal || 'Document';
+  const filename = profileName ? `${label} — ${profileName}` : label;
+
+  const prevTitle = document.title;
+  document.title  = filename;
+
   const area = document.getElementById('printArea');
   area.innerHTML = html;
   area.style.display = 'block';
   setTimeout(() => {
     window.print();
-    setTimeout(() => { area.style.display = 'none'; area.innerHTML = ''; }, 800);
+    setTimeout(() => {
+      document.title = prevTitle;
+      area.style.display = 'none';
+      area.innerHTML = '';
+    }, 800);
   }, 200);
 }
 
@@ -11457,7 +11483,7 @@ function printConfirmationOfStudy() {
     </p>
     <p style="margin-bottom:4px">Yours faithfully,</p>
     ${_signatureBlock(null, null)}
-  `);
+  `, `Confirmation of Study — ${s.name_en || s.id}`);
 }
 
 function printGoodStanding() {
@@ -11501,7 +11527,7 @@ function printGoodStanding() {
     </p>
     <p style="margin-bottom:4px">Yours faithfully,</p>
     ${_signatureBlock(null, null)}
-  `);
+  `, `Certificate of Good Standing — ${s.name_en || s.id}`);
 }
 </script>
 </body>
