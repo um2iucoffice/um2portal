@@ -132,8 +132,6 @@ exports.handler = async (event) => {
     const cleanEventLocation = sanitise(event_location, 300);
 
     // 9. Insert into announcements table
-    const now = new Date().toISOString();
-
     await supabase('announcements', {
       method:  'POST',
       headers: { Prefer: 'return=minimal' },
@@ -148,7 +146,6 @@ exports.handler = async (event) => {
         event_time:     cleanEventTime,
         event_location: cleanEventLocation,
         status:         'pending',   // requires admin approval
-        created_at:     now,
       }),
     });
 
