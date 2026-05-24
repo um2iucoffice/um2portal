@@ -10681,13 +10681,27 @@ function dofApplyRoleTypes() {
   }
 
   /* ── Staff: lock department dropdown to their own profile department ── */
-  const staffDept = (document.getElementById('sp-department')?.value || '').trim().toUpperCase();
-  if (deptSel && staffDept) {
+  /* sp-department stores full names (e.g. "Obstetrics and Gynaecology") while
+     dof-dept uses short codes (e.g. "OBG") — map between them. */
+  const _DEPT_NAME_TO_CODE = {
+    'secretariat': 'SEC', 'administration': 'ADM',
+    'anatomy': 'ANA', 'physiology': 'PHY', 'biochemistry': 'BIO',
+    'pharmacology': 'PHA', 'pathology': 'PAT', 'microbiology': 'MIC',
+    'preventive & social medicine': 'PSM', 'preventive and social medicine': 'PSM',
+    'forensic medicine': 'FOR', 'internal medicine': 'IMD', 'surgery': 'SUR',
+    'obstetrics & gynaecology': 'OBG', 'obstetrics and gynaecology': 'OBG',
+    'paediatrics': 'PED', 'psychiatry': 'PSY', 'ophthalmology': 'OPH',
+    'ent': 'ENT', 'otolaryngology': 'ENT',
+    'orthopaedics': 'ORT', 'radiology': 'RAD', 'anaesthesiology': 'ANE',
+  };
+  const staffDeptRaw  = (document.getElementById('sp-department')?.value || '').trim();
+  const staffDeptCode = _DEPT_NAME_TO_CODE[staffDeptRaw.toLowerCase()] || staffDeptRaw.toUpperCase();
+  if (deptSel && staffDeptCode) {
     /* Set the dept dropdown to match the staff's own department */
     Array.from(deptSel.options).forEach(opt => {
-      opt.hidden = (opt.value !== staffDept);
+      opt.hidden = (opt.value !== staffDeptCode);
     });
-    deptSel.value = staffDept;
+    deptSel.value = staffDeptCode;
     deptSel.disabled = true;
     deptSel.style.opacity = '0.75';
   }
@@ -10936,7 +10950,7 @@ async function dofGenerateAndPrint(mode) {
   const signLeft  = { name: signNameLeft, title: signTitleLeft, pos: signPosLeft, auth: signAuth };
 
   /* Build the HTML for the printed document */
-  const docHtml = _dofBuildDocHtml(type, refNo, subjectEn, subjectMm, lang, s, body, signMode, signLeft, null, docTitle, closing);
+  const docHtml = _dofBuildDocHtml(type, refNo, subjectEn, subjectMm, lang, s, body, signMode, signLeft, null, docTitle, closing, priority, dist);
 
   if (mode === 'print') {
     /* Save first, then print */
@@ -10954,7 +10968,7 @@ async function dofGenerateAndPrint(mode) {
 }
 
 /* ── Build document HTML based on type ── */
-function _dofBuildDocHtml(type, refNo, subjectEn, subjectMm, lang, s, body, signMode, signLeft, signRight, docTitle, closing) {
+function _dofBuildDocHtml(type, refNo, subjectEn, subjectMm, lang, s, body, signMode, signLeft, signRight, docTitle, closing, priority, dist) {
   const bilingual = lang === 'bilingual';
   const showMm    = lang === 'mm' || bilingual;
   const showEn    = lang === 'en' || bilingual;
@@ -10963,11 +10977,26 @@ function _dofBuildDocHtml(type, refNo, subjectEn, subjectMm, lang, s, body, sign
     ? `${subjectEn || ''}${subjectEn && subjectMm ? ' · ' : ''}${subjectMm || ''}`
     : (showEn ? subjectEn : subjectMm) || '';
 
+  /* ── Priority / Distribution banner (shown at top of all doc types) ── */
+  const _priorityLabel = { normal: '', urgent: 'URGENT', confidential: 'CONFIDENTIAL' };
+  const _distLabel = {
+    internal: 'Internal Only',
+    department: 'Department',
+    all_staff: 'All Staff',
+    external: 'External',
+  };
+  const priorityTag = (priority && priority !== 'normal')
+    ? `<div style="margin-bottom:14px;text-align:center">
+        <span style="display:inline-block;padding:4px 18px;border:2px solid #8B1A2E;color:#8B1A2E;font-size:11pt;font-weight:800;letter-spacing:2.5px;text-transform:uppercase">${_priorityLabel[priority] || priority.toUpperCase()}</span>
+      </div>` : '';
+  const distTag = (dist && dist !== 'internal')
+    ? `<div style="font-size:9pt;color:#555;margin-bottom:10px"><strong>Distribution:</strong> ${_distLabel[dist] || dist}</div>` : '';
+
   /* Special templates — fixed secretariat signature */
-  if (type === 'COS') return _dofTemplateCOS(refNo, subjectLine, bilingual, showEn, showMm, s, signLeft, signRight);
-  if (type === 'GSC') return _dofTemplateGSC(refNo, subjectLine, bilingual, showEn, showMm, s, signLeft, signRight);
-  if (type === 'FIR') return _dofTemplateFIR(refNo, subjectLine, bilingual, showEn, showMm, s, signLeft, signRight);
-  if (type === 'STM') return _dofTemplateSTM(refNo, bilingual, showEn, showMm, s, body, signMode, signLeft, signRight, docTitle, closing);
+  if (type === 'COS') return priorityTag + distTag + _dofTemplateCOS(refNo, subjectLine, bilingual, showEn, showMm, s, signLeft, signRight);
+  if (type === 'GSC') return priorityTag + distTag + _dofTemplateGSC(refNo, subjectLine, bilingual, showEn, showMm, s, signLeft, signRight);
+  if (type === 'FIR') return priorityTag + distTag + _dofTemplateFIR(refNo, subjectLine, bilingual, showEn, showMm, s, signLeft, signRight);
+  if (type === 'STM') return priorityTag + distTag + _dofTemplateSTM(refNo, bilingual, showEn, showMm, s, body, signMode, signLeft, signRight, docTitle, closing);
 
   /* Helper: render body text as indented paragraphs */
   const _bodyHtml = (txt) => txt
@@ -10991,6 +11020,8 @@ function _dofBuildDocHtml(type, refNo, subjectEn, subjectMm, lang, s, body, sign
   const dept = document.getElementById('dof-dept')?.value || 'SEC';
   return `
     ${_letterHeadWithDept(dept, lang)}
+    ${priorityTag}
+    ${distTag}
     <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:24px;font-size:10pt">
       <div style="line-height:1.9">
         ${showEn ? `<div><strong>Ref No:</strong> ${refNo}</div>` : ''}
