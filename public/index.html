@@ -8009,12 +8009,9 @@ function printDegreeCertificate(enrollIdx) {
   const gradDateMY = s.graduationDateMY || '';
   const gradIDMY   = s.graduationIdMY  || '';
 
-  // Degree label — map program name to the formal degree title
+  // Degree label — use program name directly from enrollment data
   const programName = e.programName || e.degreeProgramId || s.programName || '';
-  let degreeTitle = 'Bachelor of Medicine and Bachelor of Surgery';
-  if (/master|msc|mmed|m\.med/i.test(programName)) degreeTitle = 'Master of Medicine';
-  else if (/phd|doctorate|doctoral/i.test(programName)) degreeTitle = 'Doctor of Philosophy';
-  else if (/mbbs|medicine.*surgery|bachelor.*medicine/i.test(programName)) degreeTitle = 'Bachelor of Medicine and Bachelor of Surgery';
+  const degreeTitle = programName || 'Degree Program';
 
   // QR data
   const qrData = (typeof window !== 'undefined' ? window.location.origin : '') + '/verify?id=' + encodeURIComponent(sid);
@@ -8331,10 +8328,7 @@ function printDegreeCertificate(enrollIdx) {
 
     <!-- Certificate title -->
     <div class="cert-title">Degree Certificate</div>
-<div</div>
-<div</div>
-<div</div>
-<div</div>
+
     <!-- Student name -->
     <div class="cert-name-wrap">
       <span class="cert-name">${name}</span>
@@ -8359,39 +8353,37 @@ function printDegreeCertificate(enrollIdx) {
     <!-- Signature row -->
     <div class="cert-sig-row">
       <div class="cert-sig-block">
-        <span class="cert-sig-line"></span>
         Interim University Council<br>
         University of Medicine -2, Yangon
       </div>
       <div class="cert-sig-block">
-        <span class="cert-sig-line"></span>
         Chancellor<br>
         University of Medicine -2, Yangon
       </div>
     </div>
 
-  <!-- Center seal -->
-<div style="display:flex;justify-content:center;width:88%;margin-top:4mm;margin-bottom:6mm;">
-  <div class="cert-seal">
-    <img src="/Seal.svg" alt="Seal" onerror="this.style.display='none'">
-  </div>
-</div>
-
-
-    <!-- QR + Date/Reg info side by side at bottom-left -->
-    <div style="display:flex;align-items:flex-start;gap:4mm;width:88%;margin-top:2mm;">
-      <div class="cert-qr">
-        <div id="certQR"></div>
-      </div>
-      <div style="font-family:'Roboto',sans-serif;font-size:8.5pt;color:#333;line-height:2;">
-        ${gradDate ? `<div>${gradDate}</div>` : ''}
-        ${gradDateMY ? `<div style="font-family:'Padauk','Myanmar Text',sans-serif;font-size:7.5pt">${gradDateMY}</div>` : ''}
-        ${gradID ? `<div>Registration ID - ${gradID}</div>` : ''}
-        ${gradIDMY ? `<div style="font-family:'Padauk','Myanmar Text',sans-serif;font-size:7.5pt">${gradIDMY}</div>` : ''}
+    <!-- Center seal -->
+    <div style="display:flex;justify-content:center;width:88%;margin-top:6mm;margin-bottom:4mm;">
+      <div class="cert-seal">
+        <img src="https://raw.githubusercontent.com/um2iucoffice/um2portal/c5797a374732d917b6b54aa88b6a874d66984ba1/public/Seal.svg" alt="Seal"
+          onerror="this.src='/Seal.svg';this.onerror=function(){this.style.display='none'};">
       </div>
     </div>
 
   </div><!-- /.cert-inner -->
+
+  <!-- QR + Date/Reg info — absolute bottom-left -->
+  <div style="position:absolute;bottom:22mm;left:16mm;display:flex;align-items:flex-start;gap:4mm;">
+    <div class="cert-qr">
+      <div id="certQR"></div>
+    </div>
+    <div style="font-family:'Roboto',sans-serif;font-size:8.5pt;color:#333;line-height:2;">
+      ${gradDate ? `<div>${gradDate}</div>` : ''}
+      ${gradDateMY ? `<div style="font-family:'Padauk','Myanmar Text',sans-serif;font-size:7.5pt">${gradDateMY}</div>` : ''}
+      ${gradID ? `<div>Registration ID - ${gradID}</div>` : ''}
+      ${gradIDMY ? `<div style="font-family:'Padauk','Myanmar Text',sans-serif;font-size:7.5pt">${gradIDMY}</div>` : ''}
+    </div>
+  </div>
 
   <!-- Electronically generated notice -->
   <div style="
