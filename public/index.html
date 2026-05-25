@@ -9327,7 +9327,7 @@ async function loadLectureRooms() {
     const res  = await fetch('/.netlify/functions/get-lecture-rooms', {
       method:  'POST',
       headers: { 'Content-Type': 'application/json' },
-      body:    JSON.stringify({ studentId: s.id || '', password: pwd })
+      body:    JSON.stringify({ studentId: s.id || '', token: pwd })
     });
     const data = await res.json();
 
@@ -9846,11 +9846,11 @@ async function _loadTimetable() {
 
   try {
     var s   = window._currentStudent || {};
-    var pwd = window._sessionPassword || '';
+    var pwd = window._sessionToken || '';
     var res = await fetch('/.netlify/functions/get-timetable', {
       method:  'POST',
       headers: { 'Content-Type': 'application/json' },
-      body:    JSON.stringify({ studentId: s.id || '', password: pwd })
+      body:    JSON.stringify({ studentId: s.id || '', token: pwd })
     });
     var data = await res.json();
     loadEl.style.display = 'none';
