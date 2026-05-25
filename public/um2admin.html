@@ -4648,8 +4648,12 @@ async function hashPassword(plain) {
 // Falls back silently so a network failure never blocks student creation.
 async function sendWelcomeEmail(toEmail, sid, nameEn, plainPassword, dob, trigger = 'new student') {
   try {
+    if (!plainPassword || plainPassword.trim().length === 0) {
+      console.error('[sendWelcomeEmail] plainPassword is empty — credential block will be missing from email. sid:', sid);
+    }
     const EDGE_URL = SUPABASE_URL.replace(/\/+$/, '') + '/functions/v1/send-email';
-    await fetch(EDGE_URL, {
+    console.log('[sendWelcomeEmail] sending to:', toEmail, '| sid:', sid, '| trigger:', trigger, '| password length:', (plainPassword || '').length);
+    const res = await fetch(EDGE_URL, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -4665,8 +4669,14 @@ async function sendWelcomeEmail(toEmail, sid, nameEn, plainPassword, dob, trigge
         dob:             dob || null,
       }),
     });
+    const data = await res.json();
+    if (!res.ok) {
+      console.error('[sendWelcomeEmail] edge function error:', res.status, JSON.stringify(data));
+    } else {
+      console.log('[sendWelcomeEmail] success:', data.id || data);
+    }
   } catch (e) {
-    console.warn('sendWelcomeEmail failed (non-blocking):', e);
+    console.warn('[sendWelcomeEmail] fetch failed (non-blocking):', e);
   }
 }
 
@@ -5994,7 +6004,7 @@ async function populateTables() {
     { data: degreeData,     error: dErr },
     { data: cpData,         error: cpErr },
   ] = await Promise.all([
-    db.from('students').select('id,name_en,name_my,father,father_my,mother,mother_my,dob,email,phone,address,admission,year,program,degree_level,supervisor,thesis_title,status,gpa,grad_status,graduation_id,graduation_id_my,graduation_date,graduation_date_my,master_password,photo,gender').order('id'),
+    db.from('students').select('id,name_en,name_my,father,father_my,mother,mother_my,dob,email,phone,address,admission,year,program,degree_level,supervisor,thesis_title,status,gpa,grad_status,graduation_id,graduation_id_my,graduation_date,graduation_date_my,photo,gender,updated_at').order('id'),
     db.from('attendance').select('*').order('session_date', { ascending: false }),
     db.from('courses').select('*').order('id'),
     fetchAllGrades(),
@@ -6178,7 +6188,7 @@ function renderStudentTable(data) {
         const pwDisplay = currentRole === 'registrar'
           ? `<td onclick="event.stopPropagation()" style="white-space:nowrap">
                <span class="pw-masked" style="font-family:monospace;color:var(--ink3);letter-spacing:.15em">••••••••</span>
-               <span class="pw-plain" style="display:none;font-family:monospace;font-size:11px;color:var(--ink)">${s.master_password || '—'}</span>
+               <span class="pw-plain" style="display:none;font-family:monospace;font-size:11px;color:var(--ink)">${s.master_password ? '(password set — not displayable)' : '—'}</span>
                <button class="pw-eye" style="margin-left:6px;display:inline-flex;vertical-align:middle" onclick="toggleTablePwVisibility(this)" title="Show / Hide">
                  <svg style="width:13px;height:13px;stroke:currentColor;stroke-width:1.9;fill:none;stroke-linecap:round;stroke-linejoin:round"><use href="#i-eye"></use></svg>
                </button>
@@ -6554,11 +6564,12 @@ async function saveNewStudent() {
   };
 
   // Resolve plaintext FIRST — before any hashing — needed for welcome email
-  const _plainPw = document.getElementById('ns-masterPw').value.trim() || generateMasterPassword();
+  const _plainPw  = document.getElementById('ns-masterPw').value.trim() || generateMasterPassword();
+  const _nameVal  = document.getElementById('ns-name').value.trim();
+  const _dobVal   = document.getElementById('ns-dob') ? getDateValue('ns-dob') : null;
   document.getElementById('ns-masterPw').value = _plainPw;
   alert(' Save this password for the student:\n\n' + _plainPw + '\n\nIt cannot be recovered after saving.');
   newStudent.master_password = await hashPassword(_plainPw);
-  const _dobVal  = document.getElementById('ns-dob') ? getDateValue('ns-dob') : null;
 
   const { error } = await db.from('students').insert(newStudent);
   if (error) { toast('Save failed: ' + error.message, 'DB Error'); return; }
@@ -6582,7 +6593,7 @@ async function saveNewStudent() {
   students.push(newStudent);
   renderStudentTable(students);
   updateDashboardStats();
-  await sendWelcomeEmail(email, sid, document.getElementById('ns-name').value.trim(), _plainPw, _dobVal);
+  await sendWelcomeEmail(email, sid, _nameVal, _plainPw, _dobVal);
   await logEmail(email, sid, '[UM2 Registry System] Welcome — Your student account is ready', 'New student');
   toast(`Student ${sid} added. Welcome email sent to ${email}.`, 'Notice');
   clearNewStudentForm();
@@ -6631,7 +6642,7 @@ function openEditModal(sid) {
   if (pwEl) {
     pwEl.value = '';
     pwEl.type  = 'password';
-    pwEl.placeholder = s.master_password ? 'Password set — enter new value to change' : 'No password yet — set one here';
+    pwEl.placeholder = 'Enter new password to set or change';
     const eyeBtn = pwEl.parentElement.querySelector('.pw-eye');
     if (eyeBtn) eyeBtn.innerHTML = '<svg><use href="#i-eye"></use></svg>';
   }
@@ -6789,7 +6800,7 @@ async function submitBulkStudents() {
     const resolvedGpa    = existing ? (existing.gpa ?? 0.0) : 0.0;
     const newPw          = (row.master_password || '').trim();
     const resolvedPw     = newPw || generateMasterPassword();
-const resolvedPwHash = await hashPassword(resolvedPw);
+    const resolvedPwHash = await hashPassword(resolvedPw);
 
     const record = {
       id:         sid,
