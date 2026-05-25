@@ -3430,7 +3430,7 @@ CREATE POLICY IF NOT EXISTS &quot;Authenticated read all announcements&quot; ON 
       <!-- Department -->
       <div class="form-group" style="margin-bottom:0">
         <label>Department · ဌာန</label>
-        <select id="dof-dept" onchange="dofUpdateRef(); dofApplyRoleTypes();">
+        <select id="dof-dept" onchange="dofUpdateRef(); dofApplyRoleTypes(); dofUpdateLhIndicator();">
           <!-- Populated dynamically from DEPARTMENTS config by dofPopulateDeptDropdown() -->
         </select>
       </div>
@@ -3456,13 +3456,13 @@ CREATE POLICY IF NOT EXISTS &quot;Authenticated read all announcements&quot; ON 
     <div id="dof-fixed-banner" style="display:none;align-items:flex-start;gap:10px;padding:10px 14px;background:#EBF0F8;border:1px solid rgba(30,58,110,.18);border-radius:8px;margin-bottom:12px">
       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#1E3A6E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;margin-top:1px"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
       <div>
-        <div style="font-size:11.5px;font-weight:700;color:#1E3A6E;margin-bottom:2px">Auto-generated document</div>
-        <div style="font-size:11px;color:#2d4a7a;line-height:1.5">Staff details are pulled from your profile automatically. This document always uses the <strong>IUC Secretariat letterhead</strong> regardless of department.</div>
+        <div style="font-size:11.5px;font-weight:700;color:#1E3A6E;margin-bottom:2px">Auto-generated document — Letterhead Locked</div>
+        <div style="font-size:11px;color:#2d4a7a;line-height:1.5">COS, GSC, and FIR documents always use the <strong>IUC Secretariat letterhead</strong> regardless of department selection. Staff details are pulled automatically from your profile.</div>
       </div>
     </div>
 
-    <!-- Language + Priority + Distribution: 1 col on mobile, 3 on desktop -->
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:12px" class="dof-meta-grid">
+    <!-- Language + Priority: 1 col on mobile, 2 on desktop -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px" class="dof-meta-grid">
 
       <div class="form-group" style="margin-bottom:0">
         <label>Output Language · ဘာသာစကား</label>
@@ -3478,16 +3478,6 @@ CREATE POLICY IF NOT EXISTS &quot;Authenticated read all announcements&quot; ON 
           <option value="normal">Normal · ပုံမှန်</option>
           <option value="urgent">Urgent · အရေးပေါ်</option>
           <option value="confidential">Confidential · လျှို့ဝှက်</option>
-        </select>
-      </div>
-
-      <div class="form-group" style="margin-bottom:0">
-        <label>Distribution · ဖြန့်ဝေမှု</label>
-        <select id="dof-dist">
-          <option value="internal">Internal only · အတွင်းပိုင်း</option>
-          <option value="department">Department · ဌာန</option>
-          <option value="all_staff">All staff · ဝန်ထမ်းအားလုံး</option>
-          <option value="external">External · ပြင်ပ</option>
         </select>
       </div>
 
@@ -3577,6 +3567,17 @@ CREATE POLICY IF NOT EXISTS &quot;Authenticated read all announcements&quot; ON 
         <input type="hidden" id="dof-sign-title-right">
         <input type="hidden" id="dof-sign-pos-right">
       </div>
+    </div>
+
+    <!-- Distribution — moved to bottom, always visible -->
+    <div class="form-group" style="margin-bottom:12px" id="dof-dist-wrap">
+      <label>Distribution · ဖြန့်ဝေမှု</label>
+      <select id="dof-dist" class="form-input">
+        <option value="internal">Internal only · အတွင်းပိုင်း</option>
+        <option value="department">Department · ဌာန</option>
+        <option value="all_staff">All staff · ဝန်ထမ်းအားလုံး</option>
+        <option value="external">External · ပြင်ပ</option>
+      </select>
     </div>
 
     <!-- Ref display + action buttons — stacked on mobile -->
@@ -10996,9 +10997,14 @@ function dofApplyRoleTypes() {
   if (!sel) return;
 
   if (role === 'registrar') {
-    /* Registrar: sees all doc types; dept dropdown fully free; letterhead override shown */
+    /* Registrar: sees all doc types; dept dropdown fully free (all departments); letterhead override shown */
     Array.from(sel.options).forEach(opt => { if (opt.value) opt.hidden = false; });
-    if (deptSel) { deptSel.disabled = false; deptSel.style.opacity = ''; }
+    if (deptSel) {
+      /* Ensure all department options are visible and dropdown is enabled */
+      Array.from(deptSel.options).forEach(opt => { opt.hidden = false; });
+      deptSel.disabled = false;
+      deptSel.style.opacity = '';
+    }
     if (lhWrap)  lhWrap.style.display = '';
     dofUpdateLhIndicator();
     return;
@@ -11059,8 +11065,8 @@ function dofUpdateLhIndicator() {
 
   let lhLabel, lhColor;
   if (isFixed) {
-    /* Locked docs: always IUC Secretariat regardless of dept or role */
-    lhLabel = 'IUC Secretariat letterhead (fixed for auto-generated documents)';
+    /* Locked docs (COS/GSC/FIR): always IUC Secretariat regardless of dept or role */
+    lhLabel = '🔒 IUC Secretariat letterhead — fixed for auto-generated documents';
     lhColor = '#1E3A6E';
     strip.style.background = '#EBF0F8';
     strip.style.borderColor = 'rgba(30,58,110,.2)';
@@ -11069,20 +11075,22 @@ function dofUpdateLhIndicator() {
     lhColor = '#7B1A2E';
     strip.style.background = '#f9f0f2';
     strip.style.borderColor = 'rgba(139,26,46,.2)';
-  } else if (role === 'staff') {
-    const deptName = _DEPT_EN_NAME[dept] || dept;
-    lhLabel = `Department of ${deptName} letterhead`;
-    lhColor = '#1a5c3a';
-    strip.style.background = '#EBF5F0';
-    strip.style.borderColor = 'rgba(26,92,58,.2)';
   } else {
+    /* Dynamic: letterhead follows the selected department */
     const deptName = _DEPT_EN_NAME[dept] || dept;
-    lhLabel = dept === 'SEC' || dept === 'ADM'
+    lhLabel = (dept === 'SEC' || dept === 'ADM')
       ? 'IUC Secretariat letterhead'
       : `Department of ${deptName} letterhead`;
-    lhColor = 'var(--ink2)';
-    strip.style.background = 'var(--surface)';
-    strip.style.borderColor = 'var(--line)';
+    if (role === 'staff') {
+      lhLabel += ' (your department)';
+      lhColor = '#1a5c3a';
+      strip.style.background = '#EBF5F0';
+      strip.style.borderColor = 'rgba(26,92,58,.2)';
+    } else {
+      lhColor = 'var(--ink2)';
+      strip.style.background = 'var(--surface)';
+      strip.style.borderColor = 'var(--line)';
+    }
   }
   text.textContent = lhLabel;
   text.style.color = lhColor;
@@ -11705,8 +11713,17 @@ function _letterHead() {
 
 /* ── Letterhead with department name shown ── */
 function _letterHeadWithDept(deptCode, lang) {
+  /* Locked documents (COS, GSC, FIR) always use the IUC Secretariat letterhead
+     regardless of department selection or user role */
+  const _callerType = document.getElementById('dof-type')?.value || '';
+  const _fixedTypes = ['COS','GSC','FIR'];
+  const _isLockedDoc = _fixedTypes.includes(_callerType);
+  if (_isLockedDoc) {
+    deptCode = 'SEC';
+  }
+
   const lhMode  = document.getElementById('dof-letterhead')?.value || 'iuc';
-  const isVC    = lhMode === 'vc';
+  const isVC    = lhMode === 'vc' && !_isLockedDoc; // locked docs cannot use VC letterhead
   const deptName = _getDeptOfficeName(deptCode || 'SEC');
   const showMm  = lang === 'mm' || lang === 'bilingual';
   const deptMM  = _DEPT_MM[deptCode] || '';
