@@ -1,5 +1,4 @@
 // netlify/functions/get-lecture-rooms.js
-// Authenticates via session token (issued by login.js) — no password needed.
 
 const SUPABASE_URL         = process.env.SUPABASE_URL;
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY;
@@ -32,46 +31,26 @@ exports.handler = async (event) => {
   }
 
   try {
-    const { studentId, token } = JSON.parse(event.body || '{}');
+    const { studentId } = JSON.parse(event.body || '{}');
 
-    if (!studentId || !token) {
-      return {
-        statusCode: 200, headers,
-        body: JSON.stringify({ success: false, message: 'Missing credentials.' })
-      };
+    if (!studentId) {
+      return { statusCode: 200, headers, body: JSON.stringify({ success: false, message: 'Missing credentials.' }) };
     }
 
     const normId = String(studentId).trim().toLowerCase();
 
-    // ── 1. Validate session token ─────────────────────────────────────────────
-    const sessions = await supabaseGet(
-      `sessions?student_id=eq.${encodeURIComponent(normId)}&token=eq.${encodeURIComponent(token)}&select=student_id,expires_at&limit=1`
-    );
-
-    if (!sessions || sessions.length === 0) {
-      return {
-        statusCode: 200, headers,
-        body: JSON.stringify({ success: false, message: 'Invalid credentials.' })
-      };
-    }
-
-    // Check token hasn't expired
-    const expiresAt = new Date(sessions[0].expires_at);
-    if (expiresAt < new Date()) {
-      return {
-        statusCode: 200, headers,
-        body: JSON.stringify({ success: false, message: 'Session expired. Please log in again.' })
-      };
-    }
-
-    // ── 2. Fetch student year ─────────────────────────────────────────────────
+    // ── 1. Fetch student year ─────────────────────────────────────────────────
     const students = await supabaseGet(
       `students?id=eq.${encodeURIComponent(normId)}&select=id,year&limit=1`
     );
 
+    if (!students || students.length === 0) {
+      return { statusCode: 200, headers, body: JSON.stringify({ success: false, message: 'Student not found.' }) };
+    }
+
     const studentYear = ((students[0] || {}).year || '').trim();
 
-    // ── 3. Fetch active rooms ─────────────────────────────────────────────────
+    // ── 2. Fetch active rooms for ALL + this student's year ───────────────────
     const [roomsAll, roomsYear] = await Promise.all([
       supabaseGet(
         `lecture_rooms?select=id,subject,description,zoom_link,zoom_meeting_id,zoom_passcode,year_access,program&is_active=eq.true&year_access=cs.%7B%22ALL%22%7D&order=subject.asc`
@@ -98,9 +77,6 @@ exports.handler = async (event) => {
 
   } catch (e) {
     console.error('[get-lecture-rooms] error:', e.message);
-    return {
-      statusCode: 200, headers,
-      body: JSON.stringify({ success: false, message: e.message })
-    };
+    return { statusCode: 200, headers, body: JSON.stringify({ success: false, message: e.message }) };
   }
 };
