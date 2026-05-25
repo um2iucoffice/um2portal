@@ -9369,7 +9369,12 @@ async function loadCommsSection() {
   emptyEl.style.display = 'none';
 
   try {
-    const res  = await fetch('/.netlify/functions/get-channels');
+   const s = window._currentStudent || {};
+const res = await fetch('/.netlify/functions/get-channels', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({ studentYear: s.currentStatus || '' })
+});
     const data = await res.json();
 
     loadEl.style.display = 'none';
