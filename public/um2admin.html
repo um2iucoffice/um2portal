@@ -3446,7 +3446,7 @@ CREATE POLICY IF NOT EXISTS &quot;Authenticated read all announcements&quot; ON 
       <!-- Department -->
       <div class="form-group" style="margin-bottom:0">
         <label>Department · ဌာန</label>
-        <select id="dof-dept" onchange="dofUpdateRef(); dofApplyRoleTypes(); dofUpdateLhIndicator();">
+        <select id="dof-dept" onchange="if(typeof dofUpdateRef==='function')dofUpdateRef(); if(typeof dofApplyRoleTypes==='function')dofApplyRoleTypes(); if(typeof dofUpdateLhIndicator==='function')dofUpdateLhIndicator();">
           <!-- Populated dynamically from DEPARTMENTS config by dofPopulateDeptDropdown() -->
         </select>
       </div>
@@ -3485,6 +3485,7 @@ CREATE POLICY IF NOT EXISTS &quot;Authenticated read all announcements&quot; ON 
         <select id="dof-lang" onchange="dofUpdateRef(); dofToggleLangFields()">
           <option value="en" selected>English</option>
           <option value="mm">Myanmar · မြန်မာ</option>
+          <option value="bilingual">Bilingual · နှစ်ဘာသာ</option>
         </select>
       </div>
 
@@ -3542,6 +3543,20 @@ CREATE POLICY IF NOT EXISTS &quot;Authenticated read all announcements&quot; ON 
       <div style="background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:14px 16px">
         <div style="font-size:10px;font-weight:700;letter-spacing:1.4px;text-transform:uppercase;color:var(--ink3);margin-bottom:12px">
           Signature Block · လက်မှတ်အပိုင်း
+        </div>
+        <!-- Signing mode toggle — only shown for Head/Coordinator titles (staff) -->
+        <div id="dof-signing-mode-wrap" style="display:none;margin-bottom:12px">
+          <div style="font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--ink3);margin-bottom:6px">Sign As · လက်မှတ်ထိုးပုံ</div>
+          <div style="display:flex;gap:8px">
+            <button type="button" id="dof-sign-individual-btn" class="btn btn-primary btn-sm" onclick="dofSetSigningMode('individual')">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+              Individual · ကိုယ်ပိုင်
+            </button>
+            <button type="button" id="dof-sign-dept-btn" class="btn btn-outline btn-sm" onclick="dofSetSigningMode('department')">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+              Department · ဌာနစာ
+            </button>
+          </div>
         </div>
         <div style="max-width:480px">
           <div style="font-size:11px;font-weight:700;color:var(--crimson);margin-bottom:8px;border-bottom:1px solid var(--line);padding-bottom:4px">
@@ -10362,7 +10377,11 @@ async function saveChannel() {
     gp_link:       document.getElementById('ch-gp-link').value.trim() || null,
     members:       parseInt(document.getElementById('ch-members').value) || null,
     sort_order:    parseInt(document.getElementById('ch-sort-order').value) || null,
-    allowed_years: document.getElementById('ch-allowed-years').value.trim() || null,
+    allowed_years: (function(){
+      const raw = document.getElementById('ch-allowed-years').value.trim();
+      if (!raw) return null;
+      return raw.split(',').map(function(y){ return y.trim(); }).filter(Boolean);
+    })(),
     is_active:     document.getElementById('ch-status').value === 'true',
     updated_at:    new Date().toISOString()
   };
@@ -11021,8 +11040,9 @@ function _getStaffForPrint() {
 
 /* ── Title → allowed doc types ── */
 /* COS, GSC, FIR are system-generated and available to ALL staff.
-   STM, LTR, DIR are customizable and registrar-only.
-   Staff may NEVER select department freely — locked to own dept. */
+   STM, LTR, DIR are also available to staff but the department dropdown is
+   locked to their own department and no VC letterhead override is allowed.
+   Only the Registrar can freely select any department or use the VC letterhead. */
 const _TITLE_ACCESS = {
   'head':                ['COS','GSC','FIR'],
   'coordinator':         ['COS','GSC','FIR'],
@@ -11071,27 +11091,26 @@ function dofRenderRoleBadge() {
 }
 
 function dofApplyRoleTypes() {
-  const role     = (typeof currentRole !== 'undefined') ? currentRole : 'staff';
-  const sel      = document.getElementById('dof-type');
-  const deptSel  = document.getElementById('dof-dept');
-  const lhSel    = document.getElementById('dof-letterhead');
-  const lhWrap   = document.getElementById('dof-lh-wrap');
-  const deptWrap = deptSel ? deptSel.closest('.form-group') : null;
+  const role    = (typeof currentRole !== 'undefined') ? currentRole : 'staff';
+  const sel     = document.getElementById('dof-type');
+  const deptSel = document.getElementById('dof-dept');
+  const lhSel   = document.getElementById('dof-letterhead');
+  const lhWrap  = document.getElementById('dof-lh-wrap');
+  const deptWrap= deptSel ? deptSel.closest('.form-group') : null;
   if (!sel) return;
 
-  /* Remove any previously injected Staff lock note */
+  /* Clean up any previously injected staff lock note */
   const prevNote = document.getElementById('dof-dept-staff-note');
   if (prevNote) prevNote.remove();
 
   /* ══════════════════════════════════════════════════════════════
-     REGISTRAR — full access: all document types, any department,
-     letterhead override control visible
+     REGISTRAR
+       STM / LTR / DIR — any department selectable, VC lh available
+       COS / GSC / FIR — dept dropdown visible but irrelevant
+                          (_letterHeadWithDept forces SEC for these)
      ══════════════════════════════════════════════════════════════ */
   if (role === 'registrar') {
-    /* All doc type options visible */
     Array.from(sel.options).forEach(opt => { if (opt.value) opt.hidden = false; });
-
-    /* All departments enabled */
     if (deptSel) {
       Array.from(deptSel.options).forEach(opt => { opt.hidden = false; });
       deptSel.disabled         = false;
@@ -11099,35 +11118,34 @@ function dofApplyRoleTypes() {
       deptSel.style.cursor     = '';
       deptSel.style.background = '';
       deptSel.title            = '';
-      /* Default to Secretariat if nothing selected */
       if (!deptSel.value) deptSel.value = 'SEC';
     }
-
-    /* Letterhead override visible */
     if (lhWrap) lhWrap.style.display = '';
-
     dofUpdateLhIndicator();
+    if (typeof dofUpdateRef === 'function') dofUpdateRef();
     return;
   }
 
   /* ══════════════════════════════════════════════════════════════
-     STAFF — restricted access:
-       • Document types : COS, GSC, FIR only (STM/LTR/DIR hidden)
-       • Department     : locked to their profile department
-       • Letterhead     : auto-determined by dept (no manual override)
-       • Fixed docs (COS/GSC/FIR) still use IUC Secretariat letterhead
-         as enforced by _letterHeadWithDept()
+     STAFF
+       STM / LTR / DIR — visible, dept locked to own dept,
+                          letterhead = own dept, no VC override
+       COS / GSC / FIR — visible, dept dropdown locked + irrelevant
+                          (_letterHeadWithDept forces SEC for these)
      ══════════════════════════════════════════════════════════════ */
 
-  /* Resolve staff department from profile (visible selector or readonly text) */
-  const rawFromSel = (document.getElementById('sp-department')?.value || '').trim().toLowerCase();
-  const rawFromRo  = (document.getElementById('sp-dept-readonly')?.textContent || '').trim().toLowerCase();
+  /* Resolve staff's own department code */
+  const rawFromSel    = (document.getElementById('sp-department')?.value || '').trim().toLowerCase();
+  const rawFromRo     = (document.getElementById('sp-dept-readonly')?.textContent || '').trim().toLowerCase();
   const staffDeptRaw  = rawFromSel || rawFromRo;
   const staffDeptCode = _DEPT_NAME_TO_CODE[staffDeptRaw]
-    || staffDeptRaw.replace(/\s+/g,'').toUpperCase()
+    || staffDeptRaw.replace(/\s+/g, '').toUpperCase()
     || 'SEC';
 
-  /* Lock department dropdown to staff's own department */
+  /* All 6 doc types visible for Staff */
+  Array.from(sel.options).forEach(opt => { if (opt.value) opt.hidden = false; });
+
+  /* Lock department to staff's own dept */
   if (deptSel) {
     Array.from(deptSel.options).forEach(opt => {
       opt.hidden = opt.value !== '' && opt.value !== staffDeptCode;
@@ -11140,31 +11158,21 @@ function dofApplyRoleTypes() {
     deptSel.title          = 'Locked to your assigned department';
   }
 
-  /* Inject lock note below the department dropdown */
+  /* Inject lock note */
   if (deptWrap && !document.getElementById('dof-dept-staff-note')) {
     const note = document.createElement('div');
     note.id = 'dof-dept-staff-note';
     note.style.cssText = 'display:flex;align-items:center;gap:5px;margin-top:5px;font-size:11px;color:var(--ink3)';
-    note.innerHTML = \`<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-      <span>Locked to your assigned department</span>\`;
+    note.innerHTML = '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg><span style="margin-left:4px">Locked to your assigned department</span>';
     deptWrap.appendChild(note);
   }
 
-  /* Restrict doc types: Staff may only generate COS, GSC, FIR */
-  const staffAllowed = ['COS', 'GSC', 'FIR'];
-  Array.from(sel.options).forEach(opt => {
-    if (!opt.value) return;            /* keep the placeholder option */
-    opt.hidden = !staffAllowed.includes(opt.value);
-  });
-  if (sel.value && !staffAllowed.includes(sel.value)) sel.value = '';
-
-  /* Hide letterhead override — Staff has no choice over letterhead */
+  /* No letterhead override for Staff — dept is auto, COS/GSC/FIR force SEC */
   if (lhWrap) lhWrap.style.display = 'none';
-  if (lhSel)  lhSel.value = 'iuc';  /* ensure iuc is the base; _letterHeadWithDept handles dept logic */
+  if (lhSel)  lhSel.value = 'iuc';
 
   dofUpdateLhIndicator();
-  /* Re-run field visibility so Title/Body/Subject hide correctly for fixed doc types */
-  dofUpdateRef();
+  if (typeof dofUpdateRef === 'function') dofUpdateRef();
 }
 
 /* ── Update the letterhead indicator strip below the dropdowns ── */
@@ -11196,15 +11204,11 @@ function dofUpdateLhIndicator() {
 
   let lhLabel, lhColor;
   if (isFixed) {
-    /* COS/GSC/FIR: use the staff's own department letterhead.
-       Show which department letterhead will appear on the document. */
-    const deptName = _DEPT_EN_NAME[dept] || dept;
-    lhLabel = (dept === 'SEC' || dept === 'ADM')
-      ? '📄 IUC Secretariat letterhead — profile details auto-filled'
-      : `📄 Department of ${deptName} letterhead — profile details auto-filled`;
-    lhColor = '#1a5c3a';
-    strip.style.background = '#EBF5F0';
-    strip.style.borderColor = 'rgba(26,92,58,.2)';
+    /* COS/GSC/FIR always use IUC Secretariat letterhead regardless of dept/role */
+    lhLabel = '🔒 IUC Secretariat letterhead — fixed for COS / GSC / FIR';
+    lhColor = '#1E3A6E';
+    strip.style.background  = '#EBF0F8';
+    strip.style.borderColor = 'rgba(30,58,110,.2)';
   } else if (lhMode === 'vc') {
     lhLabel = 'Office of the Vice Chancellor letterhead';
     lhColor = '#7B1A2E';
@@ -11391,6 +11395,7 @@ async function dofUpdateRef() {
   let   infoBox       = document.getElementById('dof-fixed-info');
 
   const lang_now = document.getElementById('dof-lang')?.value || 'en';
+  /* COS/GSC/FIR: hide ALL editable content sections — content is auto-filled from profile */
   if (signingWrap)   signingWrap.style.display   = (isFixed || !type) ? 'none' : '';
   if (bodyWrap)      bodyWrap.style.display       = 'none'; /* body is now in title session */
   if (titleSession)  titleSession.style.display   = isFixed ? 'none' : '';
@@ -11469,6 +11474,10 @@ async function dofQuick(type, subjectEn, subjectMm) {
   if (typeEl) typeEl.value = type;
   if (enEl)   enEl.value  = subjectEn;
   if (mmEl)   mmEl.value  = subjectMm;
+  /* Apply role-based constraints (dept lock for staff, etc.) before generating */
+  if (typeof dofPopulateDeptDropdown === 'function') dofPopulateDeptDropdown();
+  if (typeof dofApplyRoleTypes       === 'function') dofApplyRoleTypes();
+  if (typeof dofRenderRoleBadge      === 'function') dofRenderRoleBadge();
   await dofUpdateRef();
   await dofGenerateAndPrint('print');
 }
@@ -11818,12 +11827,12 @@ if (_origShowViewDOF) {
   showView = function(viewId, ...args) {
     __showViewPatched(viewId, ...args);
     if (viewId === 'docOffice') {
-      dofPopulateDeptDropdown();      /* ensure dept dropdown is populated first */
-      dofRenderRoleBadge();           /* show role access badge */
-      dofApplyRoleTypes();            /* apply role-based restrictions */
-      dofUpdateRef();
-      dofToggleLangFields();
-      loadDocLog();
+      if (typeof dofPopulateDeptDropdown === 'function') dofPopulateDeptDropdown();
+      if (typeof dofRenderRoleBadge     === 'function') dofRenderRoleBadge();
+      if (typeof dofApplyRoleTypes      === 'function') dofApplyRoleTypes();
+      if (typeof dofUpdateRef           === 'function') dofUpdateRef();
+      if (typeof dofToggleLangFields    === 'function') dofToggleLangFields();
+      if (typeof loadDocLog             === 'function') loadDocLog();
     }
   };
 }
@@ -11850,15 +11859,19 @@ function _letterHead() {
 
 /* ── Letterhead with department name shown ── */
 function _letterHeadWithDept(deptCode, lang) {
-  /* COS / GSC / FIR use the staff member's OWN department letterhead.
-     Only VC letterhead override is blocked for these types (no one should
-     issue a staff confirmation on the VC letterhead). */
-  const _callerType  = document.getElementById('dof-type')?.value || '';
-  const _fixedTypes  = ['COS','GSC','FIR'];
-  const _isFixedDoc  = _fixedTypes.includes(_callerType);
+  /* RULE:
+     COS / GSC / FIR  → always IUC Secretariat letterhead (force SEC), no exceptions.
+     STM / LTR / DIR  → use the deptCode passed in (Registrar: any dept; Staff: own dept).
+     VC letterhead     → only available for STM/LTR/DIR, Registrar only. */
+  const _callerType = document.getElementById('dof-type')?.value || '';
+  const _fixedTypes = ['COS','GSC','FIR'];
+  const _isFixedDoc = _fixedTypes.includes(_callerType);
+
+  /* Force Secretariat for COS/GSC/FIR */
+  if (_isFixedDoc) deptCode = 'SEC';
 
   const lhMode  = document.getElementById('dof-letterhead')?.value || 'iuc';
-  /* Fixed docs cannot use VC letterhead — everything else follows lhMode */
+  /* VC only for non-fixed docs */
   const isVC    = lhMode === 'vc' && !_isFixedDoc;
   const deptName = _getDeptOfficeName(deptCode || 'SEC');
   const showMm  = lang === 'mm' || lang === 'bilingual';
@@ -11886,9 +11899,9 @@ function _letterHeadWithDept(deptCode, lang) {
         : `Department of ${deptName}`)
     : (showMm ? `UM2 IUC Secretariat${deptMM ? ' · ' + deptMM : ''}` : 'UM2 IUC Secretariat');
 
-  /* For ALL departmental docs on a non-SEC/ADM letterhead, show auth control chain */
+  /* For STM/LTR/DIR on a departmental letterhead, show auth control chain */
   const authLine = isDeptDoc
-    ? `<div style="font-size:7.5pt;color:#8B1A2E;margin-top:2px;font-style:italic;letter-spacing:.3px">Issued under Secretariat Office Authentication & Document Control</div>`
+    ? '<div style="font-size:7.5pt;color:#8B1A2E;margin-top:2px;font-style:italic;letter-spacing:.3px">Issued under Secretariat Office Authentication &amp; Document Control</div>'
     : '';
 
   return `
@@ -11964,7 +11977,12 @@ function _signatureBlock(signLeft, signRight) {
   const dept     = document.getElementById('dof-dept')?.value || 'SEC';
   const sealFile = _DEPT_SEAL[dept] || 'secretariat.svg';
   const deptOfficeName = _getDeptOfficeName(dept);
-  const leftName  = signLeft?.name  || deptOfficeName;
+  /* For COS/GSC/FIR the letterhead is always IUC Secretariat, so the
+     default signer name should always be "Registrar", not the dept name. */
+  const _callerType  = document.getElementById('dof-type')?.value || '';
+  const _fixedTypes  = ['COS','GSC','FIR'];
+  const _defaultName = _fixedTypes.includes(_callerType) ? 'Registrar' : deptOfficeName;
+  const leftName  = signLeft?.name  || _defaultName;
   const leftTitle = signLeft?.title || '';
   const leftPos   = signLeft?.pos   || '';
   const rightName  = signRight?.name  || '';
@@ -12212,8 +12230,22 @@ function printConfirmationOfStudy() {
   const s = _getStudentForPrint();
   if (!s) return;
   const refNo = `UM2/SEC/COS/${s.id}/${new Date().getFullYear()}`;
-  _printDoc(`
-    ${_letterHead()}
+  const html = `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8">
+<title>Confirmation of Study — ${s.name_en || s.id}</title>
+<style>
+  body{font-family:'Times New Roman',Times,serif;font-size:12pt;color:#000;background:#fff;margin:0;padding:0}
+  .page{padding:22mm 28mm;max-width:210mm;margin:0 auto}
+  @media print{@page{size:A4 portrait;margin:22mm 28mm}body,html{margin:0;padding:0}.page{padding:0}}
+</style></head><body><div class="page">
+    <div style="display:flex;align-items:center;gap:20px;border-bottom:2.5px solid #8B1A2E;padding-bottom:16px;margin-bottom:24px">
+      <img src="${_LOGO_URL}" alt="UM2" style="height:72px;width:auto" onerror="this.style.display='none'">
+      <div>
+        <div style="font-size:9pt;letter-spacing:2px;text-transform:uppercase;color:#555;margin-bottom:2px">University of Medicine (2), Yangon</div>
+        <div style="font-size:17pt;font-weight:bold;font-family:'Times New Roman',serif;color:#8B1A2E">Interim University Council</div>
+        <div style="font-size:9pt;color:#8B1A2E;font-weight:600;margin-top:3px">UM2 IUC Secretariat</div>
+        <div style="font-size:8pt;color:#777;margin-top:1px">Institutional Registry &amp; Information Repository · Authorized Personnel Only</div>
+      </div>
+    </div>
     <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:28px;font-size:10pt">
       <div></div>
       <div style="text-align:right;line-height:1.8">
@@ -12243,18 +12275,46 @@ function printConfirmationOfStudy() {
       certifies the accuracy of the above information as of the date of issue.
     </p>
     <p style="margin-bottom:4px">Yours faithfully,</p>
-    ${_signatureBlock(null, null)}
-  `, `Confirmation of Study — ${s.name_en || s.id}`);
+    <div style="margin-top:64px;display:flex;justify-content:space-between;align-items:flex-end">
+      <div style="text-align:center;width:200px">
+        <div style="border-top:1px solid #000;padding-top:6px;font-size:10pt;font-weight:600">Registrar</div>
+        <div style="font-size:9pt;color:#444">University of Medicine (2)</div>
+      </div>
+      <div style="text-align:center">
+        <img src="${_SEAL_URL}" alt="Seal" style="width:120px;height:120px;object-fit:contain;display:block;margin:0 auto 4px" onerror="this.style.display='none'">
+      </div>
+      <div style="width:200px"></div>
+    </div>
+    <div style="margin-top:36px;font-size:7.5pt;color:#999;text-align:center;border-top:1px solid #ddd;padding-top:8px">
+      Generated by UM2 Institutional Registry &amp; Information Repository System on ${_todayFormatted()}. Valid without stamp and signature.
+    </div>
+</div><script>window.onload=function(){window.print();}<\/script></body></html>`;
+  const win = window.open('', `cos_${s.id}`, '');
+  if (win) { win.document.open(); win.document.write(html); win.document.close(); }
+  else { toast('Pop-up blocked. Please allow pop-ups and try again.', '⚠'); }
 }
 
 function printGoodStanding() {
   const s = _getStudentForPrint();
   if (!s) return;
   const refNo = `UM2/SEC/GSC/${s.id}/${new Date().getFullYear()}`;
-  _printDoc(`
-    ${_letterHead()}
-    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:28px;font-size:10pt">
-      <div></div>
+  const html = `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8">
+<title>Certificate of Good Standing — ${s.name_en || s.id}</title>
+<style>
+  body{font-family:'Times New Roman',Times,serif;font-size:12pt;color:#000;background:#fff;margin:0;padding:0}
+  .page{padding:22mm 28mm;max-width:210mm;margin:0 auto}
+  @media print{@page{size:A4 portrait;margin:22mm 28mm}body,html{margin:0;padding:0}.page{padding:0}}
+</style></head><body><div class="page">
+    <div style="display:flex;align-items:center;gap:20px;border-bottom:2.5px solid #8B1A2E;padding-bottom:16px;margin-bottom:24px">
+      <img src="${_LOGO_URL}" alt="UM2" style="height:72px;width:auto" onerror="this.style.display='none'">
+      <div>
+        <div style="font-size:9pt;letter-spacing:2px;text-transform:uppercase;color:#555;margin-bottom:2px">University of Medicine (2), Yangon</div>
+        <div style="font-size:17pt;font-weight:bold;font-family:'Times New Roman',serif;color:#8B1A2E">Interim University Council</div>
+        <div style="font-size:9pt;color:#8B1A2E;font-weight:600;margin-top:3px">UM2 IUC Secretariat</div>
+        <div style="font-size:8pt;color:#777;margin-top:1px">Institutional Registry &amp; Information Repository · Authorized Personnel Only</div>
+      </div>
+    </div>
+    <div style="display:flex;justify-content:flex-end;margin-bottom:28px;font-size:10pt">
       <div style="text-align:right;line-height:1.8">
         <strong>Ref:</strong> ${refNo}<br>
         <strong>Date:</strong> ${_todayFormatted()}
@@ -12283,10 +12343,26 @@ function printGoodStanding() {
       recorded against this student in the university's official registry.
     </p>
     <p style="margin-bottom:28px;text-align:justify;line-height:1.9">
-      This certificate is issued at the student's request and is valid for official purposes. It is generated by UM2 Institutional Registry & Information Repository and is valid without stamp and signature.
+      This certificate is issued at the student's request and is valid for official purposes. It is generated by UM2 Institutional Registry &amp; Information Repository and is valid without stamp and signature.
+    </p>
     <p style="margin-bottom:4px">Yours faithfully,</p>
-    ${_signatureBlock(null, null)}
-  `, `Certificate of Good Standing — ${s.name_en || s.id}`);
+    <div style="margin-top:64px;display:flex;justify-content:space-between;align-items:flex-end">
+      <div style="text-align:center;width:200px">
+        <div style="border-top:1px solid #000;padding-top:6px;font-size:10pt;font-weight:600">Registrar</div>
+        <div style="font-size:9pt;color:#444">University of Medicine (2)</div>
+      </div>
+      <div style="text-align:center">
+        <img src="${_SEAL_URL}" alt="Seal" style="width:120px;height:120px;object-fit:contain;display:block;margin:0 auto 4px" onerror="this.style.display='none'">
+      </div>
+      <div style="width:200px"></div>
+    </div>
+    <div style="margin-top:36px;font-size:7.5pt;color:#999;text-align:center;border-top:1px solid #ddd;padding-top:8px">
+      Generated by UM2 Institutional Registry &amp; Information Repository System on ${_todayFormatted()}. Valid without stamp and signature.
+    </div>
+</div><script>window.onload=function(){window.print();}<\/script></body></html>`;
+  const win = window.open('', `gsc_${s.id}`, '');
+  if (win) { win.document.open(); win.document.write(html); win.document.close(); }
+  else { toast('Pop-up blocked. Please allow pop-ups and try again.', '⚠'); }
 }
 </script>
 </body>
