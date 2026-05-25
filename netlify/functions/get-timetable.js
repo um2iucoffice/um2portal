@@ -1,5 +1,6 @@
 // ============================================================
 //  netlify/functions/get-timetable.js
+//  Authenticates via session token (issued by login.js)
 // ============================================================
 
 const SUPABASE_URL         = process.env.SUPABASE_URL;
@@ -38,34 +39,42 @@ exports.handler = async (event) => {
     return { statusCode: 405, headers: CORS_HEADERS, body: JSON.stringify({ error: 'Method not allowed' }) };
   }
 
-  let studentId, password;
+  let studentId, token;
   try {
-    ({ studentId, password } = JSON.parse(event.body || '{}'));
+    ({ studentId, token } = JSON.parse(event.body || '{}'));
   } catch {
     return { statusCode: 400, headers: CORS_HEADERS, body: JSON.stringify({ success: false, message: 'Invalid request body.' }) };
   }
 
-  const normId   = String(studentId || '').trim().toLowerCase();
-  const normPass = String(password  || '').trim();
+  const normId = String(studentId || '').trim().toLowerCase();
 
-  if (!normId || !normPass) {
-    return { statusCode: 200, headers: CORS_HEADERS, body: JSON.stringify({ success: false, message: 'Student ID and password are required.' }) };
+  if (!normId || !token) {
+    return { statusCode: 200, headers: CORS_HEADERS, body: JSON.stringify({ success: false, message: 'Student ID and token are required.' }) };
   }
 
   try {
-    // ── 1. Verify student credentials ───────────────────────
+    // ── 1. Validate session token ────────────────────────────
+    const sessions = await supabase(
+      `sessions?student_id=eq.${encodeURIComponent(normId)}&token=eq.${encodeURIComponent(token)}&select=student_id,expires_at&limit=1`,
+      {}, true
+    );
+    if (!sessions || sessions.length === 0) {
+      return { statusCode: 200, headers: CORS_HEADERS, body: JSON.stringify({ success: false, message: 'Invalid session. Please log in again.' }) };
+    }
+    if (new Date(sessions[0].expires_at) < new Date()) {
+      return { statusCode: 200, headers: CORS_HEADERS, body: JSON.stringify({ success: false, message: 'Session expired. Please log in again.' }) };
+    }
+
+    // ── 2. Fetch student ─────────────────────────────────────
     const students = await supabase(
-      `students?id=eq.${encodeURIComponent(normId)}&select=id,master_password,program,year,status&limit=1`
+      `students?id=eq.${encodeURIComponent(normId)}&select=id,program,year,status&limit=1`
     );
     if (!students || students.length === 0) {
       return { statusCode: 200, headers: CORS_HEADERS, body: JSON.stringify({ success: false, message: 'Student not found.' }) };
     }
     const raw = students[0];
-    if (String(raw.master_password || '').trim() !== normPass) {
-      return { statusCode: 200, headers: CORS_HEADERS, body: JSON.stringify({ success: false, message: 'Incorrect password.' }) };
-    }
 
-    // ── 2. Enrollments + year resolution in parallel ─────────
+    // ── 3. Enrollments + year resolution in parallel ─────────
     let programIds = raw.program ? [raw.program] : [];
     let yearId = null;
 
@@ -84,10 +93,7 @@ exports.handler = async (event) => {
         : Promise.resolve(),
     ]);
 
-    // ── 3. Fetch & filter timetable rows ─────────────────────
-    //  - academic_year_id = specific year ID    → only that year's students
-    //  - academic_year_id = 'All Academic Year' → active students only
-    //  - academic_year_id = null                → everyone
+    // ── 4. Fetch & filter timetable rows ─────────────────────
     let ttRows = [];
     try {
       const rawRows = await supabase(
@@ -115,7 +121,7 @@ exports.handler = async (event) => {
       };
     }
 
-    // ── 4. Enrich with course + room names in parallel ───────
+    // ── 5. Enrich with course + room names in parallel ───────
     const courseIds = [...new Set(ttRows.map(r => r.course_id).filter(Boolean))];
     const roomIds   = [...new Set(ttRows.map(r => r.room_id).filter(Boolean))];
     const courseMap = {};
@@ -135,7 +141,7 @@ exports.handler = async (event) => {
         : Promise.resolve(),
     ]);
 
-    // ── 5. Map rows ──────────────────────────────────────────
+    // ── 6. Map rows ──────────────────────────────────────────
     const timetable = ttRows.map(r => ({
       id:               r.id               || '',
       course_id:        r.course_id        || '',
