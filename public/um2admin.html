@@ -11094,11 +11094,13 @@ function dofApplyRoleTypes() {
     /* All departments enabled */
     if (deptSel) {
       Array.from(deptSel.options).forEach(opt => { opt.hidden = false; });
-      deptSel.disabled       = false;
-      deptSel.style.opacity  = '';
-      deptSel.style.cursor   = '';
+      deptSel.disabled         = false;
+      deptSel.style.opacity    = '';
+      deptSel.style.cursor     = '';
       deptSel.style.background = '';
-      deptSel.title          = '';
+      deptSel.title            = '';
+      /* Default to Secretariat if nothing selected */
+      if (!deptSel.value) deptSel.value = 'SEC';
     }
 
     /* Letterhead override visible */
@@ -11161,6 +11163,8 @@ function dofApplyRoleTypes() {
   if (lhSel)  lhSel.value = 'iuc';  /* ensure iuc is the base; _letterHeadWithDept handles dept logic */
 
   dofUpdateLhIndicator();
+  /* Re-run field visibility so Title/Body/Subject hide correctly for fixed doc types */
+  dofUpdateRef();
 }
 
 /* ── Update the letterhead indicator strip below the dropdowns ── */
@@ -11177,7 +11181,8 @@ function dofUpdateLhIndicator() {
   const fixedTypes = ['COS','GSC','FIR'];
   const isFixed    = type && fixedTypes.includes(type);
 
-  /* Show/hide the auto-generated banner */
+  /* Show/hide the auto-generated banner — for fixed types, inform user
+     that content is pulled from their profile automatically */
   if (banner) banner.style.display = isFixed ? 'flex' : 'none';
 
   if (!type) {
@@ -11191,11 +11196,15 @@ function dofUpdateLhIndicator() {
 
   let lhLabel, lhColor;
   if (isFixed) {
-    /* Locked docs (COS/GSC/FIR): always IUC Secretariat regardless of dept or role */
-    lhLabel = '🔒 IUC Secretariat letterhead — fixed for auto-generated documents';
-    lhColor = '#1E3A6E';
-    strip.style.background = '#EBF0F8';
-    strip.style.borderColor = 'rgba(30,58,110,.2)';
+    /* COS/GSC/FIR: use the staff's own department letterhead.
+       Show which department letterhead will appear on the document. */
+    const deptName = _DEPT_EN_NAME[dept] || dept;
+    lhLabel = (dept === 'SEC' || dept === 'ADM')
+      ? '📄 IUC Secretariat letterhead — profile details auto-filled'
+      : `📄 Department of ${deptName} letterhead — profile details auto-filled`;
+    lhColor = '#1a5c3a';
+    strip.style.background = '#EBF5F0';
+    strip.style.borderColor = 'rgba(26,92,58,.2)';
   } else if (lhMode === 'vc') {
     lhLabel = 'Office of the Vice Chancellor letterhead';
     lhColor = '#7B1A2E';
@@ -11841,17 +11850,16 @@ function _letterHead() {
 
 /* ── Letterhead with department name shown ── */
 function _letterHeadWithDept(deptCode, lang) {
-  /* Locked documents (COS, GSC, FIR) always use the IUC Secretariat letterhead
-     regardless of department selection or user role */
-  const _callerType = document.getElementById('dof-type')?.value || '';
-  const _fixedTypes = ['COS','GSC','FIR'];
-  const _isLockedDoc = _fixedTypes.includes(_callerType);
-  if (_isLockedDoc) {
-    deptCode = 'SEC';
-  }
+  /* COS / GSC / FIR use the staff member's OWN department letterhead.
+     Only VC letterhead override is blocked for these types (no one should
+     issue a staff confirmation on the VC letterhead). */
+  const _callerType  = document.getElementById('dof-type')?.value || '';
+  const _fixedTypes  = ['COS','GSC','FIR'];
+  const _isFixedDoc  = _fixedTypes.includes(_callerType);
 
   const lhMode  = document.getElementById('dof-letterhead')?.value || 'iuc';
-  const isVC    = lhMode === 'vc' && !_isLockedDoc; // locked docs cannot use VC letterhead
+  /* Fixed docs cannot use VC letterhead — everything else follows lhMode */
+  const isVC    = lhMode === 'vc' && !_isFixedDoc;
   const deptName = _getDeptOfficeName(deptCode || 'SEC');
   const showMm  = lang === 'mm' || lang === 'bilingual';
   const deptMM  = _DEPT_MM[deptCode] || '';
@@ -11878,8 +11886,8 @@ function _letterHeadWithDept(deptCode, lang) {
         : `Department of ${deptName}`)
     : (showMm ? `UM2 IUC Secretariat${deptMM ? ' · ' + deptMM : ''}` : 'UM2 IUC Secretariat');
 
-  /* For departmental docs (STM/LTR/DIR from a specific dept), show auth control chain */
-  const authLine = isDeptDoc && !_isLockedDoc
+  /* For ALL departmental docs on a non-SEC/ADM letterhead, show auth control chain */
+  const authLine = isDeptDoc
     ? `<div style="font-size:7.5pt;color:#8B1A2E;margin-top:2px;font-style:italic;letter-spacing:.3px">Issued under Secretariat Office Authentication & Document Control</div>`
     : '';
 
