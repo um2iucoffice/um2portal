@@ -6922,16 +6922,17 @@ async function checkEnrollmentEligibility(student) {
     });
     const data = await res.json();
     console.log('[ENROLL] response:', JSON.stringify(data));
-    if (!data.period) {
-      console.warn('[ENROLL] no period returned — full response:', JSON.stringify(data));
-      ['enrollmentBanner','enrollmentBannerGrades'].forEach(function(id){
-        var el = document.getElementById(id);
-        if (!el) return;
-        el.innerHTML = '<div style="padding:14px 18px;border-radius:8px;background:var(--gold-light,#FBF6E8);border:1px solid rgba(154,123,47,0.25);color:var(--gold,#9A7B2F);font-size:13px;display:flex;align-items:center;gap:10px;">No active enrollment period found for your program. Please contact the registrar if you believe this is an error.</div>';
-        el.style.display = 'block';
-      });
-      return;
-    }
+   if (!data.period) {
+  console.log('[ENROLL] no active period — banner hidden');
+  // No active period = enrollment is closed. Show nothing.
+  ['enrollmentBanner','enrollmentBannerGrades'].forEach(function(id){
+    var el = document.getElementById(id);
+    if (!el) return;
+    el.innerHTML = '';
+    el.style.display = 'none';
+  });
+  return;
+}
     renderEnrollmentBanner(data.period, data.eligibility, student);
     console.log('[ENROLL] banner rendered');
   } catch(e) {
