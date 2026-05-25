@@ -1,7 +1,4 @@
-// ============================================================
-//  netlify/functions/get-timetable.js
-//  Authenticates via session token (issued by login.js)
-// ============================================================
+// netlify/functions/get-timetable.js
 
 const SUPABASE_URL         = process.env.SUPABASE_URL;
 const SUPABASE_ANON_KEY    = process.env.SUPABASE_ANON_KEY;
@@ -39,33 +36,21 @@ exports.handler = async (event) => {
     return { statusCode: 405, headers: CORS_HEADERS, body: JSON.stringify({ error: 'Method not allowed' }) };
   }
 
-  let studentId, token;
+  let studentId;
   try {
-    ({ studentId, token } = JSON.parse(event.body || '{}'));
+    ({ studentId } = JSON.parse(event.body || '{}'));
   } catch {
     return { statusCode: 400, headers: CORS_HEADERS, body: JSON.stringify({ success: false, message: 'Invalid request body.' }) };
   }
 
   const normId = String(studentId || '').trim().toLowerCase();
 
-  if (!normId || !token) {
-    return { statusCode: 200, headers: CORS_HEADERS, body: JSON.stringify({ success: false, message: 'Student ID and token are required.' }) };
+  if (!normId) {
+    return { statusCode: 200, headers: CORS_HEADERS, body: JSON.stringify({ success: false, message: 'Student ID is required.' }) };
   }
 
   try {
-    // ── 1. Validate session token ────────────────────────────
-    const sessions = await supabase(
-      `sessions?student_id=eq.${encodeURIComponent(normId)}&token=eq.${encodeURIComponent(token)}&select=student_id,expires_at&limit=1`,
-      {}, true
-    );
-    if (!sessions || sessions.length === 0) {
-      return { statusCode: 200, headers: CORS_HEADERS, body: JSON.stringify({ success: false, message: 'Invalid session. Please log in again.' }) };
-    }
-    if (new Date(sessions[0].expires_at) < new Date()) {
-      return { statusCode: 200, headers: CORS_HEADERS, body: JSON.stringify({ success: false, message: 'Session expired. Please log in again.' }) };
-    }
-
-    // ── 2. Fetch student ─────────────────────────────────────
+    // ── 1. Fetch student ─────────────────────────────────────
     const students = await supabase(
       `students?id=eq.${encodeURIComponent(normId)}&select=id,program,year,status&limit=1`
     );
@@ -74,7 +59,7 @@ exports.handler = async (event) => {
     }
     const raw = students[0];
 
-    // ── 3. Enrollments + year resolution in parallel ─────────
+    // ── 2. Enrollments + year resolution in parallel ─────────
     let programIds = raw.program ? [raw.program] : [];
     let yearId = null;
 
@@ -93,35 +78,28 @@ exports.handler = async (event) => {
         : Promise.resolve(),
     ]);
 
-    // ── 4. Fetch & filter timetable rows ─────────────────────
+    // ── 3. Fetch & filter timetable rows ─────────────────────
     let ttRows = [];
-    try {
-      const rawRows = await supabase(
-        `lecture_timetable?select=id,course_id,room_id,day,time_start,time_end,academic_year_id,session_date,sub_topic&order=day.asc,time_start.asc`,
-        {}, true
-      );
-      const studentStatus = (raw.status || '').toLowerCase();
-      const isAlumni = studentStatus === 'degree awarded' || studentStatus === 'graduated' || studentStatus === 'alumni';
+    const rawRows = await supabase(
+      `lecture_timetable?select=id,course_id,room_id,day,time_start,time_end,academic_year_id,session_date,sub_topic&order=day.asc,time_start.asc`,
+      {}, true
+    );
+    const studentStatus = (raw.status || '').toLowerCase();
+    const isAlumni = studentStatus === 'degree awarded' || studentStatus === 'graduated' || studentStatus === 'alumni';
 
-      ttRows = (rawRows || []).filter(row => {
-        const ayid = (row.academic_year_id || '').trim();
-        if (!ayid) return true;
-        if (ayid === yearId) return true;
-        if (ayid === 'All Academic Year') return !isAlumni;
-        return false;
-      });
-    } catch (e) {
-      throw new Error('Could not fetch timetable: ' + e.message);
-    }
+    ttRows = (rawRows || []).filter(row => {
+      const ayid = (row.academic_year_id || '').trim();
+      if (!ayid) return true;
+      if (ayid === yearId) return true;
+      if (ayid === 'All Academic Year') return !isAlumni;
+      return false;
+    });
 
     if (ttRows.length === 0) {
-      return {
-        statusCode: 200, headers: CORS_HEADERS,
-        body: JSON.stringify({ success: true, timetable: [] })
-      };
+      return { statusCode: 200, headers: CORS_HEADERS, body: JSON.stringify({ success: true, timetable: [] }) };
     }
 
-    // ── 5. Enrich with course + room names in parallel ───────
+    // ── 4. Enrich with course + room names ───────────────────
     const courseIds = [...new Set(ttRows.map(r => r.course_id).filter(Boolean))];
     const roomIds   = [...new Set(ttRows.map(r => r.room_id).filter(Boolean))];
     const courseMap = {};
@@ -141,7 +119,6 @@ exports.handler = async (event) => {
         : Promise.resolve(),
     ]);
 
-    // ── 6. Map rows ──────────────────────────────────────────
     const timetable = ttRows.map(r => ({
       id:               r.id               || '',
       course_id:        r.course_id        || '',
@@ -156,16 +133,10 @@ exports.handler = async (event) => {
       sub_topic:        r.sub_topic        || '',
     }));
 
-    return {
-      statusCode: 200, headers: CORS_HEADERS,
-      body: JSON.stringify({ success: true, timetable })
-    };
+    return { statusCode: 200, headers: CORS_HEADERS, body: JSON.stringify({ success: true, timetable }) };
 
   } catch (err) {
     console.error('get-timetable error:', err);
-    return {
-      statusCode: 200, headers: CORS_HEADERS,
-      body: JSON.stringify({ success: false, message: 'Server error: ' + err.message })
-    };
+    return { statusCode: 200, headers: CORS_HEADERS, body: JSON.stringify({ success: false, message: 'Server error: ' + err.message }) };
   }
 };
