@@ -1,6 +1,5 @@
 // netlify/functions/get-lecture-rooms.js
-// Uses plain fetch (same pattern as login.js) — no @supabase/supabase-js,
-// no WebSocket dependency, works on Node.js 18/20/22.
+// Authenticates via session token (issued by login.js) — no password needed.
 
 const SUPABASE_URL         = process.env.SUPABASE_URL;
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY;
@@ -33,47 +32,46 @@ exports.handler = async (event) => {
   }
 
   try {
-    const { studentId, password, year } = JSON.parse(event.body || '{}');
+    const { studentId, token } = JSON.parse(event.body || '{}');
 
-    if (!studentId || !password) {
+    if (!studentId || !token) {
       return {
         statusCode: 200, headers,
         body: JSON.stringify({ success: false, message: 'Missing credentials.' })
       };
     }
 
-    // ── 1. Verify student credentials ────────────────────────────────────────
+    const normId = String(studentId).trim().toLowerCase();
+
+    // ── 1. Validate session token ─────────────────────────────────────────────
+    const sessions = await supabaseGet(
+      `sessions?student_id=eq.${encodeURIComponent(normId)}&token=eq.${encodeURIComponent(token)}&select=student_id,expires_at&limit=1`
+    );
+
+    if (!sessions || sessions.length === 0) {
+      return {
+        statusCode: 200, headers,
+        body: JSON.stringify({ success: false, message: 'Invalid credentials.' })
+      };
+    }
+
+    // Check token hasn't expired
+    const expiresAt = new Date(sessions[0].expires_at);
+    if (expiresAt < new Date()) {
+      return {
+        statusCode: 200, headers,
+        body: JSON.stringify({ success: false, message: 'Session expired. Please log in again.' })
+      };
+    }
+
+    // ── 2. Fetch student year ─────────────────────────────────────────────────
     const students = await supabaseGet(
-      `students?id=eq.${encodeURIComponent(studentId)}&select=id,year,status&limit=1`
+      `students?id=eq.${encodeURIComponent(normId)}&select=id,year&limit=1`
     );
 
-    if (!students || students.length === 0) {
-      return {
-        statusCode: 200, headers,
-        body: JSON.stringify({ success: false, message: 'Invalid credentials.' })
-      };
-    }
+    const studentYear = ((students[0] || {}).year || '').trim();
 
-    const student = students[0];
-
-    // Verify password against master_password column
-    const raw = await supabaseGet(
-      `students?id=eq.${encodeURIComponent(studentId)}&select=master_password&limit=1`
-    );
-    const storedPassword = String((raw[0] || {}).master_password || '').trim();
-    if (storedPassword !== String(password).trim()) {
-      return {
-        statusCode: 200, headers,
-        body: JSON.stringify({ success: false, message: 'Invalid credentials.' })
-      };
-    }
-
-    // ── 2. Use year from DB (authoritative) ──────────────────────────────────
-    const studentYear = student.year || year || '';
-
-    // ── 3. Fetch active rooms for this student's year ─────────────────────────
-    // Supabase REST: filter on jsonb array containing "ALL" or the student's year
-    // Using two separate queries and merging (avoids complex OR on jsonb via REST)
+    // ── 3. Fetch active rooms ─────────────────────────────────────────────────
     const [roomsAll, roomsYear] = await Promise.all([
       supabaseGet(
         `lecture_rooms?select=id,subject,description,zoom_link,zoom_meeting_id,zoom_passcode,year_access,program&is_active=eq.true&year_access=cs.%7B%22ALL%22%7D&order=subject.asc`
@@ -99,6 +97,7 @@ exports.handler = async (event) => {
     };
 
   } catch (e) {
+    console.error('[get-lecture-rooms] error:', e.message);
     return {
       statusCode: 200, headers,
       body: JSON.stringify({ success: false, message: e.message })
