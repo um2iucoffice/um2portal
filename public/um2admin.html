@@ -25,6 +25,15 @@
        url('https://cdn.jsdelivr.net/npm/@fontsource/noto-sans-myanmar@4.5.0/files/noto-sans-myanmar-myanmar-700-normal.woff') format('woff');
 }
 
+/* ── DOF mobile grid ── */
+@media (max-width: 600px) {
+  .dof-top-grid  { grid-template-columns: 1fr !important; }
+  .dof-meta-grid { grid-template-columns: 1fr 1fr !important; }
+}
+@media (max-width: 400px) {
+  .dof-meta-grid { grid-template-columns: 1fr !important; }
+}
+
 /* ── STAFF PROFILE ── */
 .form-label { font-size:11px; font-weight:700; letter-spacing:.6px; text-transform:uppercase; color:var(--ink3); display:block; margin-bottom:5px; }
 .form-input {
@@ -2025,31 +2034,14 @@ body.theme-light .irir-footer { border-top-color: var(--crimson); }
             <p>Official identification card issued by the Secretariat's Office.</p>
           </div>
         </div>
-        <div class="step-item">
-          <div class="step-num"><svg style="width:16px;height:16px;stroke:currentColor;stroke-width:1.9;fill:none;stroke-linecap:round;stroke-linejoin:round"><use href="#i-file"></use></svg></div>
-          <div class="step-content" style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px">
-            <div>
-              <h4 id="docConfirmationLabel">Confirmation of Study</h4>
-              <p id="docConfirmationDesc">Official letter confirming active enrollment status at University of Medicine (2).</p>
-            </div>
-            <button class="btn btn-outline btn-sm registrar-only" style="white-space:nowrap;flex-shrink:0" onclick="printConfirmationOfStudy()"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" ><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg> Print</button>
-          </div>
-        </div>
-        <div class="step-item">
-          <div class="step-num"><svg style="width:16px;height:16px;stroke:currentColor;stroke-width:1.9;fill:none;stroke-linecap:round;stroke-linejoin:round"><use href="#i-award"></use></svg></div>
-          <div class="step-content" style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px">
-            <div>
-              <h4>Good Standing Certificate</h4>
-              <p>Certifies that the student is in good academic and disciplinary standing at the university.</p>
-            </div>
-            <button class="btn btn-outline btn-sm registrar-only" style="white-space:nowrap;flex-shrink:0" onclick="printGoodStanding()"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" ><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg> Print</button>
-          </div>
-        </div>
         <div class="step-item" id="docTranscriptItem">
           <div class="step-num"><svg style="width:16px;height:16px;stroke:currentColor;stroke-width:1.9;fill:none;stroke-linecap:round;stroke-linejoin:round"><use href="#i-clipboard"></use></svg></div>
-          <div class="step-content">
-            <h4>Official Transcript</h4>
-            <p>Full academic transcript with all grades and GPA on record.</p>
+          <div class="step-content" style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px">
+            <div>
+              <h4>Official Transcript</h4>
+              <p>Full academic transcript with all grades and GPA on record.</p>
+            </div>
+            <button class="btn btn-outline btn-sm" style="white-space:nowrap;flex-shrink:0" onclick="openTranscript()"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg> View</button>
           </div>
         </div>
         <div class="step-item" id="docGradCertItem" style="display:none">
@@ -3418,66 +3410,61 @@ CREATE POLICY IF NOT EXISTS &quot;Authenticated read all announcements&quot; ON 
       စာရွက်စာတမ်း ဖန်တီးခြင်း · Generate document
     </div>
 
-    <div class="form-grid" style="margin-bottom:14px">
+    <!-- Doc Type + Department: stacked on mobile, side-by-side on desktop -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px" class="dof-top-grid">
 
       <!-- Doc Type -->
-      <div class="form-group">
+      <div class="form-group" style="margin-bottom:0">
         <label>Document Type · စာရွက်အမျိုးအစား</label>
         <select id="dof-type" onchange="dofUpdateRef()">
           <option value="" disabled selected>— select type —</option>
-          <!-- Customizable: registrar only -->
           <option value="STM" data-roles="registrar">Statement (STM) · ကြေညာချက်</option>
           <option value="LTR" data-roles="registrar">Official Letter (LTR) · စာ</option>
           <option value="DIR" data-roles="registrar">Directive (DIR) · ညွှန်ကြားလွှာ</option>
-          <!-- Uncustomizable / auto-generated: all staff -->
-          <option value="COS" data-roles="registrar,staff">Confirmation of Service (COS) · 🔒 Auto-generated</option>
-          <option value="GSC" data-roles="registrar,staff">Good Standing (GSC) · 🔒 Auto-generated</option>
-          <option value="FIR" data-roles="registrar,staff">Faculty Info (FIR) · 🔒 Auto-generated</option>
+          <option value="COS" data-roles="registrar,staff">Confirmation of Service (COS)</option>
+          <option value="GSC" data-roles="registrar,staff">Good Standing (GSC)</option>
+          <option value="FIR" data-roles="registrar,staff">Faculty Info (FIR)</option>
         </select>
       </div>
 
       <!-- Department -->
-      <div class="form-group">
+      <div class="form-group" style="margin-bottom:0">
         <label>Department · ဌာန</label>
         <select id="dof-dept" onchange="dofUpdateRef(); dofApplyRoleTypes();">
-          <option value="SEC">Secretariat · အတွင်းရေးမှူးများအဖွဲ့</option>
-          <option value="ADM">Administration · အုပ်ချုပ်ရေးအဖွဲ့</option>
-          <option value="ANA">Anatomy · ခန္ဓာဗေဒဌာန</option>
-          <option value="PHY">Physiology · ဇီဝကမ္မဗေဒဌာန</option>
-          <option value="BIO">Biochemistry · ဇီဝဓာတုဗေဒဌာန</option>
-          <option value="PHA">Pharmacology · ဆေးဝါးဗေဒဌာန</option>
-          <option value="PAT">Pathology · ရောဂါဗေဒဌာန</option>
-          <option value="MIC">Microbiology · အဏုဇီဝဗေဒဌာန</option>
-          <option value="PSM">Preventive &amp; Social Medicine · ကြိုတင်ကာကွယ်ရေးနှင့် လူမှုဆေးပညာဌာန</option>
-          <option value="FOR">Forensic Medicine · မှုခင်းဆေးပညာဌာန</option>
-          <option value="IMD">Internal Medicine · အထွေထွေဆေးပညာဌာန</option>
-          <option value="SUR">Surgery · ခွဲစိတ်ကုသရေးဌာန</option>
-          <option value="OBG">Obstetrics &amp; Gynaecology · သားဖွားနှင့် မီးယပ်ပညာဌာန</option>
-          <option value="PED">Paediatrics · ကလေးကျန်းမာပညာဌာန</option>
-          <option value="PSY">Psychiatry · စိတ်ကျန်းမာရေးပညာဌာန</option>
-          <option value="OPH">Ophthalmology · မျက်စိပညာဌာန</option>
-          <option value="ENT">ENT · နား၊ နှာခေါင်း၊ လည်ချောင်းပညာဌာန</option>
-          <option value="ORT">Orthopaedics · အရိုးအထူးကုဌာန</option>
-          <option value="RAD">Radiology · ဓာတ်မှန်နှင့် ပုံရိပ်ဖော်ပညာဌာန</option>
-          <option value="ANE">Anaesthesiology · မေ့ဆေးပညာဌာန</option>
+          <!-- Populated dynamically from DEPARTMENTS config by dofPopulateDeptDropdown() -->
         </select>
       </div>
 
-      </div>
+    </div>
+
+    <!-- Active letterhead indicator — shown below the two dropdowns -->
+    <div id="dof-lh-indicator" style="display:flex;align-items:center;gap:8px;padding:8px 12px;border-radius:6px;background:var(--surface);border:1px solid var(--line);margin-bottom:12px;font-size:11.5px;color:var(--ink2)">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;stroke:var(--ink3)"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+      <span id="dof-lh-indicator-text" style="color:var(--ink3)">Select a document type to see letterhead</span>
+    </div>
 
     <!-- Letterhead override — registrar only -->
-    <div class="form-group registrar-only" style="margin-bottom:14px" id="dof-lh-wrap">
-      <label>Letterhead · စာဖြင့်ခေါင်းစဉ်</label>
-      <select id="dof-letterhead" onchange="dofUpdateRef()">
+    <div class="form-group registrar-only" style="margin-bottom:12px" id="dof-lh-wrap">
+      <label>Letterhead Override · စာဖြင့်ခေါင်းစဉ်</label>
+      <select id="dof-letterhead" onchange="dofUpdateRef(); dofUpdateLhIndicator()">
         <option value="iuc">IUC Secretariat (default)</option>
         <option value="vc">Office of the Vice Chancellor · ဒုတိယအဓိပတိရုံး</option>
       </select>
     </div>
 
-    <!-- Language + Priority row -->
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:14px">
+    <!-- Auto-generated doc notice with professional lock icon -->
+    <div id="dof-fixed-banner" style="display:none;align-items:flex-start;gap:10px;padding:10px 14px;background:#EBF0F8;border:1px solid rgba(30,58,110,.18);border-radius:8px;margin-bottom:12px">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#1E3A6E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;margin-top:1px"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+      <div>
+        <div style="font-size:11.5px;font-weight:700;color:#1E3A6E;margin-bottom:2px">Auto-generated document</div>
+        <div style="font-size:11px;color:#2d4a7a;line-height:1.5">Staff details are pulled from your profile automatically. This document always uses the <strong>IUC Secretariat letterhead</strong> regardless of department.</div>
+      </div>
+    </div>
 
-      <div class="form-group">
+    <!-- Language + Priority + Distribution: 1 col on mobile, 3 on desktop -->
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:12px" class="dof-meta-grid">
+
+      <div class="form-group" style="margin-bottom:0">
         <label>Output Language · ဘာသာစကား</label>
         <select id="dof-lang" onchange="dofUpdateRef(); dofToggleLangFields()">
           <option value="en" selected>English</option>
@@ -3485,7 +3472,7 @@ CREATE POLICY IF NOT EXISTS &quot;Authenticated read all announcements&quot; ON 
         </select>
       </div>
 
-      <div class="form-group">
+      <div class="form-group" style="margin-bottom:0" id="dof-priority-grid">
         <label>Priority · အရေးပေါ်အဆင့်</label>
         <select id="dof-priority">
           <option value="normal">Normal · ပုံမှန်</option>
@@ -3494,7 +3481,7 @@ CREATE POLICY IF NOT EXISTS &quot;Authenticated read all announcements&quot; ON 
         </select>
       </div>
 
-      <div class="form-group">
+      <div class="form-group" style="margin-bottom:0">
         <label>Distribution · ဖြန့်ဝေမှု</label>
         <select id="dof-dist">
           <option value="internal">Internal only · အတွင်းပိုင်း</option>
@@ -3507,51 +3494,45 @@ CREATE POLICY IF NOT EXISTS &quot;Authenticated read all announcements&quot; ON 
     </div>
 
     <!-- ── Centered Title (optional, shown above subject in print) ── -->
-    <div id="dof-title-session" style="background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:14px 16px;margin-bottom:14px">
+    <div id="dof-title-session" style="background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:14px 16px;margin-bottom:12px">
       <div style="font-size:10px;font-weight:700;letter-spacing:1.4px;text-transform:uppercase;color:var(--ink3);margin-bottom:12px">
         Title Session · ခေါင်းစဉ်
       </div>
-      <!-- Centered document title (optional) -->
       <div class="form-group" style="margin-bottom:10px">
         <label class="form-label">Document Title <span style="font-weight:400;color:var(--ink3)">(optional — centered heading printed above subject)</span></label>
         <input type="text" id="dof-doc-title" class="form-input" placeholder="">
       </div>
-      <!-- Subject EN -->
       <div id="dof-subject-en-wrap" class="form-group" style="margin-bottom:10px">
         <label class="form-label">Subject (English) · အကြောင်းအရာ (အင်္ဂလိပ်)</label>
         <input type="text" id="dof-subject-en" class="form-input" placeholder="" oninput="dofUpdateRef()">
       </div>
-      <!-- Subject MM (hidden when English only) -->
       <div id="dof-subject-mm-wrap" class="form-group" style="margin-bottom:10px;display:none">
         <label class="form-label">Subject (Myanmar) · အကြောင်းအရာ (မြန်မာ)</label>
         <input type="text" id="dof-subject-mm" class="form-input" placeholder="" oninput="dofUpdateRef()">
       </div>
-      <!-- Body -->
       <div class="form-group" style="margin-bottom:10px">
         <label class="form-label">Body · စာအကြောင်းအရာ</label>
         <textarea id="dof-body-title" class="form-input" rows="6"
           style="resize:vertical;line-height:1.8;font-size:13px"
           placeholder=""></textarea>
       </div>
-      <!-- Closing phrase (optional) -->
       <div class="form-group" style="margin-bottom:0">
         <label class="form-label">Closing Phrase <span style="font-weight:400;color:var(--ink3)">(optional — replaces "Yours faithfully")</span></label>
         <input type="text" id="dof-closing" class="form-input" placeholder="">
       </div>
     </div>
 
-    <!-- Body (legacy wrapper kept hidden — logic uses dof-body-title) -->
-    <div id="dof-body-wrap" style="display:none;margin-bottom:14px">
+    <!-- Body (legacy wrapper kept hidden) -->
+    <div id="dof-body-wrap" style="display:none;margin-bottom:12px">
       <div class="form-group" style="grid-column:1/-1">
         <label>Body · စာအကြောင်းအရာ</label>
         <textarea id="dof-body" class="form-input" rows="8"
-          style="resize:vertical;line-height:1.8;font-size:13px"
-          placeholder="Write your statement here. Each paragraph will be indented automatically. · ဤနေရာတွင် ရေးပါ။ စာပိုဒ်တိုင်း အလိုအလျောက် indent ပေးမည်။"></textarea>
+          style="resize:vertical;line-height:1.8;font-size:13px" placeholder=""></textarea>
       </div>
     </div>
 
-    <!-- Signing options — single signer, hidden when English language -->
-    <div id="dof-signing-wrap" style="display:none;margin-bottom:14px">
+    <!-- Signing options -->
+    <div id="dof-signing-wrap" style="display:none;margin-bottom:12px">
       <div style="background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:14px 16px">
         <div style="font-size:10px;font-weight:700;letter-spacing:1.4px;text-transform:uppercase;color:var(--ink3);margin-bottom:12px">
           Signature Block · လက်မှတ်အပိုင်း
@@ -3576,53 +3557,47 @@ CREATE POLICY IF NOT EXISTS &quot;Authenticated read all announcements&quot; ON 
             </div>
             <div>
               <label style="font-size:10px;font-weight:600;color:var(--ink3);display:block;margin-bottom:3px">Name · နာမည်</label>
-              <input type="text" id="dof-sign-name-left" class="form-input"
-                placeholder="" style="font-size:12px;padding:7px 10px">
+              <input type="text" id="dof-sign-name-left" class="form-input" placeholder="" style="font-size:12px;padding:7px 10px">
             </div>
             <div>
               <label style="font-size:10px;font-weight:600;color:var(--ink3);display:block;margin-bottom:3px">Title · ဘွဲ့ / ဦးစီး</label>
-              <input type="text" id="dof-sign-title-left" class="form-input"
-                placeholder="" style="font-size:12px;padding:7px 10px">
+              <input type="text" id="dof-sign-title-left" class="form-input" placeholder="" style="font-size:12px;padding:7px 10px">
             </div>
             <div>
               <label style="font-size:10px;font-weight:600;color:var(--ink3);display:block;margin-bottom:3px">Position · ရာထူး</label>
-              <input type="text" id="dof-sign-pos-left" class="form-input"
-                placeholder="" style="font-size:12px;padding:7px 10px">
+              <input type="text" id="dof-sign-pos-left" class="form-input" placeholder="" style="font-size:12px;padding:7px 10px">
             </div>
             <div>
               <label style="font-size:10px;font-weight:600;color:var(--ink3);display:block;margin-bottom:3px">Email <span style="font-weight:400;color:var(--ink3)">(optional)</span></label>
-              <input type="email" id="dof-sign-email-left" class="form-input"
-                placeholder="" style="font-size:12px;padding:7px 10px">
+              <input type="email" id="dof-sign-email-left" class="form-input" placeholder="" style="font-size:12px;padding:7px 10px">
             </div>
           </div>
         </div>
-
-        <!-- Hidden right-side fields kept for JS compatibility -->
         <input type="hidden" id="dof-sign-name-right">
         <input type="hidden" id="dof-sign-title-right">
         <input type="hidden" id="dof-sign-pos-right">
       </div>
     </div>
 
-    <!-- Ref display + action -->
+    <!-- Ref display + action buttons — stacked on mobile -->
     <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:12px 14px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r)">
       <div style="flex:1;min-width:0">
         <div style="font-size:10px;font-weight:700;letter-spacing:1.4px;text-transform:uppercase;color:var(--ink3);margin-bottom:4px">
           Reference No · ကိုးကားနံပါတ်
         </div>
-        <div id="dof-ref-display" style="font-family:monospace;font-size:15px;font-weight:700;color:var(--ink);letter-spacing:.06em">
+        <div id="dof-ref-display" style="font-family:monospace;font-size:14px;font-weight:700;color:var(--ink);letter-spacing:.06em;word-break:break-all">
           — select type —
         </div>
         <div style="font-size:10px;color:var(--ink3);margin-top:3px">
           Auto-generated from DB sequence · DB မှ အလိုအလျောက် ထုတ်ပေးသည်
         </div>
       </div>
-      <div style="display:flex;gap:8px;flex-wrap:wrap">
-        <button class="btn btn-outline btn-sm" onclick="dofGenerateAndPrint('preview')" id="dof-preview-btn" disabled>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;width:100%">
+        <button class="btn btn-outline btn-sm" onclick="dofGenerateAndPrint('preview')" id="dof-preview-btn" disabled style="flex:1;justify-content:center;min-width:120px">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
           Preview · ကြိုကြည့်မည်
         </button>
-        <button class="btn btn-primary btn-sm" onclick="dofGenerateAndPrint('print')" id="dof-print-btn" disabled>
+        <button class="btn btn-primary btn-sm" onclick="dofGenerateAndPrint('print')" id="dof-print-btn" disabled style="flex:1;justify-content:center;min-width:120px">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
           Generate &amp; Save · ထုတ်မည် &amp; သိမ်းမည်
         </button>
@@ -6496,15 +6471,9 @@ function showProfile(sid) {
   showView('profile');
   // Documents tab
   const idCardLabel      = document.getElementById('docIdCardLabel');
-  const confirmLabel     = document.getElementById('docConfirmationLabel');
-  const confirmDesc      = document.getElementById('docConfirmationDesc');
   const gradCertItem     = document.getElementById('docGradCertItem');
   const gradCertDesc     = document.getElementById('docGradCertDesc');
   if (idCardLabel)    idCardLabel.textContent  = isGraduated ? 'Alumni ID Card' : 'Student ID Card';
-  if (confirmLabel)   confirmLabel.textContent = isGraduated ? 'Confirmation of Graduation' : 'Confirmation of Study';
-  if (confirmDesc)    confirmDesc.textContent  = isGraduated
-    ? 'Official letter confirming completion of the UM2 programme and graduate status.'
-    : 'Official letter confirming active enrollment status at UM2 programme.';
   if (gradCertItem)   gradCertItem.style.display = isGraduated ? '' : 'none';
   if (gradCertDesc && isGraduated) gradCertDesc.textContent =
     `Graduation ID: ${s.graduation_id || '—'} · Date: ${s.graduation_date || '—'}` +
@@ -11019,55 +10988,105 @@ function _getCurrentTitle() {
 
 /* ── Role-based + title-based type filtering ── */
 function dofApplyRoleTypes() {
-  const role     = (typeof currentRole !== 'undefined') ? currentRole : 'staff';
-  const title    = _getCurrentTitle();
-  const sel      = document.getElementById('dof-type');
-  const deptSel  = document.getElementById('dof-dept');
+  const role   = (typeof currentRole !== 'undefined') ? currentRole : 'staff';
+  const sel    = document.getElementById('dof-type');
+  const deptSel= document.getElementById('dof-dept');
+  const lhSel  = document.getElementById('dof-letterhead');
+  const lhWrap = document.getElementById('dof-lh-wrap');
   if (!sel) return;
 
   if (role === 'registrar') {
-    /* Registrar sees everything (STM, LTR, DIR + COS, GSC, FIR), dept dropdown fully free */
+    /* Registrar: sees all doc types; dept dropdown fully free; letterhead override shown */
     Array.from(sel.options).forEach(opt => { if (opt.value) opt.hidden = false; });
     if (deptSel) { deptSel.disabled = false; deptSel.style.opacity = ''; }
+    if (lhWrap)  lhWrap.style.display = '';
+    dofUpdateLhIndicator();
     return;
   }
 
   /* ── Staff: lock department dropdown to their own profile department ── */
-  /* sp-department stores full names (e.g. "Obstetrics and Gynaecology") while
-     dof-dept uses short codes (e.g. "OBG") — map between them. */
-  const _DEPT_NAME_TO_CODE = {
-    'secretariat': 'SEC', 'administration': 'ADM',
-    'anatomy': 'ANA', 'physiology': 'PHY', 'biochemistry': 'BIO',
-    'pharmacology': 'PHA', 'pathology': 'PAT', 'microbiology': 'MIC',
-    'preventive & social medicine': 'PSM', 'preventive and social medicine': 'PSM',
-    'forensic medicine': 'FOR', 'internal medicine': 'IMD', 'surgery': 'SUR',
-    'obstetrics & gynaecology': 'OBG', 'obstetrics and gynaecology': 'OBG',
-    'paediatrics': 'PED', 'psychiatry': 'PSY', 'ophthalmology': 'OPH',
-    'ent': 'ENT', 'otolaryngology': 'ENT',
-    'orthopaedics': 'ORT', 'radiology': 'RAD', 'anaesthesiology': 'ANE',
-  };
-  const staffDeptRaw  = (document.getElementById('sp-department')?.value || '').trim();
-  const staffDeptCode = _DEPT_NAME_TO_CODE[staffDeptRaw.toLowerCase()] || staffDeptRaw.toUpperCase();
+  const staffDeptRaw  = (document.getElementById('sp-department')?.value || '').trim().toLowerCase();
+  const staffDeptCode = _DEPT_NAME_TO_CODE[staffDeptRaw] || staffDeptRaw.toUpperCase();
   if (deptSel && staffDeptCode) {
-    /* Set the dept dropdown to match the staff's own department */
     Array.from(deptSel.options).forEach(opt => {
       opt.hidden = (opt.value !== staffDeptCode);
     });
-    deptSel.value = staffDeptCode;
+    deptSel.value    = staffDeptCode;
     deptSel.disabled = true;
     deptSel.style.opacity = '0.75';
   }
 
   /* ── Staff: only auto-generated types (COS, GSC, FIR) ── */
   const staffAllowed = ['COS','GSC','FIR'];
-
   Array.from(sel.options).forEach(opt => {
     if (!opt.value) return;
     opt.hidden = !staffAllowed.includes(opt.value);
   });
-
-  /* Reset selection if current value is now hidden */
   if (sel.value && !staffAllowed.includes(sel.value)) sel.value = '';
+
+  /* ── Staff: hide letterhead override; locked docs always use IUC Secretariat ── */
+  if (lhWrap) lhWrap.style.display = 'none';
+  if (lhSel)  lhSel.value = 'iuc'; // force IUC for auto-generated docs
+
+  dofUpdateLhIndicator();
+}
+
+/* ── Update the letterhead indicator strip below the dropdowns ── */
+function dofUpdateLhIndicator() {
+  const type    = document.getElementById('dof-type')?.value;
+  const dept    = document.getElementById('dof-dept')?.value || 'SEC';
+  const lhMode  = document.getElementById('dof-letterhead')?.value || 'iuc';
+  const role    = (typeof currentRole !== 'undefined') ? currentRole : 'staff';
+  const strip   = document.getElementById('dof-lh-indicator');
+  const text    = document.getElementById('dof-lh-indicator-text');
+  const banner  = document.getElementById('dof-fixed-banner');
+  if (!strip || !text) return;
+
+  const fixedTypes = ['COS','GSC','FIR'];
+  const isFixed    = type && fixedTypes.includes(type);
+
+  /* Show/hide the auto-generated banner */
+  if (banner) banner.style.display = isFixed ? 'flex' : 'none';
+
+  if (!type) {
+    text.textContent = 'Select a document type to see letterhead';
+    strip.style.background = 'var(--surface)';
+    strip.style.borderColor = 'var(--line)';
+    strip.querySelector('svg').style.stroke = 'var(--ink3)';
+    text.style.color = 'var(--ink3)';
+    return;
+  }
+
+  let lhLabel, lhColor;
+  if (isFixed) {
+    /* Locked docs: always IUC Secretariat regardless of dept or role */
+    lhLabel = 'IUC Secretariat letterhead (fixed for auto-generated documents)';
+    lhColor = '#1E3A6E';
+    strip.style.background = '#EBF0F8';
+    strip.style.borderColor = 'rgba(30,58,110,.2)';
+  } else if (lhMode === 'vc') {
+    lhLabel = 'Office of the Vice Chancellor letterhead';
+    lhColor = '#7B1A2E';
+    strip.style.background = '#f9f0f2';
+    strip.style.borderColor = 'rgba(139,26,46,.2)';
+  } else if (role === 'staff') {
+    const deptName = _DEPT_EN_NAME[dept] || dept;
+    lhLabel = `Department of ${deptName} letterhead`;
+    lhColor = '#1a5c3a';
+    strip.style.background = '#EBF5F0';
+    strip.style.borderColor = 'rgba(26,92,58,.2)';
+  } else {
+    const deptName = _DEPT_EN_NAME[dept] || dept;
+    lhLabel = dept === 'SEC' || dept === 'ADM'
+      ? 'IUC Secretariat letterhead'
+      : `Department of ${deptName} letterhead`;
+    lhColor = 'var(--ink2)';
+    strip.style.background = 'var(--surface)';
+    strip.style.borderColor = 'var(--line)';
+  }
+  text.textContent = lhLabel;
+  text.style.color = lhColor;
+  strip.querySelector('svg').style.stroke = lhColor;
 }
 
 /* ── Check if current user can sign as department ── */
@@ -11110,29 +11129,60 @@ const _DOC_TYPE_MM = {
   FIR: 'ကနဦးအစီရင်ခံစာ',
 };
 
-/* ── Department → Myanmar label map ── */
-const _DEPT_MM = {
-  SEC: 'အတွင်းရေးမှူးများအဖွဲ့',
-  ADM: '',
-  ANA: 'ခန္ဓာဗေဒ',
-  PHY: 'ဇီဝကမ္မဗေဒ',
-  BIO: 'ဇီဝဓာတုဗေဒ',
-  PHA: 'ဆေးဝါးဗေဒ',
-  PAT: 'ရောဂါဗေဒ',
-  MIC: 'အဏုဇီဝဗေဒ',
-  PSM: 'ကြိုတင်ကာကွယ်ရေး',
-  FOR: 'မှုခင်းဆေးပညာ',
-  IMD: 'အထွေထွေဆေးပညာ',
-  SUR: 'ခွဲစိတ်ကုသရေး',
-  OBG: 'သားဖွားနှင့်မီးယပ်',
-  PED: 'ကလေးကျန်းမာ',
-  PSY: 'စိတ်ကျန်းမာရေး',
-  OPH: 'မျက်စိပညာ',
-  ENT: 'နားနှာလည်ချောင်း',
-  ORT: 'အရိုးအထူးကု',
-  RAD: 'ဓာတ်မှန်',
-  ANE: 'မေ့ဆေးပညာ',
+/* ════════════════════════════════════════════════════════════
+   DEPARTMENTS — single source of truth.
+   To add a new department: add ONE entry here.
+   Everything else (dropdown, ref numbers, letterhead, seal) updates automatically.
+
+   Fields:
+     en    — English name (used in letterhead dept line + EN ref number)
+     mm    — Myanmar name (used in bilingual letterhead + MM ref number)
+     label — Full label shown in the dropdown  (English · မြန်မာ)
+     seal  — SVG filename for the department seal (used in COS/GSC signature block)
+             Falls back to default _SEAL_URL if the file is missing.
+     nameAlias — (optional) array of lowercase alternative name spellings from staff profiles
+   ════════════════════════════════════════════════════════════ */
+const DEPARTMENTS = {
+  SEC: { en: 'Secretariat',                   mm: 'အတွင်းရေးမှူးများအဖွဲ့', label: 'Secretariat · အတွင်းရေးမှူးများအဖွဲ့',                              seal: 'secretariat.svg',                    nameAlias: ['secretariat'] },
+  ADM: { en: 'Secretariat',                   mm: '',                        label: 'Administration · အုပ်ချုပ်ရေးအဖွဲ့',                                seal: 'University Council.svg',             nameAlias: ['administration'] },
+  ANA: { en: 'Anatomy',                        mm: 'ခန္ဓာဗေဒ',               label: 'Anatomy · ခန္ဓာဗေဒဌာန',                                             seal: 'anatomy.svg',                        nameAlias: ['anatomy'] },
+  PHY: { en: 'Physiology',                     mm: 'ဇီဝကမ္မဗေဒ',             label: 'Physiology · ဇီဝကမ္မဗေဒဌာန',                                        seal: 'physiology.svg',                     nameAlias: ['physiology'] },
+  BIO: { en: 'Biochemistry',                   mm: 'ဇီဝဓာတုဗေဒ',             label: 'Biochemistry · ဇီဝဓာတုဗေဒဌာန',                                      seal: 'biochemistry.svg',                   nameAlias: ['biochemistry'] },
+  PHA: { en: 'Pharmacology',                   mm: 'ဆေးဝါးဗေဒ',              label: 'Pharmacology · ဆေးဝါးဗေဒဌာန',                                       seal: 'pharmacology.svg',                   nameAlias: ['pharmacology'] },
+  PAT: { en: 'Pathology',                      mm: 'ရောဂါဗေဒ',               label: 'Pathology · ရောဂါဗေဒဌာန',                                           seal: 'pathology.svg',                      nameAlias: ['pathology'] },
+  MIC: { en: 'Microbiology',                   mm: 'အဏုဇီဝဗေဒ',              label: 'Microbiology · အဏုဇီဝဗေဒဌာန',                                       seal: 'microbiology.svg',                   nameAlias: ['microbiology'] },
+  PSM: { en: 'Preventive & Social Medicine',   mm: 'ကြိုတင်ကာကွယ်ရေး',      label: 'Preventive & Social Medicine · ကြိုတင်ကာကွယ်ရေးနှင့် လူမှုဆေးပညာဌာန', seal: 'preventiveandsocialmedicine.svg',    nameAlias: ['preventive & social medicine', 'preventive and social medicine'] },
+  FOR: { en: 'Forensic Medicine',              mm: 'မှုခင်းဆေးပညာ',          label: 'Forensic Medicine · မှုခင်းဆေးပညာဌာန',                              seal: 'forensicmedicine.svg',               nameAlias: ['forensic medicine'] },
+  IMD: { en: 'Internal Medicine',              mm: 'အထွေထွေဆေးပညာ',          label: 'Internal Medicine · အထွေထွေဆေးပညာဌာန',                              seal: 'internalmedicine.svg',               nameAlias: ['internal medicine'] },
+  SUR: { en: 'Surgery',                        mm: 'ခွဲစိတ်ကုသရေး',           label: 'Surgery · ခွဲစိတ်ကုသရေးဌာန',                                        seal: 'surgery.svg',                        nameAlias: ['surgery'] },
+  OBG: { en: 'Obstetrics & Gynaecology',       mm: 'သားဖွားနှင့်မီးယပ်',      label: 'Obstetrics & Gynaecology · သားဖွားနှင့် မီးယပ်ပညာဌာန',              seal: 'obstetricsandgynaecology.svg',       nameAlias: ['obstetrics & gynaecology', 'obstetrics and gynaecology'] },
+  PED: { en: 'Paediatrics',                    mm: 'ကလေးကျန်းမာ',            label: 'Paediatrics · ကလေးကျန်းမာပညာဌာန',                                  seal: 'paediatrics.svg',                    nameAlias: ['paediatrics', 'pediatrics'] },
+  PSY: { en: 'Psychiatry',                     mm: 'စိတ်ကျန်းမာရေး',         label: 'Psychiatry · စိတ်ကျန်းမာရေးပညာဌာန',                                 seal: 'psychiatry.svg',                     nameAlias: ['psychiatry'] },
+  OPH: { en: 'Ophthalmology',                  mm: 'မျက်စိပညာ',              label: 'Ophthalmology · မျက်စိပညာဌာန',                                      seal: 'ophthalmology.svg',                  nameAlias: ['ophthalmology'] },
+  ENT: { en: 'ENT',                            mm: 'နားနှာလည်ချောင်း',        label: 'ENT · နား၊ နှာခေါင်း၊ လည်ချောင်းပညာဌာန',                           seal: 'ent.svg',                            nameAlias: ['ent', 'otolaryngology'] },
+  ORT: { en: 'Orthopaedics',                   mm: 'အရိုးအထူးကု',             label: 'Orthopaedics · အရိုးအထူးကုဌာန',                                     seal: 'orthopaedics.svg',                   nameAlias: ['orthopaedics', 'orthopedics'] },
+  RAD: { en: 'Radiology',                      mm: 'ဓာတ်မှန်',               label: 'Radiology · ဓာတ်မှန်နှင့် ပုံရိပ်ဖော်ပညာဌာန',                      seal: 'radiology.svg',                      nameAlias: ['radiology'] },
+  ANE: { en: 'Anaesthesiology',                mm: 'မေ့ဆေးပညာ',              label: 'Anaesthesiology · မေ့ဆေးပညာဌာန',                                    seal: 'anaesthesiology.svg',                nameAlias: ['anaesthesiology', 'anesthesiology'] },
 };
+
+/* ── Derived lookup maps (auto-built from DEPARTMENTS — do not edit manually) ── */
+const _DEPT_MM        = Object.fromEntries(Object.entries(DEPARTMENTS).map(([k,v]) => [k, v.mm]));
+const _DEPT_EN_NAME   = Object.fromEntries(Object.entries(DEPARTMENTS).map(([k,v]) => [k, v.en]));
+const _DEPT_SEAL      = Object.fromEntries(Object.entries(DEPARTMENTS).map(([k,v]) => [k, v.seal]));
+/* flat alias → code map used by dofApplyRoleTypes to match staff profile dept names */
+const _DEPT_NAME_TO_CODE = {};
+Object.entries(DEPARTMENTS).forEach(([code, d]) => {
+  (d.nameAlias || []).forEach(alias => { _DEPT_NAME_TO_CODE[alias.toLowerCase()] = code; });
+});
+
+/* ── Populate the dof-dept dropdown from DEPARTMENTS (called once on page load) ── */
+function dofPopulateDeptDropdown() {
+  const sel = document.getElementById('dof-dept');
+  if (!sel) return;
+  sel.innerHTML = Object.entries(DEPARTMENTS)
+    .map(([code, d]) => `<option value="${code}">${d.label}</option>`)
+    .join('');
+}
 
 function dofBuildRefEN(docType, dept, seq) {
   const year   = new Date().getFullYear();
@@ -11693,56 +11743,6 @@ function _letterHeadWithDept(deptCode, lang) {
     </div>`;
 }
 
-/* ── Department code → SVG seal filename (departmentname all lowercase no space .svg) ── */
-const _DEPT_SEAL = {
-  SEC: 'secretariat.svg',
-  ADM: 'University Council.svg',
-  ANA: 'anatomy.svg',
-  PHY: 'physiology.svg',
-  BIO: 'biochemistry.svg',
-  PHA: 'pharmacology.svg',
-  PAT: 'pathology.svg',
-  MIC: 'microbiology.svg',
-  PSM: 'preventiveandsocialmedicine.svg',
-  FOR: 'forensicmedicine.svg',
-  IMD: 'internalmedicine.svg',
-  SUR: 'surgery.svg',
-  OBG: 'obstetricsandgynaecology.svg',
-  PED: 'paediatrics.svg',
-  PSY: 'psychiatry.svg',
-  OPH: 'ophthalmology.svg',
-  ENT: 'ent.svg',
-  ORT: 'orthopaedics.svg',
-  RAD: 'radiology.svg',
-  ANE: 'anaesthesiology.svg',
-};
-
-/* ── Department code → readable office name ── */
-/* SEC stays "Secretariat"; ADM stays "Secretariat" (it's the admin arm of secretariat);
-   all other codes become "Department of [English name]" */
-const _DEPT_EN_NAME = {
-  SEC: 'Secretariat',
-  ADM: 'Secretariat',
-  ANA: 'Anatomy',
-  PHY: 'Physiology',
-  BIO: 'Biochemistry',
-  PHA: 'Pharmacology',
-  PAT: 'Pathology',
-  MIC: 'Microbiology',
-  PSM: 'Preventive & Social Medicine',
-  FOR: 'Forensic Medicine',
-  IMD: 'Internal Medicine',
-  SUR: 'Surgery',
-  OBG: 'Obstetrics & Gynaecology',
-  PED: 'Paediatrics',
-  PSY: 'Psychiatry',
-  OPH: 'Ophthalmology',
-  ENT: 'ENT',
-  ORT: 'Orthopaedics',
-  RAD: 'Radiology',
-  ANE: 'Anaesthesiology',
-};
-
 function _getDeptOfficeName(deptCode) {
   const code = (deptCode || 'SEC').toUpperCase();
   const name = _DEPT_EN_NAME[code] || code;
@@ -11856,6 +11856,195 @@ function _printDoc(html, docLabel) {
       area.innerHTML = '';
     }, 800);
   }, 200);
+}
+
+function openTranscript() {
+  const s = _getStudentForPrint();
+  if (!s) return;
+  const sid     = s.id;
+  const grades  = gradeData[sid] || [];
+  const isGrad  = s.grad_status === 'Graduated';
+  const now     = new Date();
+  const issued  = now.toLocaleDateString('en-GB', { day:'2-digit', month:'2-digit', year:'numeric' });
+  const issuedTime = now.toLocaleTimeString('en-GB', { hour:'2-digit', minute:'2-digit' });
+
+  /* Group grades by enrollment year label */
+  const byYear = {};
+  grades.forEach(g => {
+    const yr = g.year || 'Unknown Year';
+    if (!byYear[yr]) byYear[yr] = [];
+    byYear[yr].push(g);
+  });
+
+  const yearOrder = Object.keys(byYear).sort();
+
+  let tableRows = '';
+  yearOrder.forEach(yr => {
+    tableRows += `<tr><td colspan="8" style="background:#f7f0f2;font-weight:700;font-size:9.5pt;padding:8px 12px;letter-spacing:.3px;border-bottom:1.5px solid #c9a0aa">Year ${yr}</td></tr>`;
+    byYear[yr].forEach(g => {
+      const score  = g.score ?? g.NumericScore ?? g.numericscore ?? '—';
+      const course = g.course || g.course_id || g.CourseID || '—';
+      const cid    = g.course_id || g.CourseID || g.courseid || '';
+      const letter = g.letter || '—';
+      const credits= g.credits || '—';
+      const assess = g.assessment_type || 'Written Exam';
+      tableRows += `<tr>
+        <td style="font-size:9pt;padding:7px 10px;border-bottom:1px solid #eee;font-family:monospace;color:#6b1a2e">${cid}</td>
+        <td style="font-size:9pt;padding:7px 10px;border-bottom:1px solid #eee;font-weight:500">${course}</td>
+        <td style="font-size:9pt;padding:7px 10px;border-bottom:1px solid #eee;text-align:center">${credits}</td>
+        <td style="font-size:9pt;padding:7px 10px;border-bottom:1px solid #eee;text-align:center;color:#555">${assess}</td>
+        <td style="font-size:9pt;padding:7px 10px;border-bottom:1px solid #eee;text-align:center;font-weight:600">${score}</td>
+        <td style="font-size:9pt;padding:7px 10px;border-bottom:1px solid #eee;text-align:center">${yr}</td>
+        <td style="font-size:9pt;padding:7px 10px;border-bottom:1px solid #eee;text-align:center;font-weight:700;color:#8B1A2E">${letter}</td>
+        <td style="font-size:9pt;padding:7px 10px;border-bottom:1px solid #eee"></td>
+      </tr>`;
+    });
+  });
+
+  if (!tableRows) {
+    tableRows = `<tr><td colspan="8" style="text-align:center;padding:24px;color:#999;font-style:italic">No grade records found.</td></tr>`;
+  }
+
+  const gpa = s.gpa ? Number(s.gpa).toFixed(2) : '—';
+  const program = s.program || 'Bachelor of Medicine &amp; Bachelor of Surgery';
+  const nameEn  = s.name_en || s.id;
+  const nameMy  = s.name_my  ? ` (${s.name_my})`  : '';
+  const fatherEn= s.father   || '—';
+  const dob     = s.dob      || '—';
+  const admitted= s.admission|| '—';
+  const enrollStatus = isGrad ? 'Graduated' : (s.status || 'Active');
+
+  const html = `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Academic Transcript — ${nameEn}</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Segoe UI',Arial,sans-serif;background:#fff;color:#1a1a1a;font-size:10pt;padding:0}
+  .page{max-width:820px;margin:0 auto;padding:28px 36px 48px}
+  .topbar{display:flex;justify-content:space-between;align-items:center;font-size:8pt;color:#666;padding-bottom:8px;border-bottom:1px solid #e0d0d4;margin-bottom:18px}
+  .header{display:flex;align-items:center;gap:18px;margin-bottom:18px}
+  .logo{height:64px;width:auto}
+  .uni-block{}
+  .uni-name{font-size:20pt;font-weight:700;color:#1a1a1a;letter-spacing:.5px}
+  .uni-sub{font-size:8.5pt;color:#555;line-height:1.5}
+  .doc-title-block{text-align:right;flex-shrink:0}
+  .doc-title{font-size:14pt;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#1a1a1a}
+  .doc-meta{font-size:8.5pt;color:#444;line-height:1.6;margin-top:4px}
+  .divider{border:none;border-top:2.5px solid #8B1A2E;margin:10px 0 18px}
+  .section-label{font-size:7.5pt;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#555;margin-bottom:8px}
+  .info-grid{display:grid;grid-template-columns:140px 1fr;gap:4px 12px;margin-bottom:18px}
+  .info-key{font-size:8pt;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:#777}
+  .info-val{font-size:9.5pt;color:#1a1a1a}
+  .info-val.bold{font-weight:700}
+  .info-val.crimson{color:#8B1A2E;font-weight:700}
+  .record-heading{font-size:9.5pt;font-weight:700;color:#1a1a1a;padding:10px 0 8px;border-bottom:1.5px solid #8B1A2E;margin-bottom:8px;letter-spacing:.2px}
+  .foundation-label{font-size:11pt;font-weight:700;color:#1a1a1a;margin:16px 0 10px;padding-left:2px}
+  table{width:100%;border-collapse:collapse}
+  thead tr th{font-size:8pt;font-weight:700;letter-spacing:.5px;text-transform:uppercase;background:#f7f0f2;color:#6b1a2e;padding:8px 10px;border-bottom:1.5px solid #c9a0aa;text-align:left}
+  thead tr th.center{text-align:center}
+  .gpa-row{margin-top:18px;display:flex;justify-content:flex-end}
+  .gpa-box{background:#f7f0f2;border:1.5px solid #c9a0aa;border-radius:6px;padding:10px 22px;text-align:center}
+  .gpa-label{font-size:7.5pt;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#6b1a2e;margin-bottom:2px}
+  .gpa-value{font-size:18pt;font-weight:700;color:#8B1A2E;line-height:1}
+  .gpa-den{font-size:9pt;color:#555}
+  .notice-box{margin-top:28px;border-top:1px solid #ddd;padding-top:14px}
+  .notice-title{font-size:7.5pt;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#444;margin-bottom:6px}
+  .notice-text{font-size:8pt;color:#555;line-height:1.6}
+  .sig-block{margin-top:36px;display:flex;justify-content:flex-end}
+  .sig-inner{text-align:center}
+  .sig-line{width:160px;border-top:1px solid #333;margin:0 auto 4px}
+  .sig-name{font-size:8.5pt;font-weight:700}
+  .sig-title{font-size:7.5pt;color:#555}
+  @media print{body{padding:0}.page{padding:18px 28px 36px}}
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="topbar">
+    <span>Academic Transcript — ${nameEn}</span>
+    <span>${issued}, ${issuedTime}</span>
+  </div>
+  <div class="header">
+    <img class="logo" src="${_LOGO_URL}" alt="UM2" onerror="this.style.display='none'">
+    <div class="uni-block" style="flex:1">
+      <div class="uni-name">UM2</div>
+      <div class="uni-sub">Interim University Council<br>Republic of the Union of Myanmar</div>
+    </div>
+    <div class="doc-title-block">
+      <div class="doc-title">Academic Transcript</div>
+      <div class="doc-meta">Student ID: <strong>${s.id}</strong><br>Enrollment: <strong>${enrollStatus}</strong></div>
+    </div>
+  </div>
+  <hr class="divider">
+
+  <div class="section-label">Student Details</div>
+  <div class="info-grid">
+    <div class="info-key">Full Name</div>       <div class="info-val bold">${nameEn}${nameMy}</div>
+    <div class="info-key">Father's Name</div>   <div class="info-val bold">${fatherEn}</div>
+    <div class="info-key">Date of Birth</div>   <div class="info-val bold">${dob}</div>
+    <div class="info-key">Degree Program</div>  <div class="info-val bold">${program}</div>
+    <div class="info-key">Admitted</div>         <div class="info-val bold">${admitted}</div>
+    <div class="info-key">Overall GPA</div>      <div class="info-val crimson">${gpa} / 4.00</div>
+  </div>
+  <hr class="divider">
+
+  <div class="record-heading">Academic Record — ${program}</div>
+  <div class="foundation-label">— Foundation Year · ${program}</div>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Course Code</th>
+        <th>Course Title</th>
+        <th class="center">Credits</th>
+        <th class="center">Assessment Type</th>
+        <th class="center">Score</th>
+        <th class="center">Year</th>
+        <th class="center">Grade</th>
+        <th>Note</th>
+      </tr>
+    </thead>
+    <tbody>${tableRows}</tbody>
+  </table>
+
+  <div class="gpa-row">
+    <div class="gpa-box">
+      <div class="gpa-label">Overall GPA</div>
+      <div class="gpa-value">${gpa} <span class="gpa-den">/ 4.00</span></div>
+    </div>
+  </div>
+
+  <div class="notice-box">
+    <div class="notice-title">Official Notice</div>
+    <div class="notice-text">
+      This document is an official record.<br>
+      Any alteration renders it invalid.<br>
+      Issued on ${issued}.
+    </div>
+  </div>
+
+  <div class="sig-block">
+    <div class="sig-inner">
+      <div class="sig-line"></div>
+      <div class="sig-name">Registrar</div>
+      <div class="sig-title">University of Medicine (2)</div>
+      <div class="sig-title" style="font-style:italic;color:#999;margin-top:2px">Registrar Signature</div>
+    </div>
+  </div>
+</div>
+</body>
+</html>`;
+
+  const win = window.open('', `transcript_${s.id}`, '');
+  if (win) {
+    win.document.open();
+    win.document.write(html);
+    win.document.close();
+  } else {
+    toast('Pop-up blocked. Please allow pop-ups and try again.', '⚠');
+  }
 }
 
 function printConfirmationOfStudy() {
