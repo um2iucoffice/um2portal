@@ -140,6 +140,17 @@
 }
 .chr-reader-event-row svg { flex-shrink: 0; opacity: .5; }
 
+
+/* ── DOCUMENT OFFICE: Dept dropdown locked state (Staff role) ── */
+#dof-dept:disabled {
+  border-color: var(--line) !important;
+  background: var(--surface) !important;
+  cursor: not-allowed !important;
+}
+#dof-dept:disabled + .dof-dept-role-info,
+.dof-dept-role-info { font-size: 11px; color: var(--ink3); display: flex; align-items: center; gap: 5px; margin-top: 5px; }
+#dof-role-badge { transition: background .2s, color .2s; }
+
 /* ── PRINT STYLES ── */
 @media print {
   @page {
@@ -3406,8 +3417,13 @@ CREATE POLICY IF NOT EXISTS &quot;Authenticated read all announcements&quot; ON 
 
   <!-- ── Generate Form ── -->
   <div class="card" style="margin-bottom:16px">
-    <div style="font-size:10px;font-weight:700;letter-spacing:1.6px;text-transform:uppercase;color:var(--ink3);margin-bottom:16px">
-      စာရွက်စာတမ်း ဖန်တီးခြင်း · Generate document
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:8px">
+      <div style="font-size:10px;font-weight:700;letter-spacing:1.6px;text-transform:uppercase;color:var(--ink3)">
+        စာရွက်စာတမ်း ဖန်တီးခြင်း · Generate document
+      </div>
+      <div id="dof-role-badge" style="display:flex;align-items:center;gap:6px;font-size:11px;font-weight:700;letter-spacing:.5px;padding:4px 12px;border-radius:20px;border:1.5px solid transparent">
+        <!-- Populated by dofRenderRoleBadge() on view open -->
+      </div>
     </div>
 
     <!-- Doc Type + Department: stacked on mobile, side-by-side on desktop -->
@@ -3418,12 +3434,12 @@ CREATE POLICY IF NOT EXISTS &quot;Authenticated read all announcements&quot; ON 
         <label>Document Type · စာရွက်အမျိုးအစား</label>
         <select id="dof-type" onchange="dofUpdateRef()">
           <option value="" disabled selected>— select type —</option>
-          <option value="STM" data-roles="registrar">Statement (STM) · ကြေညာချက်</option>
-          <option value="LTR" data-roles="registrar">Official Letter (LTR) · စာ</option>
-          <option value="DIR" data-roles="registrar">Directive (DIR) · ညွှန်ကြားလွှာ</option>
+          <option value="STM" data-roles="registrar">Statement (STM) · ကြေညာချက် — Secretariat</option>
+          <option value="LTR" data-roles="registrar">Official Letter (LTR) · တရားဝင်စာ — Secretariat</option>
+          <option value="DIR" data-roles="registrar">Directive (DIR) · ညွှန်ကြားလွှာ — Secretariat</option>
           <option value="COS" data-roles="registrar,staff">Confirmation of Service (COS)</option>
-          <option value="GSC" data-roles="registrar,staff">Good Standing (GSC)</option>
-          <option value="FIR" data-roles="registrar,staff">Faculty Info (FIR)</option>
+          <option value="GSC" data-roles="registrar,staff">Good Standing Certificate (GSC)</option>
+          <option value="FIR" data-roles="registrar,staff">Faculty Info Record (FIR)</option>
         </select>
       </div>
 
@@ -11028,51 +11044,121 @@ function _getCurrentTitle() {
 }
 
 /* ── Role-based + title-based type filtering ── */
+/* ── Render the role-access badge in the Document Office header ── */
+function dofRenderRoleBadge() {
+  const badge = document.getElementById('dof-role-badge');
+  if (!badge) return;
+  const role = (typeof currentRole !== 'undefined') ? currentRole : 'staff';
+  if (role === 'registrar') {
+    badge.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg> Registrar — Full Access`;
+    badge.style.background   = 'var(--crimson-light)';
+    badge.style.borderColor  = 'rgba(139,26,46,.25)';
+    badge.style.color        = 'var(--crimson)';
+  } else {
+    /* Resolve department label */
+    const rawFromSel = (document.getElementById('sp-department')?.value || '').trim().toLowerCase();
+    const rawFromRo  = (document.getElementById('sp-dept-readonly')?.textContent || '').trim().toLowerCase();
+    const staffDeptRaw  = rawFromSel || rawFromRo;
+    const staffDeptCode = _DEPT_NAME_TO_CODE[staffDeptRaw]
+      || staffDeptRaw.replace(/\s+/g,'').toUpperCase()
+      || 'SEC';
+    const deptLabel = DEPARTMENTS[staffDeptCode]?.en || staffDeptCode;
+    badge.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg> Staff · ${deptLabel} — COS / GSC / FIR only`;
+    badge.style.background  = 'var(--blue-light)';
+    badge.style.borderColor = 'rgba(30,58,110,.2)';
+    badge.style.color       = 'var(--blue)';
+  }
+}
+
 function dofApplyRoleTypes() {
-  const role   = (typeof currentRole !== 'undefined') ? currentRole : 'staff';
-  const sel    = document.getElementById('dof-type');
-  const deptSel= document.getElementById('dof-dept');
-  const lhSel  = document.getElementById('dof-letterhead');
-  const lhWrap = document.getElementById('dof-lh-wrap');
+  const role     = (typeof currentRole !== 'undefined') ? currentRole : 'staff';
+  const sel      = document.getElementById('dof-type');
+  const deptSel  = document.getElementById('dof-dept');
+  const lhSel    = document.getElementById('dof-letterhead');
+  const lhWrap   = document.getElementById('dof-lh-wrap');
+  const deptWrap = deptSel ? deptSel.closest('.form-group') : null;
   if (!sel) return;
 
+  /* Remove any previously injected Staff lock note */
+  const prevNote = document.getElementById('dof-dept-staff-note');
+  if (prevNote) prevNote.remove();
+
+  /* ══════════════════════════════════════════════════════════════
+     REGISTRAR — full access: all document types, any department,
+     letterhead override control visible
+     ══════════════════════════════════════════════════════════════ */
   if (role === 'registrar') {
-    /* Registrar: sees all doc types; dept dropdown fully free (all departments); letterhead override shown */
+    /* All doc type options visible */
     Array.from(sel.options).forEach(opt => { if (opt.value) opt.hidden = false; });
+
+    /* All departments enabled */
     if (deptSel) {
-      /* Ensure all department options are visible and dropdown is enabled */
       Array.from(deptSel.options).forEach(opt => { opt.hidden = false; });
-      deptSel.disabled = false;
-      deptSel.style.opacity = '';
+      deptSel.disabled       = false;
+      deptSel.style.opacity  = '';
+      deptSel.style.cursor   = '';
+      deptSel.style.background = '';
+      deptSel.title          = '';
     }
-    if (lhWrap)  lhWrap.style.display = '';
+
+    /* Letterhead override visible */
+    if (lhWrap) lhWrap.style.display = '';
+
     dofUpdateLhIndicator();
     return;
   }
 
-  /* ── Staff: lock department dropdown to their own profile department ── */
-  const staffDeptRaw  = (document.getElementById('sp-department')?.value || '').trim().toLowerCase();
-  const staffDeptCode = _DEPT_NAME_TO_CODE[staffDeptRaw] || staffDeptRaw.toUpperCase();
-  if (deptSel && staffDeptCode) {
+  /* ══════════════════════════════════════════════════════════════
+     STAFF — restricted access:
+       • Document types : COS, GSC, FIR only (STM/LTR/DIR hidden)
+       • Department     : locked to their profile department
+       • Letterhead     : auto-determined by dept (no manual override)
+       • Fixed docs (COS/GSC/FIR) still use IUC Secretariat letterhead
+         as enforced by _letterHeadWithDept()
+     ══════════════════════════════════════════════════════════════ */
+
+  /* Resolve staff department from profile (visible selector or readonly text) */
+  const rawFromSel = (document.getElementById('sp-department')?.value || '').trim().toLowerCase();
+  const rawFromRo  = (document.getElementById('sp-dept-readonly')?.textContent || '').trim().toLowerCase();
+  const staffDeptRaw  = rawFromSel || rawFromRo;
+  const staffDeptCode = _DEPT_NAME_TO_CODE[staffDeptRaw]
+    || staffDeptRaw.replace(/\s+/g,'').toUpperCase()
+    || 'SEC';
+
+  /* Lock department dropdown to staff's own department */
+  if (deptSel) {
     Array.from(deptSel.options).forEach(opt => {
-      opt.hidden = (opt.value !== staffDeptCode);
+      opt.hidden = opt.value !== '' && opt.value !== staffDeptCode;
     });
-    deptSel.value    = staffDeptCode;
-    deptSel.disabled = true;
-    deptSel.style.opacity = '0.75';
+    deptSel.value          = staffDeptCode;
+    deptSel.disabled       = true;
+    deptSel.style.opacity  = '1';
+    deptSel.style.cursor   = 'not-allowed';
+    deptSel.style.background = 'var(--surface)';
+    deptSel.title          = 'Locked to your assigned department';
   }
 
-  /* ── Staff: only auto-generated types (COS, GSC, FIR) ── */
-  const staffAllowed = ['COS','GSC','FIR'];
+  /* Inject lock note below the department dropdown */
+  if (deptWrap && !document.getElementById('dof-dept-staff-note')) {
+    const note = document.createElement('div');
+    note.id = 'dof-dept-staff-note';
+    note.style.cssText = 'display:flex;align-items:center;gap:5px;margin-top:5px;font-size:11px;color:var(--ink3)';
+    note.innerHTML = \`<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+      <span>Locked to your assigned department</span>\`;
+    deptWrap.appendChild(note);
+  }
+
+  /* Restrict doc types: Staff may only generate COS, GSC, FIR */
+  const staffAllowed = ['COS', 'GSC', 'FIR'];
   Array.from(sel.options).forEach(opt => {
-    if (!opt.value) return;
+    if (!opt.value) return;            /* keep the placeholder option */
     opt.hidden = !staffAllowed.includes(opt.value);
   });
   if (sel.value && !staffAllowed.includes(sel.value)) sel.value = '';
 
-  /* ── Staff: hide letterhead override; locked docs always use IUC Secretariat ── */
+  /* Hide letterhead override — Staff has no choice over letterhead */
   if (lhWrap) lhWrap.style.display = 'none';
-  if (lhSel)  lhSel.value = 'iuc'; // force IUC for auto-generated docs
+  if (lhSel)  lhSel.value = 'iuc';  /* ensure iuc is the base; _letterHeadWithDept handles dept logic */
 
   dofUpdateLhIndicator();
 }
@@ -11723,7 +11809,9 @@ if (_origShowViewDOF) {
   showView = function(viewId, ...args) {
     __showViewPatched(viewId, ...args);
     if (viewId === 'docOffice') {
-      dofApplyRoleTypes();
+      dofPopulateDeptDropdown();      /* ensure dept dropdown is populated first */
+      dofRenderRoleBadge();           /* show role access badge */
+      dofApplyRoleTypes();            /* apply role-based restrictions */
       dofUpdateRef();
       dofToggleLangFields();
       loadDocLog();
@@ -11782,12 +11870,19 @@ function _letterHeadWithDept(deptCode, lang) {
     </div>`;
   }
 
-  /* ── Default IUC Secretariat letterhead ── */
-  const deptLine = (deptCode === 'SEC' || deptCode === 'ADM')
-    ? (showMm ? `UM2 IUC Secretariat${deptMM ? ' · ' + deptMM : ''}` : 'UM2 IUC Secretariat')
-    : (showMm && deptMM
+  /* ── Default IUC Secretariat / Departmental letterhead ── */
+  const isDeptDoc = (deptCode !== 'SEC' && deptCode !== 'ADM');
+  const deptLine = isDeptDoc
+    ? (showMm && deptMM
         ? `Department of ${deptName} · ${deptMM} ဌာန`
-        : `Department of ${deptName}`);
+        : `Department of ${deptName}`)
+    : (showMm ? `UM2 IUC Secretariat${deptMM ? ' · ' + deptMM : ''}` : 'UM2 IUC Secretariat');
+
+  /* For departmental docs (STM/LTR/DIR from a specific dept), show auth control chain */
+  const authLine = isDeptDoc && !_isLockedDoc
+    ? `<div style="font-size:7.5pt;color:#8B1A2E;margin-top:2px;font-style:italic;letter-spacing:.3px">Issued under Secretariat Office Authentication & Document Control</div>`
+    : '';
+
   return `
     <div style="display:flex;align-items:center;gap:20px;border-bottom:2.5px solid #8B1A2E;padding-bottom:16px;margin-bottom:24px">
       <img src="${_LOGO_URL}" alt="UM2 Logo" style="height:72px;width:auto;flex-shrink:0" onerror="this.style.display='none'">
@@ -11795,7 +11890,8 @@ function _letterHeadWithDept(deptCode, lang) {
         <div style="font-size:9pt;letter-spacing:2px;text-transform:uppercase;color:#555;margin-bottom:2px">University of Medicine (2), Yangon</div>
         <div style="font-size:17pt;font-weight:bold;font-family:'Times New Roman',serif;color:#8B1A2E">Interim University Council</div>
         <div style="font-size:9pt;color:#8B1A2E;font-weight:600;margin-top:3px">${deptLine}</div>
-        <div style="font-size:8pt;color:#777;margin-top:1px">Institutional Registry & Information Repository · Authorized Personnel Only </div>
+        ${authLine}
+        <div style="font-size:8pt;color:#777;margin-top:1px">Institutional Registry & Information Repository · Authorized Personnel Only</div>
       </div>
     </div>`;
 }
