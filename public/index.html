@@ -8503,24 +8503,14 @@ async function printConfirmation(enrollIdx) {
   const today     = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
   const docType   = isGraduated ? 'Confirmation of Graduation' : 'Confirmation of Study';
 
-  // Fetch logo to inline (avoids blob URL external resource issues)
-  let logoHtml = '';
-
-try {
-  const r = await fetch('/UM2_Logo.svg');
-
+const r = await fetch('/UM2_Logo.svg');
   if (r.ok) {
-    let t = await r.text();
-
-    // Remove XML declaration
-    t = t.replace(/<\?xml[^?]*\?>/i, '').trim();
-
-    // Force SVG responsive sizing
-    t = t.replace(
-      /<svg([^>]*)>/i,
-      `<svg$1 style="width:100%;height:100%;object-fit:contain;display:block;">`
-    );
-
+    const blob = await r.blob();
+    const dataUrl = await new Promise(res => {
+      const reader = new FileReader();
+      reader.onload = () => res(reader.result);
+      reader.readAsDataURL(blob);
+    });
     logoHtml = `
       <div style="
         width:43px;
@@ -8531,31 +8521,10 @@ try {
         justify-content:center;
         overflow:hidden;
       ">
-        ${t}
+        <img src="${dataUrl}" style="width:100%;height:100%;object-fit:contain;" />
       </div>
     `;
   }
-
-} catch (_) {}
-
-if (!logoHtml) {
-  logoHtml = `
-    <div style="
-      width:70px;
-      height:84px;
-      flex-shrink:0;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      font-family:serif;
-      font-size:14pt;
-      font-weight:700;
-      color:#002060
-    ">
-      UM2
-    </div>
-  `;
-}
   // ── Letter body ───────────────────────────────────────────────
   const nameDisplay = nameMM ? `${name} (${nameMM})` : name;
 
