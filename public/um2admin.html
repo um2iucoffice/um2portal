@@ -4510,8 +4510,11 @@ CREATE POLICY IF NOT EXISTS &quot;Authenticated read all announcements&quot; ON 
       <div class="form-group"><label>GP / Group Link</label><input id="ch-gp-link" type="url" placeholder="https://wa.me/link/…"></div>
       <div class="form-group"><label>Members Count</label><input id="ch-members" type="number" min="0" placeholder="e.g. 250"></div>
       <div class="form-group"><label>Sort Order</label><input id="ch-sort-order" type="number" min="1" placeholder="e.g. 1"></div>
-      <div class="form-group full"><label>Allowed Years <span style="font-weight:400;color:var(--ink3)">(comma-separated, leave blank for all)</span></label>
-        <input id="ch-allowed-years" placeholder="e.g. Foundation Year, M-1, M-2 — or leave blank for all years">
+      <div class="form-group full">
+        <label>Allowed Years <span style="font-weight:400;color:var(--ink3)">(leave all unchecked = visible to everyone)</span></label>
+        <div id="ch-allowed-years-wrap" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:6px;padding:10px 12px;background:var(--surface);border:1.5px solid var(--line);border-radius:var(--r)">
+          <!-- populated by buildYearCheckboxes() -->
+        </div>
       </div>
       <div class="form-group"><label>Status</label>
         <select id="ch-status">
@@ -6550,17 +6553,14 @@ async function saveNewStudent() {
     graduation_id_my: document.getElementById('ns-gradIdMy').value.trim() || null,
     graduation_date: getDateValue('ns-gradDate') || null,
     graduation_date_my: document.getElementById('ns-gradDateMy').value.trim() || null,
-   master_password: await (async () => {
-  const plain = document.getElementById('ns-masterPw').value.trim() || generateMasterPassword();
-  document.getElementById('ns-masterPw').value = plain;
-  alert(' Save this password for the student:\n\n' + plain + '\n\nIt cannot be recovered after saving.');
-  return await hashPassword(plain);
-})(),
     gpa: 0.0
   };
 
-  // Capture plaintext BEFORE hashing — needed for welcome email
-  const _plainPw = document.getElementById('ns-masterPw').value.trim();
+  // Resolve plaintext FIRST — before any hashing — needed for welcome email
+  const _plainPw = document.getElementById('ns-masterPw').value.trim() || generateMasterPassword();
+  document.getElementById('ns-masterPw').value = _plainPw;
+  alert(' Save this password for the student:\n\n' + _plainPw + '\n\nIt cannot be recovered after saving.');
+  newStudent.master_password = await hashPassword(_plainPw);
   const _dobVal  = document.getElementById('ns-dob') ? getDateValue('ns-dob') : null;
 
   const { error } = await db.from('students').insert(newStudent);
