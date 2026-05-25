@@ -4644,6 +4644,32 @@ async function hashPassword(plain) {
   return Array.from(new Uint8Array(buf), b => b.toString(16).padStart(2,'0')).join('');
 }
 
+// Send welcome email directly with plaintext password — called BEFORE hashing.
+// Falls back silently so a network failure never blocks student creation.
+async function sendWelcomeEmail(toEmail, sid, nameEn, plainPassword, dob, trigger = 'new student') {
+  try {
+    const EDGE_URL = SUPABASE_URL.replace(/\/+$/, '') + '/functions/v1/send-email';
+    await fetch(EDGE_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + SUPABASE_ANON_KEY,
+      },
+      body: JSON.stringify({
+        to:              toEmail,
+        subject:         '[UM2 Registry System] Welcome — Your student account is ready',
+        trigger:         trigger,
+        sid:             sid,
+        name:            nameEn,
+        master_password: plainPassword,
+        dob:             dob || null,
+      }),
+    });
+  } catch (e) {
+    console.warn('sendWelcomeEmail failed (non-blocking):', e);
+  }
+}
+
 function togglePwVisibility(inputId, btn) {
   const inp = document.getElementById(inputId);
   if (!inp) return;
@@ -6533,6 +6559,10 @@ async function saveNewStudent() {
     gpa: 0.0
   };
 
+  // Capture plaintext BEFORE hashing — needed for welcome email
+  const _plainPw = document.getElementById('ns-masterPw').value.trim();
+  const _dobVal  = document.getElementById('ns-dob') ? getDateValue('ns-dob') : null;
+
   const { error } = await db.from('students').insert(newStudent);
   if (error) { toast('Save failed: ' + error.message, 'DB Error'); return; }
 
@@ -6555,8 +6585,9 @@ async function saveNewStudent() {
   students.push(newStudent);
   renderStudentTable(students);
   updateDashboardStats();
+  await sendWelcomeEmail(email, sid, document.getElementById('ns-name').value.trim(), _plainPw, _dobVal);
   await logEmail(email, sid, '[UM2 Registry System] Welcome — Your student account is ready', 'New student');
-  toast(`Student ${sid} added. Welcome email queued for ${email}.`, 'Notice');
+  toast(`Student ${sid} added. Welcome email sent to ${email}.`, 'Notice');
   clearNewStudentForm();
 }
 
@@ -6790,7 +6821,7 @@ const resolvedPwHash = await hashPassword(resolvedPw);
       master_password: resolvedPwHash,
       updated_at: new Date().toISOString()
     };
-    validRecords.push({ record, existing, row });
+    validRecords.push({ record, existing, row, resolvedPw });
   }
 
   // ── Step 2: UPDATE existing students, INSERT new ones — NEVER upsert
@@ -6846,7 +6877,7 @@ const resolvedPwHash = await hashPassword(resolvedPw);
     } else if (!effectiveBatchError) {
       // Batch succeeded — update in-memory store and build result rows
       const newlyInserted = [];
-      for (const { record, existing, row } of validRecords) {
+      for (const { record, existing, row, resolvedPw } of validRecords) {
         if (existing) {
           updated++;
           Object.assign(existing, record);
@@ -6857,15 +6888,16 @@ const resolvedPwHash = await hashPassword(resolvedPw);
         } else {
           inserted++;
           students.push(record);
-          newlyInserted.push({ email: record.email, sid: record.id });
+          newlyInserted.push({ email: record.email, sid: record.id, nameEn: record.name_en, plainPw: resolvedPw || '', dob: record.dob || null });
           body += `<tr class="bulk-row-ok">
             <td class="text-mono text-crimson">${record.id}</td><td>${record.name_en}</td><td>${record.email}</td>
             <td><span class="badge b-green">✓ Inserted</span></td><td><span class="badge b-green">✓ Queued</span></td>
           </tr>`;
         }
       }
-      // Queue welcome emails for new students (non-blocking)
-      for (const { email, sid } of newlyInserted) {
+      // Send welcome emails for new students with plaintext password (non-blocking)
+      for (const { email, sid, nameEn, plainPw, dob } of newlyInserted) {
+        sendWelcomeEmail(email, sid, nameEn, plainPw, dob, 'bulk import');
         logEmail(email, sid, '[UM2 Registry System] Welcome — Your student account is ready', 'Bulk import');
       }
     }
