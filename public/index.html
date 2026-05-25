@@ -6122,7 +6122,8 @@ function populate(s, grades, courses, program_meta, enrollments, academicYears, 
   document.getElementById('welcomeName').textContent = s.fullName || firstName;
   document.getElementById('homeStudentId').textContent = s.id || '—';
   const _homeIdLbl = document.getElementById('homeIdLabel');
-  if (_homeIdLbl) _homeIdLbl.textContent = /^graduated$/i.test((s.graduationStatus||'').trim()) ? 'Alumni ID' : 'Student ID';
+  // Will be correctly set below once _activeEnroll is resolved; placeholder for now
+  if (_homeIdLbl) _homeIdLbl.textContent = 'Student ID';
   const homeAvatar = document.getElementById('homeAvatar');
   if (homeAvatar) { /* avatar removed */ }
 
@@ -6161,18 +6162,46 @@ function populate(s, grades, courses, program_meta, enrollments, academicYears, 
   if (sidSpan) sidSpan.textContent = sid;
   document.documentElement.setAttribute('data-sid', sid);
   document.documentElement.setAttribute('data-student-name', s.fullName || '');
+  // ── Resolve active enrollment for profile/hero display ───────
+  // Priority: first enrollment that is not graduated/completed (i.e. currently active).
+  // If all are graduated (e.g. student finished both degrees), fall back to the last one.
+  const _allEnrollments = enrollments || [];
+  const _activeEnroll =
+    _allEnrollments.find(e => !/graduated|completed/i.test(e.graduationStatus || '')) ||
+    _allEnrollments[_allEnrollments.length - 1] ||
+    null;
+
+  // Derive display values from active enrollment where available, fall back to student row
+  const _activeProgram      = (_activeEnroll && (_activeEnroll.programName || _activeEnroll.degreeProgramId)) || s.programName || s.program || '';
+  const _activeStatus       = (_activeEnroll && _activeEnroll.currentYear)       || s.currentStatus    || '';
+  const _activeEnrollStatus = (_activeEnroll && _activeEnroll.enrollmentStatus)  || s.enrollmentStatus || '';
+  const _activeGradStatus   = (_activeEnroll && _activeEnroll.graduationStatus)  || s.graduationStatus || '';
+  const _activeAdmission    = (_activeEnroll && _activeEnroll.admissionDate)     || s.admissionYear    || '';
+
+  // isGraduated = true only if the active enrollment itself is graduated
+  // (so a Bachelor-grad re-enrolled in Master is NOT treated as alumni)
+  const isGraduated = /^graduated$/i.test((_activeGradStatus || '').trim());
+  const idLabel     = isGraduated ? 'Alumni ID' : 'Student ID';
+  // Update home hero ID label now that we know the correct value
+  const _homeIdLblFinal = document.getElementById('homeIdLabel');
+  if (_homeIdLblFinal) _homeIdLblFinal.textContent = idLabel;
+
+  // Graduation fields — from active enrollment if graduated, else from student row
+  const gradID   = (_activeEnroll && _activeEnroll.graduationId)   || s.graduationId   || s.graduation_id   || '';
+  const gradDate = (_activeEnroll && _activeEnroll.graduationDate) || s.graduationDate || s.graduation_date || '';
+
+  // ── Profile tags — reflect active enrollment ──────────────────
   const tags = document.getElementById('profileTags');
   tags.innerHTML = '';
-  if (s.currentStatus)    tags.innerHTML += `<span class="tag tag-r">${s.currentStatus}</span>`;
-  if (s.enrollmentStatus) tags.innerHTML += `<span class="tag tag-g">${s.enrollmentStatus}</span>`;
-  if (s.graduationStatus) tags.innerHTML += `<span class="tag tag-n">${s.graduationStatus}</span>`;
-  // ── Graduation status logic ──────────────────────────────────
-  const isGraduated = /^graduated$/i.test((s.graduationStatus || '').trim());
-  const idLabel     = isGraduated ? 'Alumni ID' : 'Student ID';
-
-  // Fetch graduation fields from sheet
-  const gradID   = s.graduationId   || s.graduation_id   || '';
-  const gradDate = s.graduationDate || s.graduation_date || '';
+  if (_activeStatus)       tags.innerHTML += `<span class="tag tag-r">${_activeStatus}</span>`;
+  if (_activeEnrollStatus) tags.innerHTML += `<span class="tag tag-g">${_activeEnrollStatus}</span>`;
+  if (_activeGradStatus)   tags.innerHTML += `<span class="tag tag-n">${_activeGradStatus}</span>`;
+  // If multi-enrollment, also show a badge for the active degree level
+  if (_allEnrollments.length > 1 && _activeEnroll) {
+    const lvlMap = { bachelor: 'Bachelor', master: 'Master', phd: 'PhD' };
+    const lvlLabel = lvlMap[(_activeEnroll.degreeLevel || '').toLowerCase()] || '';
+    if (lvlLabel) tags.innerHTML += `<span class="tag" style="background:rgba(139,26,46,0.1);color:var(--crimson);border:1px solid rgba(139,26,46,0.2)">${lvlLabel}</span>`;
+  }
 
   // ── Profile card ─────────────────────────────────────────────
   const lblSID = document.getElementById('lblStudentID');
@@ -6186,17 +6215,16 @@ function populate(s, grades, courses, program_meta, enrollments, academicYears, 
   document.getElementById('infoMotherMM').textContent  = s.motherNameMM     || '—';
   document.getElementById('infoPhone').textContent     = s.phone            || '—';
   document.getElementById('infoEmail').textContent     = s.email            || '—';
-  document.getElementById('infoAdmission').textContent = s.admissionYear    || '—';
-  document.getElementById('infoStatus').textContent    = s.currentStatus    || '—';
-  document.getElementById('infoEnroll').textContent    = s.enrollmentStatus || '—';
-  document.getElementById('infoGrad').textContent      = s.graduationStatus || '—';
+  document.getElementById('infoAdmission').textContent = _activeAdmission   || '—';
+  document.getElementById('infoStatus').textContent    = _activeStatus      || '—';
+  document.getElementById('infoEnroll').textContent    = _activeEnrollStatus|| '—';
+  document.getElementById('infoGrad').textContent      = _activeGradStatus  || '—';
 
-  // Degree Program
-  const programVal = s.programName || s.program || '—';
+  // Degree Program — show active enrollment's program
   const infoProgramEl = document.getElementById('infoProgram');
-  if (infoProgramEl) infoProgramEl.textContent = programVal;
+  if (infoProgramEl) infoProgramEl.textContent = _activeProgram || '—';
   const homeProgramEl = document.getElementById('homeProgramName');
-  if (homeProgramEl) homeProgramEl.textContent = s.programName || s.program || '';
+  if (homeProgramEl) homeProgramEl.textContent = _activeProgram;
 
   // Show/hide graduation fields
   const cellGradID   = document.getElementById('cellGradID');
@@ -6247,7 +6275,7 @@ function populate(s, grades, courses, program_meta, enrollments, academicYears, 
   window._studentGradID    = gradID;
   window._studentGradDate  = gradDate;
   window._studentIdLabel   = idLabel;
-  window._studentProgram   = s.programName || s.program || '';
+  window._studentProgram   = _activeProgram;
 
 
   // ── Store enrollments globally ───────────────────────────────
@@ -7962,6 +7990,33 @@ function renderDocCards(enrollments) {
         </button>
       </div>`;
 
+    // Good Standing Certificate — only for active (non-graduated, non-inactive) enrollments
+    const gsAvailable = !graduated && !isInactive;
+    html += `
+      <div class="doc-card">
+        <div class="doc-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        </div>
+        <div class="doc-title">Certificate of Good Standing</div>
+        <div class="doc-desc">Official certificate confirming that <strong>${programLabel}</strong> student is in good academic and disciplinary standing with the university.</div>
+        <div class="doc-tags">
+          <span class="doc-tag">Official Document</span>
+          <span class="doc-tag">Instant</span>
+          <span class="doc-tag" style="${gsAvailable ? '' : 'background:var(--crimson-light);color:var(--crimson);border-color:rgba(139,26,46,.2);'}">${gsAvailable ? 'Active' : graduated ? 'Graduated' : 'Inactive'}</span>
+        </div>
+        ${gsAvailable
+          ? `<button class="btn-print-doc" onclick="printGoodStanding(${idx})">
+               <svg viewBox="0 0 24 24"><polyline points="6,9 6,2 18,2 18,9"/><path d="M6,18H4a2,2,0,0,1-2-2V11a2,2,0,0,1,2-2H20a2,2,0,0,1,2,2v5a2,2,0,0,1-2,2H18"/><rect x="6" y="14" width="12" height="8"/></svg>
+               Print / Save PDF
+             </button>`
+          : `<button class="btn-print-doc" disabled style="opacity:0.45;cursor:not-allowed;background:var(--ink3);">
+               <svg viewBox="0 0 24 24" style="width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+               Not Available
+             </button>
+             <div style="font-size:11px;color:var(--ink3);margin-top:8px;text-align:center;line-height:1.5;">Only available to currently active students.</div>`
+        }
+      </div>`;
+
     html += '</div>'; // end doc-grid
   });
 
@@ -7973,10 +8028,29 @@ function renderDocDegreePicker() {}
 
 // ── printDegreeCertificate(enrollmentIndex) ──────────────────
 // Renders a formal A4 Degree Certificate matching UM2 design.
-function printDegreeCertificate(enrollIdx) {
+async function printDegreeCertificate(enrollIdx) {
   const enrollments = window._enrollments || [];
   const e = enrollments[enrollIdx] || enrollments[0];
   if (!e) return;
+
+  // Fetch Seal SVG and inline it so it works inside a Blob popup window
+  let sealSvgHtml = '';
+  try {
+    const sealRes = await fetch('/Seal.svg');
+    if (sealRes.ok) {
+      const svgText = await sealRes.text();
+      // Strip XML declaration if present, keep just the <svg>...</svg>
+      sealSvgHtml = svgText.replace(/<\?xml[^?]*\?>/i, '').trim();
+    }
+  } catch(_) {}
+  // Fallback: a simple placeholder circle if fetch fails
+  if (!sealSvgHtml) {
+    sealSvgHtml = `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="50" cy="50" r="46" fill="none" stroke="#002060" stroke-width="3"/>
+      <circle cx="50" cy="50" r="38" fill="none" stroke="#c8a800" stroke-width="1.5"/>
+      <text x="50" y="54" text-anchor="middle" font-size="10" font-family="serif" fill="#002060" font-weight="bold">UM2</text>
+    </svg>`;
+  }
 
   const s         = window._currentStudent || {};
   const name      = document.getElementById('profileName')?.textContent?.trim()   || s.fullName   || '—';
@@ -8229,9 +8303,10 @@ function printDegreeCertificate(enrollIdx) {
       align-items: center;
       justify-content: center;
     }
-    .cert-seal img {
-      width: 200%;
-      height: 200%;
+    .cert-seal img,
+    .cert-seal svg {
+      width: 100%;
+      height: 100%;
       object-fit: contain;
     }
     /* ── Photo overlay seal ── */
@@ -8365,8 +8440,7 @@ function printDegreeCertificate(enrollIdx) {
     <!-- Center seal -->
     <div style="display:flex;justify-content:center;width:88%;margin-top:6mm;margin-bottom:4mm;">
       <div class="cert-seal">
-        <img src="https://raw.githubusercontent.com/um2iucoffice/um2portal/c5797a374732d917b6b54aa88b6a874d66984ba1/public/Seal.svg" alt="Seal"
-          onerror="this.src='/Seal.svg';this.onerror=function(){this.style.display='none'};">
+        ${sealSvgHtml}
       </div>
     </div>
 
@@ -8432,7 +8506,7 @@ setTimeout(() => URL.revokeObjectURL(url), 10000);
 }
 
 // ── printConfirmation(enrollmentIndex) ───────────────────────
-function printConfirmation(enrollIdx) {
+async function printConfirmation(enrollIdx) {
   const enrollments = window._enrollments || [];
   const e = enrollments[enrollIdx] || enrollments[0];
   if (!e) return;
@@ -8440,71 +8514,57 @@ function printConfirmation(enrollIdx) {
   const isGraduated = /graduated|completed/i.test(e.graduationStatus || '');
   const idLabel     = isGraduated ? 'Alumni ID' : 'Student ID';
 
-  const name      = document.getElementById('profileName').textContent      || '—';
-  const sid       = document.getElementById('infoID').textContent           || '—';
-  const admission = e.admissionDate || document.getElementById('infoAdmission').textContent || '—';
-  const status    = e.currentYear   || document.getElementById('infoStatus').textContent    || '—';
-  const enroll    = e.enrollmentStatus || document.getElementById('infoEnroll').textContent || '—';
-  const program   = e.programName   || e.degreeProgramId || document.getElementById('infoProgram')?.textContent || '';
+  const s         = window._currentStudent || {};
+  const name      = document.getElementById('profileName').textContent.trim()      || '—';
+  const nameMM    = document.getElementById('profileNameMM')?.textContent.trim()   || '';
+  const sid       = document.getElementById('infoID').textContent.trim()           || '—';
+  const birth     = s.birthDate || document.getElementById('infoBirth')?.textContent.trim() || '—';
+  const admission = e.admissionDate || document.getElementById('infoAdmission').textContent.trim() || '—';
+  const status    = e.currentYear   || document.getElementById('infoStatus').textContent.trim()    || '—';
+  const enroll    = e.enrollmentStatus || document.getElementById('infoEnroll').textContent.trim() || '—';
+  const program   = e.programName   || e.degreeProgramId || document.getElementById('infoProgram')?.textContent.trim() || '';
+  const gpa       = e.gpa || s.overallGPA || s.gpa || '';
   const grad      = e.graduationStatus || '—';
   const gradID    = e.graduationId   || '';
   const gradDate  = e.graduationDate || '';
   const today     = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+  const docType   = isGraduated ? 'Confirmation of Graduation' : 'Confirmation of Study';
 
-  const confirmationBody = `
-  <div style="margin:32px 0;font-family:'DM Sans',sans-serif;font-size:11pt;color:#0D1B2A;line-height:2;text-align:justify;">
-    ${isGraduated ? `
-    <p>
-      This is to confirm that <strong>${name}</strong> (${idLabel}: <strong>${sid}</strong>)
-      has successfully completed the requirements for the degree of
-      <strong>${program || 'the awarded degree'}</strong>
-      at the <strong>University of Medicine (2)</strong>, under the administration
-      of the Interim University Council, Republic of the Union of Myanmar.
-    </p>
-    <br>
-    <p style="text-align:justify;">
-      The above-named graduate was admitted in <strong>${admission}</strong>
-      and has been conferred the degree with a status of <strong>${grad}</strong>${gradDate ? ', effective <strong>' + gradDate + '</strong>' : ''}.
-      ${gradID ? 'Graduation Reference: <strong>' + gradID + '</strong>.' : ''}
-    </p>
-    ` : `
-    <p>
-      This is to confirm that <strong>${name}</strong> (Student ID: <strong>${sid}</strong>)
-      is currently enrolled as a student at the
-      <strong>University of Medicine (2)</strong>, under the administration
-      of the Interim University Council, Republic of the Union of Myanmar.
-    </p>
-    <br>
-    <p style="text-align:justify;">
-      The student was admitted in <strong>${admission}</strong> and is currently in
-      <strong>${status}</strong>${program && program !== '—' ? ', <strong>' + program + '</strong>' : ''} program
-      with the enrollment status — <strong>${enroll}</strong>.
-    </p>
-    `}
-    <br>
-    <p>This letter is issued digitally for official purposes.</p>
-  </div>`;
+  // Fetch logo to inline (avoids blob URL external resource issues)
+  let logoHtml = '';
+  try {
+    const r = await fetch('/UM2_Logo.svg');
+    if (r.ok) {
+      const t = await r.text();
+      logoHtml = `<div style="width:70px;height:84px;flex-shrink:0;display:flex;align-items:center;justify-content:center">${t.replace(/<\?xml[^?]*\?>/i,'').trim()}</div>`;
+    }
+  } catch(_) {}
+  if (!logoHtml) logoHtml = `<div style="width:70px;height:84px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-family:serif;font-size:14pt;font-weight:700;color:#002060">UM2</div>`;
 
-  const closing = `
-  <div style="margin-top:28px;border-top:1.5px solid #0D1B2A;display:flex;justify-content:space-between;align-items:stretch;font-family:'DM Sans',sans-serif;">
-    <div style="flex:1;padding:12px 16px;font-size:11pt;color:#0D1B2A;line-height:1.7;">
-      <div style="font-size:11pt;font-weight:bold;letter-spacing:.8px;text-transform:uppercase;color:#0D1B2A;margin-bottom:5px;">Official Notice</div>
-      <div>This document is an official record.</div>
-      <div>Any alteration renders it invalid.</div>
-      <div>Issued on ${today}.</div>
-      <br>
-      <div style="display:flex;align-items:center;gap:16px;margin-top:8px;">
-        <div>
-          <div style="font-weight:bold;font-size:11pt;color:#0D1B2A"></div>
-          <div style="font-size:11pt;color:#0D1B2A">Acting Registrar</div>
-          <div style="font-size:11pt;color:#0D1B2A">University of Medicine (2)</div>
-        </div>
-        <img src="signature.png" alt="Registrar Signature" style="width:180px;height:auto;object-fit:contain;position:relative;top:-50px;">
-      </div>
-    </div>
-  </div>`;
+  // ── Letter body ───────────────────────────────────────────────
+  const nameDisplay = nameMM ? `${name} (${nameMM})` : name;
 
-  const docType = isGraduated ? 'Confirmation of Graduation' : 'Confirmation of Study';
+  const letterBody = isGraduated ? `
+    <p>To Whom It May Concern,</p>
+    <br>
+    <p>This is to confirm that <strong>${nameDisplay}</strong>, bearing ${idLabel} <strong>${sid}</strong>${birth && birth !== '—' ? ', date of birth <strong>' + birth + '</strong>' : ''}, has successfully completed all requirements for the <strong>${program || 'degree programme'}</strong> at the <strong>University of Medicine (2), Yangon</strong>.</p>
+    <br>
+    <p>The above-named graduate was admitted in <strong>${admission}</strong> and has been conferred the degree with a completion status of <strong>${grad}</strong>${gradDate ? ', effective <strong>' + gradDate + '</strong>' : ''}.${gradID ? ' Graduation Reference: <strong>' + gradID + '</strong>.' : ''}</p>
+    <br>
+    <p>This letter is issued upon the request of the student for official purposes. The Secretariat's Office certifies the accuracy of the above information as of the date of issue.</p>
+    <br>
+    <p>Yours faithfully,</p>
+  ` : `
+    <p>To Whom It May Concern,</p>
+    <br>
+    <p>This is to confirm that <strong>${nameDisplay}</strong>, bearing Student ID <strong>${sid}</strong>${birth && birth !== '—' ? ', date of birth <strong>' + birth + '</strong>' : ''}, is currently enrolled as a <strong>${enroll}</strong> student in the <strong>${program || 'degree programme'}</strong> at the <strong>University of Medicine (2), Yangon</strong>.</p>
+    <br>
+    <p>The student is presently in <strong>${status}</strong> of the programme, having been admitted in <strong>${admission}</strong>.${gpa ? ' Their current cumulative GPA is <strong>' + gpa + ' / 4.00</strong>.' : ''}</p>
+    <br>
+    <p>This letter is issued upon the request of the student for official purposes. The Secretariat's Office certifies the accuracy of the above information as of the date of issue.</p>
+    <br>
+    <p>Yours faithfully,</p>
+  `;
 
   const html = `<!DOCTYPE html>
 <html>
@@ -8515,65 +8575,198 @@ function printConfirmation(enrollIdx) {
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     html, body { height: 100%; }
-    body { font-family: 'DM Sans',sans-serif; color: #0D1B2A; background: #fff; font-size: 10.5pt; line-height: 1.5; }
+    body { font-family: 'DM Sans', sans-serif; color: #0D1B2A; background: #fff; font-size: 11.5pt; line-height: 1.85; }
     @page { margin: 22mm 25mm 24mm 25mm; size: A4; }
     @media print { * { -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
-    body > table { width: 100%; border-collapse: collapse; }
-    body > table > tbody > tr > td { vertical-align: top; }
-    .pg-ftr { display:flex; justify-content:space-between; align-items:center; padding-top:6px; border-top:1.5px solid #0D1B2A; margin-top:2px; font-size:8.5pt; color:#555; font-family:'DM Sans',sans-serif; }
-    .wm { position:fixed; top:50%; left:50%; transform:translate(-50%,-50%) rotate(-35deg); font-size:40pt; font-weight:bold; color:rgba(13,27,42,0.04); letter-spacing:10px; pointer-events:none; white-space:nowrap; z-index:0; }
-    .inst-hdr { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:12px; padding-bottom:10px; border-bottom:2.5px solid #0D1B2A; }
-    .inst-name { font-size:17pt; font-weight:bold; color:#0D1B2A; line-height:1.2; }
-    .doc-type-badge { font-size:13pt; font-weight:bold; color:#0D1B2A; text-transform:uppercase; letter-spacing:.5px; text-align:right; }
-    .doc-meta { font-size:9pt; color:#444; text-align:right; margin-top:5px; line-height:1.7; }
+    .wm { position:fixed; top:50%; left:50%; transform:translate(-50%,-50%) rotate(-35deg); font-size:40pt; font-weight:bold; color:rgba(13,27,42,0.035); letter-spacing:10px; pointer-events:none; white-space:nowrap; z-index:0; font-family:serif; }
+    .page { position:relative; z-index:1; }
+    /* Header */
+    .hdr { display:flex; align-items:center; gap:18px; padding-bottom:12px; border-bottom:2px solid #0D1B2A; margin-bottom:28px; }
+    .hdr-info { flex:1; }
+    .hdr-univ { font-size:13pt; font-weight:700; color:#0D1B2A; line-height:1.2; }
+    .hdr-sub { font-size:9.5pt; color:#444; margin-top:2px; line-height:1.5; }
+    .hdr-right { text-align:right; }
+    .hdr-doctype { font-size:11pt; font-weight:700; color:#0D1B2A; text-transform:uppercase; letter-spacing:.5px; }
+    .hdr-meta { font-size:9pt; color:#555; margin-top:4px; line-height:1.6; }
+    /* Letter body */
+    .letter { font-size:11.5pt; line-height:1.85; color:#0D1B2A; text-align:justify; }
+    .letter p { margin-bottom: 0; }
+    /* Footer */
+    .ftr { margin-top:16px; padding-top:8px; border-top:1px solid #ccc; font-size:8.5pt; color:#666; display:flex; justify-content:space-between; }
   </style>
 </head>
 <body>
-  <div class="wm">UM2</div>
-  <table>
-    <thead><tr><td></td></tr></thead>
-    <tfoot><tr><td style="padding-top:10px">
-      <div class="pg-ftr">
-        <span>University of Medicine (2) &nbsp;·&nbsp; ${idLabel}: <b>${sid}</b> &nbsp;·&nbsp; ${name}</span>
-      </div>
-    </td></tr></tfoot>
-    <tbody><tr><td style="position:relative;z-index:1">
-      <div class="inst-hdr">
-        <div style="display:flex;align-items:center;gap:18px">
-          <img src="https://raw.githubusercontent.com/um2iucoffice/um2portal/c5797a374732d917b6b54aa88b6a874d66984ba1/public/UM2_Logo.svg" alt="UM2 Logo" style="width:72px;height:86px;flex-shrink:0;object-fit:contain"/>
-          <div>
-            <div class="inst-name">UM2</div>
-            <div style="font-size:10pt;font-weight:400;color:#0D1B2A;">Interim University Council</div>
-            <div style="font-size:10pt;color:#333;">Republic of the Union of Myanmar</div>
-          </div>
-        </div>
-        <div>
-          <div class="doc-type-badge">${docType}</div>
-          <div class="doc-meta">
-            ${idLabel}: <strong style="color:#8B1A2E">${sid}</strong><br>
-            ${isGraduated ? 'Status: ' + grad : 'Enrollment: ' + enroll}
-            ${isGraduated && gradDate ? '<br>Date of Graduation: ' + gradDate : ''}
-            ${isGraduated && gradID   ? '<br>Graduation ID: ' + gradID : ''}
-          </div>
+  <div class="wm">UM2 · IUC</div>
+  <div class="page">
+    <!-- Header -->
+    <div class="hdr">
+      <div style="display:flex;align-items:center;gap:16px;flex:1">
+        ${logoHtml}
+        <div class="hdr-info">
+          <div class="hdr-univ">University of Medicine (2), Yangon</div>
+          <div class="hdr-sub">Interim University Council &nbsp;·&nbsp; Republic of the Union of Myanmar</div>
         </div>
       </div>
-      ${confirmationBody}
-      ${closing}
-    </td></tr></tbody>
-  </table>
+      <div class="hdr-right">
+        <div class="hdr-doctype">${docType}</div>
+        <div class="hdr-meta">
+          Ref: <strong>${sid}</strong><br>
+          Date: ${today}
+        </div>
+      </div>
+    </div>
+
+    <!-- Letter -->
+    <div class="letter">
+      ${letterBody}
+    </div>
+
+    <!-- Signing area -->
+    <div style="margin-top:40px;font-size:11pt;line-height:1.8;color:#0D1B2A;">
+      <div style="margin-top:36px;border-top:1px solid #555;width:200px;margin-bottom:4px;"></div>
+      <div>Acting Registrar</div>
+      <div>University of Medicine (2), Yangon</div>
+    </div>
+
+    <!-- Footer -->
+    <div class="ftr">
+      <span>University of Medicine (2) &nbsp;·&nbsp; ${idLabel}: ${sid} &nbsp;·&nbsp; ${name}</span>
+      <span>Issued: ${today}</span>
+    </div>
+  </div>
+
   <script>
     window.onload = function() { setTimeout(function() { window.print(); }, 600); };
   <\/script>
 </body>
 </html>`;
 
- // AFTER
-const win = window.open('', '_blank', 'width=500,height=750');
-const blob = new Blob([html], { type: 'text/html' });
-const url  = URL.createObjectURL(blob);
-win.location.href = url;
-setTimeout(() => URL.revokeObjectURL(url), 10000);
-  win.document.close();
+  const win = window.open('', '_blank', 'width=820,height=1100');
+  if (!win) { alert('Please allow popups to print the document.'); return; }
+  const blob = new Blob([html], { type: 'text/html' });
+  const url  = URL.createObjectURL(blob);
+  win.location.href = url;
+  setTimeout(() => URL.revokeObjectURL(url), 10000);
+}
+
+// ── printGoodStanding(enrollmentIndex) ───────────────────────
+async function printGoodStanding(enrollIdx) {
+  const enrollments = window._enrollments || [];
+  const e = enrollments[enrollIdx] || enrollments[0];
+  if (!e) return;
+
+  const s         = window._currentStudent || {};
+  const name      = document.getElementById('profileName').textContent.trim()     || '—';
+  const nameMM    = document.getElementById('profileNameMM')?.textContent.trim()  || '';
+  const sid       = document.getElementById('infoID').textContent.trim()          || '—';
+  const birth     = s.birthDate || document.getElementById('infoBirth')?.textContent.trim() || '—';
+  const admission = e.admissionDate || document.getElementById('infoAdmission').textContent.trim() || '—';
+  const status    = e.currentYear   || document.getElementById('infoStatus').textContent.trim()    || '—';
+  const program   = e.programName   || e.degreeProgramId || document.getElementById('infoProgram')?.textContent.trim() || '';
+  const gpa       = e.gpa || s.overallGPA || s.gpa || '';
+  const today     = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+
+  // Fetch logo inline
+  let logoHtml = '';
+  try {
+    const r = await fetch('/UM2_Logo.svg');
+    if (r.ok) {
+      const t = await r.text();
+      logoHtml = `<div style="width:70px;height:84px;flex-shrink:0;display:flex;align-items:center;justify-content:center">${t.replace(/<\?xml[^?]*\?>/i,'').trim()}</div>`;
+    }
+  } catch(_) {}
+  if (!logoHtml) logoHtml = `<div style="width:70px;height:84px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-family:serif;font-size:14pt;font-weight:700;color:#002060">UM2</div>`;
+
+  const nameDisplay = nameMM ? `${name} (${nameMM})` : name;
+
+  const html = `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Certificate of Good Standing — ${name}</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; }
+    body { font-family: 'DM Sans', sans-serif; color: #0D1B2A; background: #fff; font-size: 11.5pt; line-height: 1.85; }
+    @page { margin: 22mm 25mm 24mm 25mm; size: A4; }
+    @media print { * { -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
+    .wm { position:fixed; top:50%; left:50%; transform:translate(-50%,-50%) rotate(-35deg); font-size:40pt; font-weight:bold; color:rgba(13,27,42,0.035); letter-spacing:10px; pointer-events:none; white-space:nowrap; z-index:0; font-family:serif; }
+    .page { position:relative; z-index:1; }
+    .hdr { display:flex; align-items:center; gap:18px; padding-bottom:12px; border-bottom:2px solid #0D1B2A; margin-bottom:32px; }
+    .hdr-info { flex:1; }
+    .hdr-univ { font-size:13pt; font-weight:700; color:#0D1B2A; line-height:1.2; }
+    .hdr-sub { font-size:9.5pt; color:#444; margin-top:2px; line-height:1.5; }
+    .hdr-right { text-align:right; }
+    .hdr-meta { font-size:9pt; color:#555; margin-top:4px; line-height:1.6; }
+    .doc-title { text-align:center; font-size:14pt; font-weight:700; text-decoration:underline; text-transform:uppercase; letter-spacing:1px; color:#0D1B2A; margin-bottom:28px; }
+    .letter { font-size:11.5pt; line-height:1.85; color:#0D1B2A; text-align:justify; }
+    .letter p { margin-bottom:16px; }
+    .ftr { margin-top:16px; padding-top:8px; border-top:1px solid #ccc; font-size:8.5pt; color:#666; display:flex; justify-content:space-between; }
+  </style>
+</head>
+<body>
+  <div class="wm">UM2 · IUC</div>
+  <div class="page">
+
+    <!-- Header -->
+    <div class="hdr">
+      <div style="display:flex;align-items:center;gap:16px;flex:1">
+        ${logoHtml}
+        <div class="hdr-info">
+          <div class="hdr-univ">University of Medicine (2), Yangon</div>
+          <div class="hdr-sub">Interim University Council &nbsp;·&nbsp; Republic of the Union of Myanmar</div>
+        </div>
+      </div>
+      <div class="hdr-right">
+        <div class="hdr-meta">Ref: <strong>${sid}</strong><br>Date: ${today}</div>
+      </div>
+    </div>
+
+    <!-- Document title -->
+    <div class="doc-title">Certificate of Good Standing</div>
+
+    <!-- Letter body -->
+    <div class="letter">
+      <p>To Whom It May Concern,</p>
+
+      <p>This is to certify that <strong>${nameDisplay}</strong>, Student ID <strong>${sid}</strong>${birth && birth !== '—' ? ', date of birth <strong>' + birth + '</strong>' : ''}, is a registered student of the <strong>${program || 'degree programme'}</strong> at the University of Medicine (2), Yangon, currently in <strong>${status}</strong>, admitted in <strong>${admission}</strong>.</p>
+
+      <p>Based on the records maintained by the Secretariat's Office, the above-named student is <strong>in good academic and disciplinary standing</strong> with the university as of the date of this certificate.${gpa ? ' The student maintains a cumulative GPA of <strong>' + gpa + ' / 4.00</strong>.' : ''}</p>
+
+      <p>There are no outstanding disciplinary proceedings, academic sanctions, or administrative holds recorded against this student in the university's official registry.</p>
+
+      <p>This certificate is issued at the student's request and is valid for official purposes. It is generated by UM2 Institutional Registry &amp; Information Repository and is valid without stamp and signature.</p>
+
+      <p>Yours faithfully,</p>
+    </div>
+
+    <!-- Signing area -->
+    <div style="margin-top:40px;font-size:11pt;line-height:1.8;color:#0D1B2A;">
+      <div style="margin-top:36px;border-top:1px solid #555;width:200px;margin-bottom:4px;"></div>
+      <div>Acting Registrar</div>
+      <div>University of Medicine (2), Yangon</div>
+    </div>
+
+    <!-- Footer -->
+    <div class="ftr">
+      <span>University of Medicine (2) &nbsp;·&nbsp; Student ID: ${sid} &nbsp;·&nbsp; ${name}</span>
+      <span>Issued: ${today}</span>
+    </div>
+  </div>
+
+  <script>
+    window.onload = function() { setTimeout(function() { window.print(); }, 600); };
+  <\/script>
+</body>
+</html>`;
+
+  const win = window.open('', '_blank', 'width=820,height=1100');
+  if (!win) { alert('Please allow popups to print the document.'); return; }
+  const blob = new Blob([html], { type: 'text/html' });
+  const url  = URL.createObjectURL(blob);
+  win.location.href = url;
+  setTimeout(() => URL.revokeObjectURL(url), 10000);
 }
 
 // ── printDocument(type) — Transcript + fallback confirmation ─
