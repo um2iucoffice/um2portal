@@ -126,41 +126,76 @@ function switchJourneyGradeTab(idx, btn) {
 }
 
 // ── Open "Admit to New Degree" modal ─────────────────────────
-function openAddEnrollmentModal(sid) {
+async function openAddEnrollmentModal(sid) {
   if (!sid) return;
   document.getElementById('nem-studentId').value = sid;
-  nemUpdatePrograms();
   document.getElementById('newEnrollmentModal').classList.add('open');
+  await nemUpdatePrograms();
 }
 
 // ── Populate program options based on selected level ─────────
-function nemUpdatePrograms() {
-  const level = document.getElementById('nem-level').value;
+// Loads live from degree_programs table filtered by level.
+// Falls back to the global degreePrograms cache if DB call fails.
+async function nemUpdatePrograms() {
+  const level   = document.getElementById('nem-level').value;
   const progSel = document.getElementById('nem-program');
   const yearSel = document.getElementById('nem-year');
 
-  // Filter degreePrograms (global array from registrar) by level
-  // degreePrograms is the existing global holding all degree program records
-  const filtered = (typeof degreePrograms !== 'undefined' ? degreePrograms : [])
-    .filter(p => (p.level || 'bachelor') === level);
+  progSel.innerHTML = '<option value="">Loading…</option>';
+  yearSel.innerHTML  = '<option value="">Loading…</option>';
 
-  if (filtered.length) {
-    progSel.innerHTML = filtered.map(p => `<option value="${p.id}">${p.name || p.id}</option>`).join('');
-  } else {
-    // Fallback: show hardcoded defaults
-    const defaults = {
-      master: [{ id:'MMEDSCI', name:'Master of Medical Science' },{ id:'MSC_ANAT', name:'M.Sc. Anatomy' }],
-      phd:    [{ id:'PHD_MED', name:'Doctor of Philosophy (Medicine)' }],
-    };
-    progSel.innerHTML = (defaults[level] || []).map(p => `<option value="${p.id}">${p.name}</option>`).join('');
+  // ── 1. Load matching degree programs from DB ──────────────
+  let programs = [];
+  try {
+    const { data, error } = await db
+      .from('degree_programs')
+      .select('id, name, year_sequence, status')
+      .eq('level', level)
+      .eq('status', 'Active')
+      .order('name', { ascending: true });
+    if (error) throw error;
+    programs = data || [];
+  } catch (err) {
+    console.warn('nemUpdatePrograms: DB fetch failed, using cache.', err);
+    // Fall back to global cache loaded at startup
+    programs = (typeof degreePrograms !== 'undefined' ? degreePrograms : [])
+      .filter(p => (p.level || 'bachelor') === level && p.status !== 'Inactive');
   }
 
-  // Year options per level
-  const yearOptions = {
-    master: ['Year 1','Year 2','Year 3'],
-    phd:    ['Research Year 1','Research Year 2','Research Year 3','Research Year 4'],
-  };
-  yearSel.innerHTML = (yearOptions[level] || ['Year 1']).map(y => `<option>${y}</option>`).join('');
+  if (programs.length) {
+    progSel.innerHTML = programs
+      .map(p => `<option value="${p.id}">${p.name || p.id}</option>`)
+      .join('');
+  } else {
+    progSel.innerHTML = '<option value="">— No programs found for this level —</option>';
+  }
+
+  // ── 2. Populate year options from the selected program ────
+  nemUpdateYears(programs);
+
+  // Re-populate years whenever program changes
+  progSel.onchange = () => nemUpdateYears(programs);
+}
+
+// ── Populate year select from chosen program's year_sequence ─
+function nemUpdateYears(programs) {
+  const progSel = document.getElementById('nem-program');
+  const yearSel = document.getElementById('nem-year');
+  const prog    = programs.find(p => p.id === progSel.value);
+
+  let years = [];
+  if (prog && prog.year_sequence) {
+    years = prog.year_sequence.split(',').map(s => s.trim()).filter(Boolean);
+  }
+
+  // If no year_sequence defined on the program, fall back to academic_years cache
+  if (!years.length && typeof academicYears !== 'undefined') {
+    years = academicYears.map(y => y.name);
+  }
+
+  yearSel.innerHTML = years.length
+    ? years.map(y => `<option value="${y}">${y}</option>`).join('')
+    : '<option value="">— No years defined —</option>';
 }
 
 // ── Save new enrollment to Supabase ──────────────────────────
