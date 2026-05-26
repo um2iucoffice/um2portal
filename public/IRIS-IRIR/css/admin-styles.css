@@ -221,8 +221,8 @@
   --dark-ink3:     #7A8FA6;
 }
 
-/* ── DARK MODE: override ink/surface/line tokens ── */
-body:not(.theme-light) {
+/* ── DARK MODE: only applies when theme-dark class is explicitly set ── */
+body.theme-dark {
   --ink:     #EDF2F7;
   --ink2:    #B8C4D4;
   --ink3:    #7A8FA6;
@@ -279,12 +279,21 @@ textarea.my-text {
 /* DM Sans handles Latin; Noto Sans Myanmar activates for Myanmar codepoints automatically. */
 body, input, select, textarea, td, th, span, div, p, strong, button, label {
   font-family: 'Plus Jakarta Sans', 'Pyidaungsu', 'Noto Sans Myanmar', 'Myanmar Text', sans-serif;
-}/* ── LOGIN SCREEN ── */
+}/* ══════════════════════════════════════════════════════
+   LOGIN SCREEN — always light, never inherits dark tokens
+   ══════════════════════════════════════════════════════ */
 #loginScreen {
   position: fixed; inset: 0; z-index: 100;
-  display: flex; background: var(--white);
+  display: flex; background: #FFFFFF;
   transition: opacity .4s, visibility .4s;
   overflow-y: auto; -webkit-overflow-scrolling: touch;
+  /* Force all CSS variables back to light values inside login */
+  --ink:     #0D1420;
+  --ink2:    #374151;
+  --ink3:    #6B7280;
+  --line:    #E5E7EB;
+  --surface: #F3F4F6;
+  --white:   #FFFFFF;
 }
 #loginScreen.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
 .login-left {
@@ -379,27 +388,31 @@ body, input, select, textarea, td, th, span, div, p, strong, button, label {
   box-shadow: 0 0 0 3px rgba(139,26,46,0.10);
 }
 
-/* Role buttons — clear border + solid selected state */
+/* Role buttons — fully hardcoded, never affected by dark mode tokens */
 .login-role-row { display: flex; gap: 8px; margin-bottom: 20px; }
 .login-role-btn {
   flex: 1; padding: 11px 8px; border-radius: var(--r);
   border: 2px solid #D1D5DB;
-  background: #FFFFFF;
+  background: #F9FAFB;
   font-size: 13px; font-weight: 600;
   font-family: 'Plus Jakarta Sans', 'Pyidaungsu', 'Noto Sans Myanmar', 'Myanmar Text', sans-serif;
   cursor: pointer; color: #374151; transition: all .15s; text-align: center;
 }
 .login-role-btn:hover:not(.sel) {
-  border-color: #9CA3AF; color: #0D1420; background: #F9FAFB;
+  border-color: #9CA3AF; color: #0D1420; background: #F3F4F6;
 }
 .login-role-btn.sel {
-  background: var(--crimson); border-color: var(--crimson);
-  color: #FFFFFF; font-weight: 700;
+  background: #8B1A2E;
+  border-color: #8B1A2E;
+  color: #FFFFFF !important;
+  font-weight: 700;
 }
 
-/* Primary login button — always high-contrast */
+/* Primary login button — hardcoded crimson, always visible */
 .login-btn {
-  width: 100%; background: var(--crimson); color: #FFFFFF;
+  width: 100%;
+  background: #8B1A2E;
+  color: #FFFFFF !important;
   border: none; border-radius: var(--r);
   padding: 13px; font-size: 14px; font-weight: 700;
   font-family: 'Plus Jakarta Sans', 'Pyidaungsu', 'Noto Sans Myanmar', 'Myanmar Text', sans-serif;
@@ -407,7 +420,7 @@ body, input, select, textarea, td, th, span, div, p, strong, button, label {
   box-shadow: 0 2px 8px rgba(139,26,46,0.30); margin-top: 4px;
   letter-spacing: .02em;
 }
-.login-btn:hover { background: var(--crimson-mid); box-shadow: 0 4px 16px rgba(139,26,46,0.35); transform: translateY(-1px); }
+.login-btn:hover { background: #B82038; box-shadow: 0 4px 16px rgba(139,26,46,0.35); transform: translateY(-1px); }
 .login-btn:active { transform: translateY(0); box-shadow: 0 1px 4px rgba(139,26,46,0.25); }
 .login-btn:disabled { opacity: .45; cursor: not-allowed; transform: none; box-shadow: none; }
 
@@ -1553,212 +1566,212 @@ body.theme-light .irir-footer { border-top-color: var(--crimson); }
 /* ═══════════════════════════════════════════════════════════════
    DARK MODE — explicit overrides for hardcoded whites & contrast
    ═══════════════════════════════════════════════════════════════ */
-body:not(.theme-light) .card,
-body:not(.theme-light) .stat-card,
-body:not(.theme-light) .modal,
-body:not(.theme-light) .scard,
-body:not(.theme-light) .doc-card,
-body:not(.theme-light) .sis-flow,
-body:not(.theme-light) .degree-stack-row,
-body:not(.theme-light) .tt-slot-card,
-body:not(.theme-light) .step-item,
-body:not(.theme-light) .profile-hero-card,
-body:not(.theme-light) .profile-banner,
-body:not(.theme-light) .profile-info-item,
-body:not(.theme-light) .chronicle-card,
-body:not(.theme-light) .upload-overlay-box {
+body.theme-dark .card,
+body.theme-dark .stat-card,
+body.theme-dark .modal,
+body.theme-dark .scard,
+body.theme-dark .doc-card,
+body.theme-dark .sis-flow,
+body.theme-dark .degree-stack-row,
+body.theme-dark .tt-slot-card,
+body.theme-dark .step-item,
+body.theme-dark .profile-hero-card,
+body.theme-dark .profile-banner,
+body.theme-dark .profile-info-item,
+body.theme-dark .chronicle-card,
+body.theme-dark .upload-overlay-box {
   background: #1A2333;
   border-color: rgba(255,255,255,0.08);
 }
 
-body:not(.theme-light) tbody tr:hover td {
+body.theme-dark tbody tr:hover td {
   background: rgba(255,255,255,0.04);
 }
 
-body:not(.theme-light) thead tr {
+body.theme-dark thead tr {
   border-bottom-color: rgba(255,255,255,0.09);
 }
 
-body:not(.theme-light) td {
+body.theme-dark td {
   border-bottom-color: rgba(255,255,255,0.06);
 }
 
-body:not(.theme-light) .modal-header {
+body.theme-dark .modal-header {
   background: #1A2333;
   border-bottom-color: rgba(255,255,255,0.08);
 }
 
-body:not(.theme-light) #tt-course-dropdown {
+body.theme-dark #tt-course-dropdown {
   background: #1A2333;
   border-color: var(--crimson);
 }
 
-body:not(.theme-light) .tt-course-opt {
+body.theme-dark .tt-course-opt {
   border-bottom-color: rgba(255,255,255,0.06);
 }
 
-body:not(.theme-light) .divider {
+body.theme-dark .divider {
   border-top-color: rgba(255,255,255,0.08);
 }
 
-body:not(.theme-light) .chronicle-card-author {
+body.theme-dark .chronicle-card-author {
   border-top-color: rgba(255,255,255,0.08);
 }
 
-body:not(.theme-light) .chronicle-card-actions {
+body.theme-dark .chronicle-card-actions {
   background: #141B25;
   border-top-color: rgba(255,255,255,0.08);
 }
 
-body:not(.theme-light) .login-form-wrap {
+body.theme-dark .login-form-wrap {
   background: rgba(26,35,51,0.96);
   border-color: rgba(255,255,255,0.10);
 }
 
-body:not(.theme-light) .login-right {
+body.theme-dark .login-right {
   background-color: #0C1118;
 }
 
-body:not(.theme-light) .info-box {
+body.theme-dark .info-box {
   background: rgba(30,58,110,0.20);
   border-color: rgba(30,58,110,0.40);
   color: #93B4DE;
 }
 
-body:not(.theme-light) .warn-box {
+body.theme-dark .warn-box {
   background: rgba(154,123,47,0.18);
   border-color: rgba(154,123,47,0.35);
   color: #D4A855;
 }
 
-body:not(.theme-light) .doc-card-icon {
+body.theme-dark .doc-card-icon {
   background: rgba(139,26,46,0.22);
 }
 
-body:not(.theme-light) .scard-avatar {
+body.theme-dark .scard-avatar {
   background: rgba(139,26,46,0.22);
 }
 
-body:not(.theme-light) .gpa-bar-track {
+body.theme-dark .gpa-bar-track {
   background: rgba(255,255,255,0.07);
 }
 
-body:not(.theme-light) .chr-event-strip,
-body:not(.theme-light) .chronicle-event-strip {
+body.theme-dark .chr-event-strip,
+body.theme-dark .chronicle-event-strip {
   background: rgba(30,58,110,0.20);
 }
 
-body:not(.theme-light) .badge.b-muted {
+body.theme-dark .badge.b-muted {
   background: rgba(255,255,255,0.08);
   border-color: rgba(255,255,255,0.12);
 }
 
-body:not(.theme-light) .btn-outline {
+body.theme-dark .btn-outline {
   border-color: rgba(255,255,255,0.15);
   color: var(--ink2);
 }
 
-body:not(.theme-light) .btn-outline:hover {
+body.theme-dark .btn-outline:hover {
   border-color: var(--crimson);
   color: var(--crimson);
 }
 
-body:not(.theme-light) .tabs,
-body:not(.theme-light) .tt-tab-bar {
+body.theme-dark .tabs,
+body.theme-dark .tt-tab-bar {
   border-bottom-color: rgba(255,255,255,0.09);
 }
 
-body:not(.theme-light) .upload-zone {
+body.theme-dark .upload-zone {
   background: #141B25;
   border-color: rgba(255,255,255,0.12);
 }
 
-body:not(.theme-light) .upload-zone:hover,
-body:not(.theme-light) .upload-zone.drag {
+body.theme-dark .upload-zone:hover,
+body.theme-dark .upload-zone.drag {
   background: rgba(139,26,46,0.12);
   border-color: var(--crimson);
 }
 
-body:not(.theme-light) .pipeline-dot {
+body.theme-dark .pipeline-dot {
   background: #1A2333;
   border-color: rgba(255,255,255,0.12);
 }
 
-body:not(.theme-light) .pipeline-step::after {
+body.theme-dark .pipeline-step::after {
   background: rgba(255,255,255,0.08);
 }
 
-body:not(.theme-light) .code-block {
+body.theme-dark .code-block {
   background: #0C1118;
   border-color: rgba(255,255,255,0.07);
 }
 
-body:not(.theme-light) .schedule-row {
+body.theme-dark .schedule-row {
   background: #1A2333;
   border-color: rgba(255,255,255,0.08);
 }
 
-body:not(.theme-light) .tt-day-pill {
+body.theme-dark .tt-day-pill {
   background: #1A2333;
   border-color: rgba(255,255,255,0.12);
 }
 
-body:not(.theme-light) .tt-qtime {
+body.theme-dark .tt-qtime {
   background: #1A2333;
   border-color: rgba(255,255,255,0.12);
 }
 
-body:not(.theme-light) .tt-ay-toggle {
+body.theme-dark .tt-ay-toggle {
   background: #1A2333;
   border-color: rgba(255,255,255,0.12);
 }
 
-body:not(.theme-light) .tt-course-mode-toggle {
+body.theme-dark .tt-course-mode-toggle {
   border-color: rgba(255,255,255,0.12);
 }
 
-body:not(.theme-light) .tt-cmode-btn {
+body.theme-dark .tt-cmode-btn {
   background: #1A2333;
 }
 
-body:not(.theme-light) .scard-prog-header {
+body.theme-dark .scard-prog-header {
   background: rgba(139,26,46,0.10);
   border-color: rgba(139,26,46,0.18);
 }
 
-body:not(.theme-light) .scard-year-header {
+body.theme-dark .scard-year-header {
   background: rgba(30,58,110,0.10);
   border-color: rgba(30,58,110,0.15);
 }
 
-body:not(.theme-light) .ds-icon.bach { background: rgba(30,58,110,0.22); }
-body:not(.theme-light) .ds-icon.mast { background: rgba(74,32,128,0.22); }
-body:not(.theme-light) .ds-icon.phd  { background: rgba(139,26,46,0.22); }
+body.theme-dark .ds-icon.bach { background: rgba(30,58,110,0.22); }
+body.theme-dark .ds-icon.mast { background: rgba(74,32,128,0.22); }
+body.theme-dark .ds-icon.phd  { background: rgba(139,26,46,0.22); }
 
 /* ─── Ensure badge light variants are visible in dark mode ─── */
-body:not(.theme-light) .b-green  { background: rgba(26,92,58,0.22);   color: #5CC98A; }
-body:not(.theme-light) .b-gold   { background: rgba(154,123,47,0.22); color: #D4A855; }
-body:not(.theme-light) .b-red    { background: rgba(139,26,46,0.22);  color: #E07080; }
-body:not(.theme-light) .b-blue   { background: rgba(30,58,110,0.22);  color: #7EB3E8; }
-body:not(.theme-light) .chronicle-badge-news         { background: rgba(139,26,46,0.22); color: #E07080; }
-body:not(.theme-light) .chronicle-badge-event        { background: rgba(30,58,110,0.22); color: #7EB3E8; }
-body:not(.theme-light) .chronicle-badge-announcement { background: rgba(154,123,47,0.22); color: #D4A855; }
-body:not(.theme-light) .chronicle-badge-article      { background: rgba(26,92,58,0.22);  color: #5CC98A; }
-body:not(.theme-light) .chronicle-badge-pending      { background: rgba(154,123,47,0.15); color: #D4A855; }
+body.theme-dark .b-green  { background: rgba(26,92,58,0.22);   color: #5CC98A; }
+body.theme-dark .b-gold   { background: rgba(154,123,47,0.22); color: #D4A855; }
+body.theme-dark .b-red    { background: rgba(139,26,46,0.22);  color: #E07080; }
+body.theme-dark .b-blue   { background: rgba(30,58,110,0.22);  color: #7EB3E8; }
+body.theme-dark .chronicle-badge-news         { background: rgba(139,26,46,0.22); color: #E07080; }
+body.theme-dark .chronicle-badge-event        { background: rgba(30,58,110,0.22); color: #7EB3E8; }
+body.theme-dark .chronicle-badge-announcement { background: rgba(154,123,47,0.22); color: #D4A855; }
+body.theme-dark .chronicle-badge-article      { background: rgba(26,92,58,0.22);  color: #5CC98A; }
+body.theme-dark .chronicle-badge-pending      { background: rgba(154,123,47,0.15); color: #D4A855; }
 
 /* ── Make table th visible in dark ── */
-body:not(.theme-light) th { color: #7A8FA6; }
+body.theme-dark th { color: #7A8FA6; }
 
 /* ── Profile info items ── */
-body:not(.theme-light) .profile-info-item { background: #141B25; }
+body.theme-dark .profile-info-item { background: #141B25; }
 
 /* ── Ensure placeholder is visible but subtle ── */
-body:not(.theme-light) .form-input::placeholder,
-body:not(.theme-light) input::placeholder,
-body:not(.theme-light) textarea::placeholder { color: rgba(122,143,166,0.55); }
+body.theme-dark .form-input::placeholder,
+body.theme-dark input::placeholder,
+body.theme-dark textarea::placeholder { color: rgba(122,143,166,0.55); }
 
 /* ── DOF dept disabled state ── */
-body:not(.theme-light) #dof-dept:disabled {
+body.theme-dark #dof-dept:disabled {
   background: #141B25 !important;
   color: #7A8FA6 !important;
 }
