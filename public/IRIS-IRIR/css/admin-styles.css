@@ -347,42 +347,77 @@ body, input, select, textarea, td, th, span, div, p, strong, button, label {
 }
 .login-form-wrap {
   width: 100%; max-width: 380px;
-  background: rgba(255,255,255,0.92);
-  backdrop-filter: blur(16px);
-  border: 1px solid rgba(255,255,255,0.9);
+  background: #FFFFFF;
+  border: 1px solid #E5E7EB;
   border-radius: 16px;
   padding: 36px 32px;
-  box-shadow: 0 8px 40px rgba(13,27,42,0.10), 0 1px 4px rgba(13,27,42,0.06);
+  box-shadow: 0 8px 40px rgba(13,27,42,0.12), 0 1px 4px rgba(13,27,42,0.06);
 }
-.login-form-wrap h2 { font-family: 'Libre Baskerville', serif; font-size: 22px; color: var(--ink); margin-bottom: 4px; }
-.login-form-wrap p { font-size: 13px; color: var(--ink3); margin-bottom: 28px; }
-.login-label { font-size: 11px; font-weight: 700; letter-spacing: .6px; text-transform: uppercase; color: var(--ink3); display: block; margin-bottom: 5px; }
+.login-form-wrap h2 { font-family: 'Libre Baskerville', serif; font-size: 22px; color: #0D1420; margin-bottom: 4px; }
+.login-form-wrap p { font-size: 13px; color: #374151; margin-bottom: 28px; }
+
+/* Label — always dark on white card */
+.login-label {
+  font-size: 11px; font-weight: 700; letter-spacing: .8px; text-transform: uppercase;
+  color: #374151; display: block; margin-bottom: 6px;
+}
+
+/* Input — strong visible border, dark text */
 .login-input {
-  width: 100%; background: var(--surface); border: 1.5px solid var(--line);
-  border-radius: var(--r); padding: 11px 14px; font-size: 13px;
+  width: 100%;
+  background: #FFFFFF;
+  border: 1.5px solid #9CA3AF;
+  border-radius: var(--r); padding: 11px 14px; font-size: 14px;
   font-family: 'Plus Jakarta Sans', 'Pyidaungsu', 'Noto Sans Myanmar', 'Myanmar Text', sans-serif;
-  color: var(--ink); outline: none; margin-bottom: 14px;
+  color: #0D1420; outline: none; margin-bottom: 14px;
   transition: border-color .2s, box-shadow .2s;
 }
-.login-input:focus { border-color: var(--crimson); background: var(--white); box-shadow: 0 0 0 3px rgba(139,26,46,0.08); }
-.login-btn {
-  width: 100%; background: var(--crimson); color: #fff; border: none; border-radius: var(--r);
-  padding: 12px; font-size: 14px; font-weight: 600;
-  font-family: 'Plus Jakarta Sans', 'Pyidaungsu', 'Noto Sans Myanmar', 'Myanmar Text', sans-serif;
-  cursor: pointer; transition: background .15s, box-shadow .15s, transform .1s;
-  box-shadow: 0 2px 8px rgba(139,26,46,0.25); margin-top: 4px;
+.login-input::placeholder { color: #9CA3AF; }
+.login-input:focus {
+  border-color: var(--crimson);
+  background: #FFFFFF;
+  box-shadow: 0 0 0 3px rgba(139,26,46,0.10);
 }
-.login-btn:hover { background: var(--crimson-mid); box-shadow: 0 4px 16px rgba(139,26,46,0.3); transform: translateY(-1px); }
-.login-btn:disabled { opacity: .5; cursor: not-allowed; transform: none; box-shadow: none; }
+
+/* Role buttons — clear border + solid selected state */
 .login-role-row { display: flex; gap: 8px; margin-bottom: 20px; }
 .login-role-btn {
-  flex: 1; padding: 9px; border-radius: var(--r); border: 1.5px solid var(--line);
-  background: var(--surface); font-size: 12px; font-weight: 500;
+  flex: 1; padding: 11px 8px; border-radius: var(--r);
+  border: 2px solid #D1D5DB;
+  background: #FFFFFF;
+  font-size: 13px; font-weight: 600;
   font-family: 'Plus Jakarta Sans', 'Pyidaungsu', 'Noto Sans Myanmar', 'Myanmar Text', sans-serif;
-  cursor: pointer; color: var(--ink2); transition: all .15s; text-align: center;
+  cursor: pointer; color: #374151; transition: all .15s; text-align: center;
 }
-.login-role-btn.sel { background: var(--crimson-light); border-color: var(--crimson); color: var(--crimson); font-weight: 700; }
-.login-err { font-size: 12px; color: var(--crimson); text-align: center; margin-top: 10px; display: none; background: #FEF2F4; border: 1px solid #FACDD3; border-radius: var(--r); padding: 8px 12px; }
+.login-role-btn:hover:not(.sel) {
+  border-color: #9CA3AF; color: #0D1420; background: #F9FAFB;
+}
+.login-role-btn.sel {
+  background: var(--crimson); border-color: var(--crimson);
+  color: #FFFFFF; font-weight: 700;
+}
+
+/* Primary login button — always high-contrast */
+.login-btn {
+  width: 100%; background: var(--crimson); color: #FFFFFF;
+  border: none; border-radius: var(--r);
+  padding: 13px; font-size: 14px; font-weight: 700;
+  font-family: 'Plus Jakarta Sans', 'Pyidaungsu', 'Noto Sans Myanmar', 'Myanmar Text', sans-serif;
+  cursor: pointer; transition: background .15s, box-shadow .15s, transform .1s;
+  box-shadow: 0 2px 8px rgba(139,26,46,0.30); margin-top: 4px;
+  letter-spacing: .02em;
+}
+.login-btn:hover { background: var(--crimson-mid); box-shadow: 0 4px 16px rgba(139,26,46,0.35); transform: translateY(-1px); }
+.login-btn:active { transform: translateY(0); box-shadow: 0 1px 4px rgba(139,26,46,0.25); }
+.login-btn:disabled { opacity: .45; cursor: not-allowed; transform: none; box-shadow: none; }
+
+/* Error message */
+.login-err {
+  font-size: 12px; font-weight: 500; color: #7F1D1D;
+  text-align: center; margin-top: 10px; display: none;
+  background: #FEE2E2; border: 1px solid #FECACA;
+  border-radius: var(--r); padding: 9px 12px;
+}
 
 /* ── APP SHELL ── */
 #appShell { display: none; }
