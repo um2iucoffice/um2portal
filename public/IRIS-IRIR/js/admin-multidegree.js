@@ -14,16 +14,6 @@ function degLvlIcon(l)  { return DEGREE_LEVEL_ICON[l]  || '🎓'; }
 function degLvlLabel(l) { return DEGREE_LEVEL_LABEL[l] || 'Bachelor'; }
 function degLvlCss(l)   { return DEGREE_LEVEL_CSS[l]   || 'bach'; }
 
-// ── Supabase REST helper (mirrors login.js approach, uses supabase-js client) ──
-async function sbFetch(table, queryString, useService = true) {
-  // Uses the already-initialized supabase client from the registrar
-  const { data, error } = await supabaseClient
-    .from(table)
-    .select('*')
-    .or(queryString);  // simplified; replace with proper filter chain as needed
-  if (error) throw error;
-  return data || [];
-}
 
 // ── Load and render the Academic Journey tab ──────────────────
 async function loadJourneyTab() {
@@ -36,7 +26,7 @@ async function loadJourneyTab() {
   tl.innerHTML = '<div style="color:var(--ink3);font-size:13px">Loading enrollments…</div>';
 
   try {
-    const { data: rows, error } = await supabaseClient
+    const { data: rows, error } = await db
       .from('degree_enrollments')
       .select('*, degree_programs(id, name, level)')
       .eq('student_id', sid)
@@ -91,7 +81,7 @@ async function loadJourneyTab() {
       }).join('');
 
       // Load grades for each enrollment (filtered by enrollment_id if supported)
-      const { data: allGrades } = await supabaseClient
+      const { data: allGrades } = await db
         .from('grades')
         .select('*')
         .eq('StudentID', sid)
@@ -188,7 +178,7 @@ async function saveNewEnrollment() {
   }
 
   try {
-    const { error } = await supabaseClient.from('degree_enrollments').insert({
+    const { error } = await db.from('degree_enrollments').insert({
       student_id:        sid,
       degree_program_id: programId,
       degree_level:      level,
@@ -201,7 +191,7 @@ async function saveNewEnrollment() {
     if (error) throw error;
 
     // Also update the students row to reflect the new active program
-    await supabaseClient.from('students').update({
+    await db.from('students').update({
       program:      programId,
       year:         year,
       degree_level: level,
@@ -228,4 +218,3 @@ function nsUpdateLevelFields() {
   if (tg) tg.style.display = (level === 'master' || level === 'phd') ? '' : 'none';
   if (sg) sg.style.display = level === 'phd' ? '' : 'none';
 }
-
