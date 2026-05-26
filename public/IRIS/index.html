@@ -1,0 +1,1638 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- Content Security Policy
+       NOTE: frame-ancestors is intentionally omitted here — it only works
+       as an HTTP response header (X-Frame-Options or CSP header), not in a
+       <meta> tag. Set it on your Netlify server via netlify.toml:
+         [[headers]]
+           for = "/*"
+           [headers.values]
+             X-Frame-Options = "DENY"
+             Content-Security-Policy = "frame-ancestors 'none'"
+  -->
+<meta http-equiv="Content-Security-Policy" content="
+  default-src 'self';
+  script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com;
+  style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
+  font-src https://fonts.gstatic.com;
+  img-src 'self' data: blob: https:;
+  connect-src 'self' https://*.supabase.co https://*.netlify.app;
+">
+<title>IRIS System - UM2IUC</title>
+<link rel="icon" type="image/png" sizes="40x40" href="/favicon.png">
+<link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
+<!-- QR Code library (single load, no stale integrity hash) -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+<!-- Login page theme toggle pill -->
+<div class="login-theme-pill" id="loginThemePill" role="group" aria-label="Theme selector">
+  <button class="login-theme-opt" data-theme="dark" id="loginThemeDark" onclick="applyTheme('dark')" aria-label="Dark mode">
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+    Dark
+  </button>
+  <button class="login-theme-opt" data-theme="light" id="loginThemeLight" onclick="applyTheme('light')" aria-label="Light mode">
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+    Light
+  </button>
+</div>
+
+<!-- ═══════════════════ LOGIN ═══════════════════ -->
+<div id="loginScreen">
+  <div class="login-left">
+    <div class="login-crest">
+      <div class="login-institution"></div>
+      <div class="login-institution">UM2IUC</div>
+      <div class="login-tagline"<br>IRIS System</div>
+    </div>
+    <div class="login-footer-txt">Academic Year 2026-2027<br>© 2026 UM2IUC. All rights reserved.</div>
+  </div>
+  <div class="login-right">
+    <!-- Mobile only: branding shown above the form card (hidden on desktop via CSS) -->
+    <div class="login-mobile-brand" style="display:none">
+      <span class="mob-brand-abbr">UM2IUC</span>
+      <span class="mob-brand-title"></span>
+    </div>
+    <div class="login-form-wrap">
+     <img src="/iris.svg" alt="IRIS Logo" style="height:52px;width:auto;object-fit:contain;margin-bottom:20px;opacity:.85;display:block">
+      <h2>Welcome to IRIS!</h2>
+      <p>Use your UM2 ID and master password.</p>
+      <div class="field">
+        <label>UM2 ID</label>
+        <input type="text" id="loginStudentId" placeholder="" autocomplete="username">
+      </div>
+      <div class="field">
+        <label>Password</label>
+        <input type="password" id="loginPassword" placeholder="Enter your password" autocomplete="current-password">
+      </div>
+      <button class="btn-login" id="signinBtn" onclick="doLogin()">Sign in</button>
+      <div class="login-err" id="accessError"></div>
+      <div class="login-loading" id="accessLoading">Verifying credentials…</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════ DASHBOARD ═══════════════════ -->
+
+<!-- Print overlay elements: watermark + footer, at body level -->
+<div class="print-watermark" aria-hidden="true"></div>
+<div class="print-footer" style="display:none">
+  <span id="printFooterLeft">University of Medicine (2) &nbsp;·&nbsp; Student ID: <span class="print-footer-sid" id="printFooterSID">—</span></span>
+  <span class="print-footer-center" id="printFooterCenter"></span>
+  <span class="print-footer-page" id="printFooterRight"></span>
+</div>
+<div class="print-page-header" style="display:none" id="printPageHeader">
+  <span id="printPageHeaderName">University of Medicine (2) — Official Transcript</span>
+  <span id="printPageHeaderSID"></span>
+</div>
+
+<div id="dashboard">
+
+  <!-- ── MOBILE BOTTOM TAB BAR ── -->
+  <nav class="mob-tabbar" id="mobTabbar">
+
+    <!-- Home -->
+    <button class="mob-tab active" data-section="home" onclick="mobSwitchTab('home',this)">
+      <svg class="mob-tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1z"/><polyline points="9 21 9 12 15 12 15 21"/></svg>
+      <span class="mob-tab-label">Home</span>
+    </button>
+
+    <!-- Applications (opens home and scrolls to apps) -->
+    <button class="mob-tab" data-section="__apps" onclick="mobGoApps(this)">
+      <svg class="mob-tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+      <span class="mob-tab-label">Apps</span>
+    </button>
+
+    <!-- News -->
+    <button class="mob-tab" data-section="news" onclick="mobSwitchTab('news',this)">
+      <svg class="mob-tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2z"/><line x1="8" y1="10" x2="16" y2="10"/><line x1="8" y1="14" x2="13" y2="14"/></svg>
+      <span class="mob-tab-label">Chronicles</span>
+    </button>
+
+    <!-- IRIS external link -->
+    <a class="mob-tab" href="https://iris.um2iuc.edu.mm" target="_blank" rel="noopener" style="text-decoration:none">
+      <svg class="mob-tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      <span class="mob-tab-label">IRIS</span>
+    </a>
+
+    <!-- More -->
+    <button class="mob-tab" onclick="toggleMobMore(this)">
+      <svg class="mob-tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/></svg>
+      <span class="mob-tab-label">More</span>
+    </button>
+
+  </nav>
+
+  <!-- More menu popup -->
+  <div class="mob-more-overlay" id="mobMoreOverlay" onclick="closeMobMore()"></div>
+  <div class="mob-more-menu" id="mobMoreMenu">
+    <div class="mob-more-user">
+      <div class="mob-more-user-name" id="mobMoreName">—</div>
+      <div class="mob-more-user-id" id="mobMoreId">—</div>
+    </div>
+    <button class="mob-more-item" onclick="mobSwitchTab('idcard',null);closeMobMore()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><circle cx="8" cy="12" r="2.5"/><line x1="13" y1="10" x2="19" y2="10"/><line x1="13" y1="14" x2="17" y2="14"/></svg>
+      ID Card
+    </button>
+    <button class="mob-more-item" onclick="mobSwitchTab('photo',null);closeMobMore()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+      Profile Photo
+    </button>
+    <button class="mob-more-item" id="mobMoreEditInfo" onclick="mobSwitchTab('editinfo',null);closeMobMore()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+      Edit Info
+    </button>
+    <button class="mob-more-item" onclick="mobSwitchTab('comms',null);closeMobMore()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+      Communication
+    </button>
+    <button class="mob-more-item" onclick="mobSwitchTab('coursesession',null);closeMobMore()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+      Academic Session
+    </button>
+    <button class="mob-more-item" onclick="mobSwitchTab('timetable',null);closeMobMore()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+      Timetable
+    </button>
+    <button class="mob-more-item" onclick="mobSwitchTab('markbook',null);closeMobMore()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+      Mark Book
+    </button>
+    <button class="mob-more-item" onclick="mobSwitchTab('news',null);closeMobMore()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2z"/><line x1="8" y1="10" x2="16" y2="10"/><line x1="8" y1="14" x2="13" y2="14"/></svg>
+      Our Chronicles in Spring
+    </button>
+    <button class="mob-more-item" onclick="mobSwitchTab('share',null);closeMobMore()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+      Contribute to Chronicles
+    </button>
+    <button class="mob-more-item" onclick="mobSwitchTab('lecturerooms',null);closeMobMore()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 10l4.553-2.277A1 1 0 0 1 21 8.618v6.764a1 1 0 0 1-1.447.894L15 14"/><rect x="1" y="6" width="14" height="12" rx="2"/></svg>
+      Lecture Rooms
+    </button>
+    <button class="mob-more-item" onclick="window.open('https://um2campus.com/login/index.php','_blank');closeMobMore()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12,2 22,8 12,14 2,8"/><polyline points="6,11 6,17 12,20 18,17 18,11"/></svg>
+      E-Learning 
+    </button>
+    <button class="mob-more-item" onclick="window.open('https://supportportal.um2campus.org','_blank');closeMobMore()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11C3 6.03 7.03 2 12 2s9 4.03 9 9"/><path d="M3 11v2a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"/><path d="M21 11v2a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3z"/></svg>
+      Support 
+    </button>
+    <button class="mob-more-item dim">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z"/></svg>
+      Exam Registration <span style="font-size:10px;opacity:.6;margin-left:4px">Soon</span>
+    </button>
+    <button class="mob-more-item" onclick="toggleTheme();closeMobMore()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/></svg>
+      Toggle Theme
+    </button>
+    <button class="mob-more-item danger" onclick="doSignOut();closeMobMore()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16,17 21,12 16,7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+      Sign Out
+    </button>
+  </div>
+  <button class="sb-toggle" id="sbToggle" onclick="toggleSidebar()" aria-label="Toggle navigation">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+  </button>
+  <div class="sb-overlay" id="sbOverlay" onclick="closeSidebar()"></div>
+
+  <!-- ── SIDEBAR ── -->
+  <aside class="sidebar" id="sidebar">
+
+    <!-- Brand -->
+    <div class="sb-brand">
+      <img src="/iris.svg" alt="IRIS">
+      <div class="sb-brand-text">
+        <div class="sb-brand-name">IRIS System</div>
+        <div class="sb-brand-sub">UM2IUC · 2026–2027</div>
+      </div>
+    </div>
+
+    <!-- User card -->
+    <div class="sb-user">
+      <div class="sb-user-avatar" id="sidebarAvatar">—</div>
+      <div class="sb-user-info">
+        <div class="sb-user-name" id="sidebarName">—</div>
+        <div class="sb-user-id" id="sidebarId">—</div>
+      </div>
+    </div>
+
+    <!-- Nav -->
+    <nav class="sb-nav">
+      <div class="sb-section-lbl">Portal</div>
+
+      <button class="sbnav-item active" data-section="home" onclick="switchSection('home',this)">
+        <svg class="sbnav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg>
+        <span class="sbnav-label">Home</span>
+      </button>
+
+      <button class="sbnav-item" data-section="profile" onclick="switchSection('profile',this)">
+        <svg class="sbnav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+        <span class="sbnav-label">My Personal Page</span>
+      </button>
+
+      <button class="sbnav-item" data-section="grades" onclick="switchSection('grades',this)">
+        <svg class="sbnav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="12" width="4" height="9" rx="1"/><rect x="10" y="7" width="4" height="14" rx="1"/><rect x="17" y="3" width="4" height="18" rx="1"/></svg>
+        <span class="sbnav-label">Academic Record</span>
+      </button>
+
+      <button class="sbnav-item" data-section="coursesession" onclick="switchSection('coursesession',this)" id="navCourseSession">
+        <svg class="sbnav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+        <span class="sbnav-label">Academic Session</span>
+      </button>
+
+      <button class="sbnav-item" data-section="timetable" onclick="switchSection('timetable',this)" id="navTimetable">
+        <svg class="sbnav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="8" y1="14" x2="8" y2="14"/><line x1="12" y1="14" x2="12" y2="14"/><line x1="16" y1="14" x2="16" y2="14"/><line x1="8" y1="18" x2="8" y2="18"/><line x1="12" y1="18" x2="12" y2="18"/></svg>
+        <span class="sbnav-label">Timetable</span>
+      </button>
+
+      <button class="sbnav-item" data-section="markbook" onclick="switchSection('markbook',this)" id="navMarkbook">
+        <svg class="sbnav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+        <span class="sbnav-label">Mark Book</span>
+      </button>
+
+      <button class="sbnav-item" data-section="news" onclick="switchSection('news',this)" id="navNews" style="display:none">
+        <svg class="sbnav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2z"/><line x1="8" y1="10" x2="16" y2="10"/><line x1="8" y1="14" x2="13" y2="14"/></svg>
+        <span class="sbnav-label">Our Chronicles in Spring</span>
+      </button>
+
+      <button class="sbnav-item" data-section="share" onclick="switchSection('share',this)" id="navShare">
+        <svg class="sbnav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+        <span class="sbnav-label">Contribute to Chronicles</span>
+      </button>
+
+      <button class="sbnav-item" data-section="docs" onclick="switchSection('docs',this)">
+        <svg class="sbnav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+        <span class="sbnav-label">Document Office</span>
+      </button>
+
+      <button class="sbnav-item" data-section="idcard" id="navIdCard" onclick="switchSection('idcard',this)">
+        <svg class="sbnav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><circle cx="8" cy="12" r="2.5"/><line x1="13" y1="10" x2="19" y2="10"/><line x1="13" y1="14" x2="17" y2="14"/></svg>
+        <span class="sbnav-label">ID Card</span>
+      </button>
+
+      <button class="sbnav-item" data-section="photo" onclick="switchSection('photo',this)">
+        <svg class="sbnav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+        <span class="sbnav-label">Profile Photo</span>
+      </button>
+
+      <button class="sbnav-item" data-section="editinfo" onclick="switchSection('editinfo',this)" id="navEditInfo">
+        <svg class="sbnav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+        <span class="sbnav-label">Edit My Info <span id="editInfoBadge" style="display:none;background:var(--crimson);color:#fff;font-size:9px;font-weight:700;padding:1px 6px;border-radius:99px;margin-left:4px">Pending</span></span>
+      </button>
+
+      <button class="sbnav-item" data-section="comms" onclick="switchSection('comms',this)" id="navComms">
+        <svg class="sbnav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        <span class="sbnav-label">Communication</span>
+      </button>
+
+      <button class="sbnav-item" data-section="lecturerooms" onclick="switchSection('lecturerooms',this)" id="navLectureRooms">
+        <svg class="sbnav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M15 10l4.553-2.277A1 1 0 0 1 21 8.618v6.764a1 1 0 0 1-1.447.894L15 14"/><rect x="1" y="6" width="14" height="12" rx="2"/></svg>
+        <span class="sbnav-label">Lecture Rooms</span>
+      </button>
+
+      <div class="sb-section-lbl" style="margin-top:8px">External</div>
+
+      <a class="sbnav-item ext-link" href="https://um2campus.com/login/index.php" target="_blank" rel="noopener">
+        <svg class="sbnav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="12,2 22,8 12,14 2,8"/><polyline points="6,11 6,17 12,20 18,17 18,11"/></svg>
+        <span class="sbnav-label">E-Learning</span>
+        <span class="sbnav-ext"></span>
+      </a>
+
+      <a class="sbnav-item ext-link" href="https://supportportal.um2campus.org" target="_blank" rel="noopener">
+        <svg class="sbnav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11C3 6.03 7.03 2 12 2s9 4.03 9 9"/><path d="M3 11v2a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"/><path d="M21 11v2a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3z"/></svg>
+        <span class="sbnav-label">Support</span>
+        <span class="sbnav-ext"></span>
+      </a>
+    </nav>
+
+    <!-- Footer -->
+    <div class="sb-footer">
+      <button class="btn-signout" onclick="doSignOut()">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16,17 21,12 16,7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        Sign out
+      </button>
+    </div>
+
+  </aside>
+
+  <!-- ── MAIN ── -->
+  <div class="dash-main">
+
+    <!-- Top bar -->
+    <div class="dash-topbar">
+      <img src="/iris.svg" alt="IRIS" class="dash-topbar-logo" style="display:none">
+      <div class="dash-topbar-title" id="topbarTitle">Home</div>
+      <div class="dash-topbar-id" id="topbarEmail">—</div>
+      <button class="theme-toggle-btn" onclick="toggleTheme()" aria-label="Toggle theme" title="Toggle light/dark theme">
+        <svg id="themeIconDash" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+      </button>
+      <button class="theme-toggle-btn topbar-logout-btn" onclick="doSignOut()" aria-label="Sign out" title="Sign out" style="margin-left:2px;display:none">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+      </button>
+    </div>
+
+    <!-- Scrollable content -->
+    <div class="dash-content">
+
+    <!-- HOME -->
+    <div class="section active" id="panel-home">
+
+      <!-- Hero welcome banner -->
+      <div class="home-hero">
+        <div class="home-hero-text">
+          <div class="home-hero-greeting">Welcome back</div>
+          <div class="home-hero-name" id="welcomeName">—</div>
+          <div class="home-hero-sub"><span class="hero-year">Academic Year 2026–2027</span><span class="hero-dot">&nbsp;·&nbsp;</span><span class="hero-degree" id="homeProgramName"></span></div>
+        </div>
+        <div class="home-hero-badge">
+          <div class="home-hero-badge-label" id="homeIdLabel">Student ID</div>
+          <div class="home-hero-badge-val" id="homeStudentId" style="font-family:monospace;font-size:16px;letter-spacing:.06em">—</div>
+          <div class="home-hero-badge-sub">University of Medicine (2)</div>
+        </div>
+      </div>
+
+      <!-- Enrollment eligibility banner — populated by checkEnrollmentEligibility() -->
+      <div id="enrollmentBanner" style="display:none"></div>
+
+      <!-- Academic Journey — shown only when student has 2+ degree enrollments -->
+      <div class="journey-card" id="journeyCard" style="display:none">
+        <div class="journey-card-head">Academic Journey</div>
+        <div id="journeyRows"><!-- populated by renderJourney() --></div>
+      </div>
+
+      <style>
+      .iris-sys-card {
+        position: relative;
+        overflow: hidden;
+        border-radius: 14px;
+        border: 1px solid rgba(139,26,46,0.18);
+        background: linear-gradient(115deg, rgba(139,26,46,0.10) 0%, rgba(10,15,26,0.45) 60%, rgba(154,123,47,0.05) 100%);
+        padding: 18px 24px;
+        display: flex;
+        align-items: center;
+        gap: 18px;
+        cursor: default;
+        opacity: 0.82;
+      }
+      .iris-sys-card-glow {
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(ellipse at 10% 50%, rgba(139,26,46,0.18) 0%, transparent 55%),
+                    radial-gradient(ellipse at 90% 50%, rgba(154,123,47,0.07) 0%, transparent 55%);
+        pointer-events: none;
+      }
+      .iris-sys-logo-wrap {
+        width: 52px; height: 52px;
+        border-radius: 10px;
+        background: rgba(139,26,46,0.18);
+        border: 1px solid rgba(139,26,46,0.28);
+        display: flex; align-items: center; justify-content: center;
+        flex-shrink: 0;
+        position: relative; z-index: 1;
+        overflow: hidden;
+      }
+      .iris-sys-logo { height: 32px; width: auto; object-fit: contain; opacity: .9; }
+      .iris-sys-info { flex: 1; min-width: 0; position: relative; z-index: 1; }
+      .iris-sys-abbr {
+        font-family: 'Libre Baskerville', serif;
+        font-size: 20px;
+        font-weight: 700;
+        color: rgba(255,255,255,0.92);
+        letter-spacing: .5px;
+        line-height: 1;
+        margin-bottom: 4px;
+      }
+      .iris-sys-full {
+        font-size: 12px;
+        color: rgba(255,255,255,0.45);
+        line-height: 1.4;
+        margin-bottom: 2px;
+      }
+      .iris-sys-org {
+        font-size: 10px;
+        font-weight: 600;
+        letter-spacing: .6px;
+        text-transform: uppercase;
+        color: rgba(139,26,46,0.6);
+      }
+      /* Light theme */
+      body.theme-light .iris-sys-card {
+        background: var(--white);
+        border-color: rgba(139,26,46,0.18);
+        box-shadow: var(--shadow-sm);
+      }
+      body.theme-light .iris-sys-card:hover {
+        border-color: rgba(139,26,46,0.4);
+        box-shadow: 0 6px 24px rgba(139,26,46,0.1);
+      }
+      body.theme-light .iris-sys-card-glow { display: none; }
+      body.theme-light .iris-sys-abbr { color: var(--ink); }
+      body.theme-light .iris-sys-full { color: var(--ink3); }
+      body.theme-light .iris-sys-org { color: var(--crimson); opacity: .7; }
+      body.theme-light .iris-sys-logo-wrap { background: var(--crimson-light); border-color: rgba(139,26,46,0.18); }
+      </style>
+
+      <!-- News feed (mobile home only — shown via CSS on ≤700px) -->
+      <div class="mob-news-quick" style="display:none;margin-bottom:20px;flex-direction:column;gap:0">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+          <div class="home-section-label" style="margin-bottom:0">Our Chronicles in Spring</div>
+          <button onclick="switchTab('news')" style="font-family:'DM Sans',sans-serif;font-size:12px;color:var(--crimson);background:none;border:none;cursor:pointer;padding:0;opacity:.8">See all →</button>
+        </div>
+        <div id="mobHomeNewsCards" style="display:flex;flex-direction:column;gap:10px">
+          <div style="background:var(--glass-card-bg);border:1px solid var(--glass-card-border);border-radius:var(--r);padding:16px;opacity:.5;font-size:13px;color:var(--ink3)">Loading…</div>
+        </div>
+      </div>
+
+
+      <!-- ══ APPLICATIONS DASHBOARD ══ -->
+      <div class="apps-dashboard">
+
+        <!-- § Academic -->
+           <div class="aq aq-secondary" onclick="window.open('https://um2campus.com/login/index.php','_blank')">
+              <div class="aq-accent" style="--accent:rgba(139,92,246,0.12);--accent-border:rgba(139,92,246,0.3);--accent-glow:rgba(139,92,246,0.1);--accent-icon:rgba(139,92,246,0.2);--accent-stroke:rgba(167,139,250,0.9)"></div>
+              <div class="aq-icon-wrap">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--aq-stroke)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="12,2 22,8 12,14 2,8"/><polyline points="6,11 6,17 12,20 18,17 18,11"/><line x1="22" y1="8" x2="22" y2="14"/></svg>
+              </div>
+              <div class="aq-body">
+                <div class="aq-title">E-Learning</div>
+                <div class="aq-sub">Courses, lectures &amp; materials</div>
+              </div>
+              <div class="aq-arrow"></div>
+            </div>
+
+        <div class="app-section">
+          <div class="app-section-header">
+            <span class="app-section-dot" style="background:rgba(96,165,250,0.7)"></span>
+            <span class="app-section-title">Academic</span>
+            <div class="app-section-rule"></div>
+          </div>
+          <div class="app-grid app-grid-primary">
+
+            <div class="aq aq-primary" onclick="switchTab('grades')">
+              <div class="aq-accent" style="--accent:rgba(96,165,250,0.18);--accent-border:rgba(96,165,250,0.35);--accent-glow:rgba(96,165,250,0.15);--accent-icon:rgba(96,165,250,0.2);--accent-stroke:#60a5fa"></div>
+              <div class="aq-icon-wrap">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--aq-stroke)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="12" width="4" height="9" rx="1"/><rect x="10" y="7" width="4" height="14" rx="1"/><rect x="17" y="3" width="4" height="18" rx="1"/></svg>
+              </div>
+              <div class="aq-body">
+                <div class="aq-title">Academic Record</div>
+                <div class="aq-sub">Grades, credits &amp; grade points</div>
+              </div>
+              <div class="aq-arrow">→</div>
+            </div>
+
+            <div class="aq aq-primary" onclick="switchTab('coursesession')">
+              <div class="aq-accent" style="--accent:rgba(96,165,250,0.18);--accent-border:rgba(96,165,250,0.35);--accent-glow:rgba(96,165,250,0.15);--accent-icon:rgba(96,165,250,0.2);--accent-stroke:#60a5fa"></div>
+              <div class="aq-icon-wrap">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--aq-stroke)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+              </div>
+              <div class="aq-body">
+                <div class="aq-title">Academic Session</div>
+                <div class="aq-sub">Current year courses &amp; progress</div>
+              </div>
+              <div class="aq-arrow">→</div>
+            </div>
+
+            <div class="aq aq-primary" onclick="switchTab('markbook')">
+              <div class="aq-accent" style="--accent:rgba(96,165,250,0.18);--accent-border:rgba(96,165,250,0.35);--accent-glow:rgba(96,165,250,0.15);--accent-icon:rgba(96,165,250,0.2);--accent-stroke:#60a5fa"></div>
+              <div class="aq-icon-wrap">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--aq-stroke)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/><line x1="9" y1="9" x2="15" y2="9"/><line x1="9" y1="13" x2="13" y2="13"/></svg>
+              </div>
+              <div class="aq-body">
+                <div class="aq-title">Mark Book</div>
+                <div class="aq-sub">Internal assessment &amp; test marks</div>
+              </div>
+              <div class="aq-arrow">→</div>
+            </div>
+
+            <div class="aq aq-primary" onclick="switchTab('timetable')">
+              <div class="aq-accent" style="--accent:rgba(96,165,250,0.18);--accent-border:rgba(96,165,250,0.35);--accent-glow:rgba(96,165,250,0.15);--accent-icon:rgba(96,165,250,0.2);--accent-stroke:#60a5fa"></div>
+              <div class="aq-icon-wrap">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--aq-stroke)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="8" y1="14" x2="8" y2="14"/><line x1="12" y1="14" x2="12" y2="14"/><line x1="16" y1="14" x2="16" y2="14"/><line x1="8" y1="18" x2="8" y2="18"/><line x1="12" y1="18" x2="12" y2="18"/></svg>
+              </div>
+              <div class="aq-body">
+                <div class="aq-title">Timetable</div>
+                <div class="aq-sub">Lecture &amp; discussion schedule</div>
+              </div>
+              <div class="aq-arrow">→</div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- § Student Services -->
+        <div class="app-section">
+          <div class="app-section-header">
+            <span class="app-section-dot" style="background:rgba(139,26,46,0.7)"></span>
+            <span class="app-section-title">Student Services</span>
+            <div class="app-section-rule"></div>
+          </div>
+          <div class="app-grid app-grid-secondary">
+
+            <div class="aq aq-secondary" onclick="switchTab('profile')">
+              <div class="aq-accent" style="--accent:rgba(139,26,46,0.12);--accent-border:rgba(139,26,46,0.28);--accent-glow:rgba(139,26,46,0.1);--accent-icon:rgba(139,26,46,0.18);--accent-stroke:rgba(220,80,100,0.85)"></div>
+              <div class="aq-icon-wrap">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--aq-stroke)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+              </div>
+              <div class="aq-body">
+                <div class="aq-title">My Personal Page</div>
+                <div class="aq-sub">Personal &amp; enrollment details</div>
+              </div>
+              <div class="aq-arrow">→</div>
+            </div>
+
+            <div class="aq aq-secondary" onclick="switchTab('docs')">
+              <div class="aq-accent" style="--accent:rgba(139,26,46,0.12);--accent-border:rgba(139,26,46,0.28);--accent-glow:rgba(139,26,46,0.1);--accent-icon:rgba(139,26,46,0.18);--accent-stroke:rgba(220,80,100,0.85)"></div>
+              <div class="aq-icon-wrap">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--aq-stroke)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+              </div>
+              <div class="aq-body">
+                <div class="aq-title">Document Office</div>
+                <div class="aq-sub">Official transcripts &amp; letters</div>
+              </div>
+              <div class="aq-arrow">→</div>
+            </div>
+
+            <div class="aq aq-secondary" onclick="switchTab('idcard')">
+              <div class="aq-accent" style="--accent:rgba(139,26,46,0.12);--accent-border:rgba(139,26,46,0.28);--accent-glow:rgba(139,26,46,0.1);--accent-icon:rgba(139,26,46,0.18);--accent-stroke:rgba(220,80,100,0.85)"></div>
+              <div class="aq-icon-wrap">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--aq-stroke)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><circle cx="8" cy="12" r="2.5"/><line x1="13" y1="10" x2="19" y2="10"/><line x1="13" y1="14" x2="17" y2="14"/></svg>
+              </div>
+              <div class="aq-body">
+                <div class="aq-title">ID Card</div>
+                <div class="aq-sub">View &amp; print your student ID</div>
+              </div>
+              <div class="aq-arrow">→</div>
+            </div>
+
+            <div class="aq aq-secondary" onclick="switchTab('editinfo')">
+              <div class="aq-accent" style="--accent:rgba(139,26,46,0.12);--accent-border:rgba(139,26,46,0.28);--accent-glow:rgba(139,26,46,0.1);--accent-icon:rgba(139,26,46,0.18);--accent-stroke:rgba(220,80,100,0.85)"></div>
+              <div class="aq-icon-wrap">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--aq-stroke)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+              </div>
+              <div class="aq-body">
+                <div class="aq-title">Edit My Info</div>
+                <div class="aq-sub">Request personal info updates</div>
+              </div>
+              <div class="aq-arrow">→</div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- § Communication & Learning -->
+        <div class="app-section">
+          <div class="app-section-header">
+            <span class="app-section-dot" style="background:rgba(167,139,250,0.7)"></span>
+            <span class="app-section-title">Communication &amp; Learning</span>
+            <div class="app-section-rule"></div>
+          </div>
+          <div class="app-grid app-grid-secondary">
+
+            <div class="aq aq-secondary" onclick="switchTab('comms')">
+              <div class="aq-accent" style="--accent:rgba(139,92,246,0.12);--accent-border:rgba(139,92,246,0.3);--accent-glow:rgba(139,92,246,0.1);--accent-icon:rgba(139,92,246,0.2);--accent-stroke:rgba(167,139,250,0.9)"></div>
+              <div class="aq-icon-wrap">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--aq-stroke)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+              </div>
+              <div class="aq-body">
+                <div class="aq-title">Communication</div>
+                <div class="aq-sub">Telegram, WhatsApp &amp; groups</div>
+              </div>
+              <div class="aq-arrow">→</div>
+            </div>
+
+            <div class="aq aq-secondary" onclick="switchTab('lecturerooms')">
+              <div class="aq-accent" style="--accent:rgba(139,92,246,0.12);--accent-border:rgba(139,92,246,0.3);--accent-glow:rgba(139,92,246,0.1);--accent-icon:rgba(139,92,246,0.2);--accent-stroke:rgba(167,139,250,0.9)"></div>
+              <div class="aq-icon-wrap">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--aq-stroke)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M15 10l4.553-2.277A1 1 0 0 1 21 8.68v6.64a1 1 0 0 1-1.447.898L15 14"/><rect x="1" y="6" width="14" height="12" rx="2"/></svg>
+              </div>
+              <div class="aq-body">
+                <div class="aq-title">Lecture Rooms</div>
+                <div class="aq-sub">Join live Zoom sessions</div>
+              </div>
+              <div class="aq-arrow">→</div>
+            </div>
+            
+            <div class="aq aq-secondary" onclick="switchTab('share')">
+              <div class="aq-accent" style="--accent:rgba(139,92,246,0.12);--accent-border:rgba(139,92,246,0.3);--accent-glow:rgba(139,92,246,0.1);--accent-icon:rgba(139,92,246,0.2);--accent-stroke:rgba(167,139,250,0.9)"></div>
+              <div class="aq-icon-wrap">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--aq-stroke)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+              </div>
+              <div class="aq-body">
+                <div class="aq-title">Contribute</div>
+                <div class="aq-sub">Share with Our Chronicles</div>
+              </div>
+              <div class="aq-arrow">→</div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- § Administration -->
+        <div class="app-section">
+          <div class="app-section-header">
+            <span class="app-section-dot" style="background:rgba(251,191,36,0.6)"></span>
+            <span class="app-section-title">Administration</span>
+            <div class="app-section-rule"></div>
+          </div>
+          <div class="app-grid app-grid-utility">
+
+            <div class="aq aq-utility" onclick="switchTab('photo')">
+              <div class="aq-accent" style="--accent:rgba(251,191,36,0.08);--accent-border:rgba(251,191,36,0.22);--accent-glow:rgba(251,191,36,0.08);--accent-icon:rgba(251,191,36,0.14);--accent-stroke:rgba(251,191,36,0.75)"></div>
+              <div class="aq-icon-wrap">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--aq-stroke)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+              </div>
+              <div class="aq-body">
+                <div class="aq-title">Profile Photo</div>
+                <div class="aq-sub">Upload your ID photo</div>
+              </div>
+              <div class="aq-arrow">→</div>
+            </div>
+
+            <div class="aq aq-utility" onclick="window.open('https://supportportal.um2campus.org','_blank')">
+              <div class="aq-accent" style="--accent:rgba(251,191,36,0.08);--accent-border:rgba(251,191,36,0.22);--accent-glow:rgba(251,191,36,0.08);--accent-icon:rgba(251,191,36,0.14);--accent-stroke:rgba(251,191,36,0.75)"></div>
+              <div class="aq-icon-wrap">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--aq-stroke)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11C3 6.03 7.03 2 12 2s9 4.03 9 9"/><path d="M3 11v2a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"/><path d="M21 11v2a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3z"/><path d="M19 15v1a4 4 0 0 1-4 4h-2"/></svg>
+              </div>
+              <div class="aq-body">
+                <div class="aq-title">Support</div>
+                <div class="aq-sub">Submit a help request</div>
+              </div>
+              <div class="aq-arrow"></div>
+            </div>
+
+            <div class="aq aq-coming">
+              <div class="aq-accent" style="--accent:rgba(255,255,255,0.03);--accent-border:rgba(255,255,255,0.08);--accent-glow:transparent;--accent-icon:rgba(255,255,255,0.07);--accent-stroke:rgba(255,255,255,0.25)"></div>
+              <div class="aq-icon-wrap">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--aq-stroke)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z"/></svg>
+              </div>
+              <div class="aq-body">
+                <div class="aq-title">Exam Registration</div>
+                <div class="aq-sub">Launching soon</div>
+              </div>
+              <div class="aq-coming-badge">Preview</div>
+            </div>
+
+          </div>
+        </div>
+
+      </div><!-- /.apps-dashboard -->
+
+      <style>
+      /* ── STUDENT OVERVIEW STRIP ── */
+      .stu-overview {
+        display: flex;
+        align-items: center;
+        background: rgba(255,255,255,0.03);
+        border: 1px solid rgba(255,255,255,0.07);
+        border-radius: 12px;
+        padding: 0;
+        margin-top: 8px;
+        margin-bottom: 32px;
+        overflow: hidden;
+      }
+      .stu-ov-item {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 16px 12px;
+        gap: 4px;
+        min-width: 0;
+      }
+      .stu-ov-val {
+        font-family: 'Libre Baskerville', serif;
+        font-size: 20px;
+        color: rgba(255,255,255,0.88);
+        line-height: 1;
+        font-weight: 700;
+        letter-spacing: -0.3px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 100%;
+        text-align: center;
+      }
+      .stu-ov-lbl {
+        font-size: 10px;
+        font-weight: 600;
+        letter-spacing: 0.8px;
+        text-transform: uppercase;
+        color: rgba(255,255,255,0.3);
+        white-space: nowrap;
+      }
+      .stu-ov-divider {
+        width: 1px;
+        height: 32px;
+        background: rgba(255,255,255,0.07);
+        flex-shrink: 0;
+      }
+
+      /* ── APPS DASHBOARD CONTAINER ── */
+      .apps-dashboard {
+        display: flex;
+        flex-direction: column;
+        gap: 32px;
+        margin-bottom: 40px;
+      }
+
+      /* ── SECTION HEADER ── */
+      .app-section-header {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 16px;
+      }
+      .app-section-dot {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        flex-shrink: 0;
+      }
+      .app-section-title {
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: 1.6px;
+        text-transform: uppercase;
+        color: rgba(255,255,255,0.38);
+        white-space: nowrap;
+      }
+      .app-section-rule {
+        flex: 1;
+        height: 1px;
+        background: rgba(255,255,255,0.06);
+      }
+
+      /* ── APP GRIDS ── */
+      .app-grid {
+        display: grid;
+        gap: 14px;
+      }
+      .app-grid-primary   { grid-template-columns: repeat(4, 1fr); }
+      .app-grid-secondary { grid-template-columns: repeat(4, 1fr); }
+      .app-grid-utility   { grid-template-columns: repeat(4, 1fr); }
+
+      /* ── BASE CARD ── */
+      .aq {
+        position: relative;
+        border-radius: 12px;
+        padding: 20px 20px 18px;
+        cursor: pointer;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        overflow: hidden;
+        transition: transform 240ms cubic-bezier(.2,.8,.2,1),
+                    border-color 240ms ease,
+                    box-shadow 240ms ease;
+        /* CSS custom property bridge for per-card accent colours */
+        --aq-stroke: var(--accent-stroke, rgba(255,255,255,0.4));
+      }
+      .aq .aq-accent {
+        /* pseudo-layer carrying the per-card colours */
+        position: absolute; inset: 0; pointer-events: none; border-radius: inherit;
+        border: 1px solid var(--accent-border, rgba(255,255,255,0.1));
+        background: var(--accent, transparent);
+        transition: border-color 240ms ease;
+      }
+      .aq:hover { transform: translateY(-4px); }
+      .aq:hover .aq-accent {
+        border-color: color-mix(in srgb, var(--accent-border, rgba(255,255,255,0.1)) 100%, white 30%);
+      }
+      .aq:active { transform: translateY(-1px); }
+
+      /* Icon wrapper */
+      .aq-icon-wrap {
+        width: 42px;
+        height: 42px;
+        border-radius: 9px;
+        background: var(--accent-icon, rgba(255,255,255,0.07));
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        position: relative;
+        z-index: 1;
+        transition: background 240ms ease;
+      }
+      .aq:hover .aq-icon-wrap {
+        background: color-mix(in srgb, var(--accent-icon, rgba(255,255,255,0.07)) 100%, white 15%);
+      }
+
+      /* Text */
+      .aq-body { position: relative; z-index: 1; flex: 1; }
+      .aq-title {
+        font-size: 13px;
+        font-weight: 600;
+        color: rgba(255,255,255,0.88);
+        margin-bottom: 4px;
+        letter-spacing: -0.1px;
+        line-height: 1.3;
+      }
+      .aq-sub {
+        font-size: 11.5px;
+        color: rgba(255,255,255,0.35);
+        line-height: 1.5;
+      }
+
+      /* Arrow */
+      .aq-arrow {
+        position: absolute;
+        top: 17px;
+        right: 17px;
+        font-size: 14px;
+        color: rgba(255,255,255,0.15);
+        z-index: 1;
+        transition: color 240ms ease, transform 240ms cubic-bezier(.2,.8,.2,1);
+      }
+      .aq:hover .aq-arrow {
+        color: var(--accent-stroke, rgba(255,255,255,0.6));
+        transform: translate(3px, -1px);
+      }
+
+      /* ── PRIMARY TIER ── */
+      .aq-primary {
+        min-height: 136px;
+        background: rgba(255,255,255,0.038);
+      }
+      .aq-primary:hover {
+        box-shadow: 0 8px 32px var(--accent-glow, rgba(255,255,255,0.08)),
+                    0 2px 8px rgba(0,0,0,0.3);
+      }
+      .aq-primary .aq-title { font-size: 14px; }
+      .aq-primary .aq-sub   { font-size: 12px; color: rgba(255,255,255,0.42); }
+
+      /* ── SECONDARY TIER ── */
+      .aq-secondary {
+        min-height: 118px;
+        background: rgba(255,255,255,0.025);
+      }
+      .aq-secondary:hover {
+        box-shadow: 0 6px 24px var(--accent-glow, rgba(255,255,255,0.06)),
+                    0 2px 6px rgba(0,0,0,0.25);
+      }
+
+      /* ── UTILITY TIER ── */
+      .aq-utility {
+        min-height: 104px;
+        background: rgba(255,255,255,0.018);
+        padding: 16px 18px 14px;
+      }
+      .aq-utility .aq-icon-wrap { width: 36px; height: 36px; border-radius: 7px; }
+      .aq-utility .aq-title { font-size: 12.5px; color: rgba(255,255,255,0.72); }
+      .aq-utility .aq-sub   { font-size: 11px; }
+      .aq-utility:hover {
+        box-shadow: 0 4px 16px var(--accent-glow, rgba(255,255,255,0.04)),
+                    0 1px 4px rgba(0,0,0,0.2);
+      }
+
+      /* ── COMING SOON TIER ── */
+      .aq-coming {
+        min-height: 104px;
+        background: rgba(255,255,255,0.012);
+        padding: 16px 18px 14px;
+        cursor: not-allowed;
+        opacity: 0.6;
+      }
+      .aq-coming:hover { transform: none; box-shadow: none; }
+      .aq-coming .aq-title { color: rgba(255,255,255,0.4); }
+      .aq-coming .aq-sub   { color: rgba(255,255,255,0.22); font-size: 11px; }
+      .aq-coming .aq-icon-wrap { width: 36px; height: 36px; border-radius: 7px; }
+      .aq-coming-badge {
+        position: absolute;
+        top: 12px;
+        right: 12px;
+        font-size: 9px;
+        font-weight: 700;
+        letter-spacing: 0.8px;
+        text-transform: uppercase;
+        color: rgba(255,255,255,0.3);
+        background: rgba(255,255,255,0.06);
+        border: 1px solid rgba(255,255,255,0.1);
+        border-radius: 4px;
+        padding: 2px 7px;
+        z-index: 1;
+      }
+
+      /* ── LIGHT THEME OVERRIDES ── */
+      body.theme-light .stu-overview {
+        background: var(--white);
+        border-color: var(--line);
+      }
+      body.theme-light .stu-ov-val { color: var(--ink); }
+      body.theme-light .stu-ov-lbl { color: var(--ink3); }
+      body.theme-light .stu-ov-divider { background: var(--line); }
+      body.theme-light .app-section-title { color: var(--ink3); }
+      body.theme-light .app-section-rule  { background: var(--line); }
+
+      body.theme-light .aq-primary   { background: var(--white); box-shadow: var(--shadow-sm); }
+      body.theme-light .aq-secondary { background: var(--white); box-shadow: var(--shadow-sm); }
+      body.theme-light .aq-utility   { background: var(--surface); box-shadow: none; }
+      body.theme-light .aq-coming    { background: var(--surface); }
+
+      body.theme-light .aq-title { color: var(--ink) !important; }
+      body.theme-light .aq-sub   { color: var(--ink3) !important; }
+      body.theme-light .aq-arrow { color: var(--line) !important; }
+      body.theme-light .aq:hover .aq-arrow { color: var(--crimson) !important; }
+      body.theme-light .aq-coming-badge { color: var(--ink3); background: var(--surface); border-color: var(--line); }
+
+      body.theme-light .aq-primary:hover,
+      body.theme-light .aq-secondary:hover { box-shadow: 0 8px 28px rgba(13,27,42,0.1), 0 2px 6px rgba(13,27,42,0.06); }
+      body.theme-light .aq-utility:hover   { box-shadow: 0 4px 14px rgba(13,27,42,0.07); }
+
+      /* ── RESPONSIVE ── */
+      @media(max-width:960px) {
+        .app-grid-primary   { grid-template-columns: repeat(2, 1fr); }
+        .app-grid-secondary,
+        .app-grid-utility   { grid-template-columns: repeat(3, 1fr); }
+      }
+      @media(max-width:720px) {
+        .app-grid-primary   { grid-template-columns: repeat(2, 1fr); }
+        .app-grid-secondary { grid-template-columns: repeat(2, 1fr); }
+        .app-grid-utility   { grid-template-columns: repeat(2, 1fr); }
+        .stu-overview { flex-wrap: wrap; }
+        .stu-ov-item  { min-width: 50%; }
+        .stu-ov-divider:nth-child(even) { display: none; }
+      }
+      @media(max-width:480px) {
+        .app-grid-primary   { grid-template-columns: 1fr 1fr; }
+        .app-grid-secondary { grid-template-columns: 1fr 1fr; }
+        .app-grid-utility   { grid-template-columns: 1fr 1fr; }
+        .aq-primary   { min-height: 120px; padding: 16px; }
+        .aq-secondary { min-height: 110px; padding: 16px; }
+        .aq-utility   { min-height: 100px; padding: 14px; }
+        .aq-coming    { min-height: 100px; padding: 14px; }
+        .stu-ov-val  { font-size: 17px; }
+        .stu-ov-item { padding: 14px 10px; }
+        .apps-dashboard { gap: 24px; }
+      }
+      </style>
+
+      <!-- Keep appsGridTop/More empty stubs so toggleAppsGrid() doesn't throw -->
+      <div id="appsGridTop" style="display:none"></div>
+      <div id="appsGridMore" style="display:none"></div>
+      <div id="appsToggleBtn" style="display:none"></div>
+
+      <!-- ── OUR CHRONICLES IN SPRING (home preview) ── -->
+      <div id="homeNewsFeed" style="margin-bottom:20px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+          <div class="chr-home-label" style="margin-bottom:0">Our Chronicles in Spring</div>
+          <button onclick="switchTab('news')" style="font-family:'DM Sans',sans-serif;font-size:12px;color:var(--chr-spring);background:none;border:none;cursor:pointer;padding:0;opacity:.8;transition:opacity .15s" onmouseenter="this.style.opacity='1'" onmouseleave="this.style.opacity='.8'">Read all →</button>
+        </div>
+        <div id="homeNewsCards" class="chr-home-strip">
+          <div style="background:var(--glass-card-bg);border:1px solid var(--glass-card-border);border-radius:10px;padding:16px;opacity:.5;font-size:13px;color:var(--ink3)">Loading…</div>
+        </div>
+      </div>
+
+      <!-- ── IRIS BRAND BANNER now rendered as global bottom bar ── -->
+
+    </div>
+
+    <!-- PROFILE -->
+    <div class="section" id="panel-profile">
+      <div class="sec-head"><h2>My Personal Page</h2><p>Personal &amp; enrollment information</p></div>
+      <div class="banner">
+        <div class="avatar" id="avatarEl"><img id="avatarPhoto" style="width:100%;height:100%;object-fit:cover;border-radius:6px;display:none"><span id="avatarInitials">—</span></div>
+        <div class="b-name">
+          <h1 id="profileName">—</h1>
+          <div class="mm" id="profileNameMM"></div>
+          <div class="tags" id="profileTags"></div>
+        </div>
+
+      </div>
+
+
+      <div class="icard">
+        <div class="icard-head">Personal &amp; Enrollment Details</div>
+        <div class="igrid">
+          <div class="icell"><div class="ic-lbl" id="lblStudentID">Student ID</div><div class="ic-val" id="infoID">—</div></div>
+          <div class="icell"><div class="ic-lbl">Date of Birth</div><div class="ic-val" id="infoBirth">—</div></div>
+          <div class="icell"><div class="ic-lbl">Father's Name</div><div class="ic-val" id="infoFather">—</div></div>
+          <div class="icell"><div class="ic-lbl">Father's Name (Myanmar)</div><div class="ic-val" id="infoFatherMM">—</div></div>
+          <div class="icell"><div class="ic-lbl">Mother's Name</div><div class="ic-val" id="infoMother">—</div></div>
+          <div class="icell"><div class="ic-lbl">Mother's Name (Myanmar)</div><div class="ic-val" id="infoMotherMM">—</div></div>
+          <div class="icell"><div class="ic-lbl">Phone</div><div class="ic-val" id="infoPhone">—</div></div>
+          <div class="icell"><div class="ic-lbl">Email</div><div class="ic-val" id="infoEmail">—</div></div>
+          <div class="icell"><div class="ic-lbl">Admission Year</div><div class="ic-val" id="infoAdmission">—</div></div>
+          <div class="icell"><div class="ic-lbl">Current Year</div><div class="ic-val" id="infoStatus">—</div></div>
+          <div class="icell"><div class="ic-lbl">Enrollment Status</div><div class="ic-val" id="infoEnroll">—</div></div>
+          <div class="icell"><div class="ic-lbl">Degree Program</div><div class="ic-val" id="infoProgram">—</div></div>
+          <div class="icell"><div class="ic-lbl">Completion Status</div><div class="ic-val" id="infoGrad">—</div></div>
+          <div class="icell" id="cellGradID" style="display:none"><div class="ic-lbl">ဘွဲ့ရမှတ်ပုံတင် အမှတ် · Graduation ID</div><div class="ic-val" id="infoGradID">—</div></div>
+          <div class="icell" id="cellGradIDMY" style="display:none"><div class="ic-lbl">ဘွဲ့ရမှတ်ပုံတင် (Myanmar)</div><div class="ic-val" id="infoGradIDMY" style="font-family:'Noto Sans Myanmar','Myanmar Text','Pyidaungsu',sans-serif">—</div></div>
+          <div class="icell" id="cellGradDate" style="display:none"><div class="ic-lbl">Date of Graduation</div><div class="ic-val" id="infoGradDate">—</div></div>
+          <div class="icell" id="cellGradDateMY" style="display:none"><div class="ic-lbl">ရက်စွဲ (ဘွဲ့) · Graduation Date (Myanmar)</div><div class="ic-val" id="infoGradDateMY" style="font-family:'Noto Sans Myanmar','Myanmar Text','Pyidaungsu',sans-serif">—</div></div>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- DOCUMENTS -->
+    <div class="section-sep" aria-hidden="true"></div>
+    <div class="section" id="panel-docs">
+      <div class="sec-head">
+        <h2>Document Office</h2>
+        <p>Generate &amp; print official university documents.</p>
+      </div>
+
+      <!-- Cards are generated dynamically per enrollment by renderDocCards() -->
+      <div id="docCardsContainer"></div>
+
+      <!-- § Office Downloads -->
+<div id="officeDocsSection" style="margin-top:32px;display:none">
+  <div class="sec-head" style="margin-bottom:18px">
+    <h2 style="font-size:16px">Office Downloads</h2>
+    <p>Official documents &amp; forms published by the university.</p>
+  </div>
+ 
+  <!-- Loading -->
+  <div id="officeDocsLoading" style="display:flex;align-items:center;gap:10px;padding:20px 0;color:var(--ink3);font-size:13px">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="animation:spin 1s linear infinite"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
+    Loading documents…
+  </div>
+ 
+  <!-- Error -->
+  <div id="officeDocsError" style="display:none;color:var(--crimson);font-size:13px;padding:12px 0"></div>
+ 
+  <!-- Grid -->
+  <div class="doc-grid" id="officeDocsGrid"></div>
+</div>
+ 
+ 
+
+      <!-- Degree Certificate(s) — shown when student has graduated -->
+      <div id="certSection" style="display:none">
+        <div class="cert-section-head"></div>
+        <div class="doc-grid" id="certGrid">
+          <!-- populated by renderCertCards() -->
+        </div>
+      </div>
+    </div>
+
+    <!-- ID CARD -->
+    <div class="section" id="panel-idcard">
+      <div class="sec-head"><h2 id="idCardPageTitle">Virtual ID Card</h2><p id="idCardPageSub">Your official University of Medicine (2) student identification</p></div>
+      <div class="idcard-wrap">
+        <div class="idcard">
+          <!-- FRONT -->
+          <div class="idcard-front">
+            <!-- Left crimson band: logo + photo -->
+            <div class="idcard-left-band">
+              <img src="/UM2_Logo.svg" alt="UM2" class="idcard-band-logo">
+              <div class="idcard-band-title">University<br>of Medicine (2)</div>
+              <div class="idcard-photo" id="idcardPhoto"></div>
+              <div class="idcard-band-badge" id="idcardTypeBadge">Student</div>
+            </div>
+            <!-- Right white panel -->
+            <div class="idcard-right">
+              <div class="idcard-right-header">
+                <div class="idcard-uni-block">
+                  <div class="idcard-uni-name">UM2</div>
+                  <div class="idcard-uni-sub">Interim University Council · Republic of the Union of Myanmar</div>
+                </div>
+                <div class="idcard-right-badge">Student ID</div>
+              </div>
+              <div class="idcard-right-body">
+                <div class="idcard-name" id="idcardName"></div>
+                <div class="idcard-name-mm" id="idcardNameMM"></div>
+                <div class="idcard-fields">
+                  <div class="idcard-field">
+                    <span class="idcard-field-lbl">Year of Study</span>
+                    <span class="idcard-field-val" id="idcardStatus">—</span>
+                  </div>
+                  <div class="idcard-field">
+                    <span class="idcard-field-lbl">Gender</span>
+                    <span class="idcard-field-val" id="idcardGender">—</span>
+                  </div>
+                  <div class="idcard-field">
+                    <span class="idcard-field-lbl">Program</span>
+                    <span class="idcard-field-val" id="idcardProgram">—</span>
+                  </div>
+                  <div class="idcard-field">
+                    <span class="idcard-field-lbl">Enrolled</span>
+                    <span class="idcard-field-val" id="idcardAdmission">—</span>
+                  </div>
+                  <div class="idcard-field" id="idcardSupervisorRow" style="display:none">
+                    <span class="idcard-field-lbl">Supervisor</span>
+                    <span class="idcard-field-val" id="idcardSupervisor">—</span>
+                  </div>
+                </div>
+              </div>
+              <div class="idcard-holo-strip"></div>
+              <div class="idcard-bottom">
+                <div>
+                  <div class="idcard-id-label" id="idcardIDLabel">Student ID Number</div>
+                  <div class="idcard-id-value" id="idcardID">—</div>
+                </div>
+                <div class="idcard-validity" id="idcardValidityBlock">
+                  <span id="idcardValidityLabel">Valid Through</span>
+                  <strong id="idcardValidityYear">—</strong>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- BACK -->
+          <div class="idcard-back">
+            <div class="idcard-back-left">
+              <div class="idcard-qr-wrap">
+                <div id="idcardQR"></div>
+                <div class="idcard-qr-lbl">Scan to Verify</div>
+              </div>
+              <div class="idcard-sig-area">Registrar's Office</div>
+            </div>
+            <div class="idcard-back-right">
+              <div class="idcard-back-header">University of Medicine (2) — Student Identification Card</div>
+              <div class="idcard-back-fields">
+                <div class="idcard-back-field">
+                  <div class="lbl">Date of Birth</div>
+                  <div class="val" id="idcardBirth">—</div>
+                </div>
+                <div class="idcard-back-field">
+                  <div class="lbl">Gender</div>
+                  <div class="val" id="idcardGenderBack">—</div>
+                </div>
+                <div class="idcard-back-field">
+                  <div class="lbl">Father's Name</div>
+                  <div class="val" id="idcardFather">—</div>
+                </div>
+                <div class="idcard-back-field">
+                  <div class="lbl">Phone</div>
+                  <div class="val" id="idcardPhone">—</div>
+                </div>
+                <div class="idcard-back-field">
+                  <div class="lbl">Enrollment Status</div>
+                  <div class="val" id="idcardEnroll">—</div>
+                </div>
+                <div class="idcard-back-field">
+                  <div class="lbl">Admission Year</div>
+                  <div class="val" id="idcardAdmissionBack">—</div>
+                </div>
+              </div>
+              <div class="idcard-back-bottom">
+                <div class="idcard-sid-block">
+                  <div class="lbl">Student ID</div>
+                  <div class="val" id="idcardBarcodeNum">—</div>
+                </div>
+                <div class="idcard-notice">This card is the property of University of Medicine (2) — IUC. Misuse of this card is subject to disciplinary action.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="idcard-actions">
+          <button class="btn-idcard btn-idcard-primary" onclick="printIDCard()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6,9 6,2 18,2 18,9"/><path d="M6,18H4a2,2,0,0,1-2-2V11a2,2,0,0,1,2-2H20a2,2,0,0,1,2,2v5a2,2,0,0,1-2,2H18"/><rect x="6" y="14" width="12" height="8"/></svg>
+            Print ID Card
+          </button>
+        </div>
+        <p style="font-size:11px;color:var(--ink3);text-align:center;max-width:500px">This digital student ID is personal and must not be shared with others.</p>
+      </div>
+    </div>
+
+    <!-- GRADES -->
+    <div class="section" id="panel-grades">
+      <div class="sec-head">
+        <h2>Academic Record</h2>
+        <p>Full record of grades, credits and grade points — Academic Year 2026–2027</p>
+      </div>
+
+      <!-- Enrollment eligibility banner — populated by checkEnrollmentEligibility() -->
+      <div id="enrollmentBannerGrades" style="display:none"></div>
+
+      <!-- Student identity banner -->
+      <div class="grades-header-banner" id="gradesHeaderBanner" style="display:none">
+        <div class="grades-hdr-info">
+          <div class="grades-hdr-name" id="gradesStudentName">—</div>
+          <div class="grades-hdr-id"><span id="gradesIdLabel">Student ID</span>: <span id="gradesStudentId">—</span> &nbsp;·&nbsp; University of Medicine (2)</div>
+        </div>
+      </div>
+
+      <div id="transcriptSummary" style="display:none" class="transcript-summary">
+        <div class="ts-item">
+          <span class="ts-lbl">Total Credits</span>
+          <span class="ts-val" id="tsCredits">—</span>
+        </div>
+        <div class="ts-divider"></div>
+        <div class="ts-item">
+          <span class="ts-lbl">Courses</span>
+          <span class="ts-val" id="tsCourses">—</span>
+        </div>
+        <div class="ts-divider"></div>
+        <div class="ts-item">
+          <span class="ts-lbl" id="tsYearsLbl">Study Duration</span>
+          <span class="ts-val" id="tsYears">—</span>
+        </div>
+        <div class="ts-divider"></div>
+        <div class="ts-item">
+          <span class="ts-lbl">Overall GPA</span>
+          <span class="ts-val accent" id="tsGpa">—</span>
+        </div>
+      </div>
+
+      <!-- Degree tabs — shown only when student has 2+ enrollments -->
+      <div id="gradeDegreeTabs" style="display:none">
+        <div class="icard" style="margin-bottom:16px;overflow:hidden">
+          <div class="degree-tabs" id="degreeTabsBar"><!-- populated by renderDegreeTabs() --></div>
+        </div>
+      </div>
+
+      <div id="gradesContent"><div class="g-wrap"><div class="no-g">Loading results…</div></div></div>
+    </div>
+
+    <!-- EDIT MY INFO -->
+    <div class="section" id="panel-editinfo">
+      <div class="sec-head">
+        <h2>Edit My Information</h2>
+        <p>Submit a request to update your personal details. Changes require Registrar approval.</p>
+      </div>
+      <div style="max-width:640px">
+
+        <!-- Pending request notice -->
+        <div id="editInfoPendingNotice" style="display:none;margin-bottom:20px;padding:14px 18px;border-radius:10px;border:1px solid rgba(154,123,47,0.35);background:rgba(154,123,47,0.1)">
+          <div style="font-size:13px;font-weight:700;color:var(--gold);margin-bottom:4px">⏳ Pending Approval</div>
+          <div id="editInfoPendingText" style="font-size:12px;color:var(--ink3);line-height:1.6"></div>
+        </div>
+
+        <!-- Approved notice -->
+        <div id="editInfoApprovedNotice" style="display:none;margin-bottom:20px;padding:14px 18px;border-radius:10px;border:1px solid rgba(26,92,58,0.3);background:rgba(26,92,58,0.08)">
+          <div style="font-size:13px;font-weight:700;color:var(--green);margin-bottom:4px">✓ Last Request Approved</div>
+          <div id="editInfoApprovedText" style="font-size:12px;color:var(--ink3);line-height:1.6"></div>
+        </div>
+
+        <div class="icard">
+          <div class="icard-head">Request Information Change</div>
+          <div style="padding:24px">
+            <p style="font-size:13px;color:var(--ink3);margin-bottom:24px;line-height:1.6">
+              You can request changes to your Father's Name and Mother's Name (in both English and Myanmar). Other fields like your name, date of birth, and enrollment data must be updated by the Registrar directly.
+            </p>
+
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px">
+              <div>
+                <div style="font-size:11px;font-weight:600;letter-spacing:.8px;text-transform:uppercase;color:var(--ink3);margin-bottom:6px">Father's Name (English)</div>
+                <input id="editFatherEN" type="text" placeholder="U / Ko …"
+                  style="width:100%;padding:10px 12px;border:1.5px solid var(--line);border-radius:var(--r);font-family:'DM Sans',sans-serif;font-size:13px;color:var(--ink);background:var(--white);outline:none;transition:border-color .2s,box-shadow .2s"
+                  onfocus="this.style.borderColor='var(--crimson)';this.style.boxShadow='0 0 0 3px rgba(139,26,46,0.08)'"
+                  onblur="this.style.borderColor='var(--line)';this.style.boxShadow='none'">
+              </div>
+              <div>
+                <div style="font-size:11px;font-weight:600;letter-spacing:.8px;text-transform:uppercase;color:var(--ink3);margin-bottom:6px">Father's Name (Myanmar)</div>
+                <input id="editFatherMY" type="text" placeholder="ဦး / ကို …"
+                  style="width:100%;padding:10px 12px;border:1.5px solid var(--line);border-radius:var(--r);font-family:'Noto Sans Myanmar','Myanmar Text','Pyidaungsu','DM Sans',sans-serif;font-size:13px;color:var(--ink);background:var(--white);outline:none;transition:border-color .2s,box-shadow .2s"
+                  onfocus="this.style.borderColor='var(--crimson)';this.style.boxShadow='0 0 0 3px rgba(139,26,46,0.08)'"
+                  onblur="this.style.borderColor='var(--line)';this.style.boxShadow='none'">
+              </div>
+              <div>
+                <div style="font-size:11px;font-weight:600;letter-spacing:.8px;text-transform:uppercase;color:var(--ink3);margin-bottom:6px">Mother's Name (English)</div>
+                <input id="editMotherEN" type="text" placeholder="Daw / Ma …"
+                  style="width:100%;padding:10px 12px;border:1.5px solid var(--line);border-radius:var(--r);font-family:'DM Sans',sans-serif;font-size:13px;color:var(--ink);background:var(--white);outline:none;transition:border-color .2s,box-shadow .2s"
+                  onfocus="this.style.borderColor='var(--crimson)';this.style.boxShadow='0 0 0 3px rgba(139,26,46,0.08)'"
+                  onblur="this.style.borderColor='var(--line)';this.style.boxShadow='none'">
+              </div>
+              <div>
+                <div style="font-size:11px;font-weight:600;letter-spacing:.8px;text-transform:uppercase;color:var(--ink3);margin-bottom:6px">Mother's Name (Myanmar)</div>
+                <input id="editMotherMY" type="text" placeholder="ဒေါ် / မ …"
+                  style="width:100%;padding:10px 12px;border:1.5px solid var(--line);border-radius:var(--r);font-family:'Noto Sans Myanmar','Myanmar Text','Pyidaungsu','DM Sans',sans-serif;font-size:13px;color:var(--ink);background:var(--white);outline:none;transition:border-color .2s,box-shadow .2s"
+                  onfocus="this.style.borderColor='var(--crimson)';this.style.boxShadow='0 0 0 3px rgba(139,26,46,0.08)'"
+                  onblur="this.style.borderColor='var(--line)';this.style.boxShadow='none'">
+              </div>
+            </div>
+
+            <div style="margin-bottom:20px">
+              <div style="font-size:11px;font-weight:600;letter-spacing:.8px;text-transform:uppercase;color:var(--ink3);margin-bottom:6px">Reason for Change</div>
+              <textarea id="editInfoReason" rows="3" placeholder="Briefly explain why this information needs to be updated (e.g. spelling correction, legal name change)…"
+                style="width:100%;padding:10px 12px;border:1.5px solid var(--line);border-radius:var(--r);font-family:'DM Sans',sans-serif;font-size:13px;color:var(--ink);background:var(--white);outline:none;resize:vertical;transition:border-color .2s,box-shadow .2s"
+                onfocus="this.style.borderColor='var(--crimson)';this.style.boxShadow='0 0 0 3px rgba(139,26,46,0.08)'"
+                onblur="this.style.borderColor='var(--line)';this.style.boxShadow='none'"></textarea>
+            </div>
+
+            <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding-top:4px;border-top:1px solid rgba(255,255,255,0.06)">
+              <button id="submitEditInfoBtn" onclick="submitInfoEditRequest()"
+                style="padding:11px 32px;background:var(--crimson);color:#fff;border:none;border-radius:var(--r);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:background .15s,transform .1s;box-shadow:0 2px 8px rgba(139,26,46,.28);display:flex;align-items:center;gap:8px"
+                onmouseover="this.style.background='var(--crimson-mid)';this.style.transform='translateY(-1px)'"
+                onmouseout="this.style.background='var(--crimson)';this.style.transform=''">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22,2 15,22 11,13 2,9"/></svg>
+                Submit Request
+              </button>
+              <span id="editInfoStatus" style="font-size:13px;color:var(--ink3)"></span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- PHOTO UPLOAD -->
+    <div class="section" id="panel-photo">
+      <div class="sec-head">
+        <h2>Profile Photo</h2>
+        <p>Upload your official passport-style photo</p>
+      </div>
+
+      <div style="max-width:560px">
+        <!-- Current photo preview card -->
+        <div class="icard" style="margin-bottom:16px">
+          <div class="icard-head">Current Photo</div>
+          <div style="padding:28px 24px;display:flex;align-items:center;gap:28px;flex-wrap:wrap">
+            <div id="profilePhotoPreview" style="width:100px;height:120px;border-radius:10px;background:var(--surface);border:1.5px solid var(--line);overflow:hidden;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+              <svg id="photoPlaceholderSvg" width="56" height="64" viewBox="0 0 56 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <ellipse cx="28" cy="20" rx="13" ry="14" fill="#D1D5DB"/>
+                <path d="M2 58c0-13.255 11.64-24 26-24s26 10.745 26 24" fill="#D1D5DB"/>
+              </svg>
+            </div>
+            <div>
+              <div style="font-size:14px;font-weight:600;color:var(--ink);margin-bottom:4px" id="photoPreviewName">ဓာတ်ပုံ</div>
+              <div style="font-size:12px;color:var(--ink3)" id="photoPreviewId">ID Photo</div>
+              <div style="margin-top:12px;font-size:12px;color:var(--ink3);line-height:1.6">
+                Your photo appears on your Student ID card<br>and throughout the portal.
+              </div>
+              <button id="removePhotoBtn" onclick="removePhoto()" style="display:none;margin-top:14px;padding:7px 16px;background:none;border:1px solid #FACDD3;border-radius:var(--r);font-size:12px;font-weight:600;color:var(--crimson);cursor:pointer;transition:background .15s,border-color .15s">
+                Remove Photo
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Upload card -->
+        <div class="icard">
+          <div class="icard-head">Upload New Photo</div>
+          <div style="padding:24px">
+            <p style="font-size:13px;color:var(--ink3);margin-bottom:20px;line-height:1.6">
+              Please upload a clear, passport-style photo with a plain background.<br>
+              ဤနေရာတွင် (ပတ်စ်ပို့) ပုံစံ ဓာတ်ပုံကို တင်ပေးပါ။ နောက်ခံအရောင် အဖြူ ဖြစ်ရပါမည်။<br>
+              Accepted formats: <strong>JPEG, PNG, WebP</strong> &nbsp;·&nbsp; Max size: <strong>5 MB</strong>
+            </p>
+
+            <!-- Drop zone -->
+            <div id="photoDropZone" onclick="document.getElementById('photoFileInput').click()"
+              style="border:2px dashed var(--line);border-radius:10px;padding:36px 24px;text-align:center;cursor:pointer;transition:border-color .2s,background .2s;background:var(--surface);margin-bottom:20px">
+              <div style="font-size:14px;font-weight:600;color:var(--ink);margin-bottom:4px">Click to choose a photo</div>
+              <div style="font-size:12px;color:var(--ink3)">or drag &amp; drop here</div>
+              <input type="file" id="photoFileInput" accept="image/jpeg,image/png,image/webp" style="display:none" onchange="previewPhoto(this)">
+            </div>
+
+            <!-- Preview of selected file -->
+            <div id="photoSelectedWrap" style="display:none;margin-bottom:20px;padding:16px;background:var(--surface);border-radius:8px;border:1px solid var(--line);display:none;align-items:center;gap:16px">
+              <img id="photoSelectedThumb" src="" alt="Preview" style="width:64px;height:76px;object-fit:cover;border-radius:6px;border:1px solid var(--line);flex-shrink:0">
+              <div style="flex:1;min-width:0">
+                <div id="photoSelectedName" style="font-size:13px;font-weight:600;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">—</div>
+                <div id="photoSelectedSize" style="font-size:12px;color:var(--ink3);margin-top:2px">—</div>
+              </div>
+              <button onclick="clearPhotoSelection()" style="background:none;border:1px solid var(--line);border-radius:4px;padding:4px 10px;font-size:12px;color:var(--ink3);cursor:pointer">Remove</button>
+            </div>
+
+            <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+              <button id="uploadPhotoBtn" onclick="uploadPhoto()" style="padding:11px 28px;background:var(--crimson);color:#fff;border:none;border-radius:var(--r);font-size:13px;font-weight:600;cursor:pointer;display:none;transition:background .15s;box-shadow:0 2px 8px rgba(139,26,46,.22)">Upload Photo</button>
+              <span id="photoUploadStatus" style="font-size:13px;color:var(--ink3)"></span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- COMMUNICATION -->
+    <div class="section" id="panel-comms">
+      <div class="sec-head">
+        <h2>Communication</h2>
+        <p>Official UM2IUC channels &amp; group links — stay connected with your university community.</p>
+      </div>
+
+      <!-- Loading state -->
+      <div id="commsLoading" class="comms-loading">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
+        Loading channels…
+      </div>
+
+      <!-- Error state -->
+      <div id="commsError" style="display:none;padding:20px 24px;border-radius:12px;border:1px solid rgba(139,26,46,0.25);background:rgba(139,26,46,0.07);font-size:13px;color:rgba(255,255,255,0.55);margin-bottom:20px"></div>
+
+      <!-- Channel cards grid -->
+      <div class="comms-grid" id="commsGrid" style="display:none"></div>
+
+      <!-- Empty state -->
+      <div id="commsEmpty" style="display:none;text-align:center;padding:56px 24px">
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.15)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="margin:0 auto 14px;display:block"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        <div style="font-size:14px;font-weight:600;color:rgba(255,255,255,0.3);margin-bottom:4px">No channels available</div>
+        <div style="font-size:12px;color:rgba(255,255,255,0.18)">Channel links will appear here when added by the administration.</div>
+      </div>
+
+    </div>
+
+    <!-- LECTURE ROOMS -->
+    <div class="section" id="panel-lecturerooms">
+      <div class="sec-head">
+        <h2>Lecture Rooms</h2>
+        <p>Join your live Zoom sessions — click a room to copy the passcode and open the meeting link.</p>
+      </div>
+
+      <!-- Loading state -->
+      <div id="lectureRoomsLoading" class="comms-loading">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
+        Loading rooms…
+      </div>
+
+      <!-- Error state -->
+      <div id="lectureRoomsError" style="display:none;padding:20px 24px;border-radius:12px;border:1px solid rgba(139,26,46,0.25);background:rgba(139,26,46,0.07);font-size:13px;color:rgba(255,255,255,0.55);margin-bottom:20px"></div>
+
+      <!-- Room cards grid -->
+      <div class="lr-grid" id="lectureRoomsGrid" style="display:none"></div>
+
+      <!-- Empty state -->
+      <div id="lectureRoomsEmpty" style="display:none;text-align:center;padding:56px 24px">
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.15)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="margin:0 auto 14px;display:block"><path d="M15 10l4.553-2.277A1 1 0 0 1 21 8.618v6.764a1 1 0 0 1-1.447.894L15 14"/><rect x="1" y="6" width="14" height="12" rx="2"/></svg>
+        <div style="font-size:14px;font-weight:600;color:rgba(255,255,255,0.3);margin-bottom:4px">No rooms available</div>
+        <div style="font-size:12px;color:rgba(255,255,255,0.18)">Lecture room links will appear here when scheduled by the administration.</div>
+      </div>
+    </div>
+
+    <!-- COURSE SESSION -->
+    <div class="section" id="panel-coursesession">
+      <div class="sec-head">
+        <h2>Academic Session</h2>
+        <p id="csPageSub">All courses for your current academic year — completed courses are marked green.</p>
+      </div>
+      <div id="courseSessionWrap" class="cs-wrap" style="display:none">
+        <div class="cs-header">
+          <div class="cs-header-left">
+            <span class="cs-title">Session</span>
+            <span class="cs-year-badge" id="csYearBadge">—</span>
+          </div>
+          <div class="cs-progress-bar-wrap">
+            <span id="csProgressLabel">0 / 0 completed</span>
+            <div class="cs-progress-track">
+              <div class="cs-progress-fill" id="csProgressFill" style="width:0%"></div>
+            </div>
+          </div>
+        </div>
+        <div class="cs-year-tabs" id="csYearTabs" style="display:none"></div>
+        <div class="cs-grid" id="csGrid"></div>
+      </div>
+    </div>
+
+    <!-- TIMETABLE -->
+    <div class="section" id="panel-timetable">
+      <div class="sec-head">
+        <h2>Lecture &amp; Discussion Timetable</h2>
+        <p>Weekly schedule of lectures, discussions and their rooms.</p>
+      </div>
+
+      <!-- Day filter pills -->
+      <div class="tt-filter-bar" id="ttFilterBar" style="display:none">
+        <span class="tt-filter-label">Day</span>
+        <button class="tt-filter-pill active" data-day="All" onclick="ttFilterDay('All',this)">All</button>
+        <button class="tt-filter-pill" data-day="Monday"    onclick="ttFilterDay('Monday',this)">Mon</button>
+        <button class="tt-filter-pill" data-day="Tuesday"   onclick="ttFilterDay('Tuesday',this)">Tue</button>
+        <button class="tt-filter-pill" data-day="Wednesday" onclick="ttFilterDay('Wednesday',this)">Wed</button>
+        <button class="tt-filter-pill" data-day="Thursday"  onclick="ttFilterDay('Thursday',this)">Thu</button>
+        <button class="tt-filter-pill" data-day="Friday"    onclick="ttFilterDay('Friday',this)">Fri</button>
+        <button class="tt-filter-pill" data-day="Saturday"  onclick="ttFilterDay('Saturday',this)">Sat</button>
+      </div>
+
+      <!-- Loading -->
+      <div class="tt-loading" id="ttLoading">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
+        Loading timetable…
+      </div>
+
+      <!-- Error -->
+      <div class="tt-error" id="ttError" style="display:none"></div>
+
+      <!-- Content (grouped by day) -->
+      <div id="ttContent" style="display:none"></div>
+
+      <!-- Empty -->
+      <div class="tt-empty" id="ttEmpty" style="display:none">
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.12)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="margin:0 auto 14px;display:block"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        <div style="font-size:14px;font-weight:600;color:rgba(255,255,255,0.25);margin-bottom:4px">No timetable scheduled</div>
+        <div style="font-size:12px;color:rgba(255,255,255,0.15)">Lectures and discussions will appear here once published by the administration.</div>
+      </div>
+    </div>
+
+    <!-- MARK BOOK -->
+    <div class="section" id="panel-markbook">
+      <div class="sec-head">
+        <h2>Mark Book</h2>
+        <p>Internal assessment marks — tests and evaluations before your final grades.</p>
+      </div>
+      <div id="markbookContent">
+        <div class="g-wrap"><div class="no-g">No assessment records yet.</div></div>
+      </div>
+    </div>
+
+    <!-- NEWS & EVENTS -->
+    <div class="section" id="panel-news">
+      <div class="sec-head">
+        <h2>Our Chronicles in Spring</h2>
+        <p>Stories, events and voices from our university community.</p>
+      </div>
+      <div id="newsContent">
+        <div style="padding:40px 0;text-align:center;color:var(--ink3);font-size:14px">No chronicles yet. Be the first to share a story!</div>
+      </div>
+    </div>
+
+    <!-- CONTRIBUTE TO CHRONICLES -->
+    <div class="section" id="panel-share">
+      <div class="sec-head">
+        <h2>Contribute to Chronicles</h2>
+        <p>Contribute your story, event or announcement to the Chronicles.</p>
+      </div>
+      <div class="chr-submit-wrap" id="submitPostWrap">
+        <div class="chr-submit-header">
+          <div class="chr-submit-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.92)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+          </div>
+          <div>
+            <div class="chr-submit-title">Share with Our Chronicles</div>
+            <div class="chr-submit-sub">Your post will appear once approved by the admin.</div>
+          </div>
+        </div>
+        <div class="chr-submit-body">
+          <div class="chr-type-tabs">
+            <button class="chr-type-tab active" id="postTypeNews"         onclick="setPostType('news')"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2z"/><line x1="8" y1="10" x2="16" y2="10"/><line x1="8" y1="14" x2="13" y2="14"/></svg> Article</button>
+            <button class="chr-type-tab"        id="postTypeAnnouncement" onclick="setPostType('announcement')"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 17H2a3 3 0 0 0 3-3V9a7 7 0 0 1 14 0v5a3 3 0 0 0 3 3z"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg> Announcement</button>
+            <button class="chr-type-tab"        id="postTypeNotice"       onclick="setPostType('notice')"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg> Notice</button>
+            <button class="chr-type-tab"        id="postTypeEvent"        onclick="setPostType('event')"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg> Event</button>
+            <button class="chr-type-tab"        id="postTypeNewsitem"     onclick="setPostType('newsitem')"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="12" y2="17"/></svg> News</button>
+          </div>
+          <input id="postTitle" type="text" placeholder="Title of your story…" class="chr-input">
+          <input id="postAuthorName" type="text" placeholder="Your name (optional)" class="chr-input">
+          <label for="postImageFile" class="chr-photo-label">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+            <span id="postImageLabel">Upload a photo (optional)</span>
+          </label>
+          <input id="postImageFile" type="file" accept="image/*" style="display:none" onchange="
+            var f=this.files[0];
+            var lbl=document.getElementById('postImageLabel');
+            var prev=document.getElementById('postImagePreview');
+            if(f){
+              lbl.textContent=f.name;
+              var r=new FileReader();
+              r.onload=function(e){prev.src=e.target.result;prev.style.display='block'};
+              r.readAsDataURL(f);
+            } else {
+              lbl.textContent='Upload a photo (optional)';
+              prev.style.display='none';
+            }
+          ">
+          <img id="postImagePreview" src="" alt="preview" style="display:none;width:100%;max-height:200px;object-fit:cover;border-radius:8px;border:1px solid var(--glass-card-border)">
+          <textarea id="postBody" rows="5" placeholder="Write your story here…" class="chr-input" style="resize:vertical"></textarea>
+          <div id="eventFieldsWrap" style="display:none;flex-direction:column;gap:10px">
+            <input id="postEventDate"     type="date"  class="chr-input">
+            <input id="postEventTime"     type="text"  placeholder="Time (e.g. 10:00 AM)"  class="chr-input">
+            <input id="postEventLocation" type="text"  placeholder="Location"               class="chr-input">
+          </div>
+          <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">
+            <button class="chr-submit-btn" id="submitPostBtn" onclick="submitPost()">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+              Submit for review
+            </button>
+            <span id="submitPostMsg" style="font-size:13px;color:var(--ink3)"></span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+    <!-- dashboard footer -->
+    <footer class="dash-footer">
+      <span id="footerYear"></span>
+    </footer>
+
+  </div><!-- /.dash-main -->
+
+</div><!-- /#dashboard -->
+
+
+<div class="iris-bottom-bar" id="irisBottomBar">
+  <div class="iris-bb-info">
+    <span class="iris-bb-full">Institutional Records &amp; Information System</span>
+    <span class="iris-bb-sep">·</span>
+    <span class="iris-bb-org">UM2 · IUC</span>
+  </div>
+</div>
+
+<!-- ── JavaScript Modules ── -->
+<script src="js/data-courses.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/populate.js"></script>
+<script src="js/photo.js"></script>
+<script src="js/grades.js"></script>
+<script src="js/enrollment.js"></script>
+<script src="js/course-session.js"></script>
+<script src="js/navigation.js"></script>
+<script src="js/markbook.js"></script>
+<script src="js/documents.js"></script>
+<script src="js/ui-controls.js"></script>
+<script src="js/comms.js"></script>
+<script src="js/session.js"></script>
+<script src="js/chronicles.js"></script>
+<script src="js/timetable.js"></script>
+<script src="js/bottom-bar.js"></script>
+
+</body>
+</html>
