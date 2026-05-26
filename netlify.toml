@@ -1,11 +1,13 @@
 [build]
   publish = "public/IRIS-IRIR"
   functions = "netlify/functions"
-  command = "fc-list && npm install"
+  command = "echo 'No build step'"
+
 [build.environment]
   NODE_VERSION = "20"
   AWS_LAMBDA_JS_RUNTIME = "nodejs20.x"
   SHARP_IGNORE_GLOBAL_LIBVIPS = "1"
+
 [functions]
   node_bundler = "zisi"
   external_node_modules = ["sharp"]
@@ -13,7 +15,16 @@
 [[headers]]
   for = "/*"
   [headers.values]
-    Content-Security-Policy = "frame-ancestors 'none'"
     X-Frame-Options = "DENY"
     X-Content-Type-Options = "nosniff"
     Referrer-Policy = "strict-origin-when-cross-origin"
+
+[[headers]]
+  for = "/*.html"
+  [headers.values]
+    Cache-Control = "no-cache, no-store, must-revalidate"
+
+[[headers]]
+  for = "/*.js"
+  [headers.values]
+    Cache-Control = "no-cache, no-store, must-revalidate"
