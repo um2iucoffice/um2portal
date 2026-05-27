@@ -651,7 +651,7 @@ const logoHtml = `
   ` : `
     <p>To Whom It May Concern,</p>
     <br>
-    <p>This is to confirm that <strong>${nameDisplay}</strong>, bearing Student ID <strong>${sid}</strong>${birth && birth !== '—' ? ', date of birth <strong>' + birth + '</strong>' : ''}, is currently enrolled as a <strong>${enroll}</strong> student in the <strong>${program || 'degree programme'}</strong> at the <strong>University of Medicine (2), Yangon</strong>.</p>
+    <p>This is to certify that <strong>${nameDisplay}</strong>, bearing Student ID <strong>${sid}</strong>${birth && birth !== '—' ? ', date of birth <strong>' + birth + '</strong>' : ''}, is currently enrolled as an <strong>${enroll}</strong> student in the program <strong>${program || 'degree programme'}</strong>, at the University of Medicine (2), under the administration of Interim University Council.</p>
     <br>
     <p>The student is presently in <strong>${status}</strong> of the programme, having been admitted in <strong>${admission}</strong>.</p>
     <br>
