@@ -204,8 +204,9 @@ async function renderEpTable() {
       <td>${p.min_passed_courses > 0 ? '<span class="badge b-blue">' + p.min_passed_courses + '</span>' : '<span class="badge b-muted">—</span>'}</td>
       <td>${p.auto_promote ? '✓' : '—'}</td>
       <td><span class="badge ${st.cls}">${st.label}</span></td>
-      <td>
-        <button class="btn btn-outline btn-sm" onclick="deleteEnrollmentPeriod('${p.id}')">Delete</button>
+      <td style="white-space:nowrap;display:flex;gap:6px">
+        <button class="btn btn-outline btn-sm" onclick="editEnrollmentPeriod('${p.id}')">Edit</button>
+        <button class="btn btn-outline btn-sm" style="border-color:var(--crimson);color:var(--crimson)" onclick="deleteEnrollmentPeriod('${p.id}')">Delete</button>
       </td>
     </tr>`;
   }).join('');
@@ -444,4 +445,180 @@ async function promoteAllApproved() {
     if (btn) btn.disabled = false;
   }
 }
+
+// ── Edit Enrollment Period ────────────────
+function editEnrollmentPeriod(id) {
+  const p = (window._enrollmentPeriods || []).find(x => x.id === id);
+  if (!p) { toast('Period not found.', '❌'); return; }
+
+  // Store editing id
+  document.getElementById('epEditId').value = id;
+
+  // Populate program dropdown
+  const progSel = document.getElementById('epEdit-program');
+  progSel.innerHTML = '<option value="">— select program —</option>';
+  (degreePrograms || []).forEach(dp => {
+    const o = document.createElement('option');
+    o.value = dp.id;
+    o.textContent = dp.name || dp.id;
+    if (dp.id === p.program_id) o.selected = true;
+    progSel.appendChild(o);
+  });
+
+  // Populate from/to year dropdowns
+  _epEditLoadYears(p.program_id, p.from_year_id, p.to_year_id);
+
+  // Dates
+  document.getElementById('epEdit-openAt').value  = p.open_at  ? p.open_at.slice(0,10)  : '';
+  document.getElementById('epEdit-closeAt').value = p.close_at ? p.close_at.slice(0,10) : '';
+
+  // Min pass rate slider
+  const pct = Math.round((p.min_pass_rate || 0) * 100);
+  document.getElementById('epEdit-minPass').value = pct;
+  document.getElementById('epEdit-minPassLabel').textContent = pct;
+  document.getElementById('epEdit-minPassFill').style.width = pct + '%';
+
+  // Min passed courses
+  document.getElementById('epEdit-minPassedCourses').value = p.min_passed_courses || 0;
+
+  // Toggles — set each to match DB value
+  _epEditSetToggle('epEdit-requireNoFailures', 'epEdit-requireNoFailuresTrack', 'epEdit-requireNoFailuresLabel', p.require_no_failures !== false);
+  _epEditSetToggle('epEdit-requireAllGraded',  'epEdit-requireAllGradedTrack',  'epEdit-requireAllGradedLabel',  !!p.require_all_graded);
+  _epEditSetToggle('epEdit-requireCore',       'epEdit-requireCoreTrack',       'epEdit-requireCoreLabel',       !!p.require_core);
+  _epEditSetToggle('epEdit-autoPromote',       'epEdit-autoPromoteTrack',       'epEdit-autoPromoteLabel',       !!p.auto_promote);
+
+  document.getElementById('epEditMsg').style.display = 'none';
+  document.getElementById('epEditModal').classList.add('open');
+}
+
+function _epEditSetToggle(cbId, trackId, labelId, value) {
+  const cb    = document.getElementById(cbId);
+  const track = document.getElementById(trackId);
+  const label = document.getElementById(labelId);
+  const knob  = track ? track.querySelector('span') : null;
+  if (!cb) return;
+  cb.checked = value;
+  if (track) track.style.background = value ? 'var(--crimson)' : 'var(--line)';
+  if (knob)  knob.style.transform   = value ? 'translateX(18px)' : 'translateX(0)';
+  if (label) label.textContent      = value ? 'Yes' : 'No';
+}
+
+function _epEditLoadYears(programId, fromVal, toVal) {
+  const fromSel = document.getElementById('epEdit-fromYear');
+  const toSel   = document.getElementById('epEdit-toYear');
+  const years   = (academicYears || [])
+    .filter(y => !y.program_id || y.program_id === programId)
+    .sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0));
+
+  fromSel.innerHTML = '<option value="">— select year —</option>';
+  years.forEach(y => {
+    const o = document.createElement('option');
+    o.value = y.id;
+    o.textContent = y.name || y.year_name || y.id;
+    if (y.id === fromVal) o.selected = true;
+    fromSel.appendChild(o);
+  });
+
+  toSel.innerHTML = '<option value="">— select year —</option>';
+  const fromIdx = years.findIndex(y => y.id === fromVal);
+  years.slice(fromIdx + 1).forEach(y => {
+    const o = document.createElement('option');
+    o.value = y.id;
+    o.textContent = y.name || y.year_name || y.id;
+    if (y.id === toVal) o.selected = true;
+    toSel.appendChild(o);
+  });
+}
+
+function epEditLoadYears() {
+  const programId = document.getElementById('epEdit-program').value;
+  const fromSel   = document.getElementById('epEdit-fromYear');
+  const curFrom   = fromSel.value;
+  _epEditLoadYears(programId, curFrom, '');
+}
+
+function epEditPopulateToYear() {
+  const programId = document.getElementById('epEdit-program').value;
+  const fromVal   = document.getElementById('epEdit-fromYear').value;
+  const toSel     = document.getElementById('epEdit-toYear');
+  toSel.innerHTML = '<option value="">— select year —</option>';
+  if (!fromVal) return;
+  const years = (academicYears || [])
+    .filter(y => !y.program_id || y.program_id === programId)
+    .sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0));
+  const fromIdx = years.findIndex(y => y.id === fromVal);
+  years.slice(fromIdx + 1).forEach(y => {
+    const o = document.createElement('option');
+    o.value = y.id;
+    o.textContent = y.name || y.year_name || y.id;
+    toSel.appendChild(o);
+  });
+  if (toSel.options.length === 2) toSel.selectedIndex = 1;
+}
+
+async function saveEditEnrollmentPeriod() {
+  const id         = document.getElementById('epEditId').value;
+  const programId  = document.getElementById('epEdit-program').value;
+  const fromYear   = document.getElementById('epEdit-fromYear').value;
+  const toYear     = document.getElementById('epEdit-toYear').value;
+  const openAt     = document.getElementById('epEdit-openAt').value;
+  const closeAt    = document.getElementById('epEdit-closeAt').value;
+  const minPass    = parseInt(document.getElementById('epEdit-minPass').value, 10);
+  const reqNoFail  = document.getElementById('epEdit-requireNoFailures').checked;
+  const reqAllGraded = document.getElementById('epEdit-requireAllGraded').checked;
+  const reqCore    = document.getElementById('epEdit-requireCore').checked;
+  const minPassedCourses = parseInt(document.getElementById('epEdit-minPassedCourses').value, 10) || 0;
+  const autoPromote= document.getElementById('epEdit-autoPromote').checked;
+  const msg        = document.getElementById('epEditMsg');
+
+  if (!programId || !fromYear || !toYear || !openAt || !closeAt) {
+    msg.style.cssText = 'display:block;color:var(--crimson);font-size:13px;margin-top:12px';
+    msg.textContent = 'Please fill in all required fields.';
+    return;
+  }
+  if (new Date(openAt) >= new Date(closeAt)) {
+    msg.style.cssText = 'display:block;color:var(--crimson);font-size:13px;margin-top:12px';
+    msg.textContent = 'Close date must be after open date.';
+    return;
+  }
+
+  const payload = {
+    program_id:           programId,
+    from_year_id:         fromYear,
+    to_year_id:           toYear,
+    open_at:              openAt,
+    close_at:             closeAt,
+    min_pass_rate:        minPass / 100,
+    require_no_failures:  reqNoFail,
+    require_all_graded:   reqAllGraded,
+    require_core:         reqCore,
+    min_passed_courses:   minPassedCourses,
+    auto_promote:         autoPromote
+  };
+
+  const btn = document.getElementById('epEditSaveBtn');
+  btn.disabled = true;
+  btn.textContent = 'Saving…';
+
+  try {
+    const { data, error } = await db.from('enrollment_periods').update(payload).eq('id', id).select().single();
+    if (error) throw error;
+
+    // Update local cache
+    const idx = (window._enrollmentPeriods || []).findIndex(p => p.id === id);
+    if (idx >= 0) window._enrollmentPeriods[idx] = data;
+
+    closeModal('epEditModal');
+    toast('Enrollment period updated.', '✅');
+    renderEpTable();
+    populateErPeriodSelect();
+  } catch(e) {
+    msg.style.cssText = 'display:block;color:var(--crimson);font-size:13px;margin-top:12px';
+    msg.textContent = 'Error: ' + e.message;
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Save Changes';
+  }
+}
+
 // ══ END ENROLLMENT PERIODS & REQUESTS ══
