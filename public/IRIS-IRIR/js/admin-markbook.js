@@ -209,6 +209,12 @@ function openMarkbookEntryModal(entryId) {
   const title = document.getElementById('mbModalTitle');
   const delBtn = document.getElementById('mbDeleteBtn');
 
+  // If opened from the standalone upload page, pick up the student ID from there
+  if (!_mbStudentId) {
+    const pagesSid = (document.getElementById('mbUpload-sid')?.value || '').trim();
+    if (pagesSid) _mbStudentId = pagesSid;
+  }
+
   // Reset form
   ['mb-id','mb-student-id','mb-assessment','mb-course','mb-year',
    'mb-block','mb-score','mb-max','mb-pct','mb-notes'].forEach(id => {
@@ -736,11 +742,16 @@ window.downloadMarkbookTemplate = downloadMarkbookTemplate;
 /** Look up student name when Student ID is typed on the upload page */
 function mbUploadLookup(sid) {
   const s = (typeof students !== 'undefined' ? students : []).find(x => x.id === sid.trim());
-  const nameEl = document.getElementById('mbUpload-name');
-  const btn    = document.getElementById('mbUploadSubmitBtn');
+  const nameEl    = document.getElementById('mbUpload-name');
+  const btn       = document.getElementById('mbUploadSubmitBtn');
+  const addBtn    = document.getElementById('mbUploadAddEntryBtn');
   if (nameEl) nameEl.value = s ? (s.name_en || s.name_my || sid) : (sid ? '— Student not found —' : '');
   // Enable upload button only if student found AND file parsed
-  if (btn) btn.disabled = !s || !_mbParsedCSV.length;
+  if (btn)    btn.disabled    = !s || !_mbParsedCSV.length;
+  // Enable Add Entry button as soon as student is found
+  if (addBtn) addBtn.disabled = !s;
+  // Keep module state in sync
+  if (s) _mbStudentId = sid;
 }
 
 /** Reset the standalone upload page back to initial state */
