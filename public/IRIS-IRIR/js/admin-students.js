@@ -666,6 +666,16 @@ async function submitBulkStudents() {
   rt.innerHTML = `<thead><tr><th>Student ID</th><th>Name</th><th>Email</th><th>Action</th><th>Welcome Email</th></tr></thead>`;
   let body = '<tbody>';
 
+  // ── Date normaliser: accepts DD/MM/YYYY or YYYY-MM-DD → YYYY-MM-DD or null ──
+  function parseDate(val) {
+    if (!val || !val.trim()) return null;
+    const v = val.trim();
+    if (/^\d{4}-\d{2}-\d{2}$/.test(v)) return v;
+    const m = v.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+    if (m) return `${m[3]}-${m[2].padStart(2,"0")}-${m[1].padStart(2,"0")}`;
+    return null;
+  }
+
   // ── Step 1: validate rows and build records locally ──────────────────────
   const validRecords   = [];  // { record, existing, row } — will be batch-upserted
   const invalidRows    = [];  // rows missing required fields
@@ -694,7 +704,7 @@ async function submitBulkStudents() {
       father_my: row.father_name_my || (existing ? existing.father_my  : ''),
       mother:    row.mother_name_en || (existing ? existing.mother     : ''),
       mother_my: row.mother_name_my || (existing ? existing.mother_my  : ''),
-      dob:       row.birth_date     || (existing ? existing.dob        : null) || null,
+      dob:       parseDate(row.birth_date) || (existing ? existing.dob : null) || null,
       email:     row.email,
       phone:     row.phone          || (existing ? existing.phone      : ''),
       address:   row.address        || (existing ? existing.address    : ''),
@@ -707,8 +717,8 @@ async function submitBulkStudents() {
       grad_status:     row.graduation_status || (existing ? existing.grad_status     : 'In Progress'),
       graduation_id:   row.graduation_id     || (existing ? existing.graduation_id   : null) || null,
       graduation_id_my: row.graduation_id_my  || (existing ? existing.graduation_id_my : null) || null,
-      graduation_date: row.graduation_date   || (existing ? existing.graduation_date : null) || null,
-      graduation_date_my: row.graduation_date_my || (existing ? existing.graduation_date_my : null) || (row.graduation_date ? toBurmeseDate(row.graduation_date) : null) || null,
+      graduation_date: parseDate(row.graduation_date) || (existing ? existing.graduation_date : null) || null,
+      graduation_date_my: row.graduation_date_my || (existing ? existing.graduation_date_my : null) || (parseDate(row.graduation_date) ? toBurmeseDate(parseDate(row.graduation_date)) : null) || null,
       master_password: resolvedPwHash,
       updated_at: new Date().toISOString()
     };
@@ -805,4 +815,3 @@ async function submitBulkStudents() {
   updateDashboardStats();
   toast(`✅ ${inserted} inserted, ${updated} updated, ${errs} errors.`, '👥');
 }
-
