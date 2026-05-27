@@ -38,11 +38,11 @@ async function logEmail(toEmail, sid, subject, trigger) {
         <td><span class="badge b-red">⛔ Blocked</span></td>
       </tr>`);
     }
-    return;
+    return null;
   }
-  await db.from('email_log').insert({
+  const { data: logRow } = await db.from('email_log').insert({
     to_email: toEmail, student_id: sid, subject, trigger, status: 'Queued'
-  });
+  }).select('id').single();
   const tb = document.getElementById('emailLogBody');
   if (tb) {
     const now = new Date().toISOString().replace('T',' ').substr(0,16);
@@ -53,6 +53,7 @@ async function logEmail(toEmail, sid, subject, trigger) {
       <td><span class="badge b-green">Queued</span></td>
     </tr>`);
   }
+  return logRow?.id ?? null;
 }
 
 function renderEmailLog(data) {
@@ -295,4 +296,3 @@ async function archiveDegree(pid) {
   populateAllSelects();
   toast(`"${pid}" is now ${newStatus}.`, newStatus === 'Active' ? '✓' : '🗄');
 }
-
