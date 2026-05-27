@@ -476,8 +476,8 @@ async function saveNewStudent() {
   students.push(newStudent);
   renderStudentTable(students);
   updateDashboardStats();
-  await sendWelcomeEmail(email, sid, _nameVal, _plainPw, _dobVal);
-  await logEmail(email, sid, '[UM2 Registry System] Welcome — Your student account is ready', 'New student');
+  const _logId = await logEmail(email, sid, '[UM2 Registry System] Welcome — Your student account is ready', 'New student');
+  await sendWelcomeEmail(email, sid, _nameVal, _plainPw, _dobVal, 'new student', _logId);
   toast(`Student ${sid} added. Welcome email sent to ${email}.`, 'Notice');
   clearNewStudentForm();
 }
@@ -811,8 +811,8 @@ async function submitBulkStudents() {
         for (let i = 0; i < newlyInserted.length; i++) {
           const { email, sid, nameEn, plainPw, dob } = newlyInserted[i];
           if (i > 0) await new Promise(r => setTimeout(r, 700));
-          sendWelcomeEmail(email, sid, nameEn, plainPw, dob, 'bulk import');
-          logEmail(email, sid, '[UM2 Registry System] Welcome — Your student account is ready', 'Bulk import');
+          const _bulkLogId = await logEmail(email, sid, '[UM2 Registry System] Welcome — Your student account is ready', 'Bulk import');
+          await sendWelcomeEmail(email, sid, nameEn, plainPw, dob, 'bulk import', _bulkLogId);
         }
       })();
     }
