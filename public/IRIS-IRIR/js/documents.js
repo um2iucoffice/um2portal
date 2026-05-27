@@ -653,7 +653,7 @@ const logoHtml = `
     <br>
     <p>This is to confirm that <strong>${nameDisplay}</strong>, bearing Student ID <strong>${sid}</strong>${birth && birth !== '—' ? ', date of birth <strong>' + birth + '</strong>' : ''}, is currently enrolled as a <strong>${enroll}</strong> student in the <strong>${program || 'degree programme'}</strong> at the <strong>University of Medicine (2), Yangon</strong>.</p>
     <br>
-    <p>The student is presently in <strong>${status}</strong> of the programme, having been admitted in <strong>${admission}</strong>.${gpa ? ' Their current cumulative GPA is <strong>' + gpa + ' / 4.00</strong>.' : ''}</p>
+    <p>The student is presently in <strong>${status}</strong> of the programme, having been admitted in <strong>${admission}</strong>.</p>
     <br>
     <p>This letter is issued upon the request of the student for official purposes. The Secretariat's Office certifies the accuracy of the above information as of the date of issue.</p>
     <br>
