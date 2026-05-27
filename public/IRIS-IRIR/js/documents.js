@@ -718,7 +718,7 @@ const logoHtml = `
     <!-- Signing area -->
     <div style="margin-top:40px;font-size:11pt;line-height:1.8;color:#0D1B2A;">
       <div style="margin-top:36px;border-top:1px solid #555;width:200px;margin-bottom:4px;"></div>
-      <div>Acting Registrar</div>
+      <div>Registrar</div>
       <div>University of Medicine (2), Yangon</div>
     </div>
 
@@ -945,7 +945,7 @@ function printDocument(type) {
           <div style="font-size:11pt;color:#0D1B2A">Registrar</div>
           <div style="font-size:11pt;color:#0D1B2A">University of Medicine (2)</div>
         </div>
-        <img src="signature.png" alt="Registrar Signature" style="width:180px;height:auto;object-fit:contain;position:relative;top:-30px;">
+        <img src="Signature.png" alt="Registrar Signature" style="width:180px;height:auto;object-fit:contain;position:relative;top:-30px;">
       </div>
     </div>
   </div>`;
