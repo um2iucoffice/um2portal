@@ -91,9 +91,12 @@ function filterMarkbook() {
 /** Render the main table rows */
 function _mbRenderTable() {
   const tbody = document.getElementById('mbTableBody');
+  // Both registrar and staff can upload/edit markbook entries
   const isRegistrar = document.body.dataset.role === 'registrar' ||
+    document.body.dataset.role === 'staff' ||
     document.getElementById('roleLabel')?.textContent?.toLowerCase().includes('secretariat') ||
-    (typeof currentUserRole !== 'undefined' && currentUserRole === 'registrar');
+    document.getElementById('roleLabel')?.textContent?.toLowerCase().includes('staff') ||
+    (typeof currentUserRole !== 'undefined' && (currentUserRole === 'registrar' || currentUserRole === 'staff'));
 
   if (!_mbFiltered.length) {
     tbody.innerHTML = `<tr><td colspan="11" style="text-align:center;padding:32px;color:var(--ink3);font-size:13px">
@@ -723,3 +726,200 @@ window.handleMarkbookFile    = handleMarkbookFile;
 window.uploadMarkbookCSV     = uploadMarkbookCSV;
 window.exportMarkbookCSV     = exportMarkbookCSV;
 window.downloadMarkbookTemplate = downloadMarkbookTemplate;
+
+/* ═══════════════════════════════════════════════════════════════
+   STANDALONE MARK BOOK UPLOAD PAGE (view-markbookUpload)
+   Reuses the existing _parseCSV, _mbPreviewCSV, uploadMarkbookCSV
+   infrastructure but wired to the page-level elements.
+═══════════════════════════════════════════════════════════════ */
+
+/** Look up student name when Student ID is typed on the upload page */
+function mbUploadLookup(sid) {
+  const s = (typeof students !== 'undefined' ? students : []).find(x => x.id === sid.trim());
+  const nameEl = document.getElementById('mbUpload-name');
+  const btn    = document.getElementById('mbUploadSubmitBtn');
+  if (nameEl) nameEl.value = s ? (s.name_en || s.name_my || sid) : (sid ? '— Student not found —' : '');
+  // Enable upload button only if student found AND file parsed
+  if (btn) btn.disabled = !s || !_mbParsedCSV.length;
+}
+
+/** Reset the standalone upload page back to initial state */
+function mbUploadReset() {
+  _mbParsedCSV   = [];
+  _mbStudentId   = null;
+  const sid  = document.getElementById('mbUpload-sid');
+  const name = document.getElementById('mbUpload-name');
+  const file = document.getElementById('mbUploadFile');
+  const lbl  = document.getElementById('mbUploadDropLabel');
+  if (sid)  sid.value  = '';
+  if (name) name.value = '';
+  if (file) file.value = '';
+  if (lbl)  lbl.textContent = 'Drop CSV here or click to browse';
+  ['mbUploadPreviewWrap','mbUploadProgressWrap','mbUploadErrorWrap'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.style.display = 'none';
+  });
+  const btn = document.getElementById('mbUploadSubmitBtn');
+  if (btn) { btn.disabled = true; btn.textContent = 'Upload Marks'; }
+  const bar = document.getElementById('mbUploadProgressBar');
+  if (bar) bar.style.width = '0%';
+}
+
+/**
+ * Override handleMarkbookFile for the page context:
+ * after parsing, show preview in page elements and enable upload if student set.
+ */
+const _origHandleMarkbookFile = handleMarkbookFile;
+window.handleMarkbookFile = function(file) {
+  if (!file) return;
+
+  // If called from the modal context, delegate to original
+  const modal = document.getElementById('markbookCSVModal');
+  if (modal && modal.classList.contains('open')) {
+    _origHandleMarkbookFile(file);
+    return;
+  }
+
+  // Page context
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const rows = _parseCSV(e.target.result);
+      _mbParsedCSV = rows;
+
+      // Show preview in page elements
+      const previewWrap = document.getElementById('mbUploadPreviewWrap');
+      const countEl     = document.getElementById('mbUploadPreviewCount');
+      const head        = document.getElementById('mbUploadPreviewHead');
+      const body        = document.getElementById('mbUploadPreviewBody');
+      if (countEl) countEl.textContent = rows.length;
+      if (previewWrap) previewWrap.style.display = 'block';
+
+      const cols = ['assessment_name','course_id','year','block','score','max_score','percentage','letter','notes'];
+      if (head) head.innerHTML = '<tr>' + cols.map(c => `<th>${c}</th>`).join('') + '</tr>';
+      if (body) body.innerHTML = rows.slice(0, 10).map(r =>
+        `<tr>${cols.map(c => `<td>${_esc(r[c] || '')}</td>`).join('')}</tr>`
+      ).join('') + (rows.length > 10
+        ? `<tr><td colspan="${cols.length}" style="text-align:center;color:var(--ink3);font-size:11px;padding:8px">… and ${rows.length - 10} more rows</td></tr>`
+        : '');
+
+      // Enable submit if student already looked up
+      const sid = (document.getElementById('mbUpload-sid')?.value || '').trim();
+      const s   = (typeof students !== 'undefined' ? students : []).find(x => x.id === sid);
+      const btn = document.getElementById('mbUploadSubmitBtn');
+      if (btn) btn.disabled = !s;
+    } catch (err) {
+      showToast('CSV parse error: ' + err.message, 'error');
+    }
+  };
+  reader.readAsText(file, 'UTF-8');
+};
+
+/** Upload button handler on the standalone page */
+async function mbPageUpload() {
+  const sid = (document.getElementById('mbUpload-sid')?.value || '').trim();
+  const s   = (typeof students !== 'undefined' ? students : []).find(x => x.id === sid);
+  if (!sid || !s) { showToast('Please enter a valid Student ID first.', 'error'); return; }
+  if (!_mbParsedCSV.length) { showToast('Please select a CSV file first.', 'error'); return; }
+
+  // Point module state at this student
+  _mbStudentId = sid;
+
+  // Wire progress/error elements to the page versions
+  const _origIds = {
+    mbUploadBtn:      'mbUploadBtn',
+    mbUploadProgress: 'mbUploadProgress',
+    mbProgressBar:    'mbProgressBar',
+    mbProgressLabel:  'mbProgressLabel',
+    mbErrorWrap:      'mbErrorWrap',
+    mbErrorBody:      'mbErrorBody',
+  };
+
+  // Temporarily redirect element IDs the upload function uses
+  const btn      = document.getElementById('mbUploadSubmitBtn');
+  const progWrap = document.getElementById('mbUploadProgressWrap');
+  const progBar  = document.getElementById('mbUploadProgressBar');
+  const progLbl  = document.getElementById('mbUploadProgressLabel');
+  const errWrap  = document.getElementById('mbUploadErrorWrap');
+  const errBody  = document.getElementById('mbUploadErrorBody');
+
+  if (btn)  { btn.disabled = true; btn.textContent = 'Uploading…'; }
+  if (progWrap) progWrap.style.display = 'block';
+  if (progBar)  progBar.style.width    = '0%';
+  if (errWrap)  errWrap.style.display  = 'none';
+  if (errBody)  errBody.innerHTML      = '';
+
+  const errors   = [];
+  const toUpsert = [];
+
+  _mbParsedCSV.forEach(row => {
+    if (!row.assessment_name) { errors.push({ row: row._lineNum, issue: 'assessment_name is empty' }); return; }
+    const scoreNum = row.score      !== '' ? parseFloat(row.score)      : null;
+    const maxNum   = row.max_score  !== '' ? parseFloat(row.max_score)  : null;
+    const pctNum   = row.percentage !== '' ? parseFloat(row.percentage) : null;
+    if (row.score      !== '' && isNaN(scoreNum)) { errors.push({ row: row._lineNum, issue: `Invalid score: "${row.score}"` }); return; }
+    if (row.max_score  !== '' && isNaN(maxNum))   { errors.push({ row: row._lineNum, issue: `Invalid max_score: "${row.max_score}"` }); return; }
+    if (row.percentage !== '' && isNaN(pctNum))   { errors.push({ row: row._lineNum, issue: `Invalid percentage: "${row.percentage}"` }); return; }
+    let finalPct = pctNum;
+    if (finalPct == null && scoreNum != null && maxNum) finalPct = parseFloat(((scoreNum / maxNum) * 100).toFixed(4));
+    let letter = row.letter || null;
+    if (!letter && finalPct != null) letter = _mbPctToLetter(finalPct);
+    toUpsert.push({ student_id: sid, assessment_name: row.assessment_name, course_id: row.course_id || null,
+      year: row.year || null, block: row.block || null, score: scoreNum, max_score: maxNum,
+      percentage: finalPct, letter, notes: row.notes || null, updated_at: new Date().toISOString() });
+  });
+
+  if (errors.length && errWrap && errBody) {
+    errWrap.style.display = 'block';
+    errBody.innerHTML = errors.map(e => `<tr><td style="font-size:12px;font-family:monospace">${e.row}</td><td style="font-size:12px;color:var(--crimson)">${_esc(e.issue)}</td></tr>`).join('');
+    if (!toUpsert.length) { if (btn) { btn.disabled = false; btn.textContent = 'Upload Marks'; } return; }
+  }
+
+  // Load existing entries for this student to detect updates vs inserts
+  try {
+    const { data } = await db.from('markbook').select('id,student_id,assessment_name,year,block').eq('student_id', sid);
+    _mbEntries = data || [];
+  } catch(e) { _mbEntries = []; }
+
+  let done = 0;
+  const allErrors = [...errors];
+  const CHUNK = 50;
+
+  for (let i = 0; i < toUpsert.length; i += CHUNK) {
+    const chunk = toUpsert.slice(i, i + CHUNK);
+    if (progLbl) progLbl.textContent = `Uploading rows ${i+1}–${Math.min(i+CHUNK, toUpsert.length)} of ${toUpsert.length}…`;
+    try {
+      for (const row of chunk) {
+        const match = _mbEntries.find(e =>
+          e.student_id === row.student_id && e.assessment_name === row.assessment_name &&
+          (e.year || null) === (row.year || null) && (e.block || null) === (row.block || null));
+        if (match) {
+          const { error } = await db.from('markbook').update(row).eq('id', match.id);
+          if (error) throw error;
+        } else {
+          const { error } = await db.from('markbook').insert(row);
+          if (error) throw error;
+        }
+        done++;
+        if (progBar) progBar.style.width = `${Math.round((done / toUpsert.length) * 100)}%`;
+      }
+    } catch(err) {
+      allErrors.push({ row: `rows ${i+1}–${i+CHUNK}`, issue: err.message || String(err) });
+    }
+  }
+
+  if (progLbl) progLbl.textContent = `Done — ${done} row${done !== 1 ? 's' : ''} saved.`;
+  if (progBar) progBar.style.width = '100%';
+  if (allErrors.length && errWrap && errBody) {
+    errWrap.style.display = 'block';
+    errBody.innerHTML = allErrors.map(e => `<tr><td style="font-size:12px;font-family:monospace">${e.row}</td><td style="font-size:12px;color:var(--crimson)">${_esc(e.issue)}</td></tr>`).join('');
+  }
+
+  showToast(`✅ ${done} mark${done !== 1 ? 's' : ''} uploaded for ${s.name_en || sid}.`, 'success');
+  if (btn) { btn.disabled = false; btn.textContent = 'Upload Marks'; }
+}
+
+/* ── Expose new page functions ── */
+window.mbUploadLookup   = mbUploadLookup;
+window.mbUploadReset    = mbUploadReset;
+window.mbPageUpload     = mbPageUpload;
