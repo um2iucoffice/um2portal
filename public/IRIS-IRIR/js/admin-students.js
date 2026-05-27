@@ -676,6 +676,16 @@ async function submitBulkStudents() {
     return null;
   }
 
+  // ── Date normaliser: accepts DD/MM/YYYY or YYYY-MM-DD → YYYY-MM-DD or null ──
+  function parseDate(val) {
+    if (!val || !val.trim()) return null;
+    const v = val.trim();
+    if (/^\d{4}-\d{2}-\d{2}$/.test(v)) return v;
+    const m = v.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+    if (m) return `${m[3]}-${m[2].padStart(2,"0")}-${m[1].padStart(2,"0")}`;
+    return null;
+  }
+
   // ── Step 1: validate rows and build records locally ──────────────────────
   const validRecords   = [];  // { record, existing, row } — will be batch-upserted
   const invalidRows    = [];  // rows missing required fields
@@ -796,11 +806,15 @@ async function submitBulkStudents() {
           </tr>`;
         }
       }
-      // Send welcome emails for new students with plaintext password (non-blocking)
-      for (const { email, sid, nameEn, plainPw, dob } of newlyInserted) {
-        sendWelcomeEmail(email, sid, nameEn, plainPw, dob, 'bulk import');
-        logEmail(email, sid, '[UM2 Registry System] Welcome — Your student account is ready', 'Bulk import');
-      }
+      // Send welcome emails staggered — one every 700ms to avoid Resend rate limits
+      (async () => {
+        for (let i = 0; i < newlyInserted.length; i++) {
+          const { email, sid, nameEn, plainPw, dob } = newlyInserted[i];
+          if (i > 0) await new Promise(r => setTimeout(r, 700));
+          sendWelcomeEmail(email, sid, nameEn, plainPw, dob, 'bulk import');
+          logEmail(email, sid, '[UM2 Registry System] Welcome — Your student account is ready', 'Bulk import');
+        }
+      })();
     }
   }
 
