@@ -690,7 +690,7 @@ const logoHtml = `
   </style>
 </head>
 <body>
-  <div class="wm">UM2 · IUC</div>
+  <div class="wm"></div>
   <div class="page">
     <!-- Header -->
     <div class="hdr">
@@ -984,7 +984,7 @@ function printDocument(type) {
   </style>
 </head>
 <body>
-  <div class="wm">OFFICIAL</div>
+  <div class="wm"></div>
   <table>
     <thead><tr><td></td></tr></thead>
     <tfoot><tr><td style="padding-top:10px">
