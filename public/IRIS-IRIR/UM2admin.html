@@ -3533,5 +3533,81 @@ OSCE Station 3,,Foundation Year,,62,80,,,</div>
     }
   };
 </script>
+
+<!-- ── SESSION PERSISTENCE — restores login on page refresh ── -->
+<script>
+(function() {
+  // Wait for all scripts to finish loading, then check for existing session
+  window.addEventListener('load', async function() {
+    // If already logged in (appShell visible), do nothing
+    if (document.getElementById('appShell').classList.contains('visible')) return;
+
+    try {
+      // Ask Supabase if there's a valid session stored in localStorage
+      const { data: { session } } = await db.auth.getSession();
+      if (!session) return; // No session — show login screen normally
+
+      // Session exists — restore it without re-logging in
+      const user = session.user;
+      const { data: profile } = await db
+        .from('profiles')
+        .select('role, staff_id, nickname, department, title')
+        .eq('id', user.id)
+        .single();
+
+      if (!profile) return; // No profile found — force login
+
+      const role = profile.role || 'staff';
+
+      // Restore global state (mirrors what doLogin() does)
+      window.currentUser   = { ...profile, email: user.email, id: user.id };
+      window.currentRole   = role;
+
+      // Update UI elements
+      const initials = (profile.nickname || user.email || '?').charAt(0).toUpperCase();
+      const displayName = profile.nickname || user.email || '—';
+      const roleLabel = role === 'registrar' ? 'Secretariat' : 'Faculty';
+
+      const el = (id) => document.getElementById(id);
+      if (el('topbarAvatar'))  el('topbarAvatar').textContent  = initials;
+      if (el('sidebarAvatar')) el('sidebarAvatar').textContent = initials;
+      if (el('sidebarName'))   el('sidebarName').textContent   = displayName;
+      if (el('sidebarRole'))   el('sidebarRole').textContent   = roleLabel;
+      if (el('roleLabel'))     el('roleLabel').textContent     = roleLabel;
+      if (el('topbarTitle'))   el('topbarTitle').textContent   = 'Dashboard';
+
+      // Apply role-based visibility
+      document.querySelectorAll('.registrar-only').forEach(function(e) {
+        e.style.display = role === 'registrar' ? '' : 'none';
+      });
+      document.querySelectorAll('.staff-visible').forEach(function(e) {
+        e.style.display = '';
+      });
+
+      // Show app, hide login
+      el('loginScreen').classList.add('hidden');
+      el('appShell').classList.add('visible');
+
+      // Load all data (same as after normal login)
+      if (typeof loadAllData === 'function') loadAllData();
+
+    } catch(err) {
+      // Any error — just show login screen, don't crash
+      console.warn('Session restore failed:', err);
+    }
+  });
+
+  // Also listen for auth state changes (handles token refresh automatically)
+  window.addEventListener('load', function() {
+    db.auth.onAuthStateChange(function(event, session) {
+      if (event === 'SIGNED_OUT') {
+        // Token expired or user signed out elsewhere — force login screen
+        document.getElementById('appShell').classList.remove('visible');
+        document.getElementById('loginScreen').classList.remove('hidden');
+      }
+    });
+  });
+})();
+</script>
 </body>
 </html>
