@@ -290,6 +290,7 @@
 
   <div class="sidebar-section">Academics</div>
   <div class="nav-item" id="nav-grades" onclick="showView('grades')"><span class="nav-icon"><svg class="nav-svg"><use href="#i-grades"></use></svg></span>Grade Upload</div>
+  <div class="nav-item staff-visible" id="nav-markbookUpload" onclick="showView('markbookUpload')"><span class="nav-icon"><svg class="nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6z"/><path d="M14 2v6h6"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="13" y2="17"/><polyline points="10 9 9 9 8 9"/></svg></span>Mark Book Upload</div>
   <div class="nav-item" id="nav-attendance" onclick="showView('attendance')"><span class="nav-icon"><svg class="nav-svg"><use href="#i-attendance"></use></svg></span>Live Session Attendance</div>
   <div class="nav-item registrar-only" id="nav-courses" onclick="showView('courses')"><span class="nav-icon"><svg class="nav-svg"><use href="#i-courses"></use></svg></span>Courses</div>
   <div class="nav-item registrar-only" id="nav-bulkCourses" onclick="showView('bulkCourses')"><span class="nav-icon"><svg class="nav-svg"><use href="#i-package"></use></svg></span>Bulk Import Courses</div>
@@ -553,10 +554,7 @@
       <button class="btn btn-outline btn-sm" onclick="exportMarkbookCSV()">
         <svg class="ui-icon"><use href="#i-upload"></use></svg> Export CSV
       </button>
-      <button class="btn btn-outline btn-sm registrar-only" onclick="openMarkbookCSVUpload()">
-        <svg class="ui-icon"><use href="#i-package"></use></svg> Upload CSV
-      </button>
-      <button class="btn btn-primary btn-sm registrar-only" onclick="openMarkbookEntryModal()">
+      <button class="btn btn-primary btn-sm staff-visible" onclick="openMarkbookEntryModal()">
         + Add Entry
       </button>
     </div>
@@ -850,6 +848,150 @@ OSCE Station 3,,Foundation Year,,62,80,,, </div>
 </div>
 
 <!-- ── ADMIT TO NEW DEGREE MODAL ── -->
+<!-- ═══════ EDIT ENROLLMENT PERIOD MODAL ═══════ -->
+<div class="modal-overlay" id="epEditModal">
+  <div class="modal" style="max-width:680px">
+    <div class="modal-header">
+      <div class="modal-title">Edit Enrollment Period</div>
+      <button class="modal-close" onclick="closeModal('epEditModal')">✕</button>
+    </div>
+    <input type="hidden" id="epEditId">
+    <div class="form-grid">
+
+      <div class="form-group">
+        <label>Degree Program *</label>
+        <select id="epEdit-program" onchange="epEditLoadYears()">
+          <option value="">— select program —</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>From Year (current) *</label>
+        <select id="epEdit-fromYear" onchange="epEditPopulateToYear()">
+          <option value="">— select program first —</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>To Year (next) *</label>
+        <select id="epEdit-toYear">
+          <option value="">— select From Year first —</option>
+        </select>
+      </div>
+
+      <div class="form-group"></div>
+
+      <div class="form-group">
+        <label>Open Date *</label>
+        <input type="date" id="epEdit-openAt">
+      </div>
+
+      <div class="form-group">
+        <label>Close Date *</label>
+        <input type="date" id="epEdit-closeAt">
+      </div>
+
+      <div class="form-group full">
+        <label>Minimum Pass Rate — <span id="epEdit-minPassLabel">80</span>%</label>
+        <div style="position:relative;height:22px;display:flex;align-items:center;margin:4px 0 2px">
+          <div style="position:absolute;left:0;right:0;height:6px;border-radius:3px;background:var(--line);pointer-events:none"></div>
+          <div id="epEdit-minPassFill" style="position:absolute;left:0;width:80%;height:6px;border-radius:3px;background:var(--crimson);pointer-events:none"></div>
+          <input type="range" id="epEdit-minPass" min="0" max="100" value="80"
+                 oninput="document.getElementById('epEdit-minPassLabel').textContent=this.value;document.getElementById('epEdit-minPassFill').style.width=this.value+'%'"
+                 style="position:relative;width:100%;margin:0;-webkit-appearance:none;appearance:none;background:transparent;outline:none;cursor:pointer;height:22px;z-index:1">
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--ink3)"><span>0%</span><span>50%</span><span>100%</span></div>
+      </div>
+
+      <!-- Eligibility Criteria -->
+      <div class="form-group full">
+        <div style="font-size:10px;font-weight:700;letter-spacing:1.4px;text-transform:uppercase;color:var(--ink3);margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid var(--line)">
+          Eligibility Criteria
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+
+          <div style="background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:12px 14px;display:flex;align-items:flex-start;gap:12px">
+            <div style="flex:1">
+              <div style="font-size:12px;font-weight:600;color:var(--ink);margin-bottom:2px">No Failed Courses (F Grade)</div>
+              <div style="font-size:11px;color:var(--ink3)">Student must have zero F grades to enroll</div>
+            </div>
+            <label class="toggle-wrap" style="display:flex;align-items:center;gap:6px;cursor:pointer;flex-shrink:0;margin-top:2px">
+              <input type="checkbox" id="epEdit-requireNoFailures" style="display:none">
+              <span id="epEdit-requireNoFailuresTrack" onclick="epToggle('epEdit-requireNoFailures','epEdit-requireNoFailuresTrack')"
+                style="display:inline-flex;width:40px;height:22px;border-radius:11px;background:var(--line);border:1px solid var(--line);align-items:center;cursor:pointer;transition:background .2s;padding:2px">
+                <span style="width:16px;height:16px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.2);transition:transform .2s;transform:translateX(0)"></span>
+              </span>
+              <span id="epEdit-requireNoFailuresLabel" style="font-size:12px;color:var(--ink2);min-width:22px">No</span>
+            </label>
+          </div>
+
+          <div style="background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:12px 14px;display:flex;align-items:flex-start;gap:12px">
+            <div style="flex:1">
+              <div style="font-size:12px;font-weight:600;color:var(--ink);margin-bottom:2px">All Courses Must Be Graded</div>
+              <div style="font-size:11px;color:var(--ink3)">Block enrollment if any course has no grade yet</div>
+            </div>
+            <label class="toggle-wrap" style="display:flex;align-items:center;gap:6px;cursor:pointer;flex-shrink:0;margin-top:2px">
+              <input type="checkbox" id="epEdit-requireAllGraded" style="display:none">
+              <span id="epEdit-requireAllGradedTrack" onclick="epToggle('epEdit-requireAllGraded','epEdit-requireAllGradedTrack')"
+                style="display:inline-flex;width:40px;height:22px;border-radius:11px;background:var(--line);border:1px solid var(--line);align-items:center;cursor:pointer;transition:background .2s;padding:2px">
+                <span style="width:16px;height:16px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.2);transition:transform .2s;transform:translateX(0)"></span>
+              </span>
+              <span id="epEdit-requireAllGradedLabel" style="font-size:12px;color:var(--ink2);min-width:22px">No</span>
+            </label>
+          </div>
+
+          <div style="background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:12px 14px;display:flex;align-items:flex-start;gap:12px">
+            <div style="flex:1">
+              <div style="font-size:12px;font-weight:600;color:var(--ink);margin-bottom:2px">Core Courses All Passed</div>
+              <div style="font-size:11px;color:var(--ink3)">Require all core-flagged courses to be passed</div>
+            </div>
+            <label class="toggle-wrap" style="display:flex;align-items:center;gap:6px;cursor:pointer;flex-shrink:0;margin-top:2px">
+              <input type="checkbox" id="epEdit-requireCore" style="display:none">
+              <span id="epEdit-requireCoreTrack" onclick="epToggle('epEdit-requireCore','epEdit-requireCoreTrack')"
+                style="display:inline-flex;width:40px;height:22px;border-radius:11px;background:var(--line);border:1px solid var(--line);align-items:center;cursor:pointer;transition:background .2s;padding:2px">
+                <span style="width:16px;height:16px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.2);transition:transform .2s;transform:translateX(0)"></span>
+              </span>
+              <span id="epEdit-requireCoreLabel" style="font-size:12px;color:var(--ink2);min-width:22px">No</span>
+            </label>
+          </div>
+
+          <div style="background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:12px 14px">
+            <div style="font-size:12px;font-weight:600;color:var(--ink);margin-bottom:2px">Min. Passed Courses</div>
+            <div style="font-size:11px;color:var(--ink3);margin-bottom:8px">Minimum number of passed courses required (0 = disabled)</div>
+            <div style="display:flex;align-items:center;gap:8px">
+              <input type="number" id="epEdit-minPassedCourses" min="0" max="999" value="0"
+                style="width:80px;min-height:32px;padding:5px 10px;font-size:13px;text-align:center">
+              <span style="font-size:12px;color:var(--ink3)">courses</span>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Auto-Promote -->
+      <div class="form-group">
+        <label>Auto-Promote After Close</label>
+        <div style="display:flex;align-items:center;gap:10px;height:36px">
+          <label class="toggle-wrap" style="display:flex;align-items:center;gap:8px;cursor:pointer">
+            <input type="checkbox" id="epEdit-autoPromote" style="display:none">
+            <span id="epEdit-autoPromoteTrack" onclick="epToggle('epEdit-autoPromote','epEdit-autoPromoteTrack')"
+              style="display:inline-flex;width:40px;height:22px;border-radius:11px;background:var(--line);border:1px solid var(--line);align-items:center;cursor:pointer;transition:background .2s;padding:2px">
+              <span style="width:16px;height:16px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.2);transition:transform .2s;transform:translateX(0)"></span>
+            </span>
+            <span id="epEdit-autoPromoteLabel" style="font-size:12px;color:var(--ink2)">No</span>
+          </label>
+        </div>
+      </div>
+
+    </div>
+    <div class="form-actions">
+      <button class="btn btn-primary" id="epEditSaveBtn" onclick="saveEditEnrollmentPeriod()">Save Changes</button>
+      <button class="btn btn-outline" onclick="closeModal('epEditModal')">Cancel</button>
+    </div>
+    <div id="epEditMsg" style="display:none;margin-top:12px;font-size:13px"></div>
+  </div>
+</div>
+
 <div class="modal-overlay" id="newEnrollmentModal">
   <div class="modal">
     <div class="modal-header">
@@ -2653,6 +2795,115 @@ CREATE POLICY IF NOT EXISTS &quot;Authenticated read all announcements&quot; ON 
 
 </div><!-- /view-chronicles -->
 
+
+<!-- ═══════ MARK BOOK UPLOAD ═══════ -->
+<div class="view" id="view-markbookUpload">
+  <div class="page-header">
+    <div class="page-header-left">
+      <div class="page-title">Mark Book Upload</div>
+      <div class="page-sub">Bulk upload assessment marks via CSV — registrar and staff</div>
+    </div>
+    <div class="page-actions">
+      <button class="btn btn-outline btn-sm" onclick="downloadMarkbookTemplate()">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Download Template
+      </button>
+    </div>
+  </div>
+
+  <!-- Format guide -->
+  <div class="card" style="margin-bottom:16px">
+    <div class="card-title">Expected CSV Format</div>
+    <div class="code-block">assessment_name,course_id,year,block,score,max_score,percentage,letter,notes
+Mid-Term Exam,CRS015,M-1,Block 1,78.5,100,78.50,B+,Good effort
+Lab Report 2,CRS022,M-1,Block 2,45,50,90.00,A,Excellent
+OSCE Station 3,,Foundation Year,,62,80,,,</div>
+    <p class="text-muted mt-2">
+      <strong>assessment_name</strong> is required. All other columns are optional.<br>
+      <strong>percentage</strong> and <strong>letter</strong> are auto-computed if omitted.<br>
+      Rows with a matching <em>student_id + assessment_name + year + block</em> will be <strong>updated</strong>; new rows will be <strong>inserted</strong>.
+    </p>
+  </div>
+
+  <!-- Student selector + upload zone -->
+  <div class="card">
+    <div class="card-title">Upload Marks</div>
+
+    <!-- Student ID input -->
+    <div class="form-grid" style="margin-bottom:16px">
+      <div class="form-group">
+        <label>Student ID *</label>
+        <div style="display:flex;gap:8px">
+          <input id="mbUpload-sid" placeholder="e.g. iuc125065" style="flex:1"
+            oninput="mbUploadLookup(this.value)">
+          <button class="btn btn-outline btn-sm" onclick="mbUploadLookup(document.getElementById('mbUpload-sid').value)">Look up</button>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Student Name</label>
+        <input id="mbUpload-name" readonly placeholder="— enter Student ID above —" style="background:var(--surface);color:var(--ink2)">
+      </div>
+    </div>
+
+    <!-- Drop zone -->
+    <div class="upload-zone" id="mbUploadDropZone"
+      onclick="document.getElementById('mbUploadFile').click()"
+      ondragover="event.preventDefault();this.classList.add('drag-over')"
+      ondragleave="this.classList.remove('drag-over')"
+      ondrop="event.preventDefault();this.classList.remove('drag-over');handleMarkbookFile(event.dataTransfer.files[0]);document.getElementById('mbUploadDropLabel').textContent=event.dataTransfer.files[0].name">
+      <div class="upload-icon"><svg class="ui-icon"><use href="#i-upload"></use></svg></div>
+      <div class="upload-label" id="mbUploadDropLabel">Drop CSV here or click to browse</div>
+      <div class="upload-sub">Accepts .csv · matches markbook template format</div>
+      <input type="file" id="mbUploadFile" accept=".csv" style="display:none"
+        onchange="handleMarkbookFile(this.files[0]);document.getElementById('mbUploadDropLabel').textContent=this.files[0]?.name||'No file selected'">
+    </div>
+
+    <!-- Preview -->
+    <div id="mbUploadPreviewWrap" style="display:none;margin-top:16px">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;flex-wrap:wrap">
+        <span class="card-title" style="margin-bottom:0">Preview — <span id="mbUploadPreviewCount">0</span> rows</span>
+        <span style="font-size:11px;color:var(--ink3)">First 10 rows shown</span>
+      </div>
+      <div class="table-wrap" style="max-height:320px;overflow-y:auto;border:1px solid var(--line);border-radius:var(--r)">
+        <table style="font-size:12px">
+          <thead id="mbUploadPreviewHead"></thead>
+          <tbody id="mbUploadPreviewBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Progress -->
+    <div id="mbUploadProgressWrap" style="display:none;margin-top:16px">
+      <div style="font-size:12px;color:var(--ink2);margin-bottom:6px" id="mbUploadProgressLabel">Uploading…</div>
+      <div style="height:6px;background:var(--line);border-radius:3px;overflow:hidden">
+        <div id="mbUploadProgressBar" style="height:100%;width:0%;background:var(--crimson);border-radius:3px;transition:width .3s"></div>
+      </div>
+    </div>
+
+    <!-- Errors -->
+    <div id="mbUploadErrorWrap" style="display:none;margin-top:14px">
+      <div style="font-size:12px;font-weight:600;color:var(--crimson);margin-bottom:6px">Validation Issues</div>
+      <div class="table-wrap" style="max-height:200px;overflow-y:auto;border:1px solid var(--line);border-radius:var(--r)">
+        <table style="font-size:12px">
+          <thead><tr><th>Row</th><th>Issue</th></tr></thead>
+          <tbody id="mbUploadErrorBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="form-actions" style="margin-top:16px">
+      <button class="btn btn-primary" id="mbUploadSubmitBtn" disabled onclick="mbPageUpload()">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Upload Marks
+      </button>
+      <button class="btn btn-outline" id="mbUploadAddEntryBtn" disabled onclick="openMarkbookEntryModal()">
+        + Add Single Entry
+      </button>
+      <button class="btn btn-outline" onclick="mbUploadReset()">Reset</button>
+    </div>
+  </div>
+</div>
+
 </main>
 </div><!-- /appShell -->
 
@@ -3239,8 +3490,9 @@ CREATE POLICY IF NOT EXISTS &quot;Authenticated read all announcements&quot; ON 
 
 <!-- ════ JAVASCRIPT ════ -->
 <script src="js/admin-state.js"></script>
-<script src="js/admin-auth.js"></script>
 <script src="js/admin-timetable.js"></script>
+<script src="js/admin-ui.js"></script>
+<script src="js/admin-auth.js"></script>
 <script src="js/admin-data.js"></script>
 <script src="js/admin-students.js"></script>
 <script src="js/admin-grades.js"></script>
@@ -3249,7 +3501,6 @@ CREATE POLICY IF NOT EXISTS &quot;Authenticated read all announcements&quot; ON 
 <script src="js/admin-attendance.js"></script>
 <script src="js/admin-email.js"></script>
 <script src="js/admin-academic.js"></script>
-<script src="js/admin-ui.js"></script>
 <script src="js/admin-multidegree.js"></script>
 <script src="js/admin-editrequests.js"></script>
 <script src="js/admin-chronicles.js"></script>
