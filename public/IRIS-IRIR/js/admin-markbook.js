@@ -33,7 +33,7 @@ async function loadMarkbook(studentId) {
   document.getElementById('mbStatChips').innerHTML = '';
 
   try {
-    const { data, error } = await window._supabase
+    const { data, error } = await db
       .from('markbook')
       .select('*')
       .eq('student_id', studentId)
@@ -336,13 +336,13 @@ async function saveMarkbookEntry() {
     let error;
     if (id) {
       // Update
-      ({ error } = await window._supabase
+      ({ error } = await db
         .from('markbook')
         .update(payload)
         .eq('id', parseInt(id)));
     } else {
       // Insert
-      ({ error } = await window._supabase
+      ({ error } = await db
         .from('markbook')
         .insert(payload));
     }
@@ -368,7 +368,7 @@ async function deleteMarkbookEntry() {
   if (!confirm('Delete this mark book entry? This cannot be undone.')) return;
 
   try {
-    const { error } = await window._supabase
+    const { error } = await db
       .from('markbook')
       .delete()
       .eq('id', parseInt(id));
@@ -590,13 +590,13 @@ async function uploadMarkbookCSV() {
         );
 
         if (match) {
-          const { error } = await window._supabase
+          const { error } = await db
             .from('markbook')
             .update(row)
             .eq('id', match.id);
           if (error) throw error;
         } else {
-          const { error } = await window._supabase
+          const { error } = await db
             .from('markbook')
             .insert(row);
           if (error) throw error;
