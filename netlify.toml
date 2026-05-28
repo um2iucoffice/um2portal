@@ -1,5 +1,5 @@
 [build]
-  publish = "public/IRIS-IRIS"
+  publish = "public/IRIS-IRIR"
   functions = "netlify/functions"
   command = "echo 'No build step'"
 
