@@ -1,3 +1,27 @@
+// ── QR helper: generate a QR data URL in the parent window ────
+// Requires qrcodejs to already be loaded on the parent page.
+function generateQRDataUrl(text, size) {
+  try {
+    const tempDiv = document.createElement('div');
+    tempDiv.style.cssText = 'position:absolute;left:-9999px;top:-9999px;';
+    document.body.appendChild(tempDiv);
+    new QRCode(tempDiv, {
+      text: text,
+      width: size,
+      height: size,
+      colorDark: '#0D1B2A',
+      colorLight: '#ffffff',
+      correctLevel: QRCode.CorrectLevel.M
+    });
+    const canvas = tempDiv.querySelector('canvas');
+    const dataUrl = canvas ? canvas.toDataURL('image/png') : '';
+    document.body.removeChild(tempDiv);
+    return dataUrl;
+  } catch(e) {
+    return '';
+  }
+}
+
 // ── Cert cards (degree certificate section) ───────────────────
 function renderCertCards(enrollments) {
   const section = document.getElementById('certSection');
@@ -210,13 +234,15 @@ async function printDegreeCertificate(enrollIdx) {
     }
   } catch(qrErr) { console.warn('QR token fetch failed, using fallback', qrErr); }
 
+  // Generate QR in the parent window (where qrcodejs is already loaded)
+  const certQRDataUrl = generateQRDataUrl(qrData, 56);
+
   const html = `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <title>Degree Certificate — ${name}</title>
   <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=DM+Sans:opsz,wght@9..40,400;9..40,600;9..40,700&family=Roboto:ital,wght@0,300;0,400;0,500;0,700;1,400&display=swap" rel="stylesheet">
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"><\/script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     html { background: #5a5a5a; min-height: 100%; }
@@ -569,7 +595,7 @@ async function printDegreeCertificate(enrollIdx) {
   <!-- QR + Date/Reg info — absolute bottom-left -->
   <div style="position:absolute;bottom:22mm;left:16mm;display:flex;align-items:flex-start;gap:4mm;">
     <div class="cert-qr">
-      <div id="certQR"></div>
+      ${certQRDataUrl ? `<img src="${certQRDataUrl}" width="56" height="56" style="display:block;image-rendering:pixelated;" alt="Verify QR">` : ''}
     </div>
     <div style="font-family:'Roboto',sans-serif;font-size:8.5pt;color:#333;line-height:2;">
       ${gradDate ? `<div>${gradDate}</div>` : ''}
@@ -595,19 +621,9 @@ async function printDegreeCertificate(enrollIdx) {
 </div><!-- /.cert-page -->
 
 <script>
-  // Generate QR
-  window.addEventListener('load', function() {
-    try {
-      new QRCode(document.getElementById('certQR'), {
-        text: ${JSON.stringify(qrData)},
-        width: 56, height: 56,
-        colorDark: '#002060',
-        colorLight: '#ffffff',
-        correctLevel: QRCode.CorrectLevel.M
-      });
-    } catch(e) {}
-    setTimeout(function() { window.print(); }, 800);
-  });
+    window.addEventListener('load', function() {
+      setTimeout(function() { window.print(); }, 400);
+    });
 <\/script>
 </body>
 </html>`;
@@ -679,13 +695,37 @@ const logoHtml = `
     <p>Yours faithfully,</p>
   `;
 
+  // ── Fetch signed QR token and generate QR for COS ─────────────
+  let cosQrUrl = 'https://sisportal.um2campus.org/verifyum2iuc';
+  try {
+    const cosQrRes = await fetch('/.netlify/functions/generate-qr-token', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + (window._sessionToken || '')
+      },
+      body: JSON.stringify({
+        studentId   : sid,
+        studentName : name,
+        program     : program || 'degree programme',
+        validThrough: '30 days',
+        type        : isGraduated ? 'confirmation_of_graduation' : 'confirmation_of_study'
+      })
+    });
+    if (cosQrRes.ok) {
+      const cosQrJson = await cosQrRes.json();
+      if (cosQrJson.verifyUrl) cosQrUrl = cosQrJson.verifyUrl;
+    }
+  } catch(qrErr) { console.warn('COS QR token fetch failed', qrErr); }
+
+  const cosQRDataUrl = generateQRDataUrl(cosQrUrl, 72);
+
   const html = `<!DOCTYPE html>
 <html>
 <head>
   <meta charset="UTF-8">
   <title>${docType} — ${name}</title>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet">
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"><\/script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     html, body { height: 100%; }
@@ -743,12 +783,20 @@ const logoHtml = `
     </div>
 
     <!-- Footer -->
-    <div class="ftr">
-      <span>University of Medicine (2) &nbsp;·&nbsp; ${idLabel}: ${sid} &nbsp;·&nbsp; ${name}</span>
-      <span>Issued: ${today}</span>
+    <div class="ftr" style="display:flex;justify-content:space-between;align-items:flex-end;">
+      <div>
+        <span>University of Medicine (2) &nbsp;·&nbsp; ${idLabel}: ${sid} &nbsp;·&nbsp; ${name}</span><br>
+        <span>Issued: ${today}</span>
+      </div>
+      ${cosQRDataUrl ? `<div style="display:flex;flex-direction:column;align-items:center;gap:3px;"><img src="${cosQRDataUrl}" width="72" height="72" style="display:block;image-rendering:pixelated;" alt="Verify QR"><span style="font-size:7pt;color:#888;">Scan to Verify</span></div>` : ''}
     </div>
   </div>
 
+  <script>
+    window.addEventListener('load', function() {
+      setTimeout(function() { window.print(); }, 400);
+    });
+  <\/script>
 </body>
 </html>`;
 
@@ -974,6 +1022,9 @@ async function printDocument(type) {
     }
   } catch(qrErr) { console.warn('Document QR token fetch failed', qrErr); }
 
+  // Generate QR in the parent window (where qrcodejs is already loaded)
+  const docQRDataUrl = generateQRDataUrl(docQrUrl, 80);
+
   const closing = `
   <div style="margin-top:28px;border-top:1.5px solid #0D1B2A;display:flex;justify-content:space-between;align-items:stretch;font-family:'DM Sans',sans-serif">
     <div style="flex:1;padding:12px 16px;font-size:11pt;color:#0D1B2A;line-height:1.7;">
@@ -992,23 +1043,10 @@ async function printDocument(type) {
       </div>
     </div>
     <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:12px 16px;border-left:1px solid #ddd;min-width:110px">
-      <div id="docQRcode" style="width:80px;height:80px"></div>
+      ${docQRDataUrl ? `<img src="${docQRDataUrl}" width="80" height="80" style="display:block;image-rendering:pixelated;" alt="Verify QR">` : '<div style="width:80px;height:80px"></div>'}
       <div style="font-size:7.5pt;color:#888;margin-top:4px;text-align:center">Scan to Verify</div>
     </div>
   </div>
-  <script>
-    window.addEventListener('load', function() {
-      try {
-        new QRCode(document.getElementById('docQRcode'), {
-          text: ${JSON.stringify(docQrUrl)},
-          width: 80, height: 80,
-          colorDark: '#0D1B2A',
-          colorLight: '#ffffff',
-          correctLevel: QRCode.CorrectLevel.H
-        });
-      } catch(e) {}
-    });
-  <\/script>
   ${type === 'transcript' ? `
   <!-- ── ATTESTATION / DECLARATION PAGE ── -->
   <div style="margin-top:32px;padding-top:20px;border-top:2px solid #0D1B2A;font-family:'DM Sans',sans-serif;page-break-before:always;">
@@ -1089,7 +1127,6 @@ async function printDocument(type) {
   <meta charset="UTF-8">
   <title>${docTitle} — ${name}</title>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet">
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"><\/script>
   <style>
     @font-face {
       font-family: 'Pyidaungsu';

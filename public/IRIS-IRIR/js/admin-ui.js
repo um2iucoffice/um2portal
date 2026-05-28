@@ -200,10 +200,13 @@ function setupDropZone(zoneId, inputId, handler) {
     if (e.dataTransfer.files.length) handler({ files: e.dataTransfer.files });
   });
 }
-setupDropZone('dropZone',       'csvFile',          handleGradeCSV);
-setupDropZone('enrollDropZone', 'enrollCSVFile',    handleBulkEnrollCSV);
-setupDropZone('studentDropZone','studentCSVFile',   handleBulkStudentCSV);
-setupDropZone('yearDropZone',    'yearCSVFile',      handleBulkYearCSV);
-setupDropZone('attendanceDropZone', 'attendanceCSVFile', handleAttendanceCSV);
-setupDropZone('courseDropZone',     'courseCSVFile',    handleBulkCourseCSV);
-
+// Defer drop zone wiring until all scripts are loaded so the handler
+// functions (handleGradeCSV, handleBulkEnrollCSV, etc.) are defined.
+document.addEventListener('DOMContentLoaded', function () {
+  setupDropZone('dropZone',            'csvFile',             handleGradeCSV);
+  setupDropZone('enrollDropZone',      'enrollCSVFile',       handleBulkEnrollCSV);
+  setupDropZone('studentDropZone',     'studentCSVFile',      handleBulkStudentCSV);
+  setupDropZone('yearDropZone',        'yearCSVFile',         handleBulkYearCSV);
+  setupDropZone('attendanceDropZone',  'attendanceCSVFile',   handleAttendanceCSV);
+  setupDropZone('courseDropZone',      'courseCSVFile',       handleBulkCourseCSV);
+});

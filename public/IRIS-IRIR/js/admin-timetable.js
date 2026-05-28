@@ -696,7 +696,7 @@ function setStaffPhoto(src) {
 }
 
 
-restoreSession();
+// restoreSession() is called via DOMContentLoaded in the HTML after all scripts load
 
 // Realtime: refresh edit requests when a student submits a new one
 db.channel('edit-requests-changes')
