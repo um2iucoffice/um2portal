@@ -2,10 +2,14 @@
 // Returns notifications for a student from the last 2 days.
 
 const { createClient } = require('@supabase/supabase-js');
-
+// AFTER
 const supabase = createClient(
   process.env.SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_KEY
+  process.env.SUPABASE_SERVICE_KEY,
+  {
+    realtime: { enabled: false },
+    global: { fetch }
+  }
 );
 
 const TTL_DAYS = 2;

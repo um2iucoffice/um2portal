@@ -2,10 +2,14 @@
 // Marks a list of notification IDs as read for a student.
 
 const { createClient } = require('@supabase/supabase-js');
-
+// AFTER
 const supabase = createClient(
   process.env.SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_KEY
+  process.env.SUPABASE_SERVICE_KEY,
+  {
+    realtime: { enabled: false },
+    global: { fetch }
+  }
 );
 
 exports.handler = async function (event) {
