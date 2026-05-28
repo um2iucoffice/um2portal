@@ -188,7 +188,7 @@ async function printDegreeCertificate(enrollIdx) {
   const degreeTitle = programName || 'Degree Program';
 
   // ── Secure QR: fetch signed token from server ──────────────
-  let qrData = window.location.origin + '/verifyum2iuc'; // fallback
+  let qrData = 'https://sisportal.um2campus.org/verifyum2iuc'; // fallback
   try {
     const qrRes = await fetch('/.netlify/functions/generate-qr-token', {
       method: 'POST',
@@ -626,7 +626,7 @@ setTimeout(() => URL.revokeObjectURL(url), 10000);
 }
 
 // ── printConfirmation(enrollmentIndex) ───────────────────────
-function printConfirmation(enrollIdx) {
+async function printConfirmation(enrollIdx) {
   const enrollments = window._enrollments || [];
   const e = enrollments[enrollIdx] || enrollments[0];
   if (!e) return;
@@ -953,7 +953,7 @@ async function printDocument(type) {
   </div>` : '';
 
   // ── Fetch signed QR token for this document ──────────────────
-  let docQrUrl = window.location.origin + '/verifyum2iuc';
+  let docQrUrl = 'https://sisportal.um2campus.org/verifyum2iuc';
   try {
     const docQrRes = await fetch('/.netlify/functions/generate-qr-token', {
       method: 'POST',

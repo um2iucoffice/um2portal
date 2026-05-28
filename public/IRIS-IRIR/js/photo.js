@@ -330,7 +330,7 @@ function populateIDCard(s, isGraduated, gradID, gradDate) {
   // that goes nowhere and would be overwritten a moment later anyway.
 }
 
-function printIDCard() {
+async function printIDCard() {
   const esc = function(value) {
     return String(value || '—')
       .replace(/&/g, '&amp;')
@@ -367,10 +367,31 @@ function printIDCard() {
     idLabel:    _idLabel
   };
 
-  // Use the signed URL cached by generateIDCardQR(); fall back only if it hasn't
-  // loaded yet (e.g. user prints before the async QR fetch completes).
-  const qrData = window._idcardVerifyUrl
-    || (window.location.origin + '/verify?id=' + encodeURIComponent(s.id || ''));
+  // Fetch a fresh signed token for the print popup.
+  // We cannot rely on window._idcardVerifyUrl (may not be set yet) and we
+  // cannot use window.location.origin inside a blob: popup (returns null).
+  const VERIFY_BASE = 'https://sisportal.um2campus.org/verifyum2iuc';
+  let qrData = VERIFY_BASE;
+  try {
+    const _qrRes = await fetch('/.netlify/functions/generate-qr-token', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + (window._sessionToken || '')
+      },
+      body: JSON.stringify({
+        studentId   : s.id,
+        studentName : s.name,
+        program     : s.program,
+        validThrough: s.isGrad ? (s.gradDate || s.gradID || 'Graduated') : String(new Date().getFullYear() + 1),
+        type        : 'idcard'
+      })
+    });
+    if (_qrRes.ok) {
+      const _qrJson = await _qrRes.json();
+      if (_qrJson.verifyUrl) qrData = _qrJson.verifyUrl;
+    }
+  } catch(_qrErr) { console.warn('ID card QR token fetch failed', _qrErr); }
 
   const html = `<!DOCTYPE html><html><head><meta charset="UTF-8">
   <title>${esc(s.isGrad ? 'Alumni ID Card' : 'Student ID Card')} — ${esc(s.id)}</title>
