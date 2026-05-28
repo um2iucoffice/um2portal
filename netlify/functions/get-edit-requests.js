@@ -104,7 +104,7 @@ exports.handler = async (event) => {
   try {
     // Fetch only this student's own edit requests, newest first
     const rows = await supabase(
-      `edit_requests?student_id=eq.${encodeURIComponent(cleanStudentId)}&order=created_at.desc&select=id,student_id,requested_fields,status,admin_note,created_at,resolved_at`
+      `student_edit_requests?student_id=eq.${encodeURIComponent(cleanStudentId)}&order=created_at.desc&select=id,student_id,requested_fields,status,admin_note,created_at,resolved_at`
     );
 
     return {

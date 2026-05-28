@@ -154,7 +154,7 @@ exports.handler = async (event) => {
 
   // ── Insert edit request ───────────────────────────────────────────────────
   try {
-    await supabase('edit_requests', {
+    await supabase('student_edit_requests', {
       method:  'POST',
       headers: { Prefer: 'return=minimal' },
       body: JSON.stringify({

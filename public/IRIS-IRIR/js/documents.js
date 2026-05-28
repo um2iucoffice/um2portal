@@ -1008,7 +1008,78 @@ async function printDocument(type) {
         });
       } catch(e) {}
     });
-  <\/script>`;
+  <\/script>
+  ${type === 'transcript' ? `
+  <!-- ── ATTESTATION / DECLARATION PAGE ── -->
+  <div style="margin-top:32px;padding-top:20px;border-top:2px solid #0D1B2A;font-family:'DM Sans',sans-serif;page-break-before:always;">
+
+    <!-- Institution Identification -->
+    <div style="margin-bottom:24px;">
+      <div style="font-size:8pt;font-weight:700;letter-spacing:1.4px;text-transform:uppercase;color:#555;border-bottom:1px solid #ccc;padding-bottom:5px;margin-bottom:12px;">Identification of the Institution</div>
+      <table style="width:100%;border-collapse:collapse;font-size:9pt;color:#0D1B2A;">
+        <tbody>
+          <tr><td style="padding:4px 0;width:160px;font-weight:600;color:#555;font-size:8pt;letter-spacing:.4px;text-transform:uppercase;vertical-align:top">Full Name</td><td style="padding:4px 0;font-weight:600;">University of Medicine - 2, Yangon</td></tr>
+          <tr><td style="padding:4px 0;font-weight:600;color:#555;font-size:8pt;letter-spacing:.4px;text-transform:uppercase;vertical-align:top">Issued by</td><td style="padding:4px 0;font-weight:600;">Secretariat Office, Interim University Council</td></tr>
+          <tr><td style="padding:4px 0;font-weight:600;color:#555;font-size:8pt;letter-spacing:.4px;text-transform:uppercase;vertical-align:top">Email</td><td style="padding:4px 0;">admin@um2campus.org</td></tr>
+          <tr><td style="padding:4px 0;font-weight:600;color:#555;font-size:8pt;letter-spacing:.4px;text-transform:uppercase;vertical-align:top">URL</td><td style="padding:4px 0;">www.um2campus.org</td></tr>
+          <tr><td style="padding:4px 0;font-weight:600;color:#555;font-size:8pt;letter-spacing:.4px;text-transform:uppercase;vertical-align:top">Type</td><td style="padding:4px 0;">Public University</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Grading Scale — two tables side by side -->
+    <div style="margin-bottom:24px;">
+      <div style="font-size:8pt;font-weight:700;letter-spacing:1.4px;text-transform:uppercase;color:#555;border-bottom:1px solid #ccc;padding-bottom:5px;margin-bottom:12px;">Grading Scale</div>
+      <div style="display:flex;gap:20px;align-items:flex-start;">
+
+        <!-- Grade / Percentage / GPA table -->
+        <table style="flex:1;border-collapse:collapse;font-size:8.5pt;font-family:'DM Sans',sans-serif;">
+          <thead>
+            <tr style="background:#0D1B2A;color:#fff;">
+              <th style="padding:6px 10px;text-align:center;font-weight:600;letter-spacing:.4px;font-size:7.5pt;text-transform:uppercase;">Grade</th>
+              <th style="padding:6px 10px;text-align:center;font-weight:600;letter-spacing:.4px;font-size:7.5pt;text-transform:uppercase;">Percentage</th>
+              <th style="padding:6px 10px;text-align:center;font-weight:600;letter-spacing:.4px;font-size:7.5pt;text-transform:uppercase;">GPA Equivalent</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style="background:#fafafa;"><td style="padding:5px 10px;text-align:center;font-weight:700;font-family:'Courier New',monospace;letter-spacing:.5px;border-bottom:1px solid #eee;">A⁺</td><td style="padding:5px 10px;text-align:center;border-bottom:1px solid #eee;">75% and above</td><td style="padding:5px 10px;text-align:center;font-weight:700;color:#8B1A2E;border-bottom:1px solid #eee;">4.0</td></tr>
+            <tr>                          <td style="padding:5px 10px;text-align:center;font-weight:700;font-family:'Courier New',monospace;letter-spacing:.5px;border-bottom:1px solid #eee;">A</td> <td style="padding:5px 10px;text-align:center;border-bottom:1px solid #eee;">70–74%</td>         <td style="padding:5px 10px;text-align:center;font-weight:700;color:#8B1A2E;border-bottom:1px solid #eee;">3.7</td></tr>
+            <tr style="background:#fafafa;"><td style="padding:5px 10px;text-align:center;font-weight:700;font-family:'Courier New',monospace;letter-spacing:.5px;border-bottom:1px solid #eee;">A⁻</td><td style="padding:5px 10px;text-align:center;border-bottom:1px solid #eee;">65–69%</td>         <td style="padding:5px 10px;text-align:center;font-weight:700;color:#8B1A2E;border-bottom:1px solid #eee;">3.3</td></tr>
+            <tr>                          <td style="padding:5px 10px;text-align:center;font-weight:700;font-family:'Courier New',monospace;letter-spacing:.5px;border-bottom:1px solid #eee;">B⁺</td><td style="padding:5px 10px;text-align:center;border-bottom:1px solid #eee;">60–64%</td>         <td style="padding:5px 10px;text-align:center;font-weight:700;color:#8B1A2E;border-bottom:1px solid #eee;">3.0</td></tr>
+            <tr style="background:#fafafa;"><td style="padding:5px 10px;text-align:center;font-weight:700;font-family:'Courier New',monospace;letter-spacing:.5px;border-bottom:1px solid #eee;">B</td> <td style="padding:5px 10px;text-align:center;border-bottom:1px solid #eee;">55–59%</td>         <td style="padding:5px 10px;text-align:center;font-weight:700;color:#8B1A2E;border-bottom:1px solid #eee;">2.7</td></tr>
+            <tr>                          <td style="padding:5px 10px;text-align:center;font-weight:700;font-family:'Courier New',monospace;letter-spacing:.5px;border-bottom:1px solid #eee;">B⁻</td><td style="padding:5px 10px;text-align:center;border-bottom:1px solid #eee;">50–54%</td>         <td style="padding:5px 10px;text-align:center;font-weight:700;color:#8B1A2E;border-bottom:1px solid #eee;">2.3</td></tr>
+            <tr style="background:#fafafa;"><td style="padding:5px 10px;text-align:center;font-weight:700;font-family:'Courier New',monospace;letter-spacing:.5px;color:#8B1A2E;">F</td>  <td style="padding:5px 10px;text-align:center;">Below 50%</td>          <td style="padding:5px 10px;text-align:center;font-weight:700;color:#8B1A2E;">0.0</td></tr>
+          </tbody>
+        </table>
+
+        <!-- Classification table -->
+        <table style="width:200px;flex-shrink:0;border-collapse:collapse;font-size:8.5pt;font-family:'DM Sans',sans-serif;">
+          <thead>
+            <tr style="background:#0D1B2A;color:#fff;">
+              <th style="padding:6px 10px;text-align:left;font-weight:600;letter-spacing:.4px;font-size:7.5pt;text-transform:uppercase;">Classification</th>
+              <th style="padding:6px 10px;text-align:center;font-weight:600;letter-spacing:.4px;font-size:7.5pt;text-transform:uppercase;">Grade</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style="background:#fafafa;"><td style="padding:5px 10px;border-bottom:1px solid #eee;">Excellent</td>   <td style="padding:5px 10px;text-align:center;font-weight:700;font-family:'Courier New',monospace;border-bottom:1px solid #eee;">A⁺</td></tr>
+            <tr>                          <td style="padding:5px 10px;border-bottom:1px solid #eee;">Good</td>          <td style="padding:5px 10px;text-align:center;font-weight:700;font-family:'Courier New',monospace;border-bottom:1px solid #eee;">A, A⁻</td></tr>
+            <tr style="background:#fafafa;"><td style="padding:5px 10px;border-bottom:1px solid #eee;">Satisfactory</td><td style="padding:5px 10px;text-align:center;font-weight:700;font-family:'Courier New',monospace;border-bottom:1px solid #eee;">B⁺, B</td></tr>
+            <tr>                          <td style="padding:5px 10px;border-bottom:1px solid #eee;">Pass</td>          <td style="padding:5px 10px;text-align:center;font-weight:700;font-family:'Courier New',monospace;border-bottom:1px solid #eee;">B⁻</td></tr>
+            <tr style="background:#fafafa;"><td style="padding:5px 10px;">Fail</td>                                     <td style="padding:5px 10px;text-align:center;font-weight:700;font-family:'Courier New',monospace;color:#8B1A2E;">F</td></tr>
+          </tbody>
+        </table>
+
+      </div>
+    </div>
+
+    <!-- COVID / Crisis Note -->
+    <div style="margin-top:8px;padding:12px 16px;border:1px solid #ccc;border-left:3.5px solid #8B1A2E;background:#fdf9f9;font-size:8.5pt;color:#333;line-height:1.75;font-family:'DM Sans',sans-serif;">
+      <div style="font-size:7.5pt;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#8B1A2E;margin-bottom:6px;">Note</div>
+      Due to the global COVID-19 pandemic and the ongoing crisis in Myanmar since February 2021, many students have experienced unavoidable academic interruptions, resulting in delay of progression of academic years. The University Council and Academic Board acknowledge these disruptions were not attributable to the student's academic performance or conduct, but rather a national circumstance affecting the entire institution, and has taken them into consideration when evaluating academic progress and transcript records.
+    </div>
+
+  </div>
+  ` : ''}`;
 
   const docTitle = type === 'transcript' ? 'Academic Transcript' : (isGraduated ? 'Confirmation of Graduation' : 'Confirmation of Study');
 
