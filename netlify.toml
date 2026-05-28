@@ -1,30 +1,46 @@
-[build]
-  publish = "public/IRIS-IRIR"
-  functions = "netlify/functions"
-  command = "echo 'No build step'"
-
-[build.environment]
-  NODE_VERSION = "20"
-  AWS_LAMBDA_JS_RUNTIME = "nodejs20.x"
-  SHARP_IGNORE_GLOBAL_LIBVIPS = "1"
-
-[functions]
-  node_bundler = "zisi"
-  external_node_modules = ["sharp"]
+# ── Netlify configuration ────────────────────────────────────
+# Place this file in the ROOT of your repository.
+# These HTTP-level headers are stronger than meta-tag equivalents.
 
 [[headers]]
   for = "/*"
   [headers.values]
+
+    # ── Clickjacking protection ──
     X-Frame-Options = "DENY"
+
+    # ── Prevent MIME-type sniffing ──
     X-Content-Type-Options = "nosniff"
-    Referrer-Policy = "strict-origin-when-cross-origin"
 
-[[headers]]
-  for = "/*.html"
-  [headers.values]
-    Cache-Control = "no-cache, no-store, must-revalidate"
+    # ── Force HTTPS for 1 year, include subdomains ──
+    Strict-Transport-Security = "max-age=31536000; includeSubDomains; preload"
 
-[[headers]]
-  for = "/*.js"
-  [headers.values]
-    Cache-Control = "no-cache, no-store, must-revalidate"
+    # ── No referrer leakage ──
+    Referrer-Policy = "no-referrer"
+
+    # ── Restrict browser features ──
+    Permissions-Policy = "camera=(), microphone=(), geolocation=(), payment=()"
+
+    # ── Content Security Policy (HTTP header — stronger than meta tag) ──
+    # 'unsafe-inline' has been REMOVED from script-src.
+    # All inline onclick="" handlers must be replaced with addEventListener().
+    Content-Security-Policy = """
+      default-src 'self';
+      script-src 'self'
+        https://cdnjs.cloudflare.com
+        https://cdn.jsdelivr.net;
+      style-src 'self' 'unsafe-inline'
+        https://fonts.googleapis.com;
+      font-src 'self'
+        https://fonts.gstatic.com
+        data:;
+      img-src 'self' data: blob: https:;
+      connect-src 'self'
+        https://*.supabase.co
+        https://*.netlify.app
+        https://*.github.io
+        https://sisportal.um2campus.org;
+      frame-ancestors 'none';
+      base-uri 'self';
+      form-action 'self';
+    """
