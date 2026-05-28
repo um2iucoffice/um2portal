@@ -235,7 +235,7 @@ async function printDegreeCertificate(enrollIdx) {
   } catch(qrErr) { console.warn('QR token fetch failed, using fallback', qrErr); }
 
   // Generate QR in the parent window (where qrcodejs is already loaded)
-  const certQRDataUrl = generateQRDataUrl(qrData, 56);
+  const certQRDataUrl = generateQRDataUrl(qrData, 200);
 
   const html = `<!DOCTYPE html>
 <html lang="en">
