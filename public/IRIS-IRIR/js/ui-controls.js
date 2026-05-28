@@ -194,3 +194,107 @@ function onSwitchToEditInfo() {
   loadEditInfoSection();
 }
 
+
+// ── Global click delegation ───────────────────────────────────
+// Handles all data-action clicks across the dashboard
+document.addEventListener('click', function(e) {
+  const el = e.target.closest('[data-action]');
+  if (!el) return;
+  const action  = el.dataset.action;
+  const section = el.dataset.section;
+  const href    = el.dataset.href;
+
+  switch (action) {
+    case 'switch-tab':
+      switchSection(section, el);
+      break;
+    case 'toggle-sidebar':
+      toggleSidebar();
+      break;
+    case 'close-sidebar':
+      closeSidebar();
+      break;
+    case 'toggle-theme':
+      toggleTheme();
+      break;
+    case 'mob-tab':
+      mobSwitchTab(section, el);
+      break;
+    case 'mob-go-apps':
+      mobGoApps(el);
+      break;
+    case 'toggle-mob-more':
+      toggleMobMore(el);
+      break;
+    case 'mob-more-nav':
+      closeMobMore();
+      switchSection(section, null);
+      break;
+    case 'mob-more-ext':
+      closeMobMore();
+      if (href) window.open(href, '_blank', 'noopener');
+      break;
+    case 'mob-more-theme':
+      closeMobMore();
+      toggleTheme();
+      break;
+    case 'mob-more-signout':
+      closeMobMore();
+      doSignOut();
+      break;
+    case 'signout':
+      doSignOut();
+      break;
+    case 'ext-link':
+      if (href) window.open(href, '_blank', 'noopener');
+      break;
+    case 'print-idcard':
+      window.print();
+      break;
+    case 'submit-edit-info':
+      submitInfoEditRequest();
+      break;
+    case 'open-photo-input':
+      document.getElementById('photoInput') && document.getElementById('photoInput').click();
+      break;
+    case 'clear-photo-selection':
+      if (typeof clearPhotoSelection === 'function') clearPhotoSelection();
+      break;
+    case 'upload-photo':
+      if (typeof uploadPhoto === 'function') uploadPhoto();
+      break;
+    case 'remove-photo':
+      if (typeof removePhoto === 'function') removePhoto();
+      break;
+  }
+});
+
+// Also wire up sidebar sbnav-item buttons (data-section only, no data-action)
+document.addEventListener('click', function(e) {
+  const el = e.target.closest('.sbnav-item[data-section]');
+  if (!el || el.dataset.action) return; // skip if already handled above
+  switchSection(el.dataset.section, el);
+});
+
+// ── Sign out ──────────────────────────────────────────────────
+function doSignOut() {
+  try { sessionStorage.removeItem('iris_session'); } catch(e) {}
+  window._sessionToken = null;
+  window._currentStudent = null;
+  const dash = document.getElementById('dashboard');
+  if (dash) { dash.classList.remove('show'); dash.style.display = 'none'; }
+  const login = document.getElementById('loginScreen');
+  if (login) login.classList.remove('hidden');
+  document.body.classList.remove('dashboard-active');
+  const passEl = document.getElementById('loginPassword');
+  if (passEl) passEl.value = '';
+  location.hash = '';
+}
+
+// ── Login theme pill ──────────────────────────────────────────
+document.addEventListener('click', function(e) {
+  const darkBtn  = e.target.closest('#loginThemeDark');
+  const lightBtn = e.target.closest('#loginThemeLight');
+  if (darkBtn)  applyTheme('dark');
+  if (lightBtn) applyTheme('light');
+});
