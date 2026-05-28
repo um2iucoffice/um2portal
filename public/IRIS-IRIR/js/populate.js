@@ -284,9 +284,16 @@ function populate(s, grades, courses, program_meta, enrollments, academicYears, 
     generateIDCardQR(s, validThrough);
   }
 
-  // ── Init notification bell ────────────────────────────────────
-  // Called here so window._currentStudent is guaranteed to be set.
-  if (typeof initNotifications === 'function') {
+  // AFTER
+if (typeof initNotifications === 'function') {
+  if (window._supabase) {
     initNotifications('#notifMount').catch(e => console.warn('Notifications init failed:', e));
+  } else {
+    const _notifWait = setInterval(function() {
+      if (window._supabase) {
+        clearInterval(_notifWait);
+        initNotifications('#notifMount').catch(e => console.warn('Notifications init failed:', e));
+      }
+    }, 100);
   }
-}
+}}
