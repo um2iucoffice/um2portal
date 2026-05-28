@@ -1,5 +1,5 @@
 // ── Notification System ───────────────────────────────────────
-// Fetches, displays, and manages student notifications from Supabase.
+// Fetches, displays, and manages student notifications via Netlify functions.
 // Notifications older than 2 days are automatically excluded.
 // Usage: call initNotifications() after the student session is ready.
 
@@ -11,10 +11,10 @@ let   _notifOpen      = false;
 // ── Icon map ──────────────────────────────────────────────────
 const NOTIF_ICONS = {
   grade_added:         { svg: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>`, color: '#2563eb' },
-  grade_updated:       { svg: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>`,                                                                                                                                                                   color: '#7c3aed' },
-  profile_updated:     { svg: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>`,                                                                                                                                                                     color: '#0891b2' },
-  enrollment_updated:  { svg: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>`,                                                                               color: '#059669' },
-  default:             { svg: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>`,                                                                                                                                       color: '#6b7280' },
+  grade_updated:       { svg: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>`, color: '#7c3aed' },
+  profile_updated:     { svg: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>`, color: '#0891b2' },
+  enrollment_updated:  { svg: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>`, color: '#059669' },
+  default:             { svg: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>`, color: '#6b7280' },
 };
 
 // ── Time formatting ───────────────────────────────────────────
@@ -29,29 +29,24 @@ function formatNotifTime(isoString) {
   return `${Math.floor(hours / 24)}d ago`;
 }
 
-// AFTER
+// ── Fetch notifications via Netlify function ──────────────────
 async function fetchNotifications() {
-  if (!window._supabase) {
-    console.warn('Notifications: Supabase not ready');
-    return [];
-  }
   const sid = window._currentStudent?.id
            || document.getElementById('infoID')?.textContent?.trim();
   if (!sid) return [];
 
-  // Only fetch notifications from the last 2 days
-  const cutoff = new Date(Date.now() - NOTIF_TTL_DAYS * 86_400_000).toISOString();
-
   try {
-    const { data, error } = await window._supabase
-      .from('notifications')
-      .select('*')
-      .eq('student_id', sid)
-      .gte('created_at', cutoff)
-      .order('created_at', { ascending: false });
-
-    if (error) throw error;
-    return data || [];
+    const res = await fetch('/.netlify/functions/get-notifications', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + (window._sessionToken || '')
+      },
+      body: JSON.stringify({ student_id: sid })
+    });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
+    return data.notifications || [];
   } catch (err) {
     console.warn('Notifications fetch failed:', err);
     return [];
@@ -64,18 +59,18 @@ async function markAllRead(notifications) {
            || document.getElementById('infoID')?.textContent?.trim();
   if (!sid) return;
 
-  const unreadIds = notifications
-    .filter(n => !n.is_read)
-    .map(n => n.id);
-
+  const unreadIds = notifications.filter(n => !n.is_read).map(n => n.id);
   if (!unreadIds.length) return;
 
   try {
-    await window._supabase
-      .from('notifications')
-      .update({ is_read: true })
-      .in('id', unreadIds)
-      .eq('student_id', sid);
+    await fetch('/.netlify/functions/mark-notifications-read', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + (window._sessionToken || '')
+      },
+      body: JSON.stringify({ student_id: sid, ids: unreadIds })
+    });
   } catch (err) {
     console.warn('Mark-read failed:', err);
   }
@@ -140,8 +135,8 @@ function updateNotifBadge(notifications) {
 
 // ── Toggle panel open/close ───────────────────────────────────
 async function toggleNotifPanel() {
-  const panel     = document.getElementById('notifPanel');
-  const bell      = document.getElementById('notifBell');
+  const panel = document.getElementById('notifPanel');
+  const bell  = document.getElementById('notifBell');
   if (!panel || !bell) return;
 
   _notifOpen = !_notifOpen;
@@ -183,7 +178,6 @@ function injectNotifStyles() {
   const style = document.createElement('style');
   style.id = 'notif-styles';
   style.textContent = `
-    /* Bell button */
     #notifContainer {
       position: relative;
       display: inline-flex;
@@ -213,8 +207,6 @@ function injectNotifStyles() {
       height: 20px;
       pointer-events: none;
     }
-
-    /* Unread badge */
     #notifBadge {
       position: absolute;
       top: 3px;
@@ -240,8 +232,6 @@ function injectNotifStyles() {
       70%  { transform: scale(1.15); }
       100% { transform: scale(1); opacity: 1; }
     }
-
-    /* Dropdown panel */
     #notifPanel {
       position: absolute;
       top: calc(100% + 8px);
@@ -260,8 +250,6 @@ function injectNotifStyles() {
     #notifPanel.notif-panel-open {
       display: flex;
     }
-
-    /* Panel header */
     #notifPanel::before {
       content: 'Notifications';
       display: block;
@@ -278,8 +266,6 @@ function injectNotifStyles() {
       z-index: 1;
       flex-shrink: 0;
     }
-
-    /* Notification item */
     .notif-item {
       display: flex;
       align-items: flex-start;
@@ -289,20 +275,10 @@ function injectNotifStyles() {
       transition: background 0.1s;
       position: relative;
     }
-    .notif-item:last-child {
-      border-bottom: none;
-    }
-    .notif-item:hover {
-      background: var(--surface2, #f9fafb);
-    }
-    .notif-unread {
-      background: var(--blue-light, #eff6ff);
-    }
-    .notif-unread:hover {
-      background: #dbeafe;
-    }
-
-    /* Icon */
+    .notif-item:last-child { border-bottom: none; }
+    .notif-item:hover { background: var(--surface2, #f9fafb); }
+    .notif-unread { background: var(--blue-light, #eff6ff); }
+    .notif-unread:hover { background: #dbeafe; }
     .notif-icon-wrap {
       width: 36px;
       height: 36px;
@@ -313,36 +289,11 @@ function injectNotifStyles() {
       flex-shrink: 0;
       margin-top: 1px;
     }
-    .notif-icon-wrap svg {
-      width: 16px;
-      height: 16px;
-      stroke: currentColor;
-    }
-
-    /* Text content */
-    .notif-body {
-      flex: 1;
-      min-width: 0;
-    }
-    .notif-title {
-      font-size: 13px;
-      font-weight: 600;
-      color: var(--ink1, #1a1a1a);
-      line-height: 1.3;
-    }
-    .notif-msg {
-      font-size: 12px;
-      color: var(--ink2, #555);
-      margin-top: 2px;
-      line-height: 1.45;
-    }
-    .notif-time {
-      font-size: 11px;
-      color: var(--ink3, #888);
-      margin-top: 4px;
-    }
-
-    /* Unread dot */
+    .notif-icon-wrap svg { width: 16px; height: 16px; stroke: currentColor; }
+    .notif-body { flex: 1; min-width: 0; }
+    .notif-title { font-size: 13px; font-weight: 600; color: var(--ink1, #1a1a1a); line-height: 1.3; }
+    .notif-msg { font-size: 12px; color: var(--ink2, #555); margin-top: 2px; line-height: 1.45; }
+    .notif-time { font-size: 11px; color: var(--ink3, #888); margin-top: 4px; }
     .notif-dot {
       width: 8px;
       height: 8px;
@@ -351,18 +302,11 @@ function injectNotifStyles() {
       flex-shrink: 0;
       margin-top: 6px;
     }
-
-    /* Scrollbar styling */
     #notifPanel::-webkit-scrollbar       { width: 4px; }
     #notifPanel::-webkit-scrollbar-track { background: transparent; }
     #notifPanel::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 4px; }
-
-    /* Mobile: full-width panel */
     @media (max-width: 400px) {
-      #notifPanel {
-        width: calc(100vw - 24px);
-        right: -8px;
-      }
+      #notifPanel { width: calc(100vw - 24px); right: -8px; }
     }
   `;
   document.head.appendChild(style);
@@ -398,19 +342,20 @@ function escapeHtml(str) {
 async function initNotifications(mountSelector = '#notifMount') {
   injectNotifStyles();
 
-  // Find or create the mount point
   let mount = document.querySelector(mountSelector);
   if (!mount) {
-    // Fallback: insert before the first header button group we can find
     const fallback = document.querySelector('.header-actions, .nav-right, .topbar-right, header');
     if (!fallback) {
-      console.warn('initNotifications: no mount point found. Pass a valid selector or add <div id="notifMount"> to your header.');
+      console.warn('initNotifications: no mount point found.');
       return;
     }
     mount = document.createElement('div');
     mount.id = 'notifMount';
     fallback.prepend(mount);
   }
+
+  // Avoid duplicating the bell if already mounted
+  if (document.getElementById('notifBell')) return;
 
   mount.appendChild(buildNotifBell());
   setupNotifOutsideClick();
@@ -425,14 +370,17 @@ async function initNotifications(mountSelector = '#notifMount') {
 }
 
 // ── Manual trigger: push a notification from JS ───────────────
-// Useful for admin actions that don't go through a DB trigger.
-// Example: createNotification('student-001', 'grade_added', 'New Grade', 'MTB101 — A+')
 async function createNotification(studentId, type, title, message, metadata = {}) {
   try {
-    const { error } = await window._supabase
-      .from('notifications')
-      .insert({ student_id: studentId, type, title, message, metadata });
-    if (error) throw error;
+    const res = await fetch('/.netlify/functions/create-notification', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + (window._sessionToken || '')
+      },
+      body: JSON.stringify({ student_id: studentId, type, title, message, metadata })
+    });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
   } catch (err) {
     console.warn('createNotification failed:', err);
   }
