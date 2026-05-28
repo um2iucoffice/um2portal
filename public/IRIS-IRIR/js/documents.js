@@ -621,8 +621,7 @@ if (!win) { alert('Please allow popups to print the certificate.'); return; }
 const blob = new Blob([html], { type: 'text/html' });
 const url  = URL.createObjectURL(blob);
 win.location.href = url;
-setTimeout(() => URL.revokeObjectURL(url), 10000);
-  win.document.close();
+setTimeout(() => URL.revokeObjectURL(url), 60000);
 }
 
 // ── printConfirmation(enrollmentIndex) ───────────────────────
@@ -758,7 +757,7 @@ const logoHtml = `
   const blob = new Blob([html], { type: 'text/html' });
   const url  = URL.createObjectURL(blob);
   win.location.href = url;
-  setTimeout(() => URL.revokeObjectURL(url), 10000);
+  setTimeout(() => URL.revokeObjectURL(url), 60000);
 }
 
 // ── printDocument(type) — Transcript + fallback confirmation ─
@@ -1109,6 +1108,5 @@ const win = window.open('', '_blank', 'width=500,height=750');
 const blob = new Blob([html], { type: 'text/html' });
 const url  = URL.createObjectURL(blob);
 win.location.href = url;
-setTimeout(() => URL.revokeObjectURL(url), 10000);
-  win.document.close();
+setTimeout(() => URL.revokeObjectURL(url), 60000);
 }

@@ -492,7 +492,7 @@ async function printIDCard() {
     </div>
     <div class="idcard-back">
       <div class="idcard-back-left">
-        <div class="idcard-qr-wrap"><div id="printQR"></div><div class="idcard-qr-lbl">Scan to Verify</div></div>
+        <div class="idcard-qr-wrap"><a id="qrLink" href="${qrData}" target="_blank" style="display:block;line-height:0;text-decoration:none"><div id="printQR"></div></a><div class="idcard-qr-lbl">Scan to Verify</div><div id="qrDebugUrl" style="font-size:5px;color:#999;word-break:break-all;max-width:100px;margin-top:2px;text-align:center"></div></div>
         <div class="idcard-sig-area">Registrar's Office</div>
       </div>
       <div class="idcard-back-right">
@@ -514,19 +514,34 @@ async function printIDCard() {
   </div>
   <script>
     window.onload = function() {
-      new QRCode(document.getElementById('printQR'), { text: ${JSON.stringify(qrData)}, width: 76, height: 76, colorDark: '#0D1B2A', colorLight: '#ffffff', correctLevel: QRCode.CorrectLevel.M });
+      var qrText = ${JSON.stringify(qrData)};
+      // Show the URL so you can verify what is encoded
+      var dbg = document.getElementById('qrDebugUrl');
+      if (dbg) dbg.textContent = qrText;
+      new QRCode(document.getElementById('printQR'), {
+        text: qrText,
+        width: 200,
+        height: 200,
+        colorDark: '#0D1B2A',
+        colorLight: '#ffffff',
+        correctLevel: QRCode.CorrectLevel.L
+      });
+      // Scale canvas/img down visually
+      var el = document.getElementById('printQR');
+      if (el) { el.style.width = '76px'; el.style.height = '76px'; }
+      var child = el && (el.querySelector('canvas') || el.querySelector('img'));
+      if (child) { child.style.width = '76px'; child.style.height = '76px'; }
       setTimeout(function(){ window.print(); }, 900);
     };
   <\/script>
   </body></html>`;
 
-  // AFTER
 const win = window.open('', '_blank', 'width=500,height=750');
+if (!win) { alert('Please allow popups to print the ID card.'); return; }
 const blob = new Blob([html], { type: 'text/html' });
 const url  = URL.createObjectURL(blob);
 win.location.href = url;
-setTimeout(() => URL.revokeObjectURL(url), 10000);
-  win.document.close();
+setTimeout(() => URL.revokeObjectURL(url), 60000);
 }
 
 // ── CSP-safe: block right-click on any .js-no-ctx image ──────────────────────
