@@ -75,8 +75,8 @@ function toggleTheme() {
 // Table: student_edit_requests (see Setup Guide in registrar portal)
 
 async function loadEditInfoSection() {
-  const sid = (document.getElementById('loginStudentId').value || '').trim().toLowerCase();
- const pwd = window._sessionToken || ''
+  const sid = (window._currentStudentId || (window._currentStudent && window._currentStudent.id) || '').trim().toLowerCase();
+  const pwd = window._sessionToken || '';
   if (!sid) return;
 
   try {
@@ -136,7 +136,7 @@ async function loadEditInfoSection() {
 }
 
 async function submitInfoEditRequest() {
-  const sid = (document.getElementById('loginStudentId').value || '').trim().toLowerCase();
+  const sid = (window._currentStudentId || (window._currentStudent && window._currentStudent.id) || '').trim().toLowerCase();
   const pwd = window._sessionToken || '';
   if (!sid) { alert('Session expired. Please log in again.'); return; }
 
