@@ -274,4 +274,13 @@ function populate(s, grades, courses, program_meta, enrollments, academicYears, 
     if (removeBtn) removeBtn.style.display = 'inline-block';
   }
   populateIDCard(s, isGraduated, gradID, gradDate);
+
+  // ── Generate secure QR code on ID card ──────────────────────
+  // Requests a signed token from the server and renders QR on the card back.
+  if (typeof generateIDCardQR === 'function') {
+    const validThrough = isGraduated
+      ? (gradDate ? gradDate.split('/').pop() || '—' : '—')
+      : String(new Date().getFullYear() + 1);
+    generateIDCardQR(s, validThrough);
+  }
 }
