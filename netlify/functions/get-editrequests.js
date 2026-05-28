@@ -113,7 +113,7 @@ exports.handler = async (event) => {
       body: JSON.stringify({ success: true, requests: rows || [] }),
     };
   } catch (err) {
-    console.error('get-edit-requests error:', err);
+    console.error('get-editrequests error:', err);
     return {
       statusCode: 500,
       headers: HEADERS,
