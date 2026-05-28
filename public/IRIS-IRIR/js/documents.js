@@ -187,8 +187,28 @@ async function printDegreeCertificate(enrollIdx) {
   const programName = e.programName || e.degreeProgramId || s.programName || '';
   const degreeTitle = programName || 'Degree Program';
 
-  // QR data
-  const qrData = (typeof window !== 'undefined' ? window.location.origin : '') + '/verify?id=' + encodeURIComponent(sid);
+  // ── Secure QR: fetch signed token from server ──────────────
+  let qrData = window.location.origin + '/verify.html'; // fallback
+  try {
+    const qrRes = await fetch('/.netlify/functions/generate-qr-token', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + (window._sessionToken || '')
+      },
+      body: JSON.stringify({
+        studentId   : sid,
+        studentName : name,
+        program     : degreeTitle,
+        validThrough: gradDate || 'Graduated',
+        type        : 'degree_certificate'
+      })
+    });
+    if (qrRes.ok) {
+      const qrJson = await qrRes.json();
+      if (qrJson.verifyUrl) qrData = qrJson.verifyUrl;
+    }
+  } catch(qrErr) { console.warn('QR token fetch failed, using fallback', qrErr); }
 
   const html = `<!DOCTYPE html>
 <html lang="en">
@@ -666,6 +686,7 @@ const logoHtml = `
   <meta charset="UTF-8">
   <title>${docType} — ${name}</title>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"><\/script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     html, body { height: 100%; }
@@ -741,7 +762,7 @@ const logoHtml = `
 }
 
 // ── printDocument(type) — Transcript + fallback confirmation ─
-function printDocument(type) {
+async function printDocument(type) {
   const enrollments = window._enrollments || [];
   const eIdx = window._docEnrollmentIndex || 0;
   const chosenE = enrollments[eIdx] || null;
@@ -931,6 +952,29 @@ function printDocument(type) {
     <p>This letter is issued digitally for official purposes.</p>
   </div>` : '';
 
+  // ── Fetch signed QR token for this document ──────────────────
+  let docQrUrl = window.location.origin + '/verify.html';
+  try {
+    const docQrRes = await fetch('/.netlify/functions/generate-qr-token', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + (window._sessionToken || '')
+      },
+      body: JSON.stringify({
+        studentId   : sid,
+        studentName : name,
+        program     : programLabel,
+        validThrough: '30 days',
+        type        : type === 'transcript' ? 'transcript' : 'confirmation_of_study'
+      })
+    });
+    if (docQrRes.ok) {
+      const docQrJson = await docQrRes.json();
+      if (docQrJson.verifyUrl) docQrUrl = docQrJson.verifyUrl;
+    }
+  } catch(qrErr) { console.warn('Document QR token fetch failed', qrErr); }
+
   const closing = `
   <div style="margin-top:28px;border-top:1.5px solid #0D1B2A;display:flex;justify-content:space-between;align-items:stretch;font-family:'DM Sans',sans-serif">
     <div style="flex:1;padding:12px 16px;font-size:11pt;color:#0D1B2A;line-height:1.7;">
@@ -948,7 +992,24 @@ function printDocument(type) {
         <img src="Signature.png" alt="Registrar Signature" style="width:180px;height:auto;object-fit:contain;position:relative;top:-30px;">
       </div>
     </div>
-  </div>`;
+    <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:12px 16px;border-left:1px solid #ddd;min-width:110px">
+      <div id="docQRcode" style="width:80px;height:80px"></div>
+      <div style="font-size:7.5pt;color:#888;margin-top:4px;text-align:center">Scan to Verify</div>
+    </div>
+  </div>
+  <script>
+    window.addEventListener('load', function() {
+      try {
+        new QRCode(document.getElementById('docQRcode'), {
+          text: ${JSON.stringify('__DOC_QR_URL__')},
+          width: 80, height: 80,
+          colorDark: '#0D1B2A',
+          colorLight: '#ffffff',
+          correctLevel: QRCode.CorrectLevel.H
+        });
+      } catch(e) {}
+    });
+  <\/script>`;
 
   const docTitle = type === 'transcript' ? 'Academic Transcript' : (isGraduated ? 'Confirmation of Graduation' : 'Confirmation of Study');
 
@@ -958,6 +1019,7 @@ function printDocument(type) {
   <meta charset="UTF-8">
   <title>${docTitle} — ${name}</title>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"><\/script>
   <style>
     @font-face {
       font-family: 'Pyidaungsu';
@@ -1050,5 +1112,3 @@ win.location.href = url;
 setTimeout(() => URL.revokeObjectURL(url), 10000);
   win.document.close();
 }
-
-
