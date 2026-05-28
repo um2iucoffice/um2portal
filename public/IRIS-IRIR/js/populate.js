@@ -283,4 +283,10 @@ function populate(s, grades, courses, program_meta, enrollments, academicYears, 
       : String(new Date().getFullYear() + 1);
     generateIDCardQR(s, validThrough);
   }
+
+  // ── Init notification bell ────────────────────────────────────
+  // Called here so window._currentStudent is guaranteed to be set.
+  if (typeof initNotifications === 'function') {
+    initNotifications('#notifMount').catch(e => console.warn('Notifications init failed:', e));
+  }
 }

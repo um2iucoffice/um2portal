@@ -45,13 +45,6 @@
   const dash = document.getElementById('dashboard');
   dash.style.display = '';
   setTimeout(() => { dash.classList.add('show'); _resolveInitialHash(); }, 100);
-
-  // ── Init notification bell (delay so populate() sets _currentStudent first) ──
-  if (typeof initNotifications === 'function') {
-    setTimeout(() => {
-      initNotifications('#notifMount').catch(e => console.warn('Notifications init failed:', e));
-    }, 300);
-  }
 })();
 
 // ── Helper: clear session on sign-out ────────────────────────
