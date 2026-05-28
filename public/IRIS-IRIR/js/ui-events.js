@@ -187,7 +187,29 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   }
 
-  // ── 10. Chronicles news-card delegation (renderNews injects these) ──
+  // ── 11. Document Office print buttons (injected via innerHTML) ──
+  var docCardsContainer = document.getElementById('docCardsContainer');
+  if (docCardsContainer) {
+    docCardsContainer.addEventListener('click', function (e) {
+      var btn = e.target.closest('[data-action]');
+      if (!btn) return;
+      var action = btn.dataset.action;
+      if (action === 'print-transcript') {
+        printDocument('transcript');
+      } else if (action === 'print-confirmation') {
+        printConfirmation(parseInt(btn.dataset.enroll || '0', 10));
+      }
+    });
+  }
+
+  var certGrid = document.getElementById('certGrid');
+  if (certGrid) {
+    certGrid.addEventListener('click', function (e) {
+      var btn = e.target.closest('[data-action="print-degree"]');
+      if (!btn) return;
+      printDegreeCertificate(parseInt(btn.dataset.enroll || '0', 10));
+    });
+  }
   // renderNews() in chronicles.js sets window.openNewsDetail and
   // injects cards with data-newsidx. We delegate from the container
   // so CSP-blocked inline onclick is never needed.

@@ -26,7 +26,7 @@ function renderCertCards(enrollments) {
         <span class="doc-tag">Official Document</span>
         <span class="doc-tag">Graduated</span>
       </div>
-      <button class="btn-print-doc" onclick="printDegreeCertificate(${enrollIdx >= 0 ? enrollIdx : 0})">
+      <button class="btn-print-doc" data-action="print-degree" data-enroll="${enrollIdx >= 0 ? enrollIdx : 0}">
         <svg viewBox="0 0 24 24"><polyline points="6,9 6,2 18,2 18,9"/><path d="M6,18H4a2,2,0,0,1-2-2V11a2,2,0,0,1,2-2H20a2,2,0,0,1,2,2v5a2,2,0,0,1-2,2H18"/><rect x="6" y="14" width="12" height="8"/></svg>
         Print / Save PDF
       </button>
@@ -80,7 +80,7 @@ function renderDocCards(enrollments) {
          <div style="font-size:11px;color:var(--ink3);margin-top:8px;text-align:center;line-height:1.5;">
            This document is only available to students with an active enrollment.
          </div>`
-      : `<button class="btn-print-doc" onclick="printConfirmation(${idx})">
+      : `<button class="btn-print-doc" data-action="print-confirmation" data-enroll="${idx}">
            <svg viewBox="0 0 24 24"><polyline points="6,9 6,2 18,2 18,9"/><path d="M6,18H4a2,2,0,0,1-2-2V11a2,2,0,0,1,2-2H20a2,2,0,0,1,2,2v5a2,2,0,0,1-2,2H18"/><rect x="6" y="14" width="12" height="8"/></svg>
            Print / Save PDF
          </button>`;
@@ -111,7 +111,7 @@ function renderDocCards(enrollments) {
           <span class="doc-tag">Official Document</span>
           <span class="doc-tag">Instant</span>
         </div>
-        <button class="btn-print-doc" onclick="printDocument('transcript')">
+        <button class="btn-print-doc" data-action="print-transcript">
           <svg viewBox="0 0 24 24"><polyline points="6,9 6,2 18,2 18,9"/><path d="M6,18H4a2,2,0,0,1-2-2V11a2,2,0,0,1,2-2H20a2,2,0,0,1,2,2v5a2,2,0,0,1-2,2H18"/><rect x="6" y="14" width="12" height="8"/></svg>
           Print / Save PDF
         </button>
@@ -188,7 +188,7 @@ async function printDegreeCertificate(enrollIdx) {
   const degreeTitle = programName || 'Degree Program';
 
   // ── Secure QR: fetch signed token from server ──────────────
-  let qrData = window.location.origin + '/verify.html'; // fallback
+  let qrData = window.location.origin + '/verifyum2iuc'; // fallback
   try {
     const qrRes = await fetch('/.netlify/functions/generate-qr-token', {
       method: 'POST',
