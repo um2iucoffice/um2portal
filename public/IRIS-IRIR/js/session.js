@@ -45,6 +45,11 @@
   const dash = document.getElementById('dashboard');
   dash.style.display = '';
   setTimeout(() => { dash.classList.add('show'); _resolveInitialHash(); }, 100);
+
+  // ── Init notification bell ──
+  if (typeof initNotifications === 'function') {
+    initNotifications('#notifMount').catch(e => console.warn('Notifications init failed:', e));
+  }
 })();
 
 // ── Helper: clear session on sign-out ────────────────────────
