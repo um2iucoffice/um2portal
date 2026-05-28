@@ -1042,7 +1042,7 @@ async function printDocument(type) {
         <img src="/IRIS-IRIR/Signature.png" alt="" style="width:180px;height:auto;object-fit:contain;position:relative;top:-30px;display:block;" onerror="this.style.display='none'">
       </div>
     </div>
-    <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:12px 16px;border-left:1px solid #ddd;min-width:110px">
+   <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:12px 16px;min-width:110px">
       ${docQRDataUrl ? `<img src="${docQRDataUrl}" width="80" height="80" style="display:block;image-rendering:pixelated;" alt="Verify QR">` : '<div style="width:80px;height:80px"></div>'}
       <div style="font-size:7.5pt;color:#888;margin-top:4px;text-align:center">Scan to Verify</div>
     </div>
