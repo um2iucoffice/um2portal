@@ -41,17 +41,17 @@ async function generateIDCardQR(student, validThrough) {
     // ── Render the QR code using qrcodejs ──
     new QRCode(container, {
       text        : data.verifyUrl,
-      width       : 80,
-      height      : 80,
+      width       : 200,   // ← FIX: increased from 80 (too small to scan)
+      height      : 200,   // ← FIX: increased from 80 (too small to scan)
       colorDark   : '#000000',
       colorLight  : '#ffffff',
-      correctLevel: QRCode.CorrectLevel.H  // Highest error correction
+      correctLevel: QRCode.CorrectLevel.M  // ← FIX: M is better than H for long URLs at this size
     });
 
   } catch (e) {
     console.error('QR generation failed:', e);
     // Show a subtle fallback — don't expose error details
-    container.innerHTML = '<div style="width:80px;height:80px;background:#eee;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:9px;color:#999;text-align:center">QR<br>unavailable</div>';
+    container.innerHTML = '<div style="width:200px;height:200px;background:#eee;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:9px;color:#999;text-align:center">QR<br>unavailable</div>';
   }
 }
 
@@ -89,14 +89,14 @@ async function generateDocumentQR(containerId, student, docType) {
 
     new QRCode(container, {
       text        : data.verifyUrl,
-      width       : 100,
-      height      : 100,
+      width       : 200,   // ← FIX: increased from 100
+      height      : 200,   // ← FIX: increased from 100
       colorDark   : '#000000',
       colorLight  : '#ffffff',
-      correctLevel: QRCode.CorrectLevel.H
+      correctLevel: QRCode.CorrectLevel.M  // ← FIX: M instead of H
     });
   } catch (e) {
     console.error('Document QR generation failed:', e);
-    container.innerHTML = '<div style="width:100px;height:100px;background:#f5f5f5;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:10px;color:#999">QR unavailable</div>';
+    container.innerHTML = '<div style="width:200px;height:200px;background:#f5f5f5;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:10px;color:#999">QR unavailable</div>';
   }
 }
