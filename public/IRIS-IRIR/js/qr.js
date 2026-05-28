@@ -35,6 +35,9 @@ async function generateIDCardQR(student, validThrough) {
     const data = await res.json();
     if (!data.verifyUrl) throw new Error('No verify URL returned');
 
+    // ── Cache the signed URL so printIDCard() uses it instead of the fallback ──
+    window._idcardVerifyUrl = data.verifyUrl;
+
     // ── Render the QR code using qrcodejs ──
     new QRCode(container, {
       text        : data.verifyUrl,

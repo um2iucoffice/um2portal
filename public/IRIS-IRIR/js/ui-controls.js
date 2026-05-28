@@ -83,7 +83,7 @@ async function loadEditInfoSection() {
     const res = await fetch('/.netlify/functions/get-edit-requests', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ studentId: sid, password: pwd })
+      body: JSON.stringify({ studentId: sid, token: pwd })
     });
     if (!res.ok) return;
     const data = await res.json();
@@ -168,10 +168,14 @@ async function submitInfoEditRequest() {
   document.getElementById('editInfoStatus').textContent = '';
 
   try {
+    // Build fields object expected by edit-request.js: { field: newValue, … }
+    const fields = {};
+    changes.forEach(c => { fields[c.field] = c.new; });
+
     const res = await fetch('/.netlify/functions/edit-request', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ studentId: sid, password: pwd, changes, reason })
+      body: JSON.stringify({ studentId: sid, token: pwd, fields })
     });
     const data = await res.json();
 
@@ -255,10 +259,16 @@ document.addEventListener('click', function(e) {
       if (typeof printDegreeCertificate === 'function') printDegreeCertificate(parseInt(el.dataset.enroll) || 0);
       break;
     case 'print-confirmation':
-      if (typeof printConfirmation === 'function') printConfirmation(parseInt(el.dataset.enroll) || 0);
+      if (typeof printConfirmation === 'function') {
+        window._docEnrollmentIndex = parseInt(el.dataset.enroll) || 0;
+        printConfirmation(parseInt(el.dataset.enroll) || 0);
+      }
       break;
     case 'print-transcript':
-      if (typeof printDocument === 'function') printDocument('transcript');
+      if (typeof printDocument === 'function') {
+        window._docEnrollmentIndex = parseInt(el.dataset.enroll) || 0;
+        printDocument('transcript');
+      }
       break;
     case 'submit-post':
       if (typeof window.submitPost === 'function') window.submitPost();
@@ -267,7 +277,7 @@ document.addEventListener('click', function(e) {
       submitInfoEditRequest();
       break;
     case 'open-photo-input':
-      document.getElementById('photoInput') && document.getElementById('photoInput').click();
+      document.getElementById('photoFileInput') && document.getElementById('photoFileInput').click();
       break;
     case 'clear-photo-selection':
       if (typeof clearPhotoSelection === 'function') clearPhotoSelection();

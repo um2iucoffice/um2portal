@@ -37,13 +37,14 @@ exports.handler = async function (event, context) {
 
   // ── Verify the session token against your Supabase/DB ──
   // Replace this block with your actual session validation logic
-  let studentId, studentName, program, validThrough;
+  let studentId, studentName, program, validThrough, tokenType;
   try {
     const body = JSON.parse(event.body || '{}');
-    studentId   = body.studentId;
-    studentName = body.studentName;
-    program     = body.program;
+    studentId    = body.studentId;
+    studentName  = body.studentName;
+    program      = body.program;
     validThrough = body.validThrough; // e.g. "2027" for ID card
+    tokenType    = body.type || 'idcard'; // e.g. 'idcard', 'transcript', 'certificate'
 
     if (!studentId) throw new Error('Missing studentId');
   } catch (e) {
@@ -66,7 +67,7 @@ exports.handler = async function (event, context) {
     vthy : validThrough,        // Valid through year
     iat  : now,                 // Issued at
     exp  : expires,             // Expiry
-    type : 'idcard'             // Token type
+    type : tokenType            // Token type — passed in by caller
   };
 
   const token = signToken(payload);
