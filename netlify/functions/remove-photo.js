@@ -32,21 +32,21 @@ exports.handler = async (event) => {
   if (event.httpMethod !== 'POST')    return { statusCode: 405, headers: CORS_HEADERS, body: JSON.stringify({ error: 'Method not allowed' }) };
 
   try {
-    const { studentId, password } = JSON.parse(event.body || '{}');
+    const { studentId, token } = JSON.parse(event.body || '{}');
 
-    if (!studentId || !password) {
-      return { statusCode: 200, headers: CORS_HEADERS, body: JSON.stringify({ success: false, message: 'Missing studentId or password.' }) };
+    if (!studentId || !token) {
+      return { statusCode: 200, headers: CORS_HEADERS, body: JSON.stringify({ success: false, message: 'Missing studentId or token.' }) };
     }
 
-    // 1. Verify credentials
-    const students = await supabaseRest(
-      `students?id=eq.${encodeURIComponent(studentId)}&select=id,master_password&limit=1`
+    // 1. Verify session token
+    const sessions = await supabaseRest(
+      `sessions?token=eq.${encodeURIComponent(token)}&student_id=eq.${encodeURIComponent(studentId)}&select=student_id,expires_at&limit=1`
     );
-    if (!students || students.length === 0) {
-      return { statusCode: 200, headers: CORS_HEADERS, body: JSON.stringify({ success: false, message: 'Student not found.' }) };
+    if (!sessions || sessions.length === 0) {
+      return { statusCode: 200, headers: CORS_HEADERS, body: JSON.stringify({ success: false, message: 'Unauthorized: invalid or expired session.' }) };
     }
-    if (String(students[0].master_password || '').trim() !== String(password).trim()) {
-      return { statusCode: 200, headers: CORS_HEADERS, body: JSON.stringify({ success: false, message: 'Incorrect password.' }) };
+    if (sessions[0].expires_at && new Date(sessions[0].expires_at) < new Date()) {
+      return { statusCode: 200, headers: CORS_HEADERS, body: JSON.stringify({ success: false, message: 'Unauthorized: session expired.' }) };
     }
 
     // 2. Null out the photo column in students

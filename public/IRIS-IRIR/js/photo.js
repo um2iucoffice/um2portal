@@ -436,7 +436,7 @@ async function printIDCard() {
     .idcard-back::before{content:'';position:absolute;inset:0;background-image:radial-gradient(circle,rgba(139,26,46,.04) 1px,transparent 1px);background-size:18px 18px;pointer-events:none}
     .idcard-back-left{width:120px;flex-shrink:0;background:#f9f1f3;border-right:1px solid #e8d4d8;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:16px 10px;gap:12px;position:relative;z-index:1}
     .idcard-qr-wrap{display:flex;flex-direction:column;align-items:center;gap:4px}
-    .idcard-qr-wrap canvas,.idcard-qr-wrap img{border:1px solid #ddd;border-radius:2px;display:block}
+    .idcard-qr-wrap canvas,.idcard-qr-wrap img{border:1px solid #ddd;border-radius:2px;display:block;pointer-events:none;user-select:none;-webkit-user-select:none}
     .idcard-qr-lbl{font-size:6px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#9A7B2F;text-align:center}
     .idcard-sig-area{border-top:1px solid #ccc;padding-top:6px;width:100%;text-align:center;font-size:6px;color:#7A8599;letter-spacing:.4px;text-transform:uppercase}
     .idcard-back-right{flex:1;padding:14px 16px;display:flex;flex-direction:column;gap:10px;position:relative;z-index:1}
@@ -492,7 +492,7 @@ async function printIDCard() {
     </div>
     <div class="idcard-back">
       <div class="idcard-back-left">
-        <div class="idcard-qr-wrap"><a id="qrLink" href="${qrData}" target="_blank" style="display:block;line-height:0;text-decoration:none"><div id="printQR"></div></a><div class="idcard-qr-lbl">Scan to Verify</div><div id="qrDebugUrl" style="font-size:5px;color:#999;word-break:break-all;max-width:100px;margin-top:2px;text-align:center"></div></div>
+        <div class="idcard-qr-wrap"><div id="printQR"></div><div class="idcard-qr-lbl">Scan to Verify</div><div id="qrDebugUrl" style="font-size:5px;color:#999;word-break:break-all;max-width:100px;margin-top:2px;text-align:center"></div></div>
         <div class="idcard-sig-area">Registrar's Office</div>
       </div>
       <div class="idcard-back-right">
