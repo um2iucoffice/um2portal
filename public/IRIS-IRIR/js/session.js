@@ -46,9 +46,11 @@
   dash.style.display = '';
   setTimeout(() => { dash.classList.add('show'); _resolveInitialHash(); }, 100);
 
-  // ── Init notification bell ──
+  // ── Init notification bell (delay so populate() sets _currentStudent first) ──
   if (typeof initNotifications === 'function') {
-    initNotifications('#notifMount').catch(e => console.warn('Notifications init failed:', e));
+    setTimeout(() => {
+      initNotifications('#notifMount').catch(e => console.warn('Notifications init failed:', e));
+    }, 300);
   }
 })();
 
