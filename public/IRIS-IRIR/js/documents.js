@@ -953,7 +953,7 @@ async function printDocument(type) {
   </div>` : '';
 
   // ── Fetch signed QR token for this document ──────────────────
-  let docQrUrl = window.location.origin + '/verify.html';
+  let docQrUrl = window.location.origin + '/verifyum2iuc';
   try {
     const docQrRes = await fetch('/.netlify/functions/generate-qr-token', {
       method: 'POST',
@@ -1001,7 +1001,7 @@ async function printDocument(type) {
     window.addEventListener('load', function() {
       try {
         new QRCode(document.getElementById('docQRcode'), {
-          text: ${JSON.stringify('__DOC_QR_URL__')},
+          text: ${JSON.stringify(docQrUrl)},
           width: 80, height: 80,
           colorDark: '#0D1B2A',
           colorLight: '#ffffff',
