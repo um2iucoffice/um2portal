@@ -988,7 +988,7 @@ async function printDocument(type) {
           <div style="font-size:11pt;color:#0D1B2A">Registrar</div>
           <div style="font-size:11pt;color:#0D1B2A">University of Medicine (2)</div>
         </div>
-        <img src="Signature.png" alt="Registrar Signature" style="width:180px;height:auto;object-fit:contain;position:relative;top:-30px;">
+        <img src="Signature.png" alt="" style="width:180px;height:auto;object-fit:contain;position:relative;top:-30px;display:block;" onerror="this.style.display='none'">
       </div>
     </div>
     <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:12px 16px;border-left:1px solid #ddd;min-width:110px">
@@ -1073,7 +1073,7 @@ async function printDocument(type) {
     </div>
 
     <!-- COVID / Crisis Note -->
-    <div style="margin-top:8px;padding:12px 16px;border:1px solid #ccc;border-left:3.5px solid #8B1A2E;background:#fdf9f9;font-size:8.5pt;color:#333;line-height:1.75;font-family:'DM Sans',sans-serif;">
+    <div style="margin-top:8px;padding:12px 16px;border:1px solid #ccc;border-left:3.5px solid #8B1A2E;font-size:8.5pt;color:#333;line-height:1.75;font-family:'DM Sans',sans-serif;text-align:justify;">
       <div style="font-size:7.5pt;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#8B1A2E;margin-bottom:6px;">Note</div>
       Due to the global COVID-19 pandemic and the ongoing crisis in Myanmar since February 2021, many students have experienced unavoidable academic interruptions, resulting in delay of progression of academic years. The University Council and Academic Board acknowledge these disruptions were not attributable to the student's academic performance or conduct, but rather a national circumstance affecting the entire institution, and has taken them into consideration when evaluating academic progress and transcript records.
     </div>
@@ -1108,7 +1108,7 @@ async function printDocument(type) {
     .inst-name { font-family:'DM Sans',sans-serif; font-size:17pt; font-weight:bold; color:#0D1B2A; line-height:1.2; }
     .doc-type-badge { font-family:'DM Sans',sans-serif; font-size:13pt; font-weight:bold; color:#0D1B2A; text-transform:uppercase; letter-spacing:.5px; text-align:right; }
     .doc-meta { font-size:9pt; color:#444; text-align:right; margin-top:5px; line-height:1.7; font-family:'DM Sans',sans-serif; }
-    .transcript-student-para { margin:10px 0 16px; padding:8px 12px; background:#f9f9f9; font-size:9.5pt; color:#0D1B2A; page-break-inside:avoid; font-family:'DM Sans',sans-serif; }
+    .transcript-student-para { margin:10px 0 16px; padding:8px 12px; font-size:9.5pt; color:#0D1B2A; page-break-inside:avoid; font-family:'DM Sans',sans-serif; }
     .transcript-student-para .det-row { display:table; width:100%; line-height:1.85; }
     .transcript-student-para .lbl { display:table-cell; font-weight:700; color:#555; font-size:8pt; letter-spacing:.5px; text-transform:uppercase; white-space:nowrap; padding-right:16px; width:160px; }
     .transcript-student-para .val { display:table-cell; font-weight:600; color:#0D1B2A; }
