@@ -251,6 +251,18 @@ document.addEventListener('click', function(e) {
     case 'print-idcard':
       window.print();
       break;
+    case 'print-degree':
+      if (typeof printDegreeCertificate === 'function') printDegreeCertificate(parseInt(el.dataset.enroll) || 0);
+      break;
+    case 'print-confirmation':
+      if (typeof printConfirmation === 'function') printConfirmation(parseInt(el.dataset.enroll) || 0);
+      break;
+    case 'print-transcript':
+      if (typeof printDocument === 'function') printDocument('transcript');
+      break;
+    case 'submit-post':
+      if (typeof window.submitPost === 'function') window.submitPost();
+      break;
     case 'submit-edit-info':
       submitInfoEditRequest();
       break;

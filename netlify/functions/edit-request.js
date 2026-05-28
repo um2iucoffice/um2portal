@@ -21,7 +21,7 @@ async function supabaseReq(path, options = {}) {
   return text ? JSON.parse(text) : null;
 }
 
-export const handler = async (event) => {
+exports.handler = async function(event) {
   const headers = {
     'Access-Control-Allow-Origin': '*',
     'Content-Type': 'application/json'

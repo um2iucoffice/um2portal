@@ -116,6 +116,9 @@ function handleAuth(r) {
   _loginAttempts.count       = 0;
   _loginAttempts.lockedUntil = 0;
 
+  // ── Set session token BEFORE populate so QR generation has it ──
+  window._sessionToken = r.token;
+
   try {
     window._announcements = r.announcements || [];
     populate(r.student, r.grades || [], r.courses || {}, r.program_meta || null, r.enrollments || [], r.academicYears || [], r.markbook || []);
@@ -128,9 +131,8 @@ function handleAuth(r) {
     return;
   }
 
-  // ── Persist session (3 min TTL) — password is NOT stored ──
+  // ── Persist session — password is NOT stored ──
   try {
-    window._sessionToken = r.token;
     sessionStorage.setItem('iris_session', JSON.stringify({
       token        : window._sessionToken,
       studentData  : r.student,
