@@ -111,7 +111,7 @@ function renderDocCards(enrollments) {
           <span class="doc-tag">Official Document</span>
           <span class="doc-tag">Instant</span>
         </div>
-        <button class="btn-print-doc" data-action="print-transcript">
+        <button class="btn-print-doc" data-action="print-transcript" data-enroll="${idx}">
           <svg viewBox="0 0 24 24"><polyline points="6,9 6,2 18,2 18,9"/><path d="M6,18H4a2,2,0,0,1-2-2V11a2,2,0,0,1,2-2H20a2,2,0,0,1,2,2v5a2,2,0,0,1-2,2H18"/><rect x="6" y="14" width="12" height="8"/></svg>
           Print / Save PDF
         </button>

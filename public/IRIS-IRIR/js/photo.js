@@ -4,7 +4,8 @@ function makeProtectedPhoto(src, styleStr) {
   img.src = src;
   if (styleStr) img.style.cssText = styleStr;
   img.draggable = false;
-  img.oncontextmenu = function(e) { e.preventDefault(); return false; };
+  // Use addEventListener instead of inline handler to satisfy CSP
+  img.addEventListener('contextmenu', function(e) { e.preventDefault(); });
   return img;
 }
 
@@ -160,7 +161,7 @@ async function uploadPhoto() {
   if (preview && pendingUrl) {
     preview.innerHTML = `
       <div style="position:relative;width:100%;height:100%">
-        <img src="${pendingUrl}" style="width:100%;height:100%;object-fit:cover;border-radius:8px;opacity:0.65;pointer-events:none;user-select:none;-webkit-user-select:none" draggable="false" oncontextmenu="return false">
+        <img src="${pendingUrl}" style="width:100%;height:100%;object-fit:cover;border-radius:8px;opacity:0.65;pointer-events:none;user-select:none;-webkit-user-select:none" draggable="false" class="js-no-ctx">
         <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;background:rgba(154,123,47,0.18);border-radius:8px;border:1.5px solid var(--gold,#9A7B2F)">
           <svg style="width:20px;height:20px;stroke:var(--gold,#9A7B2F);stroke-width:2;fill:none;stroke-linecap:round;stroke-linejoin:round" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
           <span style="font-size:9px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:var(--gold,#9A7B2F);text-align:center;margin-top:3px">Pending<br>Approval</span>
@@ -182,7 +183,7 @@ async function uploadPhoto() {
         pImg.src = data.photoUrl;
         pImg.style.cssText = 'width:100%;height:100%;object-fit:cover;border-radius:8px;pointer-events:none;user-select:none;-webkit-user-select:none';
         pImg.draggable = false;
-        pImg.oncontextmenu = function(e){ e.preventDefault(); return false; };
+        pImg.addEventListener('contextmenu', function(e){ e.preventDefault(); });
         preview.innerHTML = '';
         preview.appendChild(pImg);
       }
@@ -511,4 +512,56 @@ setTimeout(() => URL.revokeObjectURL(url), 10000);
   win.document.close();
 }
 
+// ── CSP-safe: block right-click on any .js-no-ctx image ──────────────────────
+// (Used by pending-photo preview injected as innerHTML — can't use addEventListener
+//  on those elements directly, so we delegate from the document.)
+document.addEventListener('contextmenu', function(e) {
+  if (e.target && e.target.classList && e.target.classList.contains('js-no-ctx')) {
+    e.preventDefault();
+  }
+});
 
+// ── data-action handlers for photo tab ───────────────────────────────────────
+// ui-controls.js handles the global delegation, but photo-specific actions are
+// wired here so this file is self-contained and load-order independent.
+// ui-controls.js calls these functions directly; this block is a safety net for
+// cases where photo.js loads after ui-controls.js has already set up delegation.
+(function wirePhotoActions() {
+  function handlePhotoAction(action, target) {
+    switch (action) {
+      case 'upload-photo':
+        uploadPhoto();
+        break;
+      case 'remove-photo':
+        removePhoto();
+        break;
+      case 'clear-photo':
+        clearPhotoSelection();
+        break;
+      case 'choose-photo': {
+        // Trigger the hidden file input
+        const input = document.getElementById('photoFileInput');
+        if (input) input.click();
+        break;
+      }
+      case 'photo-file-changed': {
+        // Called from the change event on the file input
+        const input = document.getElementById('photoFileInput');
+        if (input) previewPhoto(input);
+        break;
+      }
+    }
+  }
+
+  // File-input change: wire without inline onchange
+  document.addEventListener('DOMContentLoaded', function() {
+    const fileInput = document.getElementById('photoFileInput');
+    if (fileInput && !fileInput.dataset.photoWired) {
+      fileInput.dataset.photoWired = '1';
+      fileInput.addEventListener('change', function() { previewPhoto(this); });
+    }
+  });
+
+  // Expose so ui-controls.js delegation can call it
+  window._handlePhotoAction = handlePhotoAction;
+})();
