@@ -1,38 +1,62 @@
+// netlify/functions/get-notifications.js
+// Returns notifications for a student from the last 2 days.
+
 const SUPABASE_URL         = process.env.SUPABASE_URL;
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY;
 
-async function supabase(path, options = {}, useServiceKey = false) {
-  const key = SUPABASE_SERVICE_KEY;
-  const url  = `${SUPABASE_URL}/rest/v1/${path}`;
-  const res  = await fetch(url, {
-    ...options,
-    headers: {
-      'apikey':        key,
-      'Authorization': `Bearer ${key}`,
-      'Content-Type':  'application/json',
-      ...(options.headers || {})
-    }
-  });
-  if (!res.ok) {
-    const err = await res.text();
-    throw new Error(`Supabase error on ${path}: ${err}`);
+const TTL_DAYS = 2;
+
+exports.handler = async function (event) {
+  if (event.httpMethod !== 'POST') {
+    return { statusCode: 405, body: JSON.stringify({ error: 'Method not allowed' }) };
   }
-  return res.json();
-}
 
-// POST { period_id } — IRIR admin use
-// Returns all requests for a period with student details
-exports.handler = async (event) => {
-  const headers = { 'Content-Type': 'application/json',
-                    'Access-Control-Allow-Origin': '*' };
-  const { period_id } = JSON.parse(event.body || '{}');
+  let body;
+  try {
+    body = JSON.parse(event.body || '{}');
+  } catch {
+    return { statusCode: 400, body: JSON.stringify({ error: 'Invalid JSON' }) };
+  }
 
-  const requests = await supabase(
-    `enrollment_requests?period_id=eq.${period_id}` +
-    `&select=*,students(id,name_en,name_my,year,status,gpa,program)` +
-    `&order=requested_at.asc`, {}, true
-  );
+  const { student_id } = body;
+  if (!student_id) {
+    return { statusCode: 400, body: JSON.stringify({ error: 'student_id is required' }) };
+  }
 
-  return { statusCode: 200, headers,
-           body: JSON.stringify({ success: true, requests }) };
+  const cutoff = new Date(Date.now() - TTL_DAYS * 86_400_000).toISOString();
+
+  try {
+    const url = `${SUPABASE_URL}/rest/v1/notifications`
+      + `?student_id=eq.${encodeURIComponent(student_id)}`
+      + `&created_at=gte.${encodeURIComponent(cutoff)}`
+      + `&order=created_at.desc`
+      + `&select=*`;
+
+    const res = await fetch(url, {
+      headers: {
+        'apikey':        SUPABASE_SERVICE_KEY,
+        'Authorization': `Bearer ${SUPABASE_SERVICE_KEY}`,
+        'Content-Type':  'application/json'
+      }
+    });
+
+    if (!res.ok) {
+      const err = await res.text();
+      throw new Error(`Supabase error: ${err}`);
+    }
+
+    const data = await res.json();
+
+    return {
+      statusCode: 200,
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ notifications: data || [] })
+    };
+  } catch (err) {
+    console.error('[get-notifications] error:', err.message);
+    return {
+      statusCode: 500,
+      body: JSON.stringify({ error: 'Failed to fetch notifications' })
+    };
+  }
 };

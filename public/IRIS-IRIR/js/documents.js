@@ -718,7 +718,7 @@ const logoHtml = `
     }
   } catch(qrErr) { console.warn('COS QR token fetch failed', qrErr); }
 
-  const cosQRDataUrl = generateQRDataUrl(cosQrUrl, 72);
+  const cosQRDataUrl = generateQRDataUrl(cosQrUrl, 500);
 
   const html = `<!DOCTYPE html>
 <html>
@@ -1023,7 +1023,7 @@ async function printDocument(type) {
   } catch(qrErr) { console.warn('Document QR token fetch failed', qrErr); }
 
   // Generate QR in the parent window (where qrcodejs is already loaded)
-  const docQRDataUrl = generateQRDataUrl(docQrUrl, 80);
+  const docQRDataUrl = generateQRDataUrl(docQrUrl, 500);
 
   const closing = `
   <div style="margin-top:28px;border-top:1.5px solid #0D1B2A;display:flex;justify-content:space-between;align-items:stretch;font-family:'DM Sans',sans-serif">
@@ -1039,7 +1039,7 @@ async function printDocument(type) {
           <div style="font-size:11pt;color:#0D1B2A">Registrar</div>
           <div style="font-size:11pt;color:#0D1B2A">University of Medicine (2)</div>
         </div>
-        <img src="Signature.png" alt="" style="width:180px;height:auto;object-fit:contain;position:relative;top:-30px;display:block;" onerror="this.style.display='none'">
+        <img src="/IRIS-IRIR/Signature.png" alt="" style="width:180px;height:auto;object-fit:contain;position:relative;top:-30px;display:block;" onerror="this.style.display='none'">
       </div>
     </div>
     <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:12px 16px;border-left:1px solid #ddd;min-width:110px">

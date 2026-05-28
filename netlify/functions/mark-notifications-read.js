@@ -1,16 +1,8 @@
 // netlify/functions/mark-notifications-read.js
 // Marks a list of notification IDs as read for a student.
 
-const { createClient } = require('@supabase/supabase-js');
-// AFTER
-const supabase = createClient(
-  process.env.SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_KEY,
-  {
-    realtime: { enabled: false },
-    global: { fetch }
-  }
-);
+const SUPABASE_URL         = process.env.SUPABASE_URL;
+const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY;
 
 exports.handler = async function (event) {
   if (event.httpMethod !== 'POST') {
@@ -30,13 +22,27 @@ exports.handler = async function (event) {
   }
 
   try {
-    const { error } = await supabase
-      .from('notifications')
-      .update({ is_read: true })
-      .in('id', ids)
-      .eq('student_id', student_id); // safety: only mark own notifications
+    // Build filter: id=in.(id1,id2,...) and student_id=eq.xxx for safety
+    const idList = ids.map(id => encodeURIComponent(id)).join(',');
+    const url = `${SUPABASE_URL}/rest/v1/notifications`
+      + `?id=in.(${idList})`
+      + `&student_id=eq.${encodeURIComponent(student_id)}`;
 
-    if (error) throw error;
+    const res = await fetch(url, {
+      method: 'PATCH',
+      headers: {
+        'apikey':        SUPABASE_SERVICE_KEY,
+        'Authorization': `Bearer ${SUPABASE_SERVICE_KEY}`,
+        'Content-Type':  'application/json',
+        'Prefer':        'return=minimal'
+      },
+      body: JSON.stringify({ is_read: true })
+    });
+
+    if (!res.ok) {
+      const err = await res.text();
+      throw new Error(`Supabase error: ${err}`);
+    }
 
     return {
       statusCode: 200,
