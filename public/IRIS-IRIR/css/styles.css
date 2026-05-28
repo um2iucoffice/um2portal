@@ -592,7 +592,6 @@ body.theme-light .chr-badge.announcement{ background: var(--chr-notice-light); }
 .chr-submit-title { color: rgba(255,255,255,0.88); }
 .chr-submit-sub { color: rgba(255,255,255,0.35); }
 .chr-submit-header { border-bottom-color: rgba(255,255,255,0.07); }
-.chr-input { color: rgba(255,255,255,0.88); }
 
 /* Light mode overrides to restore correct colors */
 body.theme-light .chr-featured { background: rgba(255,255,255,0.95); border-color: var(--line); }
@@ -770,7 +769,7 @@ body.theme-light .chr-submit-header { border-bottom-color: var(--line); }
   border-radius: 8px;
   border: 1px solid var(--glass-card-border);
   background: var(--dash-bg2);
-  color: var(--ink);
+  color: rgba(255,255,255,0.88);
   font-size: 14px;
   font-family: 'DM Sans', sans-serif;
   box-sizing: border-box;
@@ -781,6 +780,8 @@ body.theme-light .chr-submit-header { border-bottom-color: var(--line); }
   border-color: var(--chr-spring-mid);
   box-shadow: 0 0 0 3px rgba(45,106,79,0.1);
 }
+body.theme-light .chr-input { color: var(--ink); background: #fff; }
+
 .chr-photo-label {
   display: flex; align-items: center; gap: 10px;
   padding: 11px 14px;

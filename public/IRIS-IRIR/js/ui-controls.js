@@ -168,18 +168,16 @@ async function submitInfoEditRequest() {
   document.getElementById('editInfoStatus').textContent = '';
 
   try {
-    // Build fields object expected by edit-request.js: { field: newValue, … }
-    const fields = {};
-    changes.forEach(c => { fields[c.field] = c.new; });
-
-    const res = await fetch('/.netlify/functions/edit-request', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ studentId: sid, token: pwd, fields })
-    });
-    const data = await res.json();
-
-    if (!data.success) throw new Error(data.message || 'Submission failed.');
+    // Send each changed field as a separate request
+    for (const c of changes) {
+      const res = await fetch('/.netlify/functions/edit-request', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ studentId: sid, token: pwd, fields: { [c.field]: c.new } })
+      });
+      const data = await res.json();
+      if (!data.success) throw new Error(data.error || 'Submission failed for ' + c.field);
+    }
 
     document.getElementById('editInfoStatus').textContent = '✓ Request submitted successfully! Awaiting Registrar approval.';
     document.getElementById('editInfoBadge').style.display = '';
