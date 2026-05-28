@@ -82,7 +82,7 @@ function renderNews(announcements) {
       : a.type === 'announcement'
       ? '<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="rgba(123,45,139,0.55)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 17H2a3 3 0 0 0 3-3V9a7 7 0 0 1 14 0v5a3 3 0 0 0 3 3z"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>'
       : '<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="rgba(45,106,79,0.55)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2z"/><line x1="8" y1="10" x2="16" y2="10"/><line x1="8" y1="14" x2="13" y2="14"/></svg>';
-    return '<div class="chr-featured" data-newsidx="' + idx + '" onclick="window._newsItems&&window.openNewsDetail(window._newsItems[this.dataset.newsidx])">'
+    return '<div class="chr-featured" data-newsidx="' + idx + '" style="cursor:pointer">'
       + (a.image_url
           ? '<img class="chr-featured-img" src="' + escHtml(a.image_url) + '" alt="" draggable="false" oncontextmenu="return false">'
           : '<div class="chr-featured-noimgbg">' + typeIcon + '</div>')
@@ -111,7 +111,7 @@ function renderNews(announcements) {
       : a.type === 'announcement'
       ? '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="rgba(123,45,139,0.5)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 17H2a3 3 0 0 0 3-3V9a7 7 0 0 1 14 0v5a3 3 0 0 0 3 3z"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>'
       : '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="rgba(45,106,79,0.5)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2z"/><line x1="8" y1="10" x2="16" y2="10"/><line x1="8" y1="14" x2="13" y2="14"/></svg>';
-    return '<div class="chr-card" data-newsidx="' + idx + '" onclick="window._newsItems&&window.openNewsDetail(window._newsItems[this.dataset.newsidx])">'
+    return '<div class="chr-card" data-newsidx="' + idx + '" style="cursor:pointer">'
       + (a.image_url
           ? '<img class="chr-card-img" src="' + escHtml(a.image_url) + '" alt="" draggable="false" oncontextmenu="return false">'
           : '<div class="chr-card-noimgbg">' + typeIcon + '</div>')
@@ -131,7 +131,7 @@ function renderNews(announcements) {
     var dp = parseDateParts(a.event_date || a.published_at || '');
     var timeMeta = (a.event_time ? a.event_time : '');
     var locMeta  = (a.event_location ? a.event_location : '');
-    return '<div class="chr-event-card" data-newsidx="' + idx + '" onclick="window._newsItems&&window.openNewsDetail(window._newsItems[this.dataset.newsidx])">'
+    return '<div class="chr-event-card" data-newsidx="' + idx + '" style="cursor:pointer">'
       + '<div class="chr-event-date-block">'
       + '  <div class="chr-event-month">' + escHtml(dp.month) + '</div>'
       + '  <div class="chr-event-day">'   + escHtml(dp.day)   + '</div>'
@@ -239,7 +239,7 @@ function renderHomeNews(announcements) {
       : a.type === 'announcement'
       ? '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(123,45,139,0.5)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 17H2a3 3 0 0 0 3-3V9a7 7 0 0 1 14 0v5a3 3 0 0 0 3 3z"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>'
       : '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(45,106,79,0.5)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2z"/><line x1="8" y1="10" x2="16" y2="10"/><line x1="8" y1="14" x2="13" y2="14"/></svg>';
-    return '<div class="chr-home-card" data-newsidx="' + idx + '" onclick="window._newsItems&&window.openNewsDetail&&window.openNewsDetail(window._newsItems[this.dataset.newsidx])">'
+    return '<div class="chr-home-card" data-newsidx="' + idx + '" style="cursor:pointer">'
       + (a.image_url
           ? '<img class="chr-home-card-img" src="' + escHtml(a.image_url) + '" alt="" draggable="false" oncontextmenu="return false">'
           : '<div class="chr-home-card-noimgbg">' + typeIcon + '</div>')
