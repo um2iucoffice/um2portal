@@ -144,22 +144,17 @@ function renderEnrollmentBanner(period, elig, student) {
            + '</button>'
            + '</div>';
 
-    } else {
-      var reasonsList = (elig.reasons || []).map(function(r) {
-        return '<li style="margin-bottom:3px;color:#7A6320;">' + r + '</li>';
-      }).join('');
-
-      html = '<div style="background:var(--gold-light);border:1px solid rgba(154,123,47,0.25);border-radius:12px;padding:16px 20px;margin-bottom:18px;">'
-           + '<div style="display:flex;align-items:center;gap:14px;">'
-           + _enrollIconWrap('ineligible', 'var(--gold)')
-           + '<div style="flex:1;min-width:0;">'
-           + '  <div style="font-weight:700;font-size:14px;margin-bottom:3px;color:#5C4A10;">Not Yet Eligible for Year Progression</div>'
-           + '  <div style="font-size:12px;line-height:1.6;color:#7A6320;">Enrollment closes ' + closeDate + '. Please resolve the following before the deadline:</div>'
-           + '</div>'
-           + '</div>'
-           + (reasonsList ? '<ul style="margin:10px 0 0 50px;padding:0;font-size:12px;list-style:disc;color:#7A6320;">' + reasonsList + '</ul>' : '')
-           + '</div>';
-    }
+    // AFTER
+} else {
+  // Not eligible — hide banner completely
+  ['enrollmentBanner','enrollmentBannerGrades'].forEach(function(id){
+    var el = document.getElementById(id);
+    if (!el) return;
+    el.innerHTML = '';
+    el.style.display = 'none';
+  });
+  return;
+}
 
     container.innerHTML = html;
     container.style.display = 'block';

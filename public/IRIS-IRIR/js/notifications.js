@@ -29,8 +29,12 @@ function formatNotifTime(isoString) {
   return `${Math.floor(hours / 24)}d ago`;
 }
 
-// ── Fetch notifications from Supabase ─────────────────────────
+// AFTER
 async function fetchNotifications() {
+  if (!window._supabase) {
+    console.warn('Notifications: Supabase not ready');
+    return [];
+  }
   const sid = window._currentStudent?.id
            || document.getElementById('infoID')?.textContent?.trim();
   if (!sid) return [];
