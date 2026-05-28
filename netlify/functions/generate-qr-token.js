@@ -70,7 +70,7 @@ exports.handler = async function (event, context) {
   };
 
   const token = signToken(payload);
-  const verifyUrl = `https://sisportal.um2campus.org/verify.html?t=${token}`;
+  const verifyUrl = `https://sisportal.um2campus.org/verifyum2iuc?t=${token}`;
 
   return {
     statusCode: 200,
