@@ -12,6 +12,12 @@
   node_bundler = "zisi"
   external_node_modules = ["sharp"]
 
+# ── Routing ───────────────────────────────────────────────────
+[[redirects]]
+  from = "/verifyum2iuc"
+  to   = "/verifyum2iuc.html"
+  status = 200
+
 # ── Security headers ─────────────────────────────────────────
 [[headers]]
   for = "/*"
