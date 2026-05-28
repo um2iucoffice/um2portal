@@ -150,8 +150,11 @@ function renderCourseSession(student, grades, academicYears) {
       const courses = coursesByYear[yr] || [];
       const done = courses.filter(c => gradedIds.has(c.id)).length;
       const pip  = done > 0 ? `<span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:#22c55e;margin-left:5px;vertical-align:middle"></span>` : '';
-      return `<button class="cs-year-tab${yr === activeYear ? ' active' : ''}" data-yr="${escHtml(yr)}" onclick="csShowYear('${escHtml(yr)}')">${escHtml(yr)}${pip}</button>`;
+      return `<button class="cs-year-tab${yr === activeYear ? ' active' : ''}" data-yr="${escHtml(yr)}">${escHtml(yr)}${pip}</button>`;
     }).join('');
+    tabBar.querySelectorAll('.cs-year-tab').forEach(btn => {
+      btn.addEventListener('click', function() { window.csShowYear(this.dataset.yr); });
+    });
   } else {
     tabBar.style.display = 'none';
   }
@@ -169,4 +172,3 @@ window.csShowYear = function(yr) {
   const badge = document.getElementById('csYearBadge');
   if (badge) badge.textContent = yr;
 };
-
