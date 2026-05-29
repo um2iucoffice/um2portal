@@ -69,7 +69,6 @@ function toggleTheme() {
   applyTheme(saved);
 })();
 
-// ── Sign out ──────────────────────────────────────────────────
 // ── Edit My Info (student personal data change requests) ─────
 // Requires Netlify function: netlify/functions/edit-request.js
 // Table: student_edit_requests (see Setup Guide in registrar portal)
@@ -92,6 +91,9 @@ async function loadEditInfoSection() {
     // Pre-fill form with current values
     const saved = window._currentStudent;
     if (saved) {
+      if (document.getElementById('editNameEN'))  document.getElementById('editNameEN').value  = saved.fullName    || '';
+      if (document.getElementById('editEmail'))   document.getElementById('editEmail').value   = saved.email       || '';
+      if (document.getElementById('editGender'))  document.getElementById('editGender').value  = saved.gender      || '';
       document.getElementById('editFatherEN').value = saved.fatherName   || '';
       document.getElementById('editFatherMY').value = saved.fatherNameMM || '';
       document.getElementById('editMotherEN').value = saved.motherName   || '';
@@ -141,6 +143,9 @@ async function submitInfoEditRequest() {
   if (!sid) { alert('Session expired. Please log in again.'); return; }
 
   const saved = window._currentStudent || {};
+  const newNameEN   = document.getElementById('editNameEN')  ? document.getElementById('editNameEN').value.trim()  : null;
+  const newEmail    = document.getElementById('editEmail')   ? document.getElementById('editEmail').value.trim()   : null;
+  const newGender   = document.getElementById('editGender')  ? document.getElementById('editGender').value.trim()  : null;
   const newFatherEN = document.getElementById('editFatherEN').value.trim();
   const newFatherMY = document.getElementById('editFatherMY').value.trim();
   const newMotherEN = document.getElementById('editMotherEN').value.trim();
@@ -148,6 +153,9 @@ async function submitInfoEditRequest() {
   const reason      = document.getElementById('editInfoReason').value.trim();
 
   const changes = [];
+  if (newNameEN  !== null && newNameEN  !== (saved.fullName    || '')) changes.push({ field: 'name_en',   old: saved.fullName    || '', new: newNameEN });
+  if (newEmail   !== null && newEmail   !== (saved.email       || '')) changes.push({ field: 'email',     old: saved.email       || '', new: newEmail });
+  if (newGender  !== null && newGender  !== (saved.gender      || '')) changes.push({ field: 'gender',    old: saved.gender      || '', new: newGender });
   if (newFatherEN !== (saved.fatherName   || '')) changes.push({ field: 'father',    old: saved.fatherName   || '', new: newFatherEN });
   if (newFatherMY !== (saved.fatherNameMM || '')) changes.push({ field: 'father_my', old: saved.fatherNameMM || '', new: newFatherMY });
   if (newMotherEN !== (saved.motherName   || '')) changes.push({ field: 'mother',    old: saved.motherName   || '', new: newMotherEN });

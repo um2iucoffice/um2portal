@@ -720,6 +720,21 @@ const logoHtml = `
 
   const cosQRDataUrl = generateQRDataUrl(cosQrUrl, 500);
 
+  // Fetch signature as base64 so it renders inside blob popup
+  let sigBase64 = '';
+  try {
+    const sigRes = await fetch('/IRIS-IRIR/Signature.png');
+    if (sigRes.ok) {
+      const sigBlob = await sigRes.blob();
+      sigBase64 = await new Promise(resolve => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.readAsDataURL(sigBlob);
+      });
+    }
+  } catch(_) {}
+  const sigImgHtml = sigBase64 ? `<img src="${sigBase64}" alt="" style="width:180px;height:auto;object-fit:contain;display:block;margin-bottom:-10px;">` : '';
+
   const html = `<!DOCTYPE html>
 <html>
 <head>
@@ -732,9 +747,10 @@ const logoHtml = `
     body { font-family: 'DM Sans', sans-serif; color: #0D1B2A; background: #fff; font-size: 11.5pt; line-height: 1.85; }
     @page { margin: 22mm 25mm 24mm 25mm; size: A4; }
     @media print { * { -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
+    body > table { width: 100%; border-collapse: collapse; }
+    body > table > tbody > tr > td { vertical-align: top; }
     .wm { position:fixed; top:50%; left:50%; transform:translate(-50%,-50%) rotate(-35deg); font-size:40pt; font-weight:bold; color:rgba(13,27,42,0.035); letter-spacing:10px; pointer-events:none; white-space:nowrap; z-index:0; font-family:serif; }
-    .page { position:relative; z-index:1; }
-    /* Header */
+    .pg-ftr { display:flex; justify-content:space-between; align-items:center; padding-top:6px; border-top:1.5px solid #0D1B2A; margin-top:2px; font-size:8.5pt; color:#555; font-family:'DM Sans',sans-serif; }
     .hdr { display:flex; align-items:center; gap:18px; padding-bottom:12px; border-bottom:2px solid #0D1B2A; margin-bottom:28px; }
     .hdr-info { flex:1; }
     .hdr-univ { font-size:13pt; font-weight:700; color:#0D1B2A; line-height:1.2; }
@@ -742,16 +758,22 @@ const logoHtml = `
     .hdr-right { text-align:right; }
     .hdr-doctype { font-size:11pt; font-weight:700; color:#0D1B2A; text-transform:uppercase; letter-spacing:.5px; }
     .hdr-meta { font-size:9pt; color:#555; margin-top:4px; line-height:1.6; }
-    /* Letter body */
     .letter { font-size:11.5pt; line-height:1.85; color:#0D1B2A; text-align:justify; }
     .letter p { margin-bottom: 0; }
-    /* Footer */
-    .ftr { margin-top:16px; padding-top:8px; border-top:1px solid #ccc; font-size:8.5pt; color:#666; display:flex; justify-content:space-between; }
   </style>
 </head>
 <body>
   <div class="wm"></div>
-  <div class="page">
+  <table>
+    <thead><tr><td></td></tr></thead>
+    <tfoot><tr><td style="padding-top:10px">
+      <div class="pg-ftr">
+        <span>University of Medicine (2) &nbsp;·&nbsp; ${idLabel}: <b>${sid}</b> &nbsp;·&nbsp; ${name}</span>
+        ${cosQRDataUrl ? `<div style="display:flex;flex-direction:column;align-items:center;gap:2px;"><img src="${cosQRDataUrl}" width="56" height="56" style="display:block;image-rendering:pixelated;" alt="Verify QR"><span style="font-size:6.5pt;color:#888;">Scan to Verify</span></div>` : ''}
+      </div>
+    </td></tr></tfoot>
+    <tbody><tr><td style="position:relative;z-index:1">
+
     <!-- Header -->
     <div class="hdr">
       <div style="display:flex;align-items:center;gap:16px;flex:1">
@@ -777,21 +799,18 @@ const logoHtml = `
 
     <!-- Signing area -->
     <div style="margin-top:40px;font-size:11pt;line-height:1.8;color:#0D1B2A;">
-      <div style="margin-top:36px;border-top:1px solid #555;width:200px;margin-bottom:4px;"></div>
-      <div>Registrar</div>
-      <div>University of Medicine (2), Yangon</div>
-    </div>
-
-    <!-- Footer -->
-    <div class="ftr" style="display:flex;justify-content:space-between;align-items:flex-end;">
-      <div>
-        <span>University of Medicine (2) &nbsp;·&nbsp; ${idLabel}: ${sid} &nbsp;·&nbsp; ${name}</span><br>
-        <span>Issued: ${today}</span>
+      <div style="display:flex;align-items:center;gap:16px;">
+        <div>
+          ${sigImgHtml}
+          <div style="border-top:1px solid #555;width:200px;margin-bottom:4px;"></div>
+          <div>Registrar</div>
+          <div>University of Medicine (2), Yangon</div>
+        </div>
       </div>
-      ${cosQRDataUrl ? `<div style="display:flex;flex-direction:column;align-items:center;gap:3px;"><img src="${cosQRDataUrl}" width="72" height="72" style="display:block;image-rendering:pixelated;" alt="Verify QR"><span style="font-size:7pt;color:#888;">Scan to Verify</span></div>` : ''}
     </div>
-  </div>
 
+    </td></tr></tbody>
+  </table>
   <script>
     window.addEventListener('load', function() {
       setTimeout(function() { window.print(); }, 400);
@@ -1025,6 +1044,21 @@ async function printDocument(type) {
   // Generate QR in the parent window (where qrcodejs is already loaded)
   const docQRDataUrl = generateQRDataUrl(docQrUrl, 500);
 
+  // Fetch signature as base64 so it renders inside blob popup
+  let docSigBase64 = '';
+  try {
+    const docSigRes = await fetch('/IRIS-IRIR/Signature.png');
+    if (docSigRes.ok) {
+      const docSigBlob = await docSigRes.blob();
+      docSigBase64 = await new Promise(resolve => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.readAsDataURL(docSigBlob);
+      });
+    }
+  } catch(_) {}
+  const docSigImgHtml = docSigBase64 ? `<img src="${docSigBase64}" alt="" style="width:180px;height:auto;object-fit:contain;position:relative;top:-30px;display:block;">` : '';
+
   const closing = `
   <div style="margin-top:28px;border-top:1.5px solid #0D1B2A;display:flex;justify-content:space-between;align-items:stretch;font-family:'DM Sans',sans-serif">
     <div style="flex:1;padding:12px 16px;font-size:11pt;color:#0D1B2A;line-height:1.7;">
@@ -1039,7 +1073,7 @@ async function printDocument(type) {
           <div style="font-size:11pt;color:#0D1B2A">Registrar</div>
           <div style="font-size:11pt;color:#0D1B2A">University of Medicine (2)</div>
         </div>
-        <img src="/IRIS-IRIR/Signature.png" alt="" style="width:180px;height:auto;object-fit:contain;position:relative;top:-30px;display:block;" onerror="this.style.display='none'">
+        ${docSigImgHtml}
       </div>
     </div>
    <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:12px 16px;min-width:110px">
@@ -1111,7 +1145,7 @@ async function printDocument(type) {
     </div>
 
     <!-- COVID / Crisis Note -->
-    <div style="margin-top:8px;padding:12px 16px;border:1px solid #ccc;border-left:3.5px solid #8B1A2E;font-size:8.5pt;color:#333;line-height:1.75;font-family:'DM Sans',sans-serif;text-align:justify;">
+    <div style="margin-top:8px;font-size:8.5pt;color:#555;line-height:1.75;font-family:'DM Sans',sans-serif;text-align:justify;">
       <div style="font-size:7.5pt;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#8B1A2E;margin-bottom:6px;">Note</div>
       Due to the global COVID-19 pandemic and the ongoing crisis in Myanmar since February 2021, many students have experienced unavoidable academic interruptions, resulting in delay of progression of academic years. The University Council and Academic Board acknowledge these disruptions were not attributable to the student's academic performance or conduct, but rather a national circumstance affecting the entire institution, and has taken them into consideration when evaluating academic progress and transcript records.
     </div>
