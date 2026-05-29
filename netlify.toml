@@ -2,25 +2,26 @@
   publish = "public/IRIS-IRIR"
   functions = "netlify/functions"
   command = "echo 'No build step'"
-
 [build.environment]
   NODE_VERSION = "20"
   AWS_LAMBDA_JS_RUNTIME = "nodejs20.x"
   SHARP_IGNORE_GLOBAL_LIBVIPS = "1"
-
 [functions]
   node_bundler = "esbuild"
-
 [functions."approve-photo"]
   external_node_modules = ["sharp"]
   included_files = ["node_modules/sharp/**"]
-
 # ── Routing ───────────────────────────────────────────────────
 [[redirects]]
   from = "/verifyum2iuc"
   to   = "/verifyum2iuc.html"
   status = 200
 
+[[redirects]]
+  from = "https://admin.sisportal.um2campus.org/*"
+  to   = "https://sisportal.um2campus.org/um2admin"
+  status = 301
+  force = true
 # ── Security headers ─────────────────────────────────────────
 [[headers]]
   for = "/*"
@@ -30,14 +31,12 @@
     Referrer-Policy = "no-referrer"
     Strict-Transport-Security = "max-age=31536000; includeSubDomains; preload"
     Permissions-Policy = "camera=(), microphone=(), geolocation=(), payment=()"
-    Content-Security-Policy = "default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com https://cdn.jsdelivr.net data:; img-src 'self' data: blob: https:; connect-src 'self' https://*.supabase.co wss://*.supabase.co https://*.netlify.app https://*.github.io https://sisportal.um2campus.org; object-src 'none'; worker-src 'none'; frame-ancestors 'none'; base-uri 'self'; form-action 'self';"
-
+    Content-Security-Policy = "default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com https://cdn.jsdelivr.net data:; img-src 'self' data: blob: https:; connect-src 'self' https://*.supabase.co wss://*.supabase.co https://*.netlify.app https://*.github.io https://sisportal.um2campus.org https://admin.sisportal.um2campus.org; object-src 'none'; worker-src 'none'; frame-ancestors 'none'; base-uri 'self'; form-action 'self';"
 # ── Cache control ─────────────────────────────────────────────
 [[headers]]
   for = "/*.html"
   [headers.values]
     Cache-Control = "no-cache, no-store, must-revalidate"
-
 [[headers]]
   for = "/*.js"
   [headers.values]

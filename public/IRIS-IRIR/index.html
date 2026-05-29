@@ -1269,7 +1269,6 @@
                   
                   >
               </div>
-            </div>
 
             <div style="margin-bottom:20px">
               <div style="font-size:11px;font-weight:600;letter-spacing:.8px;text-transform:uppercase;color:var(--ink3);margin-bottom:6px">Reason for Change</div>
@@ -1296,6 +1295,7 @@
     </div>
 
     <!-- PHOTO UPLOAD -->
+
     <div class="section" id="panel-photo">
       <div class="sec-head">
         <h2>Profile Photo</h2>
@@ -1452,13 +1452,13 @@
       <!-- Day filter pills -->
       <div class="tt-filter-bar" id="ttFilterBar" style="display:none">
         <span class="tt-filter-label">Day</span>
-        <button class="tt-filter-pill active" data-day="All">All</button>
-        <button class="tt-filter-pill" data-day="Monday"   >Mon</button>
-        <button class="tt-filter-pill" data-day="Tuesday"  >Tue</button>
-        <button class="tt-filter-pill" data-day="Wednesday">Wed</button>
-        <button class="tt-filter-pill" data-day="Thursday" >Thu</button>
-        <button class="tt-filter-pill" data-day="Friday"   >Fri</button>
-        <button class="tt-filter-pill" data-day="Saturday" >Sat</button>
+        <button class="tt-filter-pill active" data-day="All"       onclick="ttFilterDay('All')">All</button>
+        <button class="tt-filter-pill" data-day="Monday"    onclick="ttFilterDay('Monday')">Mon</button>
+        <button class="tt-filter-pill" data-day="Tuesday"   onclick="ttFilterDay('Tuesday')">Tue</button>
+        <button class="tt-filter-pill" data-day="Wednesday" onclick="ttFilterDay('Wednesday')">Wed</button>
+        <button class="tt-filter-pill" data-day="Thursday"  onclick="ttFilterDay('Thursday')">Thu</button>
+        <button class="tt-filter-pill" data-day="Friday"    onclick="ttFilterDay('Friday')">Fri</button>
+        <button class="tt-filter-pill" data-day="Saturday"  onclick="ttFilterDay('Saturday')">Sat</button>
       </div>
 
       <!-- Loading -->
@@ -1552,7 +1552,7 @@
       </div>
     </div>
 
-  </div>
+  </div><!-- /.dash-content -->
 
     <!-- dashboard footer -->
     <footer class="dash-footer">

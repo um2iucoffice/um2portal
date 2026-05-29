@@ -449,6 +449,90 @@ function ttFmt(t) {
   return parts[0] + ':' + parts[1];
 }
 
+function renderTimetable(rows, activeDay) {
+  var contentEl = document.getElementById('ttContent');
+  if (!contentEl) return;
+
+  // Update active day button states
+  var btns = document.querySelectorAll('[data-ttday]');
+  btns.forEach(function(btn) {
+    btn.classList.toggle('active', btn.dataset.day === activeDay);
+  });
+
+  // Filter rows by day
+  var filtered = activeDay === 'All'
+    ? rows
+    : rows.filter(function(r) {
+        return (r.day_of_week || '').toLowerCase() === activeDay.toLowerCase();
+      });
+
+  if (!filtered.length) {
+    contentEl.innerHTML = '<div style="padding:40px 0;text-align:center;color:var(--ink3);font-size:14px">No classes scheduled' + (activeDay !== 'All' ? ' on ' + activeDay : '') + '.</div>';
+    return;
+  }
+
+  // Group by day using TT_DAY_ORDER
+  var groups = {};
+  filtered.forEach(function(r) { 
+    var d = r.day_of_week || 'Unknown';
+    if (!groups[d]) groups[d] = [];
+    groups[d].push(r);
+  });
+
+  // Sort rows within each day by start_time
+  Object.keys(groups).forEach(function(day) {
+    groups[day].sort(function(a, b) {
+      return (a.start_time || '').localeCompare(b.start_time || '');
+    });
+  });
+
+  // Build HTML grouped by day in TT_DAY_ORDER
+  var html = '';
+  var orderedDays = TT_DAY_ORDER.filter(function(d) { return groups[d]; });
+  // Append any days not in TT_DAY_ORDER
+  Object.keys(groups).forEach(function(d) {
+    if (orderedDays.indexOf(d) === -1) orderedDays.push(d);
+  });
+
+  orderedDays.forEach(function(day) {
+    var dayRows = groups[day];
+    html += '<div class="tt-day-group">'
+          + '<div class="tt-day-header"><span class="tt-day-dot"></span>' + day.toUpperCase() + '</div>';
+
+    dayRows.forEach(function(r) {
+      var duration = ttDurationLabel(r.start_time, r.end_time);
+      var roomBadge = r.room
+        ? '<span class="tt-room-badge">' + escHtml(r.room) + '</span>'
+        : '';
+      var typeBadge = r.type
+        ? '<span class="tt-type-badge">' + escHtml(r.type) + '</span>'
+        : '';
+
+      html += '<div class="tt-row">'
+            + '  <div class="tt-time-col">'
+            + '    <div class="tt-time-start">' + ttFmt(r.start_time) + '</div>'
+            + (r.end_time ? '<div class="tt-time-end">– ' + ttFmt(r.end_time) + '</div>' : '')
+            + (duration   ? '<div class="tt-duration">' + escHtml(duration) + '</div>' : '')
+            + '  </div>'
+            + '  <div class="tt-info-col">'
+            + '    <div class="tt-subject">' + escHtml(r.subject || r.course_name || r.title || '—') + '</div>'
+            + (r.instructor ? '<div class="tt-instructor">' + escHtml(r.instructor) + '</div>' : '')
+            + '    <div class="tt-badges">' + roomBadge + typeBadge + '</div>'
+            + '  </div>'
+            + '</div>';
+    });
+
+    html += '</div>';
+  });
+
+  contentEl.innerHTML = html;
+}
+
+// Allow day-filter buttons to call this
+window.ttFilterDay = function(day) {
+  _ttActiveDay = day;
+  if (_ttAllRows.length) renderTimetable(_ttAllRows, day);
+};
 
 (function() {
  
