@@ -289,3 +289,4 @@ function populate(s, grades, courses, program_meta, enrollments, academicYears, 
 if (typeof initNotifications === 'function') {
   initNotifications().catch(e => console.warn('Notifications init failed:', e));
 }
+}
