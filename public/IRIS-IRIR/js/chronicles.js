@@ -379,7 +379,6 @@ var _ttActiveDay = 'All';
 // Only fetch once per session
 function loadTimetableIfNeeded() {
   if (_ttLoaded) return;
-  _ttLoaded = true;
   _loadTimetable();
 }
 
@@ -410,7 +409,8 @@ async function _loadTimetable() {
     if (!data.success) throw new Error(data.message || 'Failed to load timetable.');
 
     var rows = data.timetable || [];
-    _ttAllRows = rows;
+_ttAllRows = rows;
+_ttLoaded = true;
 
     if (rows.length === 0) {
       emptyEl.style.display = 'block';
