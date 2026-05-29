@@ -35,9 +35,6 @@ const HEADERS = {
 };
 
 // ── Validate session token against the sessions table ────────────────────────
-// Returns the student_id the token belongs to, or null if invalid/expired.
-// If the sessions table does not exist yet, validation is skipped and the
-// studentId from the request body is trusted (graceful degradation).
 async function validateToken(token, claimedStudentId) {
   if (!token) return null;
   try {
@@ -46,14 +43,10 @@ async function validateToken(token, claimedStudentId) {
     );
     if (!rows || rows.length === 0) return null;
     const session = rows[0];
-    // Check expiry
     if (session.expires_at && new Date(session.expires_at) < new Date()) return null;
     return session.student_id;
   } catch (e) {
-    // sessions table may not exist — log and allow (degrade gracefully)
     console.warn('Token validation skipped (sessions table may not exist):', e.message);
-    // Fall back: trust the claimed student ID so the feature still works
-    // Remove this fallback once the sessions table is confirmed to exist.
     return claimedStudentId || null;
   }
 }
@@ -89,11 +82,12 @@ exports.handler = async (event) => {
     };
   }
 
-  const { studentId, token, fields } = body;
+  const { studentId, token, fields, oldValues, reason } = body;
 
   // ── Basic input validation ─────────────────────────────────────────────────
   const cleanStudentId = String(studentId || '').trim().toLowerCase();
   const cleanToken     = String(token     || '').trim();
+  const cleanReason    = String(reason    || '').replace(/<[^>]*>/g, '').trim().slice(0, 1000);
 
   if (!cleanStudentId) {
     return {
@@ -119,7 +113,6 @@ exports.handler = async (event) => {
       body: JSON.stringify({ success: false, error: 'Unauthorized: invalid or expired session.' }),
     };
   }
-  // Prevent a student from submitting edits for a different student
   if (authenticatedId.toLowerCase() !== cleanStudentId) {
     return {
       statusCode: 403,
@@ -139,7 +132,7 @@ exports.handler = async (event) => {
 
   const sanitisedFields = {};
   for (const [key, value] of Object.entries(fields)) {
-    if (!ALLOWED_FIELDS.has(key)) continue;  // silently drop disallowed fields
+    if (!ALLOWED_FIELDS.has(key)) continue;
     const cleaned = String(value || '').replace(/<[^>]*>/g, '').trim().slice(0, 500);
     if (cleaned) sanitisedFields[key] = cleaned;
   }
@@ -152,18 +145,25 @@ exports.handler = async (event) => {
     };
   }
 
-  // ── Insert edit request ───────────────────────────────────────────────────
+  // ── Insert one row per changed field ──────────────────────────────────────
   try {
-    await supabase('student_edit_requests', {
-      method:  'POST',
-      headers: { Prefer: 'return=minimal' },
-      body: JSON.stringify({
-        student_id:    cleanStudentId,
-        requested_fields: sanitisedFields,   // JSONB column: { field: newValue, … }
-        status:        'pending',
-        created_at:    new Date().toISOString(),
-      }),
-    });
+    const now = new Date().toISOString();
+    for (const [key, value] of Object.entries(sanitisedFields)) {
+      await supabase('student_edit_requests', {
+        method:  'POST',
+        headers: { Prefer: 'return=minimal' },
+        body: JSON.stringify({
+          student_id:   cleanStudentId,
+          field_name:   key,
+          new_value:    value,
+          old_value:    String((oldValues && oldValues[key]) || '').trim(),
+          reason:       cleanReason,
+          status:       'pending',
+          submitted_at: now,
+          created_at:   now,
+        }),
+      });
+    }
 
     return {
       statusCode: 200,

@@ -1,20 +1,7 @@
 // ── Our Chronicles in Spring — render functions ──────────────
-function renderNews(announcements) {
-  var container = document.getElementById('newsContent');
-  if (!container) return;
-  var items = (announcements || []);
-  if (!items.length) {
-    container.innerHTML = '<div style="padding:48px 0;text-align:center;color:var(--ink3);font-size:14px">No chronicles yet. Be the first to share a story!</div>';
-    return;
-  }
 
-  var sorted = items.slice().sort(function(a, b) {
-    var da = a.type === 'event' ? (a.event_date || a.published_at || '') : (a.published_at || '');
-    var db = b.type === 'event' ? (b.event_date || b.published_at || '') : (b.published_at || '');
-    return db.localeCompare(da);
-  });
-
-  function openNewsDetail(a) {
+// Standalone detail opener — available to both renderNews and renderHomeNews
+function openNewsDetail(a) {
     var badgeTxt = a.type === 'announcement' ? 'Notice' : a.type === 'event' ? 'Event' : 'News';
     var dateStr  = a.type === 'event' && a.event_date ? escHtml(a.event_date) : escHtml((a.published_at || '').slice(0,10));
     var meta     = a.type === 'event'
@@ -60,7 +47,25 @@ function renderNews(announcements) {
       + '</div></body></html>';
     var w = window.open('', '_blank', 'width=820,height=720');
     if (w) { w.document.write(html); w.document.close(); }
+}
+
+// Also expose on window for inline onclick usage
+window.openNewsDetail = openNewsDetail;
+
+function renderNews(announcements) {
+  var container = document.getElementById('newsContent');
+  if (!container) return;
+  var items = (announcements || []);
+  if (!items.length) {
+    container.innerHTML = '<div style="padding:48px 0;text-align:center;color:var(--ink3);font-size:14px">No chronicles yet. Be the first to share a story!</div>';
+    return;
   }
+
+  var sorted = items.slice().sort(function(a, b) {
+    var da = a.type === 'event' ? (a.event_date || a.published_at || '') : (a.published_at || '');
+    var db = b.type === 'event' ? (b.event_date || b.published_at || '') : (b.published_at || '');
+    return db.localeCompare(da);
+  });
 
   window._newsItems = sorted;
 
@@ -174,7 +179,15 @@ function renderNews(announcements) {
   }
 
   container.innerHTML = html;
-  window.openNewsDetail = openNewsDetail;
+
+  // Wire up click listener on the news container
+  container.addEventListener('click', function(e) {
+    var card = e.target.closest('[data-newsidx]');
+    if (!card) return;
+    var idx  = parseInt(card.dataset.newsidx, 10);
+    var item = sorted[idx];
+    if (item) openNewsDetail(item);
+  });
 }
 
 // ── Student overview strip (above apps dashboard) ───────────────────────────
@@ -255,8 +268,20 @@ function renderHomeNews(announcements) {
   }
 
   var preview = sorted.slice(0, 3);
-  if (container)    container.innerHTML    = preview.map(function(a, i) { return homeCard(a, sorted.indexOf(a)); }).join('');
-  if (mobContainer) mobContainer.innerHTML = preview.map(function(a, i) { return homeCard(a, sorted.indexOf(a)); }).join('');
+  if (container)    container.innerHTML    = preview.map(function(a) { return homeCard(a, sorted.indexOf(a)); }).join('');
+  if (mobContainer) mobContainer.innerHTML = preview.map(function(a) { return homeCard(a, sorted.indexOf(a)); }).join('');
+
+  // Wire up click listeners on both containers
+  [container, mobContainer].forEach(function(c) {
+    if (!c) return;
+    c.addEventListener('click', function(e) {
+      var card = e.target.closest('[data-newsidx]');
+      if (!card) return;
+      var idx  = parseInt(card.dataset.newsidx, 10);
+      var item = sorted[idx];
+      if (item && window.openNewsDetail) window.openNewsDetail(item);
+    });
+  });
 }
 
 var _postType = 'news'; // default post type

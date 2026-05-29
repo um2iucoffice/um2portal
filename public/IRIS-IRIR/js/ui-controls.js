@@ -181,7 +181,13 @@ async function submitInfoEditRequest() {
       const res = await fetch('/.netlify/functions/edit-request', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ studentId: sid, token: pwd, fields: { [c.field]: c.new } })
+        body: JSON.stringify({
+          studentId: sid,
+          token: pwd,
+          fields: { [c.field]: c.new },
+          oldValues: { [c.field]: c.old },
+          reason
+        })
       });
       const data = await res.json();
       if (!data.success) throw new Error(data.error || 'Submission failed for ' + c.field);

@@ -285,8 +285,7 @@ function populate(s, grades, courses, program_meta, enrollments, academicYears, 
   }
 
 
-  // ── Init notification bell ────────────────────────────────────
-  if (typeof initNotifications === 'function') {
-    initNotifications('#notifMount').catch(e => console.warn('Notifications init failed:', e));
-  }
+  // ── Init notifications ────────────────────────────────────────
+if (typeof initNotifications === 'function') {
+  initNotifications().catch(e => console.warn('Notifications init failed:', e));
 }
