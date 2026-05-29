@@ -292,7 +292,7 @@
   <div class="sidebar-section">Academics</div>
   <div class="nav-item" id="nav-grades" onclick="showView('grades')"><span class="nav-icon"><svg class="nav-svg"><use href="#i-grades"></use></svg></span>Grade Upload</div>
   <div class="nav-item staff-visible" id="nav-markbookUpload" onclick="showView('markbookUpload')"><span class="nav-icon"><svg class="nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6z"/><path d="M14 2v6h6"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="13" y2="17"/><polyline points="10 9 9 9 8 9"/></svg></span>Mark Book Upload</div>
-  <div class="nav-item" id="nav-attendance" onclick="showView('attendance')"><span class="nav-icon"><svg class="nav-svg"><use href="#i-attendance"></use></svg></span>Live Session Attendance</div>
+  <div class="nav-item" id="nav-attendance" onclick="showView('attendance');populateAttendanceAcadYearFilter()"><span class="nav-icon"><svg class="nav-svg"><use href="#i-attendance"></use></svg></span>Live Session Attendance</div>
   <div class="nav-item registrar-only" id="nav-courses" onclick="showView('courses')"><span class="nav-icon"><svg class="nav-svg"><use href="#i-courses"></use></svg></span>Courses</div>
   <div class="nav-item registrar-only" id="nav-bulkCourses" onclick="showView('bulkCourses')"><span class="nav-icon"><svg class="nav-svg"><use href="#i-package"></use></svg></span>Bulk Import Courses</div>
   <div class="nav-item registrar-only" id="nav-degrees" onclick="showView('degrees')"><span class="nav-icon"><svg class="nav-svg"><use href="#i-building"></use></svg></span>Degree Programs</div>
@@ -366,7 +366,7 @@
           <div style="width:42px;height:42px;background:var(--crimson-light);border-radius:10px;display:flex;align-items:center;justify-content:center"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--crimson)" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="7" r="3.5"/><path d="M2 21c0-3.866 3.134-7 7-7s7 3.134 7 7"/><circle cx="18" cy="8" r="2.5"/><path d="M22 21c0-2.761-1.79-5-4-5"/></svg></div>
           <span style="font-size:13px;font-weight:600">Students</span>
         </button>
-        <button onclick="showView('attendance')" style="display:flex;flex-direction:column;align-items:center;gap:8px;padding:18px 12px;background:var(--surface);border:1.5px solid var(--line);border-radius:10px;cursor:pointer;font-family:inherit;transition:all .15s;color:var(--ink2)" onmouseover="this.style.borderColor='var(--green)';this.style.background='var(--green-light)'" onmouseout="this.style.borderColor='var(--line)';this.style.background='var(--surface)'">
+        <button onclick="showView('attendance');populateAttendanceAcadYearFilter()" style="display:flex;flex-direction:column;align-items:center;gap:8px;padding:18px 12px;background:var(--surface);border:1.5px solid var(--line);border-radius:10px;cursor:pointer;font-family:inherit;transition:all .15s;color:var(--ink2)" onmouseover="this.style.borderColor='var(--green)';this.style.background='var(--green-light)'" onmouseout="this.style.borderColor='var(--line)';this.style.background='var(--surface)'">
           <div style="width:42px;height:42px;background:var(--green-light);border-radius:10px;display:flex;align-items:center;justify-content:center"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/><path d="m8 16 2.5 2.5L16 13"/></svg></div>
           <span style="font-size:13px;font-weight:600">Attendance</span>
         </button>
@@ -1739,12 +1739,16 @@ iuc125067,Anatomy Live Session,2026-05-19,09:00,10:30,Absent,No attendance recor
 
   <div class="card mt-4">
     <div class="card-title">All Attendance Records</div>
-    <div class="search-row">
+    <div class="search-row" style="flex-wrap:wrap;gap:8px">
       <input class="search-input" id="attendanceSearchInput" placeholder="Search student, lecture, date, or status…" oninput="renderAttendanceTable()">
       <input type="text" id="attendanceDateFilter" placeholder="DD/MM/YYYY" maxlength="10" oninput="smartDate(this);renderAttendanceTable()" style="width:160px" autocomplete="off">
       <select id="attendanceStatusFilter" onchange="renderAttendanceTable()" style="width:160px">
         <option value="">All Status</option><option>Present</option><option>Late</option><option>Excused</option><option>Absent</option>
       </select>
+      <select id="attendanceAcadYearFilter" onchange="renderAttendanceTable()" style="width:200px">
+        <option value="">All Academic Years</option>
+      </select>
+      <button class="btn btn-outline btn-sm" onclick="exportAttendanceByAcadYear()" title="Export filtered academic year records as CSV" style="display:flex;align-items:center;gap:5px"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Export Year CSV</button>
       <button class="btn btn-outline btn-sm" onclick="clearAttendanceFilters()">Clear</button>
     </div>
     <div class="table-wrap"><table>

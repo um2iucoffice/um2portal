@@ -21,11 +21,29 @@ function renderAttendanceTable() {
   const tb = document.getElementById('attendanceTableBody');
   if (!tb) return;
   const q = (document.getElementById('attendanceSearchInput')?.value || '').trim().toLowerCase();
-  const dateFilter   = getDateValue('attendanceDateFilter') || document.getElementById('attendanceDateFilter')?.value || '';
-  const statusFilter = document.getElementById('attendanceStatusFilter')?.value || '';
+  const dateFilter    = getDateValue('attendanceDateFilter') || document.getElementById('attendanceDateFilter')?.value || '';
+  const statusFilter  = document.getElementById('attendanceStatusFilter')?.value || '';
+  const acadYearId    = document.getElementById('attendanceAcadYearFilter')?.value || '';
+
+  // Resolve date bounds for the selected academic year (if any)
+  let acadStart = '', acadEnd = '';
+  if (acadYearId && typeof academicYears !== 'undefined' && Array.isArray(academicYears)) {
+    const yo = academicYears.find(y => y.id === acadYearId);
+    if (yo && yo.start_date && yo.end_date) {
+      acadStart = yo.start_date.slice(0, 10);
+      acadEnd   = yo.end_date.slice(0, 10);
+    }
+  }
+
   let rows = attendanceRecords.filter(r => {
     const hay = `${r.student_id} ${getStudentNameById(r.student_id)} ${r.lecture_name} ${r.session_date} ${r.session_from} ${r.session_till||''} ${r.status} ${r.remarks||''}`.toLowerCase();
-    return (!q || hay.includes(q)) && (!dateFilter || r.session_date === dateFilter) && (!statusFilter || r.status === statusFilter);
+    const d   = (r.session_date || '').slice(0, 10);
+    const matchAcadYear = !acadYearId || (
+      acadStart && acadEnd
+        ? (d >= acadStart && d <= acadEnd)
+        : (r.academic_year || resolveAcadYearForDate(r.session_date)) === acadYearId
+    );
+    return (!q || hay.includes(q)) && (!dateFilter || r.session_date === dateFilter) && (!statusFilter || r.status === statusFilter) && matchAcadYear;
   });
   rows.sort((a,b) => (`${b.session_date} ${b.session_from}`).localeCompare(`${a.session_date} ${a.session_from}`));
   if (!rows.length) {
@@ -65,7 +83,7 @@ function updateAttendanceStats() {
 }
 
 function clearAttendanceFilters() {
-  ['attendanceSearchInput','attendanceDateFilter','attendanceStatusFilter'].forEach(id => {
+  ['attendanceSearchInput','attendanceDateFilter','attendanceStatusFilter','attendanceAcadYearFilter'].forEach(id => {
     const el = document.getElementById(id); if (el) el.value = '';
   });
   renderAttendanceTable();
@@ -391,6 +409,121 @@ async function submitBulkAttendance() {
 
 function downloadAttendanceTemplate() {
   downloadCSV('attendance_template.csv', 'student_id,lecture_name,session_date,session_from,session_till,status,remarks\niuc125065,Anatomy Live Session,2026-05-19,09:00,10:30,Present,Joined on time\niuc125066,Anatomy Live Session,2026-05-19,09:00,10:30,Absent,No show\n');
+}
+
+// ── ACADEMIC YEAR FILTER ──────────────────────────────────────────────────────
+
+/**
+ * Populate the Academic Year dropdown in the All Attendance Records panel.
+ * Reads from the global `academicYears` array (defined in admin-state.js /
+ * loaded by admin-data.js).  Falls back gracefully if the array is missing.
+ */
+function populateAttendanceAcadYearFilter() {
+  const sel = document.getElementById('attendanceAcadYearFilter');
+  if (!sel) return;
+  const years = (typeof academicYears !== 'undefined' && Array.isArray(academicYears))
+    ? [...academicYears].sort((a, b) => (a.label || a.id || '').localeCompare(b.label || b.id || ''))
+    : [];
+  sel.innerHTML = '<option value="">All Academic Years</option>' +
+    years.map(y => {
+      const val   = y.id   || '';
+      const label = y.label || y.name || y.id || '';
+      return `<option value="${val}">${label}</option>`;
+    }).join('');
+}
+
+/**
+ * Resolve which academic year a session_date belongs to.
+ * An academic year record is expected to have `start_date` and `end_date`
+ * (ISO YYYY-MM-DD) or at least `id` that we can match against enrollments.
+ * Returns the year id string, or '' if not resolved.
+ */
+function resolveAcadYearForDate(sessionDate) {
+  if (!sessionDate) return '';
+  if (typeof academicYears === 'undefined' || !Array.isArray(academicYears)) return '';
+  const d = sessionDate.slice(0, 10);
+  const matched = academicYears.find(y => {
+    const s = (y.start_date || '').slice(0, 10);
+    const e = (y.end_date   || '').slice(0, 10);
+    return s && e && d >= s && d <= e;
+  });
+  return matched ? matched.id : '';
+}
+
+/**
+ * Extract (and optionally export as CSV) all attendance records that fall
+ * within the selected Academic Year.
+ *
+ * @param {boolean} exportCSV  – pass true to also trigger a CSV download.
+ * @returns {Array}            – filtered attendance record objects.
+ */
+function extractAttendanceByAcadYear(exportCSV = false) {
+  const sel     = document.getElementById('attendanceAcadYearFilter');
+  const yearId  = sel ? sel.value : '';
+  if (!yearId) {
+    toast('Please select an Academic Year first.', 'Notice');
+    return [];
+  }
+
+  // Find the selected year object to get date bounds + label
+  const yearObj = (typeof academicYears !== 'undefined' && Array.isArray(academicYears))
+    ? academicYears.find(y => y.id === yearId)
+    : null;
+
+  let filtered;
+
+  if (yearObj && yearObj.start_date && yearObj.end_date) {
+    // Filter by date range
+    const s = yearObj.start_date.slice(0, 10);
+    const e = yearObj.end_date.slice(0, 10);
+    filtered = attendanceRecords.filter(r => {
+      const d = (r.session_date || '').slice(0, 10);
+      return d >= s && d <= e;
+    });
+  } else {
+    // Fallback: filter by academic_year field on the record (if stored)
+    filtered = attendanceRecords.filter(r =>
+      (r.academic_year || resolveAcadYearForDate(r.session_date)) === yearId
+    );
+  }
+
+  if (!filtered.length) {
+    toast('No records found for the selected Academic Year.', 'Notice');
+    return [];
+  }
+
+  if (exportCSV) {
+    const yearLabel = (yearObj && (yearObj.label || yearObj.name)) || yearId;
+    const safeLabel = yearLabel.replace(/[^a-zA-Z0-9_\-]/g, '_');
+    const header = 'student_id,student_name,lecture_name,session_date,session_from,session_till,status,remarks';
+    const rows = filtered
+      .slice()
+      .sort((a, b) => (`${a.session_date} ${a.session_from}`).localeCompare(`${b.session_date} ${b.session_from}`))
+      .map(r =>
+        [
+          r.student_id,
+          `"${getStudentNameById(r.student_id).replace(/"/g, '""')}"`,
+          `"${(r.lecture_name || '').replace(/"/g, '""')}"`,
+          r.session_date || '',
+          r.session_from || '',
+          r.session_till || '',
+          r.status || '',
+          `"${(r.remarks || '').replace(/"/g, '""')}"`
+        ].join(',')
+      );
+    downloadCSV(`attendance_${safeLabel}.csv`, header + '\n' + rows.join('\n') + '\n');
+    toast(`Exported ${filtered.length} records for "${yearLabel}".`, 'Exported');
+  }
+
+  return filtered;
+}
+
+/**
+ * Triggered by the Export button next to the Academic Year dropdown.
+ * Calls extractAttendanceByAcadYear with exportCSV = true.
+ */
+function exportAttendanceByAcadYear() {
+  extractAttendanceByAcadYear(true);
 }
 
 // ══════════════════════════════════════════
