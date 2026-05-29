@@ -9,8 +9,11 @@
   SHARP_IGNORE_GLOBAL_LIBVIPS = "1"
 
 [functions]
-  node_bundler = "zisi"
+  node_bundler = "esbuild"
+
+[functions."approve-photo"]
   external_node_modules = ["sharp"]
+  included_files = ["node_modules/sharp/**"]
 
 # ── Routing ───────────────────────────────────────────────────
 [[redirects]]

@@ -85,8 +85,12 @@ function renderNotifBanners(notifications) {
   const container = document.getElementById('notifBannersContainer');
   if (!container) return;
 
-  // Only show unread, non-dismissed notifications
-  const visible = notifications.filter(n => !n.is_read && !_dismissedIds.has(n.id));
+  const cutoff = Date.now() - NOTIF_TTL_DAYS * 86_400_000;
+  const visible = notifications.filter(n =>
+    !n.is_read &&
+    !_dismissedIds.has(n.id) &&
+    new Date(n.created_at).getTime() > cutoff
+  );
 
   if (!visible.length) {
     container.style.display = 'none';
@@ -99,38 +103,19 @@ function renderNotifBanners(notifications) {
     const icon = NOTIF_ICONS[n.type] || NOTIF_ICONS.default;
     const time = formatNotifTime(n.created_at);
     return `
-      <div class="notif-banner-strip" data-notif-id="${n.id}" style="
-        display:flex;align-items:center;gap:14px;
-        background:${icon.bg};
-        border:1px solid ${icon.border};
-        border-radius:12px;
-        padding:14px 16px;
-        margin-bottom:10px;
-        position:relative;
-      ">
-        <div style="
-          width:36px;height:36px;border-radius:8px;
-          background:${icon.color};
-          display:flex;align-items:center;justify-content:center;
-          flex-shrink:0;color:#fff;
-        ">
-          <span style="display:flex;align-items:center;width:18px;height:18px;">${icon.svg}</span>
+      <div class="notif-bar" data-notif-id="${n.id}" style="--notif-color:${icon.color};--notif-bg:${icon.bg};--notif-border:${icon.border};">
+        <div class="notif-bar-accent"></div>
+        <div class="notif-bar-icon">
+          ${icon.svg}
         </div>
-        <div style="flex:1;min-width:0;">
-          <div style="font-weight:700;font-size:13px;color:var(--ink);margin-bottom:2px;">${_escHtml(n.title)}</div>
-          <div style="font-size:12px;color:var(--ink2);line-height:1.5;">${_escHtml(n.message)}</div>
-          <div style="font-size:11px;color:var(--ink3);margin-top:3px;">${time}</div>
+        <div class="notif-bar-body">
+          <span class="notif-bar-title">${_escHtml(n.title)}</span>
+          <span class="notif-bar-msg">${_escHtml(n.message)}</span>
         </div>
-        <button class="notif-dismiss-btn" data-notif-id="${n.id}" style="
-          flex-shrink:0;
-          background:none;border:none;cursor:pointer;
-          color:var(--ink3);padding:4px;border-radius:6px;
-          display:flex;align-items:center;justify-content:center;
-          transition:background 0.15s;
-        " aria-label="Dismiss">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <line x1="18" y1="6" x2="6" y2="18"/>
-            <line x1="6" y1="6" x2="18" y2="18"/>
+        <span class="notif-bar-time">${time}</span>
+        <button class="notif-dismiss-btn notif-bar-close" data-notif-id="${n.id}" aria-label="Dismiss">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
           </svg>
         </button>
       </div>`;
@@ -149,11 +134,9 @@ function _setupDismissHandlers() {
     _dismissedIds.add(id);
 
     // Remove the banner strip with animation
-    const strip = document.querySelector(`.notif-banner-strip[data-notif-id="${id}"]`);
+    const strip = document.querySelector(`.notif-bar[data-notif-id="${id}"]`);
     if (strip) {
-      strip.style.transition = 'opacity 0.2s, transform 0.2s';
-      strip.style.opacity = '0';
-      strip.style.transform = 'translateX(10px)';
+      strip.classList.add('dismissing');
       setTimeout(() => {
         strip.remove();
         const container = document.getElementById('notifBannersContainer');

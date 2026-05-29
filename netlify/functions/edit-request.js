@@ -54,7 +54,7 @@ async function validateToken(token, claimedStudentId) {
 // ── Allowed field names students can request edits for ───────────────────────
 const ALLOWED_FIELDS = new Set([
   'photo', 'father', 'father_my', 'mother', 'mother_my',
-  'email', 'gender', 'name_en',
+  'email', 'gender',
 ]);
 
 // ── Handler ───────────────────────────────────────────────────────────────────

@@ -4318,3 +4318,109 @@ body.theme-light .iris-bb-org { color: var(--crimson); opacity: .75; }
 #dashboard.show + .iris-bottom-bar {
   display: flex;
 }
+/* ── Notification Bars ─────────────────────────────────────── */
+#notifBannersContainer {
+  display: none;
+  margin-bottom: 12px;
+}
+
+.notif-bar {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  height: 44px;
+  padding: 0 12px 0 0;
+  margin-bottom: 6px;
+  background: var(--notif-bg);
+  border: 1px solid var(--notif-border);
+  border-left: none;
+  border-radius: 8px;
+  overflow: hidden;
+  transition: opacity 0.2s, transform 0.2s;
+}
+
+.notif-bar-accent {
+  width: 3px;
+  align-self: stretch;
+  flex-shrink: 0;
+  background: var(--notif-color);
+}
+
+.notif-bar-icon {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  background: var(--notif-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: #fff;
+  opacity: 0.92;
+}
+.notif-bar-icon svg {
+  width: 14px;
+  height: 14px;
+  stroke: #fff;
+}
+
+.notif-bar-body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: baseline;
+  gap: 7px;
+  overflow: hidden;
+}
+.notif-bar-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--ink);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.notif-bar-msg {
+  font-size: 12px;
+  color: var(--ink3);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.notif-bar-time {
+  font-size: 11px;
+  color: var(--ink3);
+  white-space: nowrap;
+  flex-shrink: 0;
+  opacity: 0.7;
+}
+
+.notif-bar-close {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  color: var(--ink3);
+  border-radius: 4px;
+  opacity: 0.5;
+  transition: opacity 0.15s, background 0.15s;
+  padding: 0;
+}
+.notif-bar-close:hover {
+  opacity: 1;
+  background: rgba(255,255,255,0.08);
+}
+body.theme-light .notif-bar-close:hover {
+  background: rgba(13,27,42,0.06);
+}
+
+.notif-bar.dismissing {
+  opacity: 0;
+  transform: translateX(8px);
+}
