@@ -284,16 +284,9 @@ function populate(s, grades, courses, program_meta, enrollments, academicYears, 
     generateIDCardQR(s, validThrough);
   }
 
-  // AFTER
-if (typeof initNotifications === 'function') {
-  if (window._supabase) {
+
+  // ── Init notification bell ────────────────────────────────────
+  if (typeof initNotifications === 'function') {
     initNotifications('#notifMount').catch(e => console.warn('Notifications init failed:', e));
-  } else {
-    const _notifWait = setInterval(function() {
-      if (window._supabase) {
-        clearInterval(_notifWait);
-        initNotifications('#notifMount').catch(e => console.warn('Notifications init failed:', e));
-      }
-    }, 100);
   }
-}}
+}

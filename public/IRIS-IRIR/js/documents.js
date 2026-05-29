@@ -575,11 +575,11 @@ async function printDegreeCertificate(enrollIdx) {
     <div class="cert-sig-row">
       <div class="cert-sig-block">
         Interim University Council<br>
-        University of Medicine -2, Yangon
+        University of Medicine (2), Yangon
       </div>
       <div class="cert-sig-block">
         Chancellor<br>
-        University of Medicine -2, Yangon
+        University of Medicine (2), Yangon
       </div>
     </div>
 
@@ -723,7 +723,7 @@ const logoHtml = `
   // Fetch signature as base64 so it renders inside blob popup
   let sigBase64 = '';
   try {
-    const sigRes = await fetch('/IRIS-IRIR/Signature.png');
+    const sigRes = await fetch('/Signature.png');
     if (sigRes.ok) {
       const sigBlob = await sigRes.blob();
       sigBase64 = await new Promise(resolve => {
@@ -763,7 +763,6 @@ const logoHtml = `
   </style>
 </head>
 <body>
-  <div class="wm"></div>
   <table>
     <thead><tr><td></td></tr></thead>
     <tfoot><tr><td style="padding-top:10px">
@@ -1047,7 +1046,7 @@ async function printDocument(type) {
   // Fetch signature as base64 so it renders inside blob popup
   let docSigBase64 = '';
   try {
-    const docSigRes = await fetch('/IRIS-IRIR/Signature.png');
+    const docSigRes = await fetch('/Signature.png');
     if (docSigRes.ok) {
       const docSigBlob = await docSigRes.blob();
       docSigBase64 = await new Promise(resolve => {
@@ -1090,7 +1089,7 @@ async function printDocument(type) {
       <div style="font-size:8pt;font-weight:700;letter-spacing:1.4px;text-transform:uppercase;color:#555;border-bottom:1px solid #ccc;padding-bottom:5px;margin-bottom:12px;">Identification of the Institution</div>
       <table style="width:100%;border-collapse:collapse;font-size:9pt;color:#0D1B2A;">
         <tbody>
-          <tr><td style="padding:4px 0;width:160px;font-weight:600;color:#555;font-size:8pt;letter-spacing:.4px;text-transform:uppercase;vertical-align:top">Full Name</td><td style="padding:4px 0;font-weight:600;">University of Medicine - 2, Yangon</td></tr>
+          <tr><td style="padding:4px 0;width:160px;font-weight:600;color:#555;font-size:8pt;letter-spacing:.4px;text-transform:uppercase;vertical-align:top">Full Name</td><td style="padding:4px 0;font-weight:600;">University of Medicine (2), Yangon</td></tr>
           <tr><td style="padding:4px 0;font-weight:600;color:#555;font-size:8pt;letter-spacing:.4px;text-transform:uppercase;vertical-align:top">Issued by</td><td style="padding:4px 0;font-weight:600;">Secretariat Office, Interim University Council</td></tr>
           <tr><td style="padding:4px 0;font-weight:600;color:#555;font-size:8pt;letter-spacing:.4px;text-transform:uppercase;vertical-align:top">Email</td><td style="padding:4px 0;">admin@um2campus.org</td></tr>
           <tr><td style="padding:4px 0;font-weight:600;color:#555;font-size:8pt;letter-spacing:.4px;text-transform:uppercase;vertical-align:top">URL</td><td style="padding:4px 0;">www.um2campus.org</td></tr>
