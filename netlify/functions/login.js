@@ -230,7 +230,7 @@ exports.handler = async (event) => {
     const gradeRows = await supabase(
       `grades?student_id=eq.${encodeURIComponent(raw.id)}&select=*&order=course_id.asc`,
       {},
-      true
+      true  // ← add this
     );
     const grades = (gradeRows || []).map(mapGrade);
 
@@ -259,7 +259,7 @@ exports.handler = async (event) => {
       const enrollmentRows = await supabase(
         `enrollments?student_id=eq.${encodeURIComponent(raw.id)}&select=*&order=admission_date.asc`,
         {},
-        true
+        true // ← add this
       );
 
       if (enrollmentRows && enrollmentRows.length > 0) {
