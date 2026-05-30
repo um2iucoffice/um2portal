@@ -176,7 +176,9 @@ exports.handler = async (event) => {
   try {
     // ── 1. Fetch student by ID ───────────────────────────────
     const students = await supabase(
-      `students?id=eq.${encodeURIComponent(normId)}&select=*&limit=1`
+      `students?id=eq.${encodeURIComponent(normId)}&select=*&limit=1`,
+      {},
+      true  // service key — server-side only, never exposed to browser
     );
 
     if (!students || students.length === 0) {
@@ -213,7 +215,9 @@ exports.handler = async (event) => {
     if (raw.program) {
       try {
         const programs = await supabase(
-          `degree_programs?id=eq.${encodeURIComponent(raw.program)}&select=id,name&limit=1`
+          `degree_programs?id=eq.${encodeURIComponent(raw.program)}&select=id,name&limit=1`,
+          {},
+          true
         );
         if (programs && programs.length > 0 && programs[0].name) {
           programName = programs[0].name;
@@ -230,7 +234,7 @@ exports.handler = async (event) => {
     const gradeRows = await supabase(
       `grades?student_id=eq.${encodeURIComponent(raw.id)}&select=*&order=course_id.asc`,
       {},
-      true  // ← add this
+      true
     );
     const grades = (gradeRows || []).map(mapGrade);
 
@@ -238,7 +242,9 @@ exports.handler = async (event) => {
     let courses = {};
     try {
       const courseRows = await supabase(
-        `courses?select=id,name,year,block_module,credits,assessment_type&order=id.asc`
+        `courses?select=id,name,year,block_module,credits,assessment_type&order=id.asc`,
+        {},
+        true
       );
       for (const c of (courseRows || [])) {
         courses[c.id] = {
@@ -259,7 +265,7 @@ exports.handler = async (event) => {
       const enrollmentRows = await supabase(
         `enrollments?student_id=eq.${encodeURIComponent(raw.id)}&select=*&order=admission_date.asc`,
         {},
-        true // ← add this
+        true
       );
 
       if (enrollmentRows && enrollmentRows.length > 0) {
@@ -273,7 +279,9 @@ exports.handler = async (event) => {
         if (programIds.length > 0) {
           try {
             const progRows = await supabase(
-              `degree_programs?id=in.(${programIds.map(encodeURIComponent).join(',')})&select=id,name`
+              `degree_programs?id=in.(${programIds.map(encodeURIComponent).join(',')})&select=id,name`,
+              {},
+              true
             );
             for (const p of (progRows || [])) {
               programMap[p.id] = p.name;
