@@ -1,0 +1,310 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+
+Parameters: {}
+
+
+Globals:
+  HttpApi:
+    CorsConfiguration:
+      AllowOrigins:
+        - "*"
+      AllowMethods:
+        - GET
+        - POST
+        - OPTIONS
+      AllowHeaders:
+        - "*"
+  Function:
+    Runtime: nodejs20.x
+    Timeout: 30
+    MemorySize: 512
+    Environment:
+      Variables:
+        SUPABASE_URL: "https://klukqyxytxpshclnpilq.supabase.co"
+        SUPABASE_KEY: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtsdWtxeXh5dHhwc2hjbG5waWxxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkyMjM2MTUsImV4cCI6MjA5NDc5OTYxNX0.pEi7w1MNJI82gsq2O2KiP9JkR-gxNghpms9HgTOEO2g"
+    Layers:
+      - !Ref DependenciesLayer
+
+Resources:
+
+  DependenciesLayer:
+    Type: AWS::Serverless::LayerVersion
+    Properties:
+      LayerName: um2-dependencies
+      ContentUri: layer/
+      CompatibleRuntimes:
+        - nodejs20.x
+
+  ApprovePhotoFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: netlify/functions/approve-photo.handler
+      Events:
+        Api:
+          Type: HttpApi
+          Properties:
+            Path: /approve-photo
+            Method: post
+
+  BulkTimetableImportFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: netlify/functions/bulk-timetable-import.handler
+      Events:
+        Api:
+          Type: HttpApi
+          Properties:
+            Path: /bulk-timetable-import
+            Method: post
+
+  CreateEnrollmentPeriodFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: netlify/functions/create-enrollment-period.handler
+      Events:
+        Api:
+          Type: HttpApi
+          Properties:
+            Path: /create-enrollment-period
+            Method: post
+
+  CreateEnrollmentRequestFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: netlify/functions/create-enrollment-request.handler
+      Events:
+        Api:
+          Type: HttpApi
+          Properties:
+            Path: /create-enrollment-request
+            Method: post
+
+  EditRequestFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: netlify/functions/edit-request.handler
+      Events:
+        Api:
+          Type: HttpApi
+          Properties:
+            Path: /edit-request
+            Method: post
+
+  GenerateQrTokenFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: netlify/functions/generate-qr-token.handler
+      Events:
+        Api:
+          Type: HttpApi
+          Properties:
+            Path: /generate-qr-token
+            Method: post
+
+  GetChannelsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: netlify/functions/get-channels.handler
+      Events:
+        Api:
+          Type: HttpApi
+          Properties:
+            Path: /get-channels
+            Method: get
+
+  GetDocumentsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: netlify/functions/get-documents.handler
+      Events:
+        Api:
+          Type: HttpApi
+          Properties:
+            Path: /get-documents
+            Method: get
+
+  GetEditRequestsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: netlify/functions/get-edit-requests.handler
+      Events:
+        Api:
+          Type: HttpApi
+          Properties:
+            Path: /get-edit-requests
+            Method: get
+
+  GetEnrollmentPeriodsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: netlify/functions/get-enrollment-periods.handler
+      Events:
+        Api:
+          Type: HttpApi
+          Properties:
+            Path: /get-enrollment-periods
+            Method: get
+
+  GetEnrollmentRequestsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: netlify/functions/get-enrollment-requests.handler
+      Events:
+        Api:
+          Type: HttpApi
+          Properties:
+            Path: /get-enrollment-requests
+            Method: get
+
+  GetLectureRoomsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: netlify/functions/get-lecture-rooms.handler
+      Events:
+        Api:
+          Type: HttpApi
+          Properties:
+            Path: /get-lecture-rooms
+            Method: get
+
+  GetNotificationsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: netlify/functions/get-notifications.handler
+      Events:
+        Api:
+          Type: HttpApi
+          Properties:
+            Path: /get-notifications
+            Method: get
+
+  GetTimetableFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: netlify/functions/get-timetable.handler
+      Events:
+        Api:
+          Type: HttpApi
+          Properties:
+            Path: /get-timetable
+            Method: get
+
+  LoginFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: netlify/functions/login.handler
+      Events:
+        Api:
+          Type: HttpApi
+          Properties:
+            Path: /login
+            Method: post
+
+  MarkNotificationsReadFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: netlify/functions/mark-notifications-read.handler
+      Events:
+        Api:
+          Type: HttpApi
+          Properties:
+            Path: /mark-notifications-read
+            Method: post
+
+  PromoteEnrolledStudentsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: netlify/functions/promote-enrolled-students.handler
+      Events:
+        Api:
+          Type: HttpApi
+          Properties:
+            Path: /promote-enrolled-students
+            Method: post
+
+  RemovePhotoFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: netlify/functions/remove-photo.handler
+      Events:
+        Api:
+          Type: HttpApi
+          Properties:
+            Path: /remove-photo
+            Method: post
+
+  ReviewEnrollmentRequestFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: netlify/functions/review-enrollment-request.handler
+      Events:
+        Api:
+          Type: HttpApi
+          Properties:
+            Path: /review-enrollment-request
+            Method: post
+
+  SubmitEnrollmentRequestFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: netlify/functions/submit-enrollment-request.handler
+      Events:
+        Api:
+          Type: HttpApi
+          Properties:
+            Path: /submit-enrollment-request
+            Method: post
+
+  SubmitPostFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: netlify/functions/submit-post.handler
+      Events:
+        Api:
+          Type: HttpApi
+          Properties:
+            Path: /submit-post
+            Method: post
+
+  UploadImageFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: netlify/functions/upload-image.handler
+      Timeout: 60
+      MemorySize: 1024
+      Events:
+        Api:
+          Type: HttpApi
+          Properties:
+            Path: /upload-image
+            Method: post
+
+  UploadPhotoFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: netlify/functions/upload-photo.handler
+      Timeout: 60
+      MemorySize: 1024
+      Events:
+        Api:
+          Type: HttpApi
+          Properties:
+            Path: /upload-photo
+            Method: post
+
+  VerifyQrFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: netlify/functions/verify-qr.handler
+      Events:
+        Api:
+          Type: HttpApi
+          Properties:
+            Path: /verify-qr
+            Method: post
+
+Outputs:
+  ApiUrl:
+    Description: API Gateway URL
+    Value: !Sub "https://${ServerlessHttpApi}.execute-api.ap-southeast-1.amazonaws.com"

@@ -62,7 +62,7 @@ function doLogin() {
   btn.textContent = 'Signing in…';
   document.getElementById('accessLoading').classList.add('show');
 
-  fetch('/.netlify/functions/login', {
+  fetch('https://4dgx435mmk.execute-api.ap-southeast-1.amazonaws.com/login', {
     method:  'POST',
     headers: { 'Content-Type': 'application/json' },
     body:    JSON.stringify({ studentId, password })

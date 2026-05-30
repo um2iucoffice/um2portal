@@ -1,0 +1,6 @@
+# Supabase credentials — never commit this
+config.js
+
+# OS files
+.DS_Store
+Thumbs.db
