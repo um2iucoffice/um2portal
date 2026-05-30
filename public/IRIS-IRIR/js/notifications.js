@@ -10,12 +10,12 @@ let   _dismissedIds   = new Set(); // track dismissed notifications in session
 
 // ── Icon map ──────────────────────────────────────────────────
 const NOTIF_ICONS = {
-  grade_added:        { svg: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>`, color: '#2563eb', bg: 'rgba(37,99,235,0.10)', border: 'rgba(37,99,235,0.25)' },
-  grade_updated:      { svg: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>`, color: '#7c3aed', bg: 'rgba(124,58,237,0.10)', border: 'rgba(124,58,237,0.25)' },
-  profile_updated:    { svg: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>`, color: '#0891b2', bg: 'rgba(8,145,178,0.10)', border: 'rgba(8,145,178,0.25)' },
-  enrollment_updated: { svg: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>`, color: '#059669', bg: 'rgba(5,150,105,0.10)', border: 'rgba(5,150,105,0.25)' },
-  timetable_added:    { svg: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="8" y1="14" x2="8.01" y2="14"/><line x1="12" y1="14" x2="12.01" y2="14"/><line x1="16" y1="14" x2="16.01" y2="14"/><line x1="8" y1="18" x2="8.01" y2="18"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>`, color: '#d97706', bg: 'rgba(217,119,6,0.10)', border: 'rgba(217,119,6,0.25)' },
-  default:            { svg: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>`, color: '#6b7280', bg: 'rgba(107,114,128,0.10)', border: 'rgba(107,114,128,0.25)' },
+  grade_added:        { svg: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>`, color: '#d97706', bg: 'rgba(217,119,6,0.10)', border: 'rgba(217,119,6,0.25)' },
+  grade_updated:      { svg: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>`, color: '#d97706', bg: 'rgba(217,119,6,0.10)', border: 'rgba(217,119,6,0.25)' },
+  profile_updated:    { svg: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>`, color: '#16a34a', bg: 'rgba(22,163,74,0.10)', border: 'rgba(22,163,74,0.25)' },
+  enrollment_updated: { svg: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>`, color: '#16a34a', bg: 'rgba(22,163,74,0.10)', border: 'rgba(22,163,74,0.25)' },
+  timetable_added:    { svg: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="8" y1="14" x2="8.01" y2="14"/><line x1="12" y1="14" x2="12.01" y2="14"/><line x1="16" y1="14" x2="16.01" y2="14"/><line x1="8" y1="18" x2="8.01" y2="18"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>`, color: '#16a34a', bg: 'rgba(22,163,74,0.10)', border: 'rgba(22,163,74,0.25)' },
+  default:            { svg: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>`, color: '#16a34a', bg: 'rgba(22,163,74,0.10)', border: 'rgba(22,163,74,0.25)' },
 };
 
 // ── Time formatting ───────────────────────────────────────────
@@ -85,8 +85,12 @@ function renderNotifBanners(notifications) {
   const container = document.getElementById('notifBannersContainer');
   if (!container) return;
 
-  // Only show unread, non-dismissed notifications
-  const visible = notifications.filter(n => !n.is_read && !_dismissedIds.has(n.id));
+  const cutoff = Date.now() - NOTIF_TTL_DAYS * 86_400_000;
+  const visible = notifications.filter(n =>
+    !n.is_read &&
+    !_dismissedIds.has(n.id) &&
+    new Date(n.created_at).getTime() > cutoff
+  );
 
   if (!visible.length) {
     container.style.display = 'none';
@@ -99,38 +103,19 @@ function renderNotifBanners(notifications) {
     const icon = NOTIF_ICONS[n.type] || NOTIF_ICONS.default;
     const time = formatNotifTime(n.created_at);
     return `
-      <div class="notif-bar" data-notif-id="${n.id}" style="
-        display:flex;align-items:center;gap:14px;
-        background:${icon.bg};
-        border:1px solid ${icon.border};
-        border-radius:12px;
-        padding:14px 16px;
-        margin-bottom:10px;
-        position:relative;
-      ">
-        <div style="
-          width:36px;height:36px;border-radius:8px;
-          background:${icon.color};
-          display:flex;align-items:center;justify-content:center;
-          flex-shrink:0;color:#fff;
-        ">
-          <span style="display:flex;align-items:center;width:18px;height:18px;">${icon.svg}</span>
+      <div class="notif-bar" data-notif-id="${n.id}" style="--notif-color:${icon.color};--notif-bg:${icon.bg};--notif-border:${icon.border};">
+        <div class="notif-bar-accent"></div>
+        <div class="notif-bar-icon">
+          ${icon.svg}
         </div>
-        <div style="flex:1;min-width:0;">
-          <div style="font-weight:700;font-size:13px;color:var(--ink);margin-bottom:2px;">${_escHtml(n.title)}</div>
-          <div style="font-size:12px;color:var(--ink2);line-height:1.5;">${_escHtml(n.message)}</div>
-          <div style="font-size:11px;color:var(--ink3);margin-top:3px;">${time}</div>
+        <div class="notif-bar-body">
+          <span class="notif-bar-title">${_escHtml(n.title)}</span>
+          <span class="notif-bar-msg">${_escHtml(n.message)}</span>
         </div>
-        <button class="notif-dismiss-btn" data-notif-id="${n.id}" style="
-          flex-shrink:0;
-          background:none;border:none;cursor:pointer;
-          color:var(--ink3);padding:4px;border-radius:6px;
-          display:flex;align-items:center;justify-content:center;
-          transition:background 0.15s;
-        " aria-label="Dismiss">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <line x1="18" y1="6" x2="6" y2="18"/>
-            <line x1="6" y1="6" x2="18" y2="18"/>
+        <span class="notif-bar-time">${time}</span>
+        <button class="notif-dismiss-btn notif-bar-close" data-notif-id="${n.id}" aria-label="Dismiss">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
           </svg>
         </button>
       </div>`;
@@ -151,9 +136,7 @@ function _setupDismissHandlers() {
     // Remove the banner strip with animation
     const strip = document.querySelector(`.notif-bar[data-notif-id="${id}"]`);
     if (strip) {
-      strip.style.transition = 'opacity 0.2s, transform 0.2s';
-      strip.style.opacity = '0';
-      strip.style.transform = 'translateX(10px)';
+      strip.classList.add('dismissing');
       setTimeout(() => {
         strip.remove();
         const container = document.getElementById('notifBannersContainer');
