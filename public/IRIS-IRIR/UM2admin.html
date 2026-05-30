@@ -307,13 +307,6 @@
   <div class="sidebar-section">System</div>
   <div class="nav-item registrar-only" id="nav-userList" onclick="showView('userList')"><span class="nav-icon"><svg class="nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></span>User List</div>
   <div class="nav-item registrar-only" id="nav-editRequests" onclick="showView('editRequests')"><span class="nav-icon"><svg class="nav-svg"><use href="#i-edit"></use></svg></span>Edit Requests<span class="nav-badge" id="editRequestsBadge" style="display:none">0</span></div>
-  <div class="nav-item" id="nav-notifications" onclick="showView('notifications')"><span class="nav-icon"><svg class="nav-svg"><use href="#i-mail"></use></svg></span>Email Log<span class="nav-badge">3</span></div>
-  <div id="emailToggleNav" style="margin:6px 14px 2px;padding:8px 10px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);display:flex;align-items:center;gap:8px;cursor:pointer" onclick="toggleEmailSending()" title="Enable or disable all outbound email notifications">
-    <span id="emailToggleDot" style="width:8px;height:8px;border-radius:50%;background:var(--green);flex-shrink:0;transition:background .2s"></span>
-    <span style="font-size:11px;font-weight:600;color:var(--ink2);flex:1" id="emailToggleLabel">Emails ON</span>
-    <span style="font-size:10px;color:var(--ink3)">toggle</span>
-  </div>
-
   <div class="nav-item registrar-only" id="nav-setup" onclick="showView('setup')"><span class="nav-icon"><svg class="nav-svg"><use href="#i-settings"></use></svg></span>Setup Guide</div>
 
 
@@ -400,7 +393,6 @@
         <div class="pipeline-step"><div class="pipeline-dot done">✓</div><div class="pipeline-label"><strong>CSV Received</strong>staff upload</div></div>
         <div class="pipeline-step"><div class="pipeline-dot done">✓</div><div class="pipeline-label"><strong>Validated</strong>format check</div></div>
         <div class="pipeline-step"><div class="pipeline-dot done">✓</div><div class="pipeline-label"><strong>GradeID</strong>auto-assigned</div></div>
-        <div class="pipeline-step"><div class="pipeline-dot active"><svg style="width:14px;height:14px;stroke:currentColor;stroke-width:1.9;fill:none;stroke-linecap:round;stroke-linejoin:round"><use href="#i-mail"></use></svg></div><div class="pipeline-label"><strong>Email Sent</strong>student notified</div></div>
       </div>
     </div>
 
@@ -431,7 +423,6 @@
         <thead><tr><th>Time</th><th>Action</th><th>Student</th><th>By</th><th>Status</th></tr></thead>
         <tbody id="recentActivityBody">
           <tr><td class="text-mono">2026-05-18 00:00</td><td>Grade uploaded (18 courses)</td><td class="text-mono text-crimson">iuc125065</td><td>Secretariat (8802601)</td><td><span class="badge b-green">✓ Done</span></td></tr>
-          <tr><td class="text-mono">2026-05-18 00:01</td><td>Email notification sent</td><td>testing@gmail.com</td><td>System</td><td><span class="badge b-green">✓ Sent</span></td></tr>
           <tr><td class="text-mono">2026-05-18 00:02</td><td>SIS sync queued</td><td class="text-mono text-crimson">iuc125065</td><td>System</td><td><span class="badge b-gold">⏳ Pending</span></td></tr>
         </tbody>
       </table></div>
@@ -514,7 +505,6 @@
     </div>
     <div class="flex gap-2" style="align-self:flex-start;flex-shrink:0">
       <button class="btn btn-outline btn-sm registrar-only" onclick="openEditModal(currentProfileId)">Edit</button>
-      <button class="btn btn-primary btn-sm registrar-only" onclick="sendManualEmail()">Notify</button>
     </div>
   </div>
   <div class="tabs">
@@ -1087,7 +1077,7 @@ OSCE Station 3,,Foundation Year,,62,80,,, </div>
   <div class="page-header">
     <div class="page-header-left">
       <div class="page-title">Bulk Enrollment</div>
-      <div class="page-sub">Upload a CSV to enroll multiple students at once. Each student will be notified by email.</div>
+      <div class="page-sub">Upload a CSV to enroll multiple students at once.</div>
     </div>
   </div>
   <div class="card">
@@ -1132,7 +1122,7 @@ iuc125067,M-2,Inactive,In Progress,,Medical leave</div>
   <div class="page-header">
     <div class="page-header-left">
       <div class="page-title">Add New Student</div>
-      <div class="page-sub">Student ID must be unique. System sends a welcome email on save.</div>
+      <div class="page-sub">Student ID must be unique.</div>
     </div>
     <div class="page-actions">
       <button class="btn btn-outline btn-sm" onclick="showView('bulkStudent')">Bulk Import Instead</button>
@@ -1206,7 +1196,7 @@ iuc125067,M-2,Inactive,In Progress,,Medical leave</div>
       </div>
     </div>
     <div class="form-actions">
-      <button class="btn btn-primary" onclick="saveNewStudent()">Save &amp; Send Welcome Email</button>
+      <button class="btn btn-primary" onclick="saveNewStudent()">Save Student</button>
       <button class="btn btn-outline" onclick="clearNewStudentForm()">Cancel</button>
     </div>
   </div>
@@ -1217,7 +1207,7 @@ iuc125067,M-2,Inactive,In Progress,,Medical leave</div>
   <div class="page-header">
     <div class="page-header-left">
       <div class="page-title">Bulk Student Import</div>
-      <div class="page-sub">Import multiple new students at once from CSV. A welcome email is sent to each new student.</div>
+      <div class="page-sub">Import multiple new students at once from CSV.</div>
     </div>
   </div>
   <div class="card">
@@ -1232,7 +1222,7 @@ iuc125066,Second Student,,U Father Two,,Daw Mother Two,,2000-05-15,second@email.
   </div>
   <div class="card mt-4">
     <div class="card-title">Upload Student CSV</div>
-    <div class="warn-box" style="display:flex;gap:8px;align-items:flex-start"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" ><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> <span>Existing students (by Student ID) will be <strong>updated</strong>, not duplicated. New Student IDs will be <strong>inserted</strong> and sent a welcome email.</span></div>
+    <div class="warn-box" style="display:flex;gap:8px;align-items:flex-start"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" ><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> <span>Existing students (by Student ID) will be <strong>updated</strong>, not duplicated. New Student IDs will be <strong>inserted</strong>.</span></div>
     <div class="upload-zone" onclick="document.getElementById('studentCSVFile').click()" id="studentDropZone">
       <div class="upload-icon"><svg class="ui-icon"><use href="#i-upload"></use></svg></div>
       <div class="upload-label">Drop Student CSV here or click to browse</div>
@@ -1537,7 +1527,7 @@ iuc125066,Second Student,,U Father Two,,Daw Mother Two,,2000-05-15,second@email.
   <div class="page-header">
     <div class="page-header-left">
       <div class="page-title">Grade Upload</div>
-      <div class="page-sub">Upload CSV — GradeIDs auto-assigned, GradePoints computed, students notified by email</div>
+      <div class="page-sub">Upload CSV — GradeIDs auto-assigned, GradePoints computed</div>
     </div>
   </div>
 
@@ -1630,7 +1620,6 @@ iuc125066,CRS015,90.00,2024,1st Attempt</div>
     <div class="bulk-progress"><div class="bulk-progress-bar" id="gradeProgressBar"></div></div>
     <div class="flex gap-3 mt-2" style="margin-bottom:12px">
       <span class="badge b-green" id="gradeOkCount">0 processed</span>
-      <span class="badge b-blue" id="gradeEmailCount">0 emails queued</span>
       <span class="badge b-red" id="gradeErrCount">0 errors</span>
     </div>
     <div class="table-wrap"><table id="gradeResultTable"></table></div>
@@ -2054,47 +2043,6 @@ AY006,M-5,6,MBBS,12</div>
   </div>
 </div>
 
-<div class="view" id="view-notifications">
-  <div class="page-header">
-    <div class="page-header-left">
-      <div class="page-title">Email Notification Log</div>
-      <div class="page-sub">All student emails triggered by data changes in this system</div>
-    </div>
-    <div class="page-actions">
-      <button id="emailSendingBtn" class="btn btn-danger btn-sm" onclick="toggleEmailSending()" title="Stop all outbound email notifications">
-        <svg class="ui-icon"><use href="#i-mail"></use></svg>
-        <span id="emailSendingBtnLabel">Stop Email Sending</span>
-      </button>
-    </div>
-  </div>
-  <div id="emailSendingBanner" style="display:none;background:var(--crimson-light);border:1px solid var(--crimson);border-radius:8px;padding:12px 18px;margin-bottom:16px;display:flex;align-items:center;gap:12px;font-size:13px;color:var(--crimson)">
-    <strong style="display:flex;align-items:center;gap:5px"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg> Email Sending DISABLED</strong>
-    <span style="color:var(--ink2);flex:1">All outbound email notifications are paused. No emails will be sent until you re-enable this.</span>
-    <button class="btn btn-primary btn-sm" onclick="toggleEmailSending()">Re-enable Email Sending</button>
-  </div>
-  <div class="card" style="padding:0">
-    <div class="table-wrap"><table>
-      <thead><tr><th>Sent At</th><th>To</th><th>Student ID</th><th>Subject</th><th>Trigger</th><th>Status</th></tr></thead>
-      <tbody id="emailLogBody">
-        <tr><td class="text-mono">2026-05-18 00:01</td><td>testing@gmail.com</td><td class="text-mono text-crimson">iuc125065</td><td>[UM2] Your grades have been updated</td><td>Grade upload (18 rows)</td><td><span class="badge b-green">✓ Delivered</span></td></tr>
-        <tr><td class="text-mono">2026-05-18 00:02</td><td>testing@gmail.com</td><td class="text-mono text-crimson">iuc125065</td><td>[UM2] Enrollment status update</td><td>Enrollment change</td><td><span class="badge b-green">✓ Delivered</span></td></tr>
-        <tr><td class="text-mono">2026-05-18 00:05</td><td>testing@gmail.com</td><td class="text-mono text-crimson">iuc125065</td><td>[UM2] SIS profile synced</td><td>SIS pull update</td><td><span class="badge b-gold">⏳ Queued</span></td></tr>
-      </tbody>
-    </table></div>
-  </div>
-  <div class="card mt-4">
-    <div class="card-title">Email Provider Settings (Supabase Edge Function → Resend / SendGrid)</div>
-    <div class="form-grid">
-      <div class="form-group"><label>Email Provider</label><select><option>Resend</option><option>SendGrid</option><option>Mailgun</option></select></div>
-      <div class="form-group"><label>From Address</label><input value="registrar@um2.edu.mm"></div>
-      <div class="form-group full"><label>Grade Update Subject Template</label><input value="[UM2 Registry System] Your grades have been updated — {StudentID}"></div>
-      <div class="form-group full"><label>Enrollment Update Subject Template</label><input value="[UM2 Registry System] Your enrollment has been updated — {StudentID}"></div>
-      <div class="form-group full"><label>Welcome Email Subject Template</label><input value="[UM2 Registry System] Welcome — Your student account is ready · {StudentID}"></div>
-    </div>
-    <div class="form-actions"><button class="btn btn-primary" onclick="toast('Email settings saved.','✅')">Save Settings</button></div>
-  </div>
-</div>
-
 <!-- ═══════ SETUP GUIDE ═══════ -->
 <div class="view" id="view-setup">
   <div class="page-header">
@@ -2111,8 +2059,6 @@ AY006,M-5,6,MBBS,12</div>
       <div style="background:var(--surface);padding:10px 16px;border-radius:var(--r);border:2px solid var(--crimson);text-align:center"><div style="font-weight:700;color:var(--crimson)">Supabase PostgreSQL</div><div class="text-muted">source of truth</div></div>
       <span style="color:var(--crimson);font-size:1.2rem">↔</span>
       <div style="background:var(--surface);padding:10px 16px;border-radius:var(--r);border:1px solid var(--line);text-align:center"><div style="font-weight:600">This Registrar UI</div><div class="text-muted">staff / registrar</div></div>
-      <span style="color:var(--crimson);font-size:1.2rem">→</span>
-      <div style="background:var(--surface);padding:10px 16px;border-radius:var(--r);border:1px solid var(--line);text-align:center"><div style="font-weight:600;display:flex;align-items:center;gap:5px"><svg style="width:14px;height:14px;stroke:currentColor;stroke-width:1.9;fill:none;stroke-linecap:round;stroke-linejoin:round"><use href="#i-mail"></use></svg> Student Email</div><div class="text-muted">Resend / SendGrid</div></div>
     </div>
   </div>
   <div class="step-list">
@@ -2127,8 +2073,7 @@ AY006,M-5,6,MBBS,12</div>
     </div></div>
     <div class="step-item"><div class="step-num">4</div><div class="step-content"><h4>Create Staff Accounts</h4><p>In Supabase → Authentication → Users → Invite user. Then in the <code>profiles</code> table, insert a row with <code>id</code> = the user's UUID, <code>role</code> = <code>'registrar'</code> or <code>'staff'</code>, and <code>staff_id</code>.</p></div></div>
     <div class="step-item"><div class="step-num">5</div><div class="step-content"><h4>Import Existing Data</h4><p>Go to Supabase → Table Editor → Import Data (CSV) for each table. Import order: <code>degree_programs</code> → <code>courses</code> → <code>students</code> → <code>enrollments</code> → <code>grades</code> → <code>attendance</code>. Use the CSV templates in each section of this app.</p></div></div>
-    <div class="step-item"><div class="step-num">6</div><div class="step-content"><h4>Email Notifications (optional)</h4><p>Deploy a Supabase Edge Function <code>send-notification</code> using Resend or SendGrid. Set the secret: <code>supabase secrets set RESEND_API_KEY=re_xxxx</code>. The email log table already tracks all notification events.</p></div></div>
-    <div class="step-item"><div class="step-num">7</div><div class="step-content"><h4>Required SQL Migrations (run once)</h4>
+    <div class="step-item"><div class="step-num">6</div><div class="step-content"><h4>Required SQL Migrations (run once)</h4>
       <p>Run these in your Supabase SQL Editor to enable photo upload approval and gender/Burmese name features:</p>
       <pre style="margin-top:10px;background:var(--ink);color:#A8DADC;border-radius:8px;padding:14px;font-size:11px;overflow-x:auto;white-space:pre;border:1px solid rgba(255,255,255,.08)">-- Photo URL column for edit requests (required for photo upload approval)
 ALTER TABLE student_edit_requests ADD COLUMN IF NOT EXISTS photo_url text;
@@ -2185,19 +2130,6 @@ CREATE POLICY IF NOT EXISTS &quot;Staff can update own announcements&quot; ON an
 CREATE POLICY IF NOT EXISTS &quot;Registrar can delete announcements&quot; ON announcements FOR DELETE USING (auth.role() = 'authenticated');
 CREATE POLICY IF NOT EXISTS &quot;Anyone can read approved announcements&quot; ON announcements FOR SELECT USING (is_published = true AND is_approved = true);
 CREATE POLICY IF NOT EXISTS &quot;Authenticated read all announcements&quot; ON announcements FOR SELECT USING (auth.role() = 'authenticated');</pre>
-  </div>
-  <div class="card mt-4">
-    <div class="card-title">Email Trigger Summary</div>
-    <div class="table-wrap"><table>
-      <thead><tr><th>Action</th><th>Trigger</th><th>Email Subject</th></tr></thead>
-      <tbody>
-        <tr><td>Grade uploaded</td><td>Edge Function after upsert</td><td>[UM2] Your grades have been updated — {ID}</td></tr>
-        <tr><td>Enrollment changed</td><td>DB trigger → Edge Function</td><td>[UM2] Your enrollment has been updated — {ID}</td></tr>
-        <tr><td>Student data edited</td><td>Audit trigger → Edge Function</td><td>[UM2] Your profile has been updated — {ID}</td></tr>
-        <tr><td>New student added</td><td>JS after INSERT</td><td>[UM2] Welcome to UM2 Registry System · {ID}</td></tr>
-        <tr><td>Bulk students imported</td><td>Bulk edge function</td><td>[UM2] Welcome to UM2 Registry System · {ID} (per student)</td></tr>
-      </tbody>
-    </table></div>
   </div>
 </div>
 
@@ -3565,7 +3497,6 @@ OSCE Station 3,,Foundation Year,,62,80,,,</div>
 <script src="js/admin-enrollment.js"></script>
 <script src="js/admin-courses.js"></script>
 <script src="js/admin-attendance.js"></script>
-<script src="js/admin-email.js"></script>
 <script src="js/admin-academic.js"></script>
 <script src="js/admin-multidegree.js"></script>
 <script src="js/admin-editrequests.js"></script>
