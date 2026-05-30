@@ -347,17 +347,18 @@ async function submitGrades() {
 
     // Use snake_case column names that match the actual Supabase schema.
     const record = {
-      id:          gid,
-      student_id:  sid,
-      course_id:   courseId,
-      score:       score,
+      id:              gid,
+      student_id:      sid,
+      course_id:       courseId,
+      score:           score,
       letter,
       gp,
-      course:      courseName,
-      attempt:     rowAttempt,
-      year:        rowYear,
-      uploaded_by: uploadedBy,
-      created_at:  new Date().toISOString(),
+      course:          courseName,
+      attempt:         rowAttempt,
+      year:            rowYear,
+      uploaded_by:     uploadedBy,
+      created_at:      new Date().toISOString(),
+      notify_students: false, // suppress per-row trigger — bulk notification sent after all inserts
     };
 
     const gradeRecord = {
@@ -406,6 +407,40 @@ async function submitGrades() {
         }
         if (rowErr) batchErrors.set(item.gid, rowErr.message || 'Unknown error');
       }
+    }
+  }
+
+  // ── Send one summary notification per student ──
+  const uniqueStudentIds = [...new Set(validRecords
+    .filter(item => !batchErrors.has(item.gid))
+    .map(item => item.sid)
+  )];
+
+  if (uniqueStudentIds.length > 0) {
+    // Group courses per student for a meaningful message
+    const studentCourseMap = {};
+    for (const item of validRecords) {
+      if (batchErrors.has(item.gid)) continue;
+      if (!studentCourseMap[item.sid]) studentCourseMap[item.sid] = new Set();
+      studentCourseMap[item.sid].add(item.record.course || item.courseId);
+    }
+
+    const gradeNotifications = uniqueStudentIds.map(sid => {
+      const courseNames = [...studentCourseMap[sid]];
+      const courseList  = courseNames.slice(0, 3).join(', ') +
+        (courseNames.length > 3 ? ` and ${courseNames.length - 3} more` : '');
+      const count = studentCourseMap[sid].size;
+      return {
+        student_id: sid,
+        type:       'grade_added',
+        title:      'Grades Posted',
+        message:    `${count} grade${count > 1 ? 's have' : ' has'} been posted for ${courseList}.`,
+      };
+    });
+
+    // Insert in chunks of 100
+    for (let i = 0; i < gradeNotifications.length; i += 100) {
+      await db.from('notifications').insert(gradeNotifications.slice(i, i + 100));
     }
   }
 
@@ -596,4 +631,3 @@ function clearGradeIdSearch() {
   document.getElementById('gradeIdSearchInput').value = '';
   document.getElementById('gradeIdSearchResult').style.display = 'none';
 }
-

@@ -418,6 +418,7 @@ function switchTTTab(tab) {
   if (tabEl) tabEl.classList.add('active');
   if (panelEl) panelEl.classList.add('active');
   if (tab === 'schedule') renderBookedSchedule();
+  if (tab === 'import') _loadStaffNicknames();
 }
 
 function _resolveCourseName(slot) {
@@ -744,3 +745,211 @@ function applyRoleUI() {
 }
 
 // ══════════════════════════════════════════
+
+// ══════════════════════════════════════════
+// CSV BULK TIMETABLE IMPORT
+// ══════════════════════════════════════════
+
+let _ttImportRows = [];
+let _ttImportStaffMap = {}; // nickname → user_id
+
+// ── Pre-load staff nicknames for validation ──
+async function _loadStaffNicknames() {
+  if (Object.keys(_ttImportStaffMap).length) return;
+  try {
+    const { data } = await db.from('staff_profiles').select('user_id, nickname');
+    (data || []).forEach(s => { if (s.nickname) _ttImportStaffMap[s.nickname] = s.user_id; });
+  } catch(e) { /* silent */ }
+}
+
+// ── Download CSV template ─────────────────
+function downloadTimetableCSVTemplate() {
+  const headers = 'course_id,course_name,session_date,time_start,time_end,room_id,day,academic_year_id,sub_topic,staff_nickname';
+  const example = 'TCRS001,English,2026-06-01,09:00,11:00,HALL_A,Monday,TAY004,Revision,';
+  const blob = new Blob([headers + '\n' + example], { type: 'text/csv' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'timetable_import_template.csv';
+  a.click();
+}
+
+// ── Drag & drop handlers ──────────────────
+function handleTTImportDrop(event) {
+  event.preventDefault();
+  document.getElementById('ttImportDropZone').style.borderColor = 'var(--line)';
+  document.getElementById('ttImportDropZone').style.background  = '';
+  const file = event.dataTransfer.files[0];
+  if (file) _parseTTImportFile(file);
+}
+
+function handleTTImportFile(event) {
+  const file = event.target.files[0];
+  if (file) _parseTTImportFile(file);
+}
+
+// ── Parse CSV using PapaParse ─────────────
+function _parseTTImportFile(file) {
+  if (!file.name.endsWith('.csv')) {
+    _showTTImportError('Please upload a .csv file.');
+    return;
+  }
+  Papa.parse(file, {
+    header: true,
+    skipEmptyLines: true,
+    transformHeader: h => h.trim().toLowerCase(),
+    complete: function(results) {
+      const required = ['course_id','session_date','time_start','time_end','room_id','day'];
+      const headers  = results.meta.fields || [];
+      const missing  = required.filter(r => !headers.includes(r));
+      if (missing.length) {
+        _showTTImportError('Missing required columns: ' + missing.join(', '));
+        return;
+      }
+
+      _ttImportRows = [];
+      const errors  = [];
+
+      results.data.forEach((row, i) => {
+        const rowNum = i + 2;
+        if (!row.course_id)    { errors.push(`Row ${rowNum}: missing course_id`);    return; }
+        if (!row.session_date) { errors.push(`Row ${rowNum}: missing session_date`); return; }
+        if (!row.time_start)   { errors.push(`Row ${rowNum}: missing time_start`);   return; }
+        if (!row.time_end)     { errors.push(`Row ${rowNum}: missing time_end`);     return; }
+        if (!row.room_id)      { errors.push(`Row ${rowNum}: missing room_id`);      return; }
+        if (!row.day)          { errors.push(`Row ${rowNum}: missing day`);          return; }
+
+        // Validate staff_nickname if provided
+        const nick = (row.staff_nickname || '').trim();
+        if (nick && !_ttImportStaffMap[nick]) {
+          errors.push(`Row ${rowNum}: staff_nickname "${nick}" not found — will use your account`);
+          row.staff_nickname = '';
+        }
+
+        _ttImportRows.push(row);
+      });
+
+      _renderTTImportPreview(headers, _ttImportRows, errors);
+    },
+    error: function(err) {
+      _showTTImportError('Failed to parse CSV: ' + err.message);
+    }
+  });
+}
+
+// ── Render preview table ──────────────────
+function _renderTTImportPreview(headers, rows, errors) {
+  const preview = document.getElementById('ttImportPreview');
+  const label   = document.getElementById('ttImportPreviewLabel');
+  const thead   = document.getElementById('ttImportThead');
+  const tbody   = document.getElementById('ttImportTbody');
+  const errBox  = document.getElementById('ttImportErrors');
+  const btn     = document.getElementById('ttImportBtn');
+  const status  = document.getElementById('ttImportStatus');
+
+  status.textContent = '';
+  status.style.color = 'var(--ink3)';
+
+  preview.style.display = rows.length ? '' : 'none';
+  btn.style.display     = rows.length ? '' : 'none';
+
+  if (rows.length) {
+    label.textContent = `${rows.length} row${rows.length !== 1 ? 's' : ''} ready to import`;
+
+    const previewRows = rows.slice(0, 5);
+    thead.innerHTML = '<tr>' + headers.map(h =>
+      `<th style="padding:7px 10px;text-align:left;color:var(--ink3);font-weight:600;font-size:10px;letter-spacing:.5px;text-transform:uppercase;white-space:nowrap;border-bottom:1px solid var(--line)">${h}</th>`
+    ).join('') + '</tr>';
+
+    tbody.innerHTML = previewRows.map(row =>
+      '<tr style="border-top:1px solid var(--line)">' +
+      headers.map(h => `<td style="padding:7px 10px;color:var(--ink2);white-space:nowrap;font-size:12px">${row[h] || '<span style=\"color:var(--ink3)\">—</span>'}</td>`).join('') +
+      '</tr>'
+    ).join('');
+
+    if (rows.length > 5) {
+      tbody.innerHTML += `<tr><td colspan="${headers.length}" style="padding:8px 10px;color:var(--ink3);font-size:11px;font-style:italic;border-top:1px solid var(--line)">… and ${rows.length - 5} more rows</td></tr>`;
+    }
+  }
+
+  if (errors.length) {
+    errBox.style.display = '';
+    errBox.innerHTML = `<strong>⚠ ${errors.length} issue${errors.length > 1 ? 's' : ''} found:</strong><br>` +
+      errors.map(e => `• ${e}`).join('<br>');
+  } else {
+    errBox.style.display = 'none';
+  }
+}
+
+// ── Run the import ────────────────────────
+async function runTTImport() {
+  if (!_ttImportRows.length) return;
+
+  const btn    = document.getElementById('ttImportBtn');
+  const status = document.getElementById('ttImportStatus');
+
+  btn.disabled    = true;
+  btn.textContent = 'Importing…';
+  status.style.color = 'var(--ink3)';
+  status.textContent = `Uploading ${_ttImportRows.length} rows…`;
+
+  try {
+    const { data: { session } } = await db.auth.getSession();
+    if (!session) throw new Error('Session expired — please sign in again.');
+
+    const res = await fetch('/.netlify/functions/bulk-timetable-import', {
+      method: 'POST',
+      headers: {
+        'Content-Type':  'application/json',
+        'Authorization': 'Bearer ' + session.access_token,
+      },
+      body: JSON.stringify({ rows: _ttImportRows }),
+    });
+
+    const data = await res.json();
+    if (!data.success) throw new Error(data.error || 'Import failed');
+
+    status.textContent = `✓ ${data.inserted} row${data.inserted !== 1 ? 's' : ''} imported. Students notified.`;
+    status.style.color = 'var(--green)';
+
+    if (data.skipped > 0) {
+      const errBox = document.getElementById('ttImportErrors');
+      errBox.style.display = '';
+      errBox.innerHTML = `<strong>⚠ ${data.skipped} row${data.skipped > 1 ? 's' : ''} skipped:</strong><br>` +
+        (data.errors || []).map(e => `• ${e}`).join('<br>');
+    }
+
+    // Clear after short delay so user can see the success message
+    setTimeout(clearTTImport, 2000);
+
+    // Refresh the slot list
+    if (typeof loadMyTimetable === 'function') loadMyTimetable();
+    toast(`✓ ${data.inserted} timetable rows imported.`, '✓');
+
+  } catch(err) {
+    status.textContent = 'Error: ' + err.message;
+    status.style.color = 'var(--crimson)';
+  } finally {
+    btn.disabled    = false;
+    btn.textContent = 'Import Timetable';
+  }
+}
+
+// ── Clear import state ────────────────────
+function clearTTImport() {
+  _ttImportRows = [];
+  const els = ['ttImportPreview','ttImportErrors','ttImportBtn'];
+  els.forEach(id => { const el = document.getElementById(id); if (el) el.style.display = 'none'; });
+  const input = document.getElementById('ttImportFileInput');
+  if (input) input.value = '';
+  const status = document.getElementById('ttImportStatus');
+  if (status) { status.textContent = ''; status.style.color = 'var(--ink3)'; }
+}
+
+function _showTTImportError(msg) {
+  const errBox = document.getElementById('ttImportErrors');
+  if (errBox) { errBox.style.display = ''; errBox.textContent = msg; }
+  const preview = document.getElementById('ttImportPreview');
+  const btn     = document.getElementById('ttImportBtn');
+  if (preview) preview.style.display = 'none';
+  if (btn)     btn.style.display     = 'none';
+}
