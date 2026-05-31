@@ -147,7 +147,7 @@ Resources:
           Type: HttpApi
           Properties:
             Path: /get-enrollment-periods
-            Method: get
+            Method: post
 
   GetEnrollmentRequestsFunction:
     Type: AWS::Serverless::Function
@@ -191,9 +191,9 @@ Resources:
           Type: HttpApi
           Properties:
             Path: /get-timetable
-            Method: get
+            Method: post
 
-MarkAttendanceFunction:
+  MarkAttendanceFunction:
     Type: AWS::Serverless::Function
     Properties:
       Handler: netlify/functions/mark-attendance.handler
