@@ -75,16 +75,16 @@ function renderTimetable(rows, dayFilter) {
             +       '</span>'
             +       (hasDate ? '<span class="tt-date-badge">📅 ' + escHtml(dateStr) + '</span>' : '')
             +     '</div>'
-            +     '<div style="margin-top:8px;padding:0 0 4px 0">'
-            +       '<button class="tt-attend-btn" '
+            +     (isToday ? '<div style="margin-top:8px;padding:0 0 4px 0">'
+            +       '<button class="tt-attend-btn tt-attend-open" '
             +         'data-name="' + escHtml(r.course_name || r.course_id || r.sub_topic || 'Class') + '" '
-            +         'data-date="' + escHtml(r.session_date || '') + '" '
+            +         'data-date="' + escHtml(r.session_date || new Date().toISOString().slice(0,10)) + '" '
             +         'data-from="' + escHtml(r.time_start || '') + '" '
             +         'data-till="' + escHtml(r.time_end || '') + '" '
             +         'onclick="markAttendance(this)">'
             +         '✓ Mark Attendance'
             +       '</button>'
-            +     '</div>'
+            +     '</div>' : '')
             +   '</div>'
             + '</div>';
     });
@@ -102,27 +102,45 @@ window.ttFilterDay = function(day, btn) {
 };
 
 window.markAttendance = async function(btn) {
+  var studentId = (window._currentStudent && window._currentStudent.id) || window._currentStudentId || '';
+  if (!studentId) { alert('Session expired. Please log in again.'); return; }
+
+  // Use session_date from data attr, fallback to today in Myanmar time (UTC+6:30)
+  var sessionDate = btn.dataset.date;
+  if (!sessionDate) {
+    var myanmarMs = Date.now() + (6 * 60 + 30) * 60000;
+    var md = new Date(myanmarMs);
+    sessionDate = md.getUTCFullYear() + '-'
+      + String(md.getUTCMonth() + 1).padStart(2, '0') + '-'
+      + String(md.getUTCDate()).padStart(2, '0');
+  }
+
   btn.disabled = true;
   btn.textContent = 'Marking…';
-  var s = window._currentStudent || {};
+
   try {
     var res = await fetch('https://4dgx435mmk.execute-api.ap-southeast-1.amazonaws.com/mark-attendance', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        studentId:   s.id || '',
+        studentId:   studentId,
         lectureName: btn.dataset.name,
-        sessionDate: btn.dataset.date,
+        sessionDate: sessionDate,
         sessionFrom: btn.dataset.from,
-        sessionTill: btn.dataset.till
+        sessionTill: btn.dataset.till || null
       })
     });
     var data = await res.json();
     if (data.success) {
-      btn.textContent = '✓ Attended';
-      btn.style.background = 'var(--green)';
-      btn.style.color = '#fff';
+      btn.textContent = '✓ Present';
+      btn.className = 'tt-attend-btn tt-attend-marked';
       btn.style.cursor = 'default';
+    } else if ((data.message || '').toLowerCase().includes('already')) {
+      btn.textContent = '✓ Already marked';
+      btn.className = 'tt-attend-btn tt-attend-marked';
+    } else if ((data.message || '').toLowerCase().includes('window')) {
+      btn.textContent = 'Window closed';
+      btn.className = 'tt-attend-btn tt-attend-closed';
     } else {
       btn.textContent = data.message || 'Failed';
       btn.disabled = false;
