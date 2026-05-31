@@ -57,7 +57,7 @@ exports.handler = async function (event) {
   }
 
   // ── Validate session ─────────────────────────────────────────
-  const authHeader   = (event.headers['authorization'] || '');
+  const authHeader   = (event?.headers?.authorization || event?.headers?.Authorization || '');
   const sessionToken = authHeader.replace(/^Bearer\s+/i, '').trim();
 
   let verifiedStudentId = null;

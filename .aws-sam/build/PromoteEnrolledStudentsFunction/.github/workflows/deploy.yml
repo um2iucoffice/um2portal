@@ -26,7 +26,14 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Upload to S3
-        run: aws s3 sync ./public s3://sis-um2-irir --delete
+        run: |
+          aws s3 sync ./public/IRIS-IRIR/ s3://sis-um2-irir --delete
+          aws s3 cp ./public/Signature.png s3://sis-um2-irir/Signature.png
+          aws s3 cp ./public/UM2_Logo.svg s3://sis-um2-irir/UM2_Logo.svg
+          aws s3 cp ./public/IRIS.svg s3://sis-um2-irir/IRIS.svg
+          aws s3 cp ./public/IRIR.svg s3://sis-um2-irir/IRIR.svg
+          aws s3 cp ./public/Seal.svg s3://sis-um2-irir/Seal.svg
+          aws s3 cp ./public/iucseal.svg s3://sis-um2-irir/iucseal.svg
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}

@@ -107,7 +107,7 @@ async function populateTables() {
     .select('*')
     .order('sent_at', { ascending: false })
     .limit(50);
-  if (emailData) renderEmailLog(emailData);
+  if (emailData && typeof renderEmailLog === 'function') renderEmailLog(emailData);
 
   renderStudentTable(students);
   renderAttendanceTable();
@@ -143,4 +143,3 @@ function updateDashboardStats() {
   setText('studentCount', students.length);
   setText('mbbsStudentCount', students.length);
 }
-
