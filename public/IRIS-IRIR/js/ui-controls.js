@@ -282,6 +282,9 @@ document.addEventListener('click', function(e) {
     case 'set-post-type':
       if (typeof window.setPostType === 'function') window.setPostType(el.dataset.type);
       break;
+    case 'mark-attendance':
+      if (typeof window.markAttendance === 'function') window.markAttendance(el);
+      break;
     case 'submit-post':
       if (typeof window.submitPost === 'function') window.submitPost();
       break;

@@ -77,11 +77,11 @@ function renderTimetable(rows, dayFilter) {
             +     '</div>'
             +     (isToday ? '<div style="margin-top:8px;padding:0 0 4px 0">'
             +       '<button class="tt-attend-btn tt-attend-open" '
+            +         'data-action="mark-attendance" '
             +         'data-name="' + escHtml(r.course_name || r.course_id || r.sub_topic || 'Class') + '" '
             +         'data-date="' + escHtml(r.session_date || new Date().toISOString().slice(0,10)) + '" '
             +         'data-from="' + escHtml(r.time_start || '') + '" '
-            +         'data-till="' + escHtml(r.time_end || '') + '" '
-            +         'onclick="markAttendance(this)">'
+            +         'data-till="' + escHtml(r.time_end || '') + '">'
             +         '✓ Mark Attendance'
             +       '</button>'
             +     '</div>' : '')
