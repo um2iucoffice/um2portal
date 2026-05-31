@@ -27,7 +27,7 @@ jobs:
       - uses: actions/checkout@v4
       - name: Upload to S3
         run: |
-          aws s3 sync ./public/IRIS-IRIR/ s3://sis-um2-irir --delete
+          aws s3 sync ./public/IRIS-IRIR/ s3://sis-um2-irir
           aws s3 cp ./public/Signature.png s3://sis-um2-irir/Signature.png
           aws s3 cp ./public/UM2_Logo.svg s3://sis-um2-irir/UM2_Logo.svg
           aws s3 cp ./public/IRIS.svg s3://sis-um2-irir/IRIS.svg
