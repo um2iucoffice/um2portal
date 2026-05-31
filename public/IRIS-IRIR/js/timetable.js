@@ -11,9 +11,9 @@ function renderTimetable(rows, dayFilter) {
   if (!contentEl) return;
 
   // ── Hide past sessions — only show today and future ──
-  var todayStr = new Date().toISOString().slice(0, 10); // 'YYYY-MM-DD'
+  var todayStr = new Date().toISOString().slice(0, 10);
   rows = rows.filter(function(r) {
-    if (!r.session_date) return true; // no date = always show
+    if (!r.session_date) return true;
     return r.session_date >= todayStr;
   });
 
@@ -21,7 +21,7 @@ function renderTimetable(rows, dayFilter) {
   var grouped = {};
   TT_DAY_ORDER.forEach(function(d) { grouped[d] = []; });
   rows.forEach(function(r) {
-   var d = ({'Monday':'Monday','Tuesday':'Tuesday','Wednesday':'Wednesday','Thursday':'Thursday','Friday':'Friday','Saturday':'Saturday','Sunday':'Sunday'})[r.day] || ({'mon':'Monday','tue':'Tuesday','wed':'Wednesday','thu':'Thursday','fri':'Friday','sat':'Saturday','sun':'Sunday'})[( r.day||'').toLowerCase().slice(0,3)] || 'Other';
+    var d = ({'Monday':'Monday','Tuesday':'Tuesday','Wednesday':'Wednesday','Thursday':'Thursday','Friday':'Friday','Saturday':'Saturday','Sunday':'Sunday'})[r.day] || ({'mon':'Monday','tue':'Tuesday','wed':'Wednesday','thu':'Thursday','fri':'Friday','sat':'Saturday','sun':'Sunday'})[(r.day||'').toLowerCase().slice(0,3)] || 'Other';
     if (!grouped[d]) grouped[d] = [];
     grouped[d].push(r);
   });
@@ -57,7 +57,7 @@ function renderTimetable(rows, dayFilter) {
       var courseName   = escHtml((r.course_name || r.course_id || ''));
       var subtopic     = escHtml(r.sub_topic || '');
       var room         = escHtml(r.room_name || r.room_id || '—');
-      
+
       html += '<div class="tt-row">'
             +   '<div class="tt-time-col">'
             +     '<div class="tt-time-start">' + ttFmt(r.time_start) + '</div>'
@@ -75,6 +75,16 @@ function renderTimetable(rows, dayFilter) {
             +       '</span>'
             +       (hasDate ? '<span class="tt-date-badge">📅 ' + escHtml(dateStr) + '</span>' : '')
             +     '</div>'
+            +     '<div style="margin-top:8px;padding:0 0 4px 0">'
+            +       '<button class="tt-attend-btn" '
+            +         'data-name="' + escHtml(r.course_name || r.course_id || r.sub_topic || 'Class') + '" '
+            +         'data-date="' + escHtml(r.session_date || '') + '" '
+            +         'data-from="' + escHtml(r.time_start || '') + '" '
+            +         'data-till="' + escHtml(r.time_end || '') + '" '
+            +         'onclick="markAttendance(this)">'
+            +         '✓ Mark Attendance'
+            +       '</button>'
+            +     '</div>'
             +   '</div>'
             + '</div>';
     });
@@ -89,4 +99,36 @@ window.ttFilterDay = function(day, btn) {
   document.querySelectorAll('.tt-filter-pill').forEach(function(b) { b.classList.remove('active'); });
   if (btn) btn.classList.add('active');
   renderTimetable(_ttAllRows, day);
+};
+
+window.markAttendance = async function(btn) {
+  btn.disabled = true;
+  btn.textContent = 'Marking…';
+  var s = window._currentStudent || {};
+  try {
+    var res = await fetch('https://4dgx435mmk.execute-api.ap-southeast-1.amazonaws.com/mark-attendance', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        studentId:   s.id || '',
+        lectureName: btn.dataset.name,
+        sessionDate: btn.dataset.date,
+        sessionFrom: btn.dataset.from,
+        sessionTill: btn.dataset.till
+      })
+    });
+    var data = await res.json();
+    if (data.success) {
+      btn.textContent = '✓ Attended';
+      btn.style.background = 'var(--green)';
+      btn.style.color = '#fff';
+      btn.style.cursor = 'default';
+    } else {
+      btn.textContent = data.message || 'Failed';
+      btn.disabled = false;
+    }
+  } catch(e) {
+    btn.textContent = 'Error — try again';
+    btn.disabled = false;
+  }
 };

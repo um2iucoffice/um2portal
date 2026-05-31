@@ -192,7 +192,7 @@ Resources:
           Properties:
             Path: /get-timetable
             Method: get
-            
+
 MarkAttendanceFunction:
     Type: AWS::Serverless::Function
     Properties:
@@ -202,6 +202,7 @@ MarkAttendanceFunction:
           Type: HttpApi
           Properties:
             Path: /mark-attendance
+            Method: post
 
   LoginFunction:
     Type: AWS::Serverless::Function

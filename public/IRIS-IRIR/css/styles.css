@@ -4438,3 +4438,26 @@ body.theme-light .notif-bar-close:hover {
   opacity: 0;
   transform: translateX(8px);
 }
+
+/* ── Attendance Button ─────────────────────────────────────── */
+.tt-attend-btn {
+  background: var(--glass-card-bg);
+  border: 1px solid var(--glass-card-border);
+  color: var(--ink);
+  font-size: 12px;
+  font-weight: 600;
+  padding: 6px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-family: 'DM Sans', sans-serif;
+  transition: background 0.15s, color 0.15s;
+}
+.tt-attend-btn:hover:not(:disabled) {
+  background: var(--green-light);
+  border-color: var(--green);
+  color: var(--green);
+}
+.tt-attend-btn:disabled {
+  cursor: default;
+  opacity: 0.8;
+}
