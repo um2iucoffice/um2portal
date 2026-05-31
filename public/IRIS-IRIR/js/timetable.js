@@ -10,6 +10,13 @@ function renderTimetable(rows, dayFilter) {
   var contentEl = document.getElementById('ttContent');
   if (!contentEl) return;
 
+  // ── Hide past sessions — only show today and future ──
+  var todayStr = new Date().toISOString().slice(0, 10); // 'YYYY-MM-DD'
+  rows = rows.filter(function(r) {
+    if (!r.session_date) return true; // no date = always show
+    return r.session_date >= todayStr;
+  });
+
   // Group by day
   var grouped = {};
   TT_DAY_ORDER.forEach(function(d) { grouped[d] = []; });
@@ -83,4 +90,3 @@ window.ttFilterDay = function(day, btn) {
   if (btn) btn.classList.add('active');
   renderTimetable(_ttAllRows, day);
 };
-
