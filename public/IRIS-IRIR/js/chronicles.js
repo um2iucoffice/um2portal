@@ -408,7 +408,11 @@ async function _loadTimetable() {
 
     if (!data.success) throw new Error(data.message || 'Failed to load timetable.');
 
-    var rows = data.timetable || [];
+    var today = new Date(); today.setHours(0,0,0,0);
+var rows = (data.timetable || []).filter(function(r) {
+  if (!r.session_date) return true;
+  return new Date(r.session_date + 'T00:00:00') >= today;
+});
 _ttAllRows = rows;
 _ttLoaded = true;
 
