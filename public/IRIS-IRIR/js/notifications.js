@@ -35,13 +35,11 @@ async function fetchNotifications() {
            || document.getElementById('infoID')?.textContent?.trim();
   if (!sid) return [];
   try {
-    const res = await fetch('https://4dgx435mmk.execute-api.ap-southeast-1.amazonaws.com/get-notifications', {
-      method: 'POST',
+    const res = await fetch('https://4dgx435mmk.execute-api.ap-southeast-1.amazonaws.com/get-notifications?student_id=' + encodeURIComponent(sid), {
+      method: 'GET',
       headers: {
-        'Content-Type': 'application/json',
         'Authorization': 'Bearer ' + (window._sessionToken || '')
-      },
-      body: JSON.stringify({ student_id: sid })
+      }
     });
     if (!res.ok) throw new Error('HTTP ' + res.status);
     const data = await res.json();
