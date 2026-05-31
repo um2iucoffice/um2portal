@@ -126,22 +126,19 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   // ── 6. Chronicles post type tabs (.chr-type-tab with IDs) ────
-  var chrTypeTabs = document.querySelector('.chr-type-tabs');
-  if (chrTypeTabs) {
-    var typeMap = {
-      postTypeNews:         'news',
-      postTypeAnnouncement: 'announcement',
-      postTypeNotice:       'notice',
-      postTypeEvent:        'event',
-      postTypeNewsitem:     'newsitem'
-    };
-    chrTypeTabs.addEventListener('click', function (e) {
-      var btn = e.target.closest('button[id]');
-      if (!btn) return;
-      var type = typeMap[btn.id];
-      if (type) setPostType(type);
-    });
-  }
+  document.addEventListener('click', function(e) {
+  var btn = e.target.closest('.chr-type-tab');
+  if (!btn) return;
+  var typeMap = {
+    postTypeNews:         'news',
+    postTypeAnnouncement: 'announcement',
+    postTypeNotice:       'notice',
+    postTypeEvent:        'event',
+    postTypeNewsitem:     'newsitem'
+  };
+  var type = typeMap[btn.id];
+  if (type) setPostType(type);
+});
 
   // ── 7. Submit post button ─────────────────────────────────────
   var submitPostBtn = document.getElementById('submitPostBtn');
