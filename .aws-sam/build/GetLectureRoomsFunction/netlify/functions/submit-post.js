@@ -52,15 +52,13 @@ function sanitise(val, maxLen = 500) {
 // ── Handler ───────────────────────────────────────────────────────────────────
 exports.handler = async (event) => {
   // 1. CORS preflight
-  if (event.httpMethod === 'OPTIONS') {
-    return { statusCode: 204, headers: HEADERS };
+  if ((event.requestContext?.http?.method || event.httpMethod) === 'OPTIONS') {
+    return { statusCode: 204, headers: {'Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'GET,POST,OPTIONS','Access-Control-Allow-Headers':'Content-Type'},  headers: HEADERS };
   }
 
   // 2. Method guard
-  if (event.httpMethod !== 'POST') {
-    return {
-      statusCode: 405,
-      headers: HEADERS,
+  if ((event.requestContext?.http?.method || event.httpMethod) !== 'POST') {
+    return { statusCode: 405, headers: {'Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'GET,POST,OPTIONS','Access-Control-Allow-Headers':'Content-Type'},  headers: HEADERS,
       body: JSON.stringify({ success: false, error: 'Method not allowed.' }),
     };
   }
@@ -71,9 +69,7 @@ exports.handler = async (event) => {
     try {
       body = JSON.parse(event.body || '{}');
     } catch {
-      return {
-        statusCode: 400,
-        headers: HEADERS,
+      return { statusCode: 400, headers: {'Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'GET,POST,OPTIONS','Access-Control-Allow-Headers':'Content-Type'},  headers: HEADERS,
         body: JSON.stringify({ success: false, error: 'Invalid JSON body.' }),
       };
     }
@@ -95,16 +91,12 @@ exports.handler = async (event) => {
     const cleanBody  = sanitise(postBody, 5000);
 
     if (!cleanTitle) {
-      return {
-        statusCode: 400,
-        headers: HEADERS,
+      return { statusCode: 400, headers: {'Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'GET,POST,OPTIONS','Access-Control-Allow-Headers':'Content-Type'},  headers: HEADERS,
         body: JSON.stringify({ success: false, error: 'Title is required.' }),
       };
     }
     if (!cleanBody) {
-      return {
-        statusCode: 400,
-        headers: HEADERS,
+      return { statusCode: 400, headers: {'Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'GET,POST,OPTIONS','Access-Control-Allow-Headers':'Content-Type'},  headers: HEADERS,
         body: JSON.stringify({ success: false, error: 'Body is required.' }),
       };
     }
@@ -112,9 +104,7 @@ exports.handler = async (event) => {
     // 5. Validate student_id
     const cleanStudentId = sanitise(student_id, 100);
     if (!cleanStudentId) {
-      return {
-        statusCode: 400,
-        headers: HEADERS,
+      return { statusCode: 400, headers: {'Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'GET,POST,OPTIONS','Access-Control-Allow-Headers':'Content-Type'},  headers: HEADERS,
         body: JSON.stringify({ success: false, error: 'Missing student ID.' }),
       };
     }
@@ -154,18 +144,34 @@ exports.handler = async (event) => {
       }),
     });
 
-    return {
-      statusCode: 200,
-      headers: HEADERS,
+    return { statusCode: 200, headers: {'Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'GET,POST,OPTIONS','Access-Control-Allow-Headers':'Content-Type'},  headers: HEADERS,
       body: JSON.stringify({ success: true }),
     };
 
   } catch (err) {
     console.error('submit-post error:', err);
-    return {
-      statusCode: 500,
-      headers: HEADERS,
+    return { statusCode: 500, headers: {'Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'GET,POST,OPTIONS','Access-Control-Allow-Headers':'Content-Type'},  headers: HEADERS,
       body: JSON.stringify({ success: false, error: 'Server error. Please try again.' }),
     };
   }
+};
+// CORS wrapper
+
+const CORS = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type, Authorization'
+};
+
+const originalHandler = exports.handler;
+exports.handler = async (event, context) => {
+  const method = event.requestContext?.http?.method || event.httpMethod || 'POST';
+  if (method === 'OPTIONS') {
+    return { statusCode: 200, headers: CORS, body: '' };
+  }
+  const result = await originalHandler(event, context);
+  return {
+    ...result,
+    headers: { ...CORS, ...(result.headers || {}) }
+  };
 };

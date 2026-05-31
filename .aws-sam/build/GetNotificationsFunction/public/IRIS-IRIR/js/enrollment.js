@@ -6,7 +6,7 @@ async function checkEnrollmentEligibility(student) {
   if (!programRef) { console.warn('[ENROLL] missing program'); return; }
   try {
     console.log('[ENROLL] fetching for', student.id, programRef, student.currentStatus);
-    const res = await fetch('/.netlify/functions/get-enrollment-periods', {
+    const res = await fetch('https://4dgx435mmk.execute-api.ap-southeast-1.amazonaws.com/get-enrollment-periods', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -168,7 +168,7 @@ window.submitEnrollmentRequest = async function(periodId, studentId) {
     btn.textContent = 'Submitting…';
   }
   try {
-    const res = await fetch('/.netlify/functions/create-enrollment-request', {
+    const res = await fetch('https://4dgx435mmk.execute-api.ap-southeast-1.amazonaws.com/create-enrollment-request', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ student_id: studentId, period_id: periodId })

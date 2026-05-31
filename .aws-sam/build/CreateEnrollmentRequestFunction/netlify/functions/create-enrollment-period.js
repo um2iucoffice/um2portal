@@ -44,8 +44,8 @@ exports.handler = async (event) => {
     'Access-Control-Allow-Origin': '*'
   };
 
-  if (event.httpMethod === 'OPTIONS') {
-    return { statusCode: 204, headers };
+  if ((event.requestContext?.http?.method || event.httpMethod) === 'OPTIONS') {
+    return { statusCode: 204, headers: {'Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'GET,POST,OPTIONS','Access-Control-Allow-Headers':'Content-Type'},  headers };
   }
 
   try {
@@ -67,8 +67,7 @@ exports.handler = async (event) => {
     const missing = ['program_id','from_year_id','to_year_id','open_at','close_at']
       .filter(k => !body[k]);
     if (missing.length) {
-      return {
-        statusCode: 200, headers,
+      return { statusCode: 200, headers: {'Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'GET,POST,OPTIONS','Access-Control-Allow-Headers':'Content-Type'},  headers,
         body: JSON.stringify({
           success: false,
           message: `Missing required fields: ${missing.join(', ')}`
@@ -77,8 +76,7 @@ exports.handler = async (event) => {
     }
 
     if (new Date(close_at) <= new Date(open_at)) {
-      return {
-        statusCode: 200, headers,
+      return { statusCode: 200, headers: {'Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'GET,POST,OPTIONS','Access-Control-Allow-Headers':'Content-Type'},  headers,
         body: JSON.stringify({
           success: false,
           message: 'close_at must be after open_at'
@@ -91,8 +89,7 @@ exports.handler = async (event) => {
       `degree_programs?id=eq.${encodeURIComponent(program_id)}&limit=1`
     );
     if (!programs || programs.length === 0) {
-      return {
-        statusCode: 200, headers,
+      return { statusCode: 200, headers: {'Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'GET,POST,OPTIONS','Access-Control-Allow-Headers':'Content-Type'},  headers,
         body: JSON.stringify({
           success: false,
           message: `Program '${program_id}' not found in degree_programs. ` +
@@ -114,8 +111,7 @@ exports.handler = async (event) => {
     );
     if (overlapping && overlapping.length > 0) {
       const ex = overlapping[0];
-      return {
-        statusCode: 200, headers,
+      return { statusCode: 200, headers: {'Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'GET,POST,OPTIONS','Access-Control-Allow-Headers':'Content-Type'},  headers,
         body: JSON.stringify({
           success: false,
           message: `An overlapping enrollment period already exists for this program and year ` +
@@ -145,8 +141,7 @@ exports.handler = async (event) => {
 
     const period = rows && rows[0];
 
-    return {
-      statusCode: 200, headers,
+    return { statusCode: 200, headers: {'Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'GET,POST,OPTIONS','Access-Control-Allow-Headers':'Content-Type'},  headers,
       body: JSON.stringify({
         success:      true,
         period,
@@ -157,9 +152,29 @@ exports.handler = async (event) => {
 
   } catch (err) {
     console.error('[create-enrollment-period] error:', err);
-    return {
-      statusCode: 200, headers,
+    return { statusCode: 200, headers: {'Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'GET,POST,OPTIONS','Access-Control-Allow-Headers':'Content-Type'},  headers,
       body: JSON.stringify({ success: false, message: err.message })
     };
   }
+};
+
+// CORS wrapper
+
+const CORS = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type, Authorization'
+};
+
+const originalHandler = exports.handler;
+exports.handler = async (event, context) => {
+  const method = event.requestContext?.http?.method || event.httpMethod || 'POST';
+  if (method === 'OPTIONS') {
+    return { statusCode: 200, headers: CORS, body: '' };
+  }
+  const result = await originalHandler(event, context);
+  return {
+    ...result,
+    headers: { ...CORS, ...(result.headers || {}) }
+  };
 };

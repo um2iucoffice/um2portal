@@ -45,24 +45,22 @@ async function uploadToStorage(filePath, buffer, contentType) {
 }
 
 exports.handler = async (event) => {
-  if (event.httpMethod === 'OPTIONS') return { statusCode: 204, headers: CORS_HEADERS };
-  if (event.httpMethod !== 'POST')
-    return { statusCode: 405, headers: CORS_HEADERS, body: JSON.stringify({ error: 'Method not allowed' }) };
+  if ((event.requestContext?.http?.method || event.httpMethod) === 'OPTIONS') return { statusCode: 204, headers: {'Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'GET,POST,OPTIONS','Access-Control-Allow-Headers':'Content-Type'},  headers: CORS_HEADERS };
+  if ((event.requestContext?.http?.method || event.httpMethod) !== 'POST')
+    return { statusCode: 405, headers: {'Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'GET,POST,OPTIONS','Access-Control-Allow-Headers':'Content-Type'},  headers: CORS_HEADERS, body: JSON.stringify({ error: 'Method not allowed' }) };
 
   try {
     const body = JSON.parse(event.body || '{}');
     const { studentId, safeFilename, password, imageBase64, mimeType } = body;
 
     if (!studentId || !imageBase64 || !mimeType) {
-      return {
-        statusCode: 200, headers: CORS_HEADERS,
+      return { statusCode: 200, headers: {'Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'GET,POST,OPTIONS','Access-Control-Allow-Headers':'Content-Type'},  headers: CORS_HEADERS,
         body: JSON.stringify({ success: false, message: 'Missing studentId, imageBase64, or mimeType.' })
       };
     }
 
     if (!SUPABASE_URL || !SUPABASE_SERVICE_KEY) {
-      return {
-        statusCode: 200, headers: CORS_HEADERS,
+      return { statusCode: 200, headers: {'Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'GET,POST,OPTIONS','Access-Control-Allow-Headers':'Content-Type'},  headers: CORS_HEADERS,
         body: JSON.stringify({ success: false, message: 'Server misconfiguration: environment variables not set.' })
       };
     }
@@ -72,15 +70,13 @@ exports.handler = async (event) => {
       `students?id=eq.${encodeURIComponent(studentId)}&select=id,master_password`
     );
     if (!students || !students.length) {
-      return {
-        statusCode: 200, headers: CORS_HEADERS,
+      return { statusCode: 200, headers: {'Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'GET,POST,OPTIONS','Access-Control-Allow-Headers':'Content-Type'},  headers: CORS_HEADERS,
         body: JSON.stringify({ success: false, message: 'Student not found.' })
       };
     }
     const student = students[0];
     if (password && student.master_password && student.master_password !== password) {
-      return {
-        statusCode: 200, headers: CORS_HEADERS,
+      return { statusCode: 200, headers: {'Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'GET,POST,OPTIONS','Access-Control-Allow-Headers':'Content-Type'},  headers: CORS_HEADERS,
         body: JSON.stringify({ success: false, message: 'Authentication failed.' })
       };
     }
@@ -121,9 +117,7 @@ exports.handler = async (event) => {
       })
     });
 
-    return {
-      statusCode: 200,
-      headers: CORS_HEADERS,
+    return { statusCode: 200, headers: {'Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'GET,POST,OPTIONS','Access-Control-Allow-Headers':'Content-Type'},  headers: CORS_HEADERS,
       body: JSON.stringify({
         success:    true,
         pending:    true,
@@ -134,10 +128,28 @@ exports.handler = async (event) => {
 
   } catch (err) {
     console.error('upload-photo error:', err);
-    return {
-      statusCode: 200,
-      headers: CORS_HEADERS,
+    return { statusCode: 200, headers: {'Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'GET,POST,OPTIONS','Access-Control-Allow-Headers':'Content-Type'},  headers: CORS_HEADERS,
       body: JSON.stringify({ success: false, message: err.message })
     };
   }
+};
+// CORS wrapper
+
+const CORS = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type, Authorization'
+};
+
+const originalHandler = exports.handler;
+exports.handler = async (event, context) => {
+  const method = event.requestContext?.http?.method || event.httpMethod || 'POST';
+  if (method === 'OPTIONS') {
+    return { statusCode: 200, headers: CORS, body: '' };
+  }
+  const result = await originalHandler(event, context);
+  return {
+    ...result,
+    headers: { ...CORS, ...(result.headers || {}) }
+  };
 };

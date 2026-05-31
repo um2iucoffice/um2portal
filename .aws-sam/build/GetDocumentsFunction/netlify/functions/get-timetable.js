@@ -29,24 +29,24 @@ const CORS_HEADERS = {
 };
 
 exports.handler = async (event) => {
-  if (event.httpMethod === 'OPTIONS') {
-    return { statusCode: 204, headers: CORS_HEADERS };
+  if ((event.requestContext?.http?.method || event.httpMethod) === 'OPTIONS') {
+    return { statusCode: 204, headers: {'Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'GET,POST,OPTIONS','Access-Control-Allow-Headers':'Content-Type'},  headers: CORS_HEADERS };
   }
-  if (event.httpMethod !== 'POST') {
-    return { statusCode: 405, headers: CORS_HEADERS, body: JSON.stringify({ error: 'Method not allowed' }) };
+  if ((event.requestContext?.http?.method || event.httpMethod) !== 'POST') {
+    return { statusCode: 405, headers: {'Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'GET,POST,OPTIONS','Access-Control-Allow-Headers':'Content-Type'},  headers: CORS_HEADERS, body: JSON.stringify({ error: 'Method not allowed' }) };
   }
 
   let studentId;
   try {
     ({ studentId } = JSON.parse(event.body || '{}'));
   } catch {
-    return { statusCode: 400, headers: CORS_HEADERS, body: JSON.stringify({ success: false, message: 'Invalid request body.' }) };
+    return { statusCode: 400, headers: {'Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'GET,POST,OPTIONS','Access-Control-Allow-Headers':'Content-Type'},  headers: CORS_HEADERS, body: JSON.stringify({ success: false, message: 'Invalid request body.' }) };
   }
 
   const normId = String(studentId || '').trim().toLowerCase();
 
   if (!normId) {
-    return { statusCode: 200, headers: CORS_HEADERS, body: JSON.stringify({ success: false, message: 'Student ID is required.' }) };
+    return { statusCode: 200, headers: {'Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'GET,POST,OPTIONS','Access-Control-Allow-Headers':'Content-Type'},  headers: CORS_HEADERS, body: JSON.stringify({ success: false, message: 'Student ID is required.' }) };
   }
 
   try {
@@ -55,7 +55,7 @@ exports.handler = async (event) => {
       `students?id=eq.${encodeURIComponent(normId)}&select=id,program,year,status&limit=1`
     );
     if (!students || students.length === 0) {
-      return { statusCode: 200, headers: CORS_HEADERS, body: JSON.stringify({ success: false, message: 'Student not found.' }) };
+      return { statusCode: 200, headers: {'Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'GET,POST,OPTIONS','Access-Control-Allow-Headers':'Content-Type'},  headers: CORS_HEADERS, body: JSON.stringify({ success: false, message: 'Student not found.' }) };
     }
     const raw = students[0];
 
@@ -96,7 +96,7 @@ exports.handler = async (event) => {
     });
 
     if (ttRows.length === 0) {
-      return { statusCode: 200, headers: CORS_HEADERS, body: JSON.stringify({ success: true, timetable: [] }) };
+      return { statusCode: 200, headers: {'Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'GET,POST,OPTIONS','Access-Control-Allow-Headers':'Content-Type'},  headers: CORS_HEADERS, body: JSON.stringify({ success: true, timetable: [] }) };
     }
 
     // ── 4. Enrich with course + room names ───────────────────
@@ -133,10 +133,31 @@ exports.handler = async (event) => {
       sub_topic:        r.sub_topic        || '',
     }));
 
-    return { statusCode: 200, headers: CORS_HEADERS, body: JSON.stringify({ success: true, timetable }) };
+    return { statusCode: 200, headers: {'Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'GET,POST,OPTIONS','Access-Control-Allow-Headers':'Content-Type'},  headers: CORS_HEADERS, body: JSON.stringify({ success: true, timetable }) };
 
   } catch (err) {
     console.error('get-timetable error:', err);
-    return { statusCode: 200, headers: CORS_HEADERS, body: JSON.stringify({ success: false, message: 'Server error: ' + err.message }) };
+    return { statusCode: 200, headers: {'Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'GET,POST,OPTIONS','Access-Control-Allow-Headers':'Content-Type'},  headers: CORS_HEADERS, body: JSON.stringify({ success: false, message: 'Server error: ' + err.message }) };
   }
+};
+
+// CORS wrapper
+
+const CORS = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type, Authorization'
+};
+
+const originalHandler = exports.handler;
+exports.handler = async (event, context) => {
+  const method = event.requestContext?.http?.method || event.httpMethod || 'POST';
+  if (method === 'OPTIONS') {
+    return { statusCode: 200, headers: CORS, body: '' };
+  }
+  const result = await originalHandler(event, context);
+  return {
+    ...result,
+    headers: { ...CORS, ...(result.headers || {}) }
+  };
 };

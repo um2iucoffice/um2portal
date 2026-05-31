@@ -136,10 +136,8 @@ async function storeSessionToken(studentId, token) {
 
 // ── Netlify handler ──────────────────────────────────────────
 exports.handler = async (event) => {
-  if (event.httpMethod === 'OPTIONS') {
-    return {
-      statusCode: 204,
-      headers: {
+  if (( event.requestContext?.http?.method || event.httpMethod) === 'OPTIONS') {
+    return { statusCode: 204, headers: {'Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'GET,POST,OPTIONS','Access-Control-Allow-Headers':'Content-Type'},  headers: {
         'Access-Control-Allow-Origin':  '*',
         'Access-Control-Allow-Methods': 'POST, OPTIONS',
         'Access-Control-Allow-Headers': 'Content-Type',
@@ -147,8 +145,8 @@ exports.handler = async (event) => {
     };
   }
 
-  if (event.httpMethod !== 'POST') {
-    return { statusCode: 405, body: JSON.stringify({ error: 'Method not allowed' }) };
+  if (( event.requestContext?.http?.method || event.httpMethod) !== 'POST') {
+    return { statusCode: 405, headers: {'Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'GET,POST,OPTIONS','Access-Control-Allow-Headers':'Content-Type'}, body: JSON.stringify({ error: 'Method not allowed' }) };
   }
 
   const headers = {
@@ -160,15 +158,14 @@ exports.handler = async (event) => {
   try {
     ({ studentId, password } = JSON.parse(event.body || '{}'));
   } catch {
-    return { statusCode: 400, headers, body: JSON.stringify({ success: false, message: 'Invalid request body.' }) };
+    return { statusCode: 400, headers: {'Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'GET,POST,OPTIONS','Access-Control-Allow-Headers':'Content-Type'},  headers, body: JSON.stringify({ success: false, message: 'Invalid request body.' }) };
   }
 
   const normId   = String(studentId || '').trim().toLowerCase();
   const normPass = String(password  || '').trim();
 
   if (!normId || !normPass) {
-    return {
-      statusCode: 200, headers,
+    return { statusCode: 200, headers: {'Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'GET,POST,OPTIONS','Access-Control-Allow-Headers':'Content-Type'},  headers,
       body: JSON.stringify({ success: false, message: 'Student ID and password are required.' })
     };
   }
@@ -182,8 +179,7 @@ exports.handler = async (event) => {
     );
 
     if (!students || students.length === 0) {
-      return {
-        statusCode: 200, headers,
+      return { statusCode: 200, headers: {'Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'GET,POST,OPTIONS','Access-Control-Allow-Headers':'Content-Type'},  headers,
         body: JSON.stringify({ success: false, message: 'Student ID not found. Please check your credentials.' })
       };
     }
@@ -195,8 +191,7 @@ exports.handler = async (event) => {
     const inputHash  = createHash('sha256').update(normPass).digest('hex');
     const storedHash = String(raw.master_password || '').trim();
     if (storedHash !== inputHash) {
-      return {
-        statusCode: 200, headers,
+      return { statusCode: 200, headers: {'Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'GET,POST,OPTIONS','Access-Control-Allow-Headers':'Content-Type'},  headers,
         body: JSON.stringify({ success: false, message: 'Incorrect password. Please try again.' })
       };
     }
@@ -387,8 +382,7 @@ exports.handler = async (event) => {
     }
 
     // ── 14. Return — token included, password never returned ─
-    return {
-      statusCode: 200, headers,
+    return { statusCode: 200, headers: {'Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'GET,POST,OPTIONS','Access-Control-Allow-Headers':'Content-Type'},  headers,
       body: JSON.stringify({
         success:       true,
         token:         sessionToken,   // ← replaces password on client
@@ -404,9 +398,28 @@ exports.handler = async (event) => {
 
   } catch (err) {
     console.error('Login error:', err);
-    return {
-      statusCode: 200, headers,
+    return { statusCode: 200, headers: {'Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'GET,POST,OPTIONS','Access-Control-Allow-Headers':'Content-Type'},  headers,
       body: JSON.stringify({ success: false, message: 'Server error: ' + err.message })
     };
   }
+};
+// CORS wrapper
+
+const CORS = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type, Authorization'
+};
+
+const originalHandler = exports.handler;
+exports.handler = async (event, context) => {
+  const method = event.requestContext?.http?.method || event.httpMethod || 'POST';
+  if (method === 'OPTIONS') {
+    return { statusCode: 200, headers: CORS, body: '' };
+  }
+  const result = await originalHandler(event, context);
+  return {
+    ...result,
+    headers: { ...CORS, ...(result.headers || {}) }
+  };
 };

@@ -313,7 +313,7 @@ window.submitPost = async function() {
     var formData = new FormData();
     formData.append('file', fileInput.files[0]);
     try {
-      var upRes  = await fetch('/.netlify/functions/upload-image', { method: 'POST', body: formData });
+      var upRes  = await fetch('https://4dgx435mmk.execute-api.ap-southeast-1.amazonaws.com/upload-image', { method: 'POST', body: formData });
       var upData = await upRes.json();
       if (upData.url) {
         image_url = upData.url;
@@ -343,7 +343,7 @@ window.submitPost = async function() {
     event_location: (document.getElementById('postEventLocation') || {}).value || null,
   };
   try {
-    var res  = await fetch('/.netlify/functions/submit-post', {
+    var res  = await fetch('https://4dgx435mmk.execute-api.ap-southeast-1.amazonaws.com/submit-post', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)
     });
@@ -398,7 +398,7 @@ async function _loadTimetable() {
 
   try {
     var s   = window._currentStudent || {};
-    var res = await fetch('/.netlify/functions/get-timetable', {
+    var res = await fetch('https://4dgx435mmk.execute-api.ap-southeast-1.amazonaws.com/get-timetable', {
       method:  'POST',
       headers: { 'Content-Type': 'application/json' },
       body:    JSON.stringify({ studentId: s.id || '' })
@@ -558,7 +558,7 @@ window.ttFilterDay = function(day) {
     grid.innerHTML = '';
  
     try {
-      var res = await fetch('/.netlify/functions/get-documents', {
+      var res = await fetch('https://4dgx435mmk.execute-api.ap-southeast-1.amazonaws.com/get-documents', {
   method: 'POST',
   headers: { 'Content-Type': 'application/json' },
   body: JSON.stringify({ student_id: window._currentStudentId || '' })

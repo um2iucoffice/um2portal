@@ -1,0 +1,39 @@
+name: Deploy to AWS
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy-functions:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - uses: aws-actions/setup-sam@v2
+      - run: sam build
+      - run: sam deploy --no-confirm-changeset --stack-name um2-sis --region ap-southeast-1 --capabilities CAPABILITY_IAM CAPABILITY_NAMED_IAM --resolve-s3
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: ap-southeast-1
+
+  deploy-static:
+    runs-on: ubuntu-latest
+    needs: deploy-functions
+    steps:
+      - uses: actions/checkout@v4
+      - name: Upload to S3
+        run: aws s3 sync ./public s3://sis-um2-irir --delete
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: ap-southeast-1
+      - name: Clear CloudFront cache
+        run: aws cloudfront create-invalidation --distribution-id E1S5QLGYSZ6HM9 --paths "/*"
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: ap-southeast-1

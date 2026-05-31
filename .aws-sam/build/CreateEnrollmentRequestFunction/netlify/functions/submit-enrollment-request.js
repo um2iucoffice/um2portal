@@ -30,8 +30,8 @@ exports.handler = async (event) => {
     'Access-Control-Allow-Origin': '*'
   };
 
-  if (event.httpMethod === 'OPTIONS') {
-    return { statusCode: 204, headers };
+  if ((event.requestContext?.http?.method || event.httpMethod) === 'OPTIONS') {
+    return { statusCode: 204, headers: {'Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'GET,POST,OPTIONS','Access-Control-Allow-Headers':'Content-Type'},  headers };
   }
 
   try {
@@ -49,8 +49,7 @@ exports.handler = async (event) => {
     );
     const request = rows && rows[0];
     if (!request) {
-      return {
-        statusCode: 200, headers,
+      return { statusCode: 200, headers: {'Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'GET,POST,OPTIONS','Access-Control-Allow-Headers':'Content-Type'},  headers,
         body: JSON.stringify({ success: false, message: 'Request not found' })
       };
     }
@@ -86,16 +85,35 @@ exports.handler = async (event) => {
       );
     }
 
-    return {
-      statusCode: 200, headers,
+    return { statusCode: 200, headers: {'Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'GET,POST,OPTIONS','Access-Control-Allow-Headers':'Content-Type'},  headers,
       body: JSON.stringify({ success: true, status })
     };
 
   } catch (err) {
     console.error('review-enrollment-request error:', err);
-    return {
-      statusCode: 200, headers,
+    return { statusCode: 200, headers: {'Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'GET,POST,OPTIONS','Access-Control-Allow-Headers':'Content-Type'},  headers,
       body: JSON.stringify({ success: false, message: err.message })
     };
   }
+};
+
+// CORS wrapper
+
+const CORS = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type, Authorization'
+};
+
+const originalHandler = exports.handler;
+exports.handler = async (event, context) => {
+  const method = event.requestContext?.http?.method || event.httpMethod || 'POST';
+  if (method === 'OPTIONS') {
+    return { statusCode: 200, headers: CORS, body: '' };
+  }
+  const result = await originalHandler(event, context);
+  return {
+    ...result,
+    headers: { ...CORS, ...(result.headers || {}) }
+  };
 };

@@ -35,7 +35,7 @@ async function fetchNotifications() {
            || document.getElementById('infoID')?.textContent?.trim();
   if (!sid) return [];
   try {
-    const res = await fetch('/.netlify/functions/get-notifications', {
+    const res = await fetch('https://4dgx435mmk.execute-api.ap-southeast-1.amazonaws.com/get-notifications', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -58,7 +58,7 @@ async function markOneRead(id) {
            || document.getElementById('infoID')?.textContent?.trim();
   if (!sid || !id) return;
   try {
-    await fetch('/.netlify/functions/mark-notifications-read', {
+    await fetch('https://4dgx435mmk.execute-api.ap-southeast-1.amazonaws.com/mark-notifications-read', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

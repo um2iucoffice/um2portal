@@ -33,13 +33,11 @@ const HEADERS = {
 };
 
 exports.handler = async (event) => {
-  if (event.httpMethod === 'OPTIONS') {
-    return { statusCode: 204, headers: HEADERS };
+  if ((event.requestContext?.http?.method || event.httpMethod) === 'OPTIONS') {
+    return { statusCode: 204, headers: {'Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'GET,POST,OPTIONS','Access-Control-Allow-Headers':'Content-Type'},  headers: HEADERS };
   }
-  if (event.httpMethod !== 'POST') {
-    return {
-      statusCode: 405,
-      headers: HEADERS,
+  if ((event.requestContext?.http?.method || event.httpMethod) !== 'POST') {
+    return { statusCode: 405, headers: {'Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'GET,POST,OPTIONS','Access-Control-Allow-Headers':'Content-Type'},  headers: HEADERS,
       body: JSON.stringify({ success: false, error: 'Method not allowed.' }),
     };
   }
@@ -49,9 +47,7 @@ exports.handler = async (event) => {
     try {
       body = JSON.parse(event.body || '{}');
     } catch {
-      return {
-        statusCode: 400,
-        headers: HEADERS,
+      return { statusCode: 400, headers: {'Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'GET,POST,OPTIONS','Access-Control-Allow-Headers':'Content-Type'},  headers: HEADERS,
         body: JSON.stringify({ success: false, error: 'Invalid JSON.' }),
       };
     }
@@ -59,9 +55,7 @@ exports.handler = async (event) => {
     const studentId = (body.student_id || body.studentId || '').trim();
 
     if (!studentId) {
-      return {
-        statusCode: 400,
-        headers: HEADERS,
+      return { statusCode: 400, headers: {'Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'GET,POST,OPTIONS','Access-Control-Allow-Headers':'Content-Type'},  headers: HEADERS,
         body: JSON.stringify({ success: false, error: 'Missing student_id.' }),
       };
     }
@@ -81,18 +75,34 @@ exports.handler = async (event) => {
     // Student-specific docs come first, then university-wide
     const documents = [...(studentDocs || []), ...(globalDocs || [])];
 
-    return {
-      statusCode: 200,
-      headers: HEADERS,
+    return { statusCode: 200, headers: {'Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'GET,POST,OPTIONS','Access-Control-Allow-Headers':'Content-Type'},  headers: HEADERS,
       body: JSON.stringify({ success: true, documents }),
     };
 
   } catch (err) {
     console.error('get-documents error:', err);
-    return {
-      statusCode: 500,
-      headers: HEADERS,
+    return { statusCode: 500, headers: {'Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'GET,POST,OPTIONS','Access-Control-Allow-Headers':'Content-Type'},  headers: HEADERS,
       body: JSON.stringify({ success: false, error: 'Server error.' }),
     };
   }
+};
+// CORS wrapper
+
+const CORS = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type, Authorization'
+};
+
+const originalHandler = exports.handler;
+exports.handler = async (event, context) => {
+  const method = event.requestContext?.http?.method || event.httpMethod || 'POST';
+  if (method === 'OPTIONS') {
+    return { statusCode: 200, headers: CORS, body: '' };
+  }
+  const result = await originalHandler(event, context);
+  return {
+    ...result,
+    headers: { ...CORS, ...(result.headers || {}) }
+  };
 };

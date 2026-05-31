@@ -362,7 +362,7 @@ async function loadEnrollRequests() {
 
 async function actionEnrollRequest(requestId, newStatus) {
   try {
-    const res  = await fetch('/.netlify/functions/submit-enrollment-request', {
+    const res  = await fetch('https://4dgx435mmk.execute-api.ap-southeast-1.amazonaws.com/submit-enrollment-request', {
       method:  'POST',
       headers: { 'Content-Type': 'application/json' },
       body:    JSON.stringify({
@@ -396,7 +396,7 @@ async function confirmOverride() {
   const reason = document.getElementById('overrideReason').value.trim();
   if (!reason) { toast('Please enter an override reason.', '⚠️'); return; }
   try {
-    const res  = await fetch('/.netlify/functions/submit-enrollment-request', {
+    const res  = await fetch('https://4dgx435mmk.execute-api.ap-southeast-1.amazonaws.com/submit-enrollment-request', {
       method:  'POST',
       headers: { 'Content-Type': 'application/json' },
       body:    JSON.stringify({
@@ -429,7 +429,7 @@ async function promoteAllApproved() {
   if (btn) btn.disabled = true;
 
   try {
-    const res = await fetch('/.netlify/functions/promote-enrolled-students', {
+    const res = await fetch('https://4dgx435mmk.execute-api.ap-southeast-1.amazonaws.com/promote-enrolled-students', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ period_id: periodId })

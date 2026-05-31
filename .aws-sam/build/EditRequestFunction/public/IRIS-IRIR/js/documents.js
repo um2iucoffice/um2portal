@@ -214,7 +214,7 @@ async function printDegreeCertificate(enrollIdx) {
   // ── Secure QR: fetch signed token from server ──────────────
   let qrData = 'https://sisportal.um2campus.org/verifyum2iuc'; // fallback
   try {
-    const qrRes = await fetch('/.netlify/functions/generate-qr-token', {
+    const qrRes = await fetch('https://4dgx435mmk.execute-api.ap-southeast-1.amazonaws.com/generate-qr-token', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -698,7 +698,7 @@ const logoHtml = `
   // ── Fetch signed QR token and generate QR for COS ─────────────
   let cosQrUrl = 'https://sisportal.um2campus.org/verifyum2iuc';
   try {
-    const cosQrRes = await fetch('/.netlify/functions/generate-qr-token', {
+    const cosQrRes = await fetch('https://4dgx435mmk.execute-api.ap-southeast-1.amazonaws.com/generate-qr-token', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -1020,7 +1020,7 @@ async function printDocument(type) {
   // ── Fetch signed QR token for this document ──────────────────
   let docQrUrl = 'https://sisportal.um2campus.org/verifyum2iuc';
   try {
-    const docQrRes = await fetch('/.netlify/functions/generate-qr-token', {
+    const docQrRes = await fetch('https://4dgx435mmk.execute-api.ap-southeast-1.amazonaws.com/generate-qr-token', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

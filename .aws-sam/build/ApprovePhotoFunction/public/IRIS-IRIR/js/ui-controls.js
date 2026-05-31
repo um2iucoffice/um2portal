@@ -79,7 +79,7 @@ async function loadEditInfoSection() {
   if (!sid) return;
 
   try {
-    const res = await fetch('/.netlify/functions/get-edit-requests', {
+    const res = await fetch('https://4dgx435mmk.execute-api.ap-southeast-1.amazonaws.com/get-edit-requests', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ studentId: sid, token: pwd })
@@ -175,7 +175,7 @@ async function submitInfoEditRequest() {
   try {
     // Send each changed field as a separate request
     for (const c of changes) {
-      const res = await fetch('/.netlify/functions/edit-request', {
+      const res = await fetch('https://4dgx435mmk.execute-api.ap-southeast-1.amazonaws.com/edit-request', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

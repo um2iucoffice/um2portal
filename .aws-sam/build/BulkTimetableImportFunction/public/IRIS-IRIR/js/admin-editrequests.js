@@ -198,7 +198,7 @@ async function processEditRequest(decision) {
         // Call approve-photo to watermark and move to permanent storage
         let wmRes;
         try {
-          wmRes = await fetch('/.netlify/functions/approve-photo', {
+          wmRes = await fetch('https://4dgx435mmk.execute-api.ap-southeast-1.amazonaws.com/approve-photo', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ studentId, pendingUrl: photoUrl })

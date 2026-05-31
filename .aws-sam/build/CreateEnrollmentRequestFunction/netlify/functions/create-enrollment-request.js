@@ -28,16 +28,15 @@ exports.handler = async (event) => {
     'Access-Control-Allow-Origin': '*'
   };
 
-  if (event.httpMethod === 'OPTIONS') {
-    return { statusCode: 204, headers };
+  if ((event.requestContext?.http?.method || event.httpMethod) === 'OPTIONS') {
+    return { statusCode: 204, headers: {'Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'GET,POST,OPTIONS','Access-Control-Allow-Headers':'Content-Type'},  headers };
   }
 
   try {
     const { student_id, period_id } = JSON.parse(event.body || '{}');
 
     if (!student_id || !period_id) {
-      return {
-        statusCode: 200, headers,
+      return { statusCode: 200, headers: {'Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'GET,POST,OPTIONS','Access-Control-Allow-Headers':'Content-Type'},  headers,
         body: JSON.stringify({ success: false, message: 'Missing student_id or period_id' })
       };
     }
@@ -49,8 +48,7 @@ exports.handler = async (event) => {
     );
     const student = students && students[0];
     if (!student) {
-      return {
-        statusCode: 200, headers,
+      return { statusCode: 200, headers: {'Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'GET,POST,OPTIONS','Access-Control-Allow-Headers':'Content-Type'},  headers,
         body: JSON.stringify({ success: false, message: 'Student not found' })
       };
     }
@@ -62,8 +60,7 @@ exports.handler = async (event) => {
     );
     const period = periods && periods[0];
     if (!period) {
-      return {
-        statusCode: 200, headers,
+      return { statusCode: 200, headers: {'Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'GET,POST,OPTIONS','Access-Control-Allow-Headers':'Content-Type'},  headers,
         body: JSON.stringify({ success: false, message: 'Enrollment period not found' })
       };
     }
@@ -81,8 +78,7 @@ exports.handler = async (event) => {
     const to_year   = yearMap[period.to_year_id];
 
     if (!to_year) {
-      return {
-        statusCode: 200, headers,
+      return { statusCode: 200, headers: {'Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'GET,POST,OPTIONS','Access-Control-Allow-Headers':'Content-Type'},  headers,
         body: JSON.stringify({ success: false, message: 'Could not resolve target year from enrollment period' })
       };
     }
@@ -127,22 +123,40 @@ exports.handler = async (event) => {
 
     const newRequest = result && result[0];
 
-    return {
-      statusCode: 200, headers,
+    return { statusCode: 200, headers: {'Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'GET,POST,OPTIONS','Access-Control-Allow-Headers':'Content-Type'},  headers,
       body: JSON.stringify({ success: true, request_id: newRequest?.id })
     };
 
   } catch (err) {
     if (err.message.includes('unique_student_period')) {
-      return {
-        statusCode: 200, headers,
+      return { statusCode: 200, headers: {'Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'GET,POST,OPTIONS','Access-Control-Allow-Headers':'Content-Type'},  headers,
         body: JSON.stringify({ success: false, message: 'You have already submitted an enrollment request for this period.' })
       };
     }
     console.error('create-enrollment-request error:', err);
-    return {
-      statusCode: 200, headers,
+    return { statusCode: 200, headers: {'Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'GET,POST,OPTIONS','Access-Control-Allow-Headers':'Content-Type'},  headers,
       body: JSON.stringify({ success: false, message: err.message })
     };
   }
+};
+
+// CORS wrapper
+
+const CORS = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type, Authorization'
+};
+
+const originalHandler = exports.handler;
+exports.handler = async (event, context) => {
+  const method = event.requestContext?.http?.method || event.httpMethod || 'POST';
+  if (method === 'OPTIONS') {
+    return { statusCode: 200, headers: CORS, body: '' };
+  }
+  const result = await originalHandler(event, context);
+  return {
+    ...result,
+    headers: { ...CORS, ...(result.headers || {}) }
+  };
 };

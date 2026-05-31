@@ -49,10 +49,10 @@ const FETCH_TIMEOUT_MS = 8_000;
 
 exports.handler = async function (event) {
   // ── CORS pre-flight ──────────────────────────────────────────────────────
-  if (event.httpMethod === 'OPTIONS') {
-    return { statusCode: 204, headers: corsHeaders() };
+  if ((event.requestContext?.http?.method || event.httpMethod) === 'OPTIONS') {
+    return { statusCode: 204, headers: {'Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'GET,POST,OPTIONS','Access-Control-Allow-Headers':'Content-Type'},  headers: corsHeaders() };
   }
-  if (event.httpMethod !== 'POST') {
+  if ((event.requestContext?.http?.method || event.httpMethod) !== 'POST') {
     return json(405, { success: false, message: 'Method not allowed' });
   }
 
@@ -233,3 +233,24 @@ function corsHeaders() {
     'Access-Control-Allow-Headers': 'Content-Type',
   };
 }
+
+// CORS wrapper
+
+const CORS = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type, Authorization'
+};
+
+const originalHandler = exports.handler;
+exports.handler = async (event, context) => {
+  const method = event.requestContext?.http?.method || event.httpMethod || 'POST';
+  if (method === 'OPTIONS') {
+    return { statusCode: 200, headers: CORS, body: '' };
+  }
+  const result = await originalHandler(event, context);
+  return {
+    ...result,
+    headers: { ...CORS, ...(result.headers || {}) }
+  };
+};

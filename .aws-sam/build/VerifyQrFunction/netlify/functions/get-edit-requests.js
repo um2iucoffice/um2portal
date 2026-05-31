@@ -57,13 +57,11 @@ async function validateToken(token, claimedStudentId) {
 //   { studentId, token, adminView: true } → returns all pending requests (student
 //     must be in the admins table; skip if you have no admin table yet)
 exports.handler = async (event) => {
-  if (event.httpMethod === 'OPTIONS') {
-    return { statusCode: 204, headers: HEADERS };
+  if ((event.requestContext?.http?.method || event.httpMethod) === 'OPTIONS') {
+    return { statusCode: 204, headers: {'Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'GET,POST,OPTIONS','Access-Control-Allow-Headers':'Content-Type'},  headers: HEADERS };
   }
-  if (event.httpMethod !== 'POST') {
-    return {
-      statusCode: 405,
-      headers: HEADERS,
+  if ((event.requestContext?.http?.method || event.httpMethod) !== 'POST') {
+    return { statusCode: 405, headers: {'Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'GET,POST,OPTIONS','Access-Control-Allow-Headers':'Content-Type'},  headers: HEADERS,
       body: JSON.stringify({ success: false, error: 'Method not allowed.' }),
     };
   }
@@ -72,9 +70,7 @@ exports.handler = async (event) => {
   try {
     body = JSON.parse(event.body || '{}');
   } catch {
-    return {
-      statusCode: 400,
-      headers: HEADERS,
+    return { statusCode: 400, headers: {'Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'GET,POST,OPTIONS','Access-Control-Allow-Headers':'Content-Type'},  headers: HEADERS,
       body: JSON.stringify({ success: false, error: 'Invalid JSON.' }),
     };
   }
@@ -84,9 +80,7 @@ exports.handler = async (event) => {
   const cleanToken     = String(token     || '').trim();
 
   if (!cleanStudentId || !cleanToken) {
-    return {
-      statusCode: 401,
-      headers: HEADERS,
+    return { statusCode: 401, headers: {'Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'GET,POST,OPTIONS','Access-Control-Allow-Headers':'Content-Type'},  headers: HEADERS,
       body: JSON.stringify({ success: false, error: 'Missing student ID or token.' }),
     };
   }
@@ -94,9 +88,7 @@ exports.handler = async (event) => {
   // Authenticate
   const authenticatedId = await validateToken(cleanToken, cleanStudentId);
   if (!authenticatedId) {
-    return {
-      statusCode: 401,
-      headers: HEADERS,
+    return { statusCode: 401, headers: {'Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'GET,POST,OPTIONS','Access-Control-Allow-Headers':'Content-Type'},  headers: HEADERS,
       body: JSON.stringify({ success: false, error: 'Unauthorized: invalid or expired session.' }),
     };
   }
@@ -107,17 +99,33 @@ exports.handler = async (event) => {
       `student_edit_requests?student_id=eq.${encodeURIComponent(cleanStudentId)}&order=created_at.desc&select=id,student_id,requested_fields,status,note,created_at,reviewed_at`
     );
 
-    return {
-      statusCode: 200,
-      headers: HEADERS,
+    return { statusCode: 200, headers: {'Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'GET,POST,OPTIONS','Access-Control-Allow-Headers':'Content-Type'},  headers: HEADERS,
       body: JSON.stringify({ success: true, requests: rows || [] }),
     };
   } catch (err) {
     console.error('get-editrequests error:', err);
-    return {
-      statusCode: 500,
-      headers: HEADERS,
+    return { statusCode: 500, headers: {'Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'GET,POST,OPTIONS','Access-Control-Allow-Headers':'Content-Type'},  headers: HEADERS,
       body: JSON.stringify({ success: false, error: 'Server error.' }),
     };
   }
+};
+// CORS wrapper
+
+const CORS = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type, Authorization'
+};
+
+const originalHandler = exports.handler;
+exports.handler = async (event, context) => {
+  const method = event.requestContext?.http?.method || event.httpMethod || 'POST';
+  if (method === 'OPTIONS') {
+    return { statusCode: 200, headers: CORS, body: '' };
+  }
+  const result = await originalHandler(event, context);
+  return {
+    ...result,
+    headers: { ...CORS, ...(result.headers || {}) }
+  };
 };

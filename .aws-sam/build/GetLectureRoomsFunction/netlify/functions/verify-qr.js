@@ -47,9 +47,7 @@ exports.handler = async function (event) {
   };
 
   if (!QR_SECRET) {
-    return {
-      statusCode: 500,
-      headers,
+    return { statusCode: 500, headers: {'Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'GET,POST,OPTIONS','Access-Control-Allow-Headers':'Content-Type'},  headers,
       body: JSON.stringify({ valid: false, error: 'Server configuration error' })
     };
   }
@@ -57,9 +55,7 @@ exports.handler = async function (event) {
   const token = event.queryStringParameters && event.queryStringParameters.t;
 
   if (!token) {
-    return {
-      statusCode: 400,
-      headers,
+    return { statusCode: 400, headers: {'Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'GET,POST,OPTIONS','Access-Control-Allow-Headers':'Content-Type'},  headers,
       body: JSON.stringify({ valid: false, error: 'No token provided' })
     };
   }
@@ -67,16 +63,12 @@ exports.handler = async function (event) {
   const payload = verifyToken(token);
 
   if (!payload) {
-    return {
-      statusCode: 200,
-      headers,
+    return { statusCode: 200, headers: {'Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'GET,POST,OPTIONS','Access-Control-Allow-Headers':'Content-Type'},  headers,
       body: JSON.stringify({ valid: false, error: 'Invalid or expired QR code.' })
     };
   }
 
-  return {
-    statusCode: 200,
-    headers,
+  return { statusCode: 200, headers: {'Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'GET,POST,OPTIONS','Access-Control-Allow-Headers':'Content-Type'},  headers,
     body: JSON.stringify({
       valid:        true,
       studentId:    payload.sub,
@@ -86,5 +78,26 @@ exports.handler = async function (event) {
       type:         payload.type || 'idcard',
       issuedAt:     payload.iat ? new Date(payload.iat * 1000).toISOString() : null
     })
+  };
+};
+
+// CORS wrapper
+
+const CORS = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type, Authorization'
+};
+
+const originalHandler = exports.handler;
+exports.handler = async (event, context) => {
+  const method = event.requestContext?.http?.method || event.httpMethod || 'POST';
+  if (method === 'OPTIONS') {
+    return { statusCode: 200, headers: CORS, body: '' };
+  }
+  const result = await originalHandler(event, context);
+  return {
+    ...result,
+    headers: { ...CORS, ...(result.headers || {}) }
   };
 };

@@ -896,7 +896,7 @@ async function runTTImport() {
     const { data: { session } } = await db.auth.getSession();
     if (!session) throw new Error('Session expired — please sign in again.');
 
-    const res = await fetch('/.netlify/functions/bulk-timetable-import', {
+    const res = await fetch('https://4dgx435mmk.execute-api.ap-southeast-1.amazonaws.com/bulk-timetable-import', {
       method: 'POST',
       headers: {
         'Content-Type':  'application/json',

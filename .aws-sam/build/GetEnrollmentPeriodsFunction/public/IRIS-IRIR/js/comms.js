@@ -199,7 +199,7 @@ async function loadLectureRooms() {
 
   try {
     const s   = window._currentStudent || {};
-    const res  = await fetch('/.netlify/functions/get-lecture-rooms', {
+    const res  = await fetch('https://4dgx435mmk.execute-api.ap-southeast-1.amazonaws.com/get-lecture-rooms', {
       method:  'POST',
       headers: { 'Content-Type': 'application/json' },
       body:    JSON.stringify({ studentId: s.id || '' })
@@ -245,7 +245,7 @@ async function loadCommsSection() {
 
   try {
    const s = window._currentStudent || {};
-const res = await fetch('/.netlify/functions/get-channels', {
+const res = await fetch('https://4dgx435mmk.execute-api.ap-southeast-1.amazonaws.com/get-channels', {
   method: 'POST',
   headers: { 'Content-Type': 'application/json' },
   body: JSON.stringify({ studentYear: s.currentStatus || '' })

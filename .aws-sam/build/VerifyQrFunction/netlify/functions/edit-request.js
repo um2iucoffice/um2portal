@@ -59,13 +59,11 @@ const ALLOWED_FIELDS = new Set([
 
 // ── Handler ───────────────────────────────────────────────────────────────────
 exports.handler = async (event) => {
-  if (event.httpMethod === 'OPTIONS') {
-    return { statusCode: 204, headers: HEADERS };
+  if ((event.requestContext?.http?.method || event.httpMethod) === 'OPTIONS') {
+    return { statusCode: 204, headers: {'Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'GET,POST,OPTIONS','Access-Control-Allow-Headers':'Content-Type'},  headers: HEADERS };
   }
-  if (event.httpMethod !== 'POST') {
-    return {
-      statusCode: 405,
-      headers: HEADERS,
+  if ((event.requestContext?.http?.method || event.httpMethod) !== 'POST') {
+    return { statusCode: 405, headers: {'Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'GET,POST,OPTIONS','Access-Control-Allow-Headers':'Content-Type'},  headers: HEADERS,
       body: JSON.stringify({ success: false, error: 'Method not allowed.' }),
     };
   }
@@ -75,9 +73,7 @@ exports.handler = async (event) => {
   try {
     body = JSON.parse(event.body || '{}');
   } catch {
-    return {
-      statusCode: 400,
-      headers: HEADERS,
+    return { statusCode: 400, headers: {'Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'GET,POST,OPTIONS','Access-Control-Allow-Headers':'Content-Type'},  headers: HEADERS,
       body: JSON.stringify({ success: false, error: 'Invalid JSON.' }),
     };
   }
@@ -90,16 +86,12 @@ exports.handler = async (event) => {
   const cleanReason    = String(reason    || '').replace(/<[^>]*>/g, '').trim().slice(0, 1000);
 
   if (!cleanStudentId) {
-    return {
-      statusCode: 400,
-      headers: HEADERS,
+    return { statusCode: 400, headers: {'Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'GET,POST,OPTIONS','Access-Control-Allow-Headers':'Content-Type'},  headers: HEADERS,
       body: JSON.stringify({ success: false, error: 'Missing student ID.' }),
     };
   }
   if (!cleanToken) {
-    return {
-      statusCode: 401,
-      headers: HEADERS,
+    return { statusCode: 401, headers: {'Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'GET,POST,OPTIONS','Access-Control-Allow-Headers':'Content-Type'},  headers: HEADERS,
       body: JSON.stringify({ success: false, error: 'Unauthorized: no session token provided.' }),
     };
   }
@@ -107,25 +99,19 @@ exports.handler = async (event) => {
   // ── Authenticate ──────────────────────────────────────────────────────────
   const authenticatedId = await validateToken(cleanToken, cleanStudentId);
   if (!authenticatedId) {
-    return {
-      statusCode: 401,
-      headers: HEADERS,
+    return { statusCode: 401, headers: {'Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'GET,POST,OPTIONS','Access-Control-Allow-Headers':'Content-Type'},  headers: HEADERS,
       body: JSON.stringify({ success: false, error: 'Unauthorized: invalid or expired session.' }),
     };
   }
   if (authenticatedId.toLowerCase() !== cleanStudentId) {
-    return {
-      statusCode: 403,
-      headers: HEADERS,
+    return { statusCode: 403, headers: {'Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'GET,POST,OPTIONS','Access-Control-Allow-Headers':'Content-Type'},  headers: HEADERS,
       body: JSON.stringify({ success: false, error: 'Forbidden.' }),
     };
   }
 
   // ── Validate fields object ────────────────────────────────────────────────
   if (!fields || typeof fields !== 'object' || Array.isArray(fields)) {
-    return {
-      statusCode: 400,
-      headers: HEADERS,
+    return { statusCode: 400, headers: {'Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'GET,POST,OPTIONS','Access-Control-Allow-Headers':'Content-Type'},  headers: HEADERS,
       body: JSON.stringify({ success: false, error: 'Missing or invalid fields object.' }),
     };
   }
@@ -138,9 +124,7 @@ exports.handler = async (event) => {
   }
 
   if (Object.keys(sanitisedFields).length === 0) {
-    return {
-      statusCode: 400,
-      headers: HEADERS,
+    return { statusCode: 400, headers: {'Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'GET,POST,OPTIONS','Access-Control-Allow-Headers':'Content-Type'},  headers: HEADERS,
       body: JSON.stringify({ success: false, error: 'No valid fields provided.' }),
     };
   }
@@ -165,17 +149,33 @@ exports.handler = async (event) => {
       });
     }
 
-    return {
-      statusCode: 200,
-      headers: HEADERS,
+    return { statusCode: 200, headers: {'Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'GET,POST,OPTIONS','Access-Control-Allow-Headers':'Content-Type'},  headers: HEADERS,
       body: JSON.stringify({ success: true }),
     };
   } catch (err) {
     console.error('edit-request error:', err);
-    return {
-      statusCode: 500,
-      headers: HEADERS,
+    return { statusCode: 500, headers: {'Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'GET,POST,OPTIONS','Access-Control-Allow-Headers':'Content-Type'},  headers: HEADERS,
       body: JSON.stringify({ success: false, error: 'Server error. Please try again.' }),
     };
   }
+};
+// CORS wrapper
+
+const CORS = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type, Authorization'
+};
+
+const originalHandler = exports.handler;
+exports.handler = async (event, context) => {
+  const method = event.requestContext?.http?.method || event.httpMethod || 'POST';
+  if (method === 'OPTIONS') {
+    return { statusCode: 200, headers: CORS, body: '' };
+  }
+  const result = await originalHandler(event, context);
+  return {
+    ...result,
+    headers: { ...CORS, ...(result.headers || {}) }
+  };
 };

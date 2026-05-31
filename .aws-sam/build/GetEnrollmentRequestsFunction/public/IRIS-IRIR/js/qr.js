@@ -16,7 +16,7 @@ async function generateIDCardQR(student, validThrough) {
 
   try {
     // ── Request a signed token from the server ──
-    const res = await fetch('/.netlify/functions/generate-qr-token', {
+    const res = await fetch('https://4dgx435mmk.execute-api.ap-southeast-1.amazonaws.com/generate-qr-token', {
       method : 'POST',
       headers: {
         'Content-Type' : 'application/json',
@@ -68,7 +68,7 @@ async function generateDocumentQR(containerId, student, docType) {
   container.innerHTML = '';
 
   try {
-    const res = await fetch('/.netlify/functions/generate-qr-token', {
+    const res = await fetch('https://4dgx435mmk.execute-api.ap-southeast-1.amazonaws.com/generate-qr-token', {
       method : 'POST',
       headers: {
         'Content-Type' : 'application/json',

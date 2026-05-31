@@ -47,8 +47,8 @@ exports.handler = async (event) => {
   };
 
   // CORS pre-flight
-  if (event.httpMethod === 'OPTIONS') {
-    return { statusCode: 204, headers };
+  if ((event.requestContext?.http?.method || event.httpMethod) === 'OPTIONS') {
+    return { statusCode: 204, headers: {'Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'GET,POST,OPTIONS','Access-Control-Allow-Headers':'Content-Type'},  headers };
   }
 
   try {
@@ -56,8 +56,7 @@ exports.handler = async (event) => {
       JSON.parse(event.body || '{}');
 
     if (!student_id || !program_id || !current_year) {
-      return {
-        statusCode: 200, headers,
+      return { statusCode: 200, headers: {'Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'GET,POST,OPTIONS','Access-Control-Allow-Headers':'Content-Type'},  headers,
         body: JSON.stringify({
           success: false,
           message: 'Missing required fields: student_id, program_id, current_year'
@@ -90,8 +89,7 @@ exports.handler = async (event) => {
 
     if (!periods || periods.length === 0) {
       console.log(`[get-enrollment-periods] no open period for program=${program_id}`);
-      return {
-        statusCode: 200, headers,
+      return { statusCode: 200, headers: {'Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'GET,POST,OPTIONS','Access-Control-Allow-Headers':'Content-Type'},  headers,
         body: JSON.stringify({ success: true, period: null, eligibility: null })
       };
     }
@@ -119,8 +117,7 @@ exports.handler = async (event) => {
 
     if (alreadyRequested) {
       // Student has already submitted — just tell the frontend the status.
-      return {
-        statusCode: 200, headers,
+      return { statusCode: 200, headers: {'Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'GET,POST,OPTIONS','Access-Control-Allow-Headers':'Content-Type'},  headers,
         body: JSON.stringify({
           success: true,
           period,
@@ -143,8 +140,7 @@ exports.handler = async (event) => {
     const student = students && students[0];
 
     if (!student) {
-      return {
-        statusCode: 200, headers,
+      return { statusCode: 200, headers: {'Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'GET,POST,OPTIONS','Access-Control-Allow-Headers':'Content-Type'},  headers,
         body: JSON.stringify({ success: false, message: 'Student not found' })
       };
     }
@@ -180,8 +176,7 @@ exports.handler = async (event) => {
 
     const eligible = reasons.length === 0;
 
-    return {
-      statusCode: 200, headers,
+    return { statusCode: 200, headers: {'Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'GET,POST,OPTIONS','Access-Control-Allow-Headers':'Content-Type'},  headers,
       body: JSON.stringify({
         success: true,
         period,
@@ -197,9 +192,29 @@ exports.handler = async (event) => {
 
   } catch (err) {
     console.error('[get-enrollment-periods] error:', err);
-    return {
-      statusCode: 200, headers,
+    return { statusCode: 200, headers: {'Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'GET,POST,OPTIONS','Access-Control-Allow-Headers':'Content-Type'},  headers,
       body: JSON.stringify({ success: false, message: err.message })
     };
   }
+};
+
+// CORS wrapper
+
+const CORS = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type, Authorization'
+};
+
+const originalHandler = exports.handler;
+exports.handler = async (event, context) => {
+  const method = event.requestContext?.http?.method || event.httpMethod || 'POST';
+  if (method === 'OPTIONS') {
+    return { statusCode: 200, headers: CORS, body: '' };
+  }
+  const result = await originalHandler(event, context);
+  return {
+    ...result,
+    headers: { ...CORS, ...(result.headers || {}) }
+  };
 };

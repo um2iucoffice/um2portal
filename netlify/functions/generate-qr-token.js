@@ -47,13 +47,13 @@ function signToken(payload) {
 }
 
 exports.handler = async function (event) {
-  if (event.httpMethod !== 'POST') {
-    return { statusCode: 405, body: 'Method Not Allowed' };
+  if ((event.requestContext?.http?.method || event.httpMethod) !== 'POST') {
+    return { statusCode: 405, headers: {'Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'GET,POST,OPTIONS','Access-Control-Allow-Headers':'Content-Type'}, body: 'Method Not Allowed' };
   }
 
   if (!QR_SECRET) {
     console.error('QR_SECRET is not set');
-    return { statusCode: 500, body: JSON.stringify({ error: 'Server configuration error' }) };
+    return { statusCode: 500, headers: {'Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'GET,POST,OPTIONS','Access-Control-Allow-Headers':'Content-Type'}, body: JSON.stringify({ error: 'Server configuration error' }) };
   }
 
   // ── Validate session ─────────────────────────────────────────
@@ -75,23 +75,23 @@ exports.handler = async function (event) {
   try {
     body = JSON.parse(event.body || '{}');
   } catch {
-    return { statusCode: 400, body: JSON.stringify({ error: 'Invalid JSON' }) };
+    return { statusCode: 400, headers: {'Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'GET,POST,OPTIONS','Access-Control-Allow-Headers':'Content-Type'}, body: JSON.stringify({ error: 'Invalid JSON' }) };
   }
 
   const { studentId, studentName, program, validThrough, type } = body;
 
   if (!studentId || !studentName) {
-    return { statusCode: 400, body: JSON.stringify({ error: 'studentId and studentName are required' }) };
+    return { statusCode: 400, headers: {'Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'GET,POST,OPTIONS','Access-Control-Allow-Headers':'Content-Type'}, body: JSON.stringify({ error: 'studentId and studentName are required' }) };
   }
 
   // If session validation worked, make sure the token belongs to this student
   if (verifiedStudentId && verifiedStudentId !== studentId) {
-    return { statusCode: 403, body: JSON.stringify({ error: 'Forbidden' }) };
+    return { statusCode: 403, headers: {'Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'GET,POST,OPTIONS','Access-Control-Allow-Headers':'Content-Type'}, body: JSON.stringify({ error: 'Forbidden' }) };
   }
 
   // If no session token at all (and table exists), reject
   if (!sessionToken && verifiedStudentId !== null) {
-    return { statusCode: 401, body: JSON.stringify({ error: 'Unauthorized' }) };
+    return { statusCode: 401, headers: {'Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'GET,POST,OPTIONS','Access-Control-Allow-Headers':'Content-Type'}, body: JSON.stringify({ error: 'Unauthorized' }) };
   }
 
   // ── Build the signed QR token ────────────────────────────────
@@ -112,13 +112,31 @@ exports.handler = async function (event) {
     const token     = signToken(payload);
     const verifyUrl = `https://sisportal.um2campus.org/verifyum2iuc?t=${token}`;
 
-    return {
-      statusCode: 200,
-      headers: { 'Content-Type': 'application/json' },
+    return { statusCode: 200, headers: {'Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'GET,POST,OPTIONS','Access-Control-Allow-Headers':'Content-Type','Content-Type':'application/json'},
       body: JSON.stringify({ token, verifyUrl })
     };
   } catch (e) {
     console.error('Token signing failed:', e);
-    return { statusCode: 500, body: JSON.stringify({ error: 'Token generation failed' }) };
+    return { statusCode: 500, headers: {'Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'GET,POST,OPTIONS','Access-Control-Allow-Headers':'Content-Type'}, body: JSON.stringify({ error: 'Token generation failed' }) };
   }
+};
+// CORS wrapper
+
+const CORS = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type, Authorization'
+};
+
+const originalHandler = exports.handler;
+exports.handler = async (event, context) => {
+  const method = event.requestContext?.http?.method || event.httpMethod || 'POST';
+  if (method === 'OPTIONS') {
+    return { statusCode: 200, headers: CORS, body: '' };
+  }
+  const result = await originalHandler(event, context);
+  return {
+    ...result,
+    headers: { ...CORS, ...(result.headers || {}) }
+  };
 };

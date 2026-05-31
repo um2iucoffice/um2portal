@@ -13,17 +13,17 @@ const supabase = createClient(
 );
 
 exports.handler = async (event) => {
-  if (event.httpMethod !== 'POST') {
-    return { statusCode: 405, body: 'Method Not Allowed' };
+  if ((event.requestContext?.http?.method || event.httpMethod) !== 'POST') {
+    return { statusCode: 405, headers: {'Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'GET,POST,OPTIONS','Access-Control-Allow-Headers':'Content-Type'}, body: 'Method Not Allowed' };
   }
 
   // ── Auth: get calling admin's UUID ────────────────────────────
   const authHeader = event.headers['authorization'] || '';
   const token = authHeader.replace('Bearer ', '').trim();
-  if (!token) return { statusCode: 401, body: JSON.stringify({ error: 'Unauthorized' }) };
+  if (!token) return { statusCode: 401, headers: {'Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'GET,POST,OPTIONS','Access-Control-Allow-Headers':'Content-Type'}, body: JSON.stringify({ error: 'Unauthorized' }) };
 
   const { data: { user }, error: authErr } = await supabase.auth.getUser(token);
-  if (authErr || !user) return { statusCode: 401, body: JSON.stringify({ error: 'Invalid session' }) };
+  if (authErr || !user) return { statusCode: 401, headers: {'Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'GET,POST,OPTIONS','Access-Control-Allow-Headers':'Content-Type'}, body: JSON.stringify({ error: 'Invalid session' }) };
 
   const adminId = user.id;
 
@@ -33,11 +33,11 @@ exports.handler = async (event) => {
     const body = JSON.parse(event.body);
     rows = body.rows; // array of row objects parsed from CSV on frontend
   } catch {
-    return { statusCode: 400, body: JSON.stringify({ error: 'Invalid JSON body' }) };
+    return { statusCode: 400, headers: {'Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'GET,POST,OPTIONS','Access-Control-Allow-Headers':'Content-Type'}, body: JSON.stringify({ error: 'Invalid JSON body' }) };
   }
 
   if (!Array.isArray(rows) || rows.length === 0) {
-    return { statusCode: 400, body: JSON.stringify({ error: 'No rows provided' }) };
+    return { statusCode: 400, headers: {'Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'GET,POST,OPTIONS','Access-Control-Allow-Headers':'Content-Type'}, body: JSON.stringify({ error: 'No rows provided' }) };
   }
 
   // ── Build nickname → user_id map for staff lookup ─────────────
@@ -96,7 +96,7 @@ exports.handler = async (event) => {
   }
 
   if (errors.length > 0 && insertRows.length === 0) {
-    return { statusCode: 400, body: JSON.stringify({ error: 'All rows failed validation', details: errors }) };
+    return { statusCode: 400, headers: {'Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'GET,POST,OPTIONS','Access-Control-Allow-Headers':'Content-Type'}, body: JSON.stringify({ error: 'All rows failed validation', details: errors }) };
   }
 
   // ── Bulk insert ───────────────────────────────────────────────
@@ -105,7 +105,7 @@ exports.handler = async (event) => {
     .insert(insertRows);
 
   if (insertErr) {
-    return { statusCode: 500, body: JSON.stringify({ error: 'Insert failed', details: insertErr.message }) };
+    return { statusCode: 500, headers: {'Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'GET,POST,OPTIONS','Access-Control-Allow-Headers':'Content-Type'}, body: JSON.stringify({ error: 'Insert failed', details: insertErr.message }) };
   }
 
   // ── Send one summary notification per student per academic year ─
@@ -160,13 +160,31 @@ exports.handler = async (event) => {
     await supabase.from('notifications').insert(notifications);
   }
 
-  return {
-    statusCode: 200,
-    body: JSON.stringify({
+  return { statusCode: 200, headers: {'Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'GET,POST,OPTIONS','Access-Control-Allow-Headers':'Content-Type'}, body: JSON.stringify({
       success: true,
       inserted: insertRows.length,
       skipped: errors.length,
       errors: errors.length > 0 ? errors : undefined,
     }),
+  };
+};
+// CORS wrapper
+
+const CORS = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type, Authorization'
+};
+
+const originalHandler = exports.handler;
+exports.handler = async (event, context) => {
+  const method = event.requestContext?.http?.method || event.httpMethod || 'POST';
+  if (method === 'OPTIONS') {
+    return { statusCode: 200, headers: CORS, body: '' };
+  }
+  const result = await originalHandler(event, context);
+  return {
+    ...result,
+    headers: { ...CORS, ...(result.headers || {}) }
   };
 };

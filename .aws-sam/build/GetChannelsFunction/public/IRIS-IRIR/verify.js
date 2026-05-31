@@ -3,7 +3,7 @@ const token    = params.get('t');
 const legacyId = params.get('id');
 
 if (token) {
-  fetch('/.netlify/functions/verify-qr?t=' + encodeURIComponent(token))
+  fetch('https://4dgx435mmk.execute-api.ap-southeast-1.amazonaws.com/verify-qr?t=' + encodeURIComponent(token))
     .then(r => r.json())
     .then(data => {
       if (data.valid) {

@@ -64,19 +64,19 @@ function parseMultipart(event) {
 
 // ── Handler ───────────────────────────────────────────────────────
 exports.handler = async (event) => {
-  if (event.httpMethod !== 'POST') {
-    return { statusCode: 405, body: JSON.stringify({ error: 'Method not allowed' }) };
+  if ((event.requestContext?.http?.method || event.httpMethod) !== 'POST') {
+    return { statusCode: 405, headers: {'Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'GET,POST,OPTIONS','Access-Control-Allow-Headers':'Content-Type'}, body: JSON.stringify({ error: 'Method not allowed' }) };
   }
 
   let files;
   try {
     files = parseMultipart(event);
   } catch (err) {
-    return { statusCode: 400, body: JSON.stringify({ error: 'Parse error: ' + err.message }) };
+    return { statusCode: 400, headers: {'Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'GET,POST,OPTIONS','Access-Control-Allow-Headers':'Content-Type'}, body: JSON.stringify({ error: 'Parse error: ' + err.message }) };
   }
 
   if (!files.length) {
-    return { statusCode: 400, body: JSON.stringify({ error: 'No file received.' }) };
+    return { statusCode: 400, headers: {'Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'GET,POST,OPTIONS','Access-Control-Allow-Headers':'Content-Type'}, body: JSON.stringify({ error: 'No file received.' }) };
   }
 
   const file     = files[0];
@@ -87,12 +87,31 @@ exports.handler = async (event) => {
     .upload(fileName, file.data, { contentType: file.mimeType, upsert: false });
 
   if (uploadError) {
-    return { statusCode: 500, body: JSON.stringify({ error: uploadError.message }) };
+    return { statusCode: 500, headers: {'Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'GET,POST,OPTIONS','Access-Control-Allow-Headers':'Content-Type'}, body: JSON.stringify({ error: uploadError.message }) };
   }
 
   const { data } = supabase.storage.from(BUCKET).getPublicUrl(fileName);
+  return { statusCode: 200, headers: {'Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'GET,POST,OPTIONS','Access-Control-Allow-Headers':'Content-Type'}, body: JSON.stringify({ url: data.publicUrl }),
+  };
+};
+
+// CORS wrapper
+
+const CORS = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type, Authorization'
+};
+
+const originalHandler = exports.handler;
+exports.handler = async (event, context) => {
+  const method = event.requestContext?.http?.method || event.httpMethod || 'POST';
+  if (method === 'OPTIONS') {
+    return { statusCode: 200, headers: CORS, body: '' };
+  }
+  const result = await originalHandler(event, context);
   return {
-    statusCode: 200,
-    body: JSON.stringify({ url: data.publicUrl }),
+    ...result,
+    headers: { ...CORS, ...(result.headers || {}) }
   };
 };

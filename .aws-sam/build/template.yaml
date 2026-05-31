@@ -20,6 +20,7 @@ Globals:
       Variables:
         SUPABASE_URL: https://klukqyxytxpshclnpilq.supabase.co
         SUPABASE_KEY: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtsdWtxeXh5dHhwc2hjbG5waWxxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkyMjM2MTUsImV4cCI6MjA5NDc5OTYxNX0.pEi7w1MNJI82gsq2O2KiP9JkR-gxNghpms9HgTOEO2g
+        SUPABASE_SERVICE_KEY: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtsdWtxeXh5dHhwc2hjbG5waWxxIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3OTIyMzYxNSwiZXhwIjoyMDk0Nzk5NjE1fQ.WiMwbIljq5Ckrje9bv6oTB8PwvhL5n169tsJU3-EIQ8
     Layers:
     - Ref: DependenciesLayer
 Resources:

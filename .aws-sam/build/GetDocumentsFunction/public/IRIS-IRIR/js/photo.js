@@ -62,7 +62,7 @@ async function removePhoto() {
   if (status)    { status.style.color = 'var(--ink3)'; status.textContent = 'Removing photo…'; }
 
   try {
-    const resp = await fetch('/.netlify/functions/remove-photo', {
+    const resp = await fetch('https://4dgx435mmk.execute-api.ap-southeast-1.amazonaws.com/remove-photo', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ studentId, token: window._sessionToken || '' })
@@ -141,7 +141,7 @@ async function uploadPhoto() {
       reader.readAsDataURL(file);
     });
 
-    const resp = await fetch('/.netlify/functions/upload-photo', {
+    const resp = await fetch('https://4dgx435mmk.execute-api.ap-southeast-1.amazonaws.com/upload-photo', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -373,7 +373,7 @@ async function printIDCard() {
   const VERIFY_BASE = 'https://sisportal.um2campus.org/verifyum2iuc';
   let qrData = VERIFY_BASE;
   try {
-    const _qrRes = await fetch('/.netlify/functions/generate-qr-token', {
+    const _qrRes = await fetch('https://4dgx435mmk.execute-api.ap-southeast-1.amazonaws.com/generate-qr-token', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

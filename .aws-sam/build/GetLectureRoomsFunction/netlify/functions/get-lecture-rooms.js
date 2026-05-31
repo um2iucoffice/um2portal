@@ -26,15 +26,15 @@ exports.handler = async (event) => {
     'Content-Type':                 'application/json'
   };
 
-  if (event.httpMethod === 'OPTIONS') {
-    return { statusCode: 200, headers, body: '' };
+  if ((event.requestContext?.http?.method || event.httpMethod) === 'OPTIONS') {
+    return { statusCode: 200, headers: {'Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'GET,POST,OPTIONS','Access-Control-Allow-Headers':'Content-Type'},  headers, body: '' };
   }
 
   try {
     const { studentId } = JSON.parse(event.body || '{}');
 
     if (!studentId) {
-      return { statusCode: 200, headers, body: JSON.stringify({ success: false, message: 'Missing credentials.' }) };
+      return { statusCode: 200, headers: {'Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'GET,POST,OPTIONS','Access-Control-Allow-Headers':'Content-Type'},  headers, body: JSON.stringify({ success: false, message: 'Missing credentials.' }) };
     }
 
     const normId = String(studentId).trim().toLowerCase();
@@ -45,7 +45,7 @@ exports.handler = async (event) => {
     );
 
     if (!students || students.length === 0) {
-      return { statusCode: 200, headers, body: JSON.stringify({ success: false, message: 'Student not found.' }) };
+      return { statusCode: 200, headers: {'Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'GET,POST,OPTIONS','Access-Control-Allow-Headers':'Content-Type'},  headers, body: JSON.stringify({ success: false, message: 'Student not found.' }) };
     }
 
     const studentYear = ((students[0] || {}).year || '').trim();
@@ -70,13 +70,33 @@ exports.handler = async (event) => {
     }
     rooms.sort((a, b) => (a.subject || '').localeCompare(b.subject || ''));
 
-    return {
-      statusCode: 200, headers,
+    return { statusCode: 200, headers: {'Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'GET,POST,OPTIONS','Access-Control-Allow-Headers':'Content-Type'},  headers,
       body: JSON.stringify({ success: true, rooms, year: studentYear })
     };
 
   } catch (e) {
     console.error('[get-lecture-rooms] error:', e.message);
-    return { statusCode: 200, headers, body: JSON.stringify({ success: false, message: e.message }) };
+    return { statusCode: 200, headers: {'Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'GET,POST,OPTIONS','Access-Control-Allow-Headers':'Content-Type'},  headers, body: JSON.stringify({ success: false, message: e.message }) };
   }
+};
+
+// CORS wrapper
+
+const CORS = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type, Authorization'
+};
+
+const originalHandler = exports.handler;
+exports.handler = async (event, context) => {
+  const method = event.requestContext?.http?.method || event.httpMethod || 'POST';
+  if (method === 'OPTIONS') {
+    return { statusCode: 200, headers: CORS, body: '' };
+  }
+  const result = await originalHandler(event, context);
+  return {
+    ...result,
+    headers: { ...CORS, ...(result.headers || {}) }
+  };
 };
