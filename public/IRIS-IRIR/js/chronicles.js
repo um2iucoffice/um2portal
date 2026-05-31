@@ -401,7 +401,7 @@ async function _loadTimetable() {
     var res = await fetch('https://4dgx435mmk.execute-api.ap-southeast-1.amazonaws.com/get-timetable', {
       method:  'POST',
       headers: { 'Content-Type': 'application/json' },
-      body:    JSON.stringify({ studentId: s.id || '' })
+      body: JSON.stringify({ studentId: window._currentStudentId || '' })
     });
     var data = await res.json();
     loadEl.style.display = 'none';

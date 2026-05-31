@@ -47,8 +47,8 @@ function renderChannelsTable(data) {
       '<td style="text-align:center">' + (c.sort_order != null ? c.sort_order : '\u2014') + '</td>' +
       '<td>' + statusBadge + '</td>' +
       '<td class="flex gap-2">' +
-        '<button class="btn btn-outline btn-sm" onclick="openChannelModal(\'' + c.id + '\')">Edit</button>' +
-        '<button class="btn btn-danger btn-sm" onclick="confirmDeleteChannel(\'' + c.id + '\',\'' + (c.name||'').replace(/'/g,"\\'") + '\')"><svg style="width:13px;height:13px;stroke:currentColor;stroke-width:1.9;fill:none;stroke-linecap:round;stroke-linejoin:round"><use href="#i-trash"></use></svg></button>' +
+        '<button class="btn btn-outline btn-sm" data-action="edit-channel" data-id="' + c.id + '">Edit</button>' +
+        '<button class="btn btn-danger btn-sm" data-action="delete-channel" data-id="' + c.id + '" data-name="' + (c.name||'').replace(/'/g,"'") + '">'<svg style="width:13px;height:13px;stroke:currentColor;stroke-width:1.9;fill:none;stroke-linecap:round;stroke-linejoin:round"><use href="#i-trash"></use></svg></button>' +
       '</td></tr>';
   }).join('');
 }
@@ -132,3 +132,15 @@ function confirmDeleteChannel(cid, cname) {
   document.getElementById('confirmDeleteModal').classList.add('open');
 }
 
+
+// ══════════════════════════════════════════
+// EVENT DELEGATION — replaces inline onclick handlers
+// ══════════════════════════════════════════
+document.addEventListener('click', function(e) {
+  const btn = e.target.closest('[data-action]');
+  if (!btn) return;
+  const action = btn.dataset.action;
+  const id     = btn.dataset.id;
+  if (action === 'edit-channel')   openChannelModal(id);
+  if (action === 'delete-channel') confirmDeleteChannel(id, btn.dataset.name);
+});

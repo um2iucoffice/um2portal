@@ -31,9 +31,9 @@ function renderStudentTable(data) {
     const progTotal = Object.values(years).reduce((n, arr) => n + arr.length, 0);
     const progKey = `prog-${pi}`;
     // Program-level row
-    html += `<tr class="stu-prog-header" data-prog-key="${progKey}" onclick="toggleStudentProgram('${progKey}')" style="cursor:pointer;background:rgba(139,26,46,0.07);border-top:2px solid rgba(139,26,46,0.15)">
-      <td style="width:36px;padding:8px" onclick="event.stopPropagation()">
-        <input type="checkbox" class="stu-group-cb" data-group="${progKey}" onchange="toggleSelectGroup(this,'${progKey}')" title="Select all in ${prog}">
+    html += `<tr class="stu-prog-header" data-prog-key="${progKey}" data-action="toggle-prog" style="cursor:pointer;background:rgba(139,26,46,0.07);border-top:2px solid rgba(139,26,46,0.15)">
+      <td style="width:36px;padding:8px" data-stop-prop="1">
+        <input type="checkbox" class="stu-group-cb" data-group="${progKey}" data-group="${progKey}" data-cb-type="group" title="Select all in ${prog}">
       </td>
       <td colspan="${colSpan - 1}" style="padding:10px 14px">
         <div style="display:flex;align-items:center;gap:10px">
@@ -49,9 +49,9 @@ function renderStudentTable(data) {
     // Year-level rows (inside each program)
     Object.entries(years).forEach(([yr, studs], yi) => {
       const yearKey = `year-${pi}-${yi}`;
-      html += `<tr class="stu-year-header stu-prog-body-${progKey}" data-year-key="${yearKey}" onclick="toggleStudentYear('${yearKey}')" style="cursor:pointer;background:rgba(30,58,110,0.04);display:table-row">
-        <td style="width:36px;padding:7px 8px 7px 24px" onclick="event.stopPropagation()">
-          <input type="checkbox" class="stu-group-cb" data-group="${yearKey}" onchange="toggleSelectGroup(this,'${yearKey}')" title="Select all in ${yr}">
+      html += `<tr class="stu-year-header stu-prog-body-${progKey}" data-year-key="${yearKey}" data-action="toggle-year" style="cursor:pointer;background:rgba(30,58,110,0.04);display:table-row">
+        <td style="width:36px;padding:7px 8px 7px 24px" data-stop-prop="1">
+          <input type="checkbox" class="stu-group-cb" data-group="${yearKey}" data-cb-type="group" title="Select all in ${yr}">
         </td>
         <td colspan="${colSpan - 1}" style="padding:8px 14px 8px 10px">
           <div style="display:flex;align-items:center;gap:8px">
@@ -69,10 +69,10 @@ function renderStudentTable(data) {
         const statusBadge = s.status === 'Active' ? 'b-green' : s.status === 'Degree Awarded' ? 'b-blue' : 'b-red';
         const isGraduated = s.grad_status === 'Graduated';
         const pwDisplay = currentRole === 'registrar'
-          ? `<td onclick="event.stopPropagation()" style="white-space:nowrap">
+          ? `<td style="white-space:nowrap" data-stop-prop="1">
                <span class="pw-masked" style="font-family:monospace;color:var(--ink3);letter-spacing:.15em">••••••••</span>
                <span class="pw-plain" style="display:none;font-family:monospace;font-size:11px;color:var(--ink)">${s.master_password ? '(password set — not displayable)' : '—'}</span>
-               <button class="pw-eye" style="margin-left:6px;display:inline-flex;vertical-align:middle" onclick="toggleTablePwVisibility(this)" title="Show / Hide">
+               <button class="pw-eye" style="margin-left:6px;display:inline-flex;vertical-align:middle" data-action="toggle-pw" title="Show / Hide">
                  <svg style="width:13px;height:13px;stroke:currentColor;stroke-width:1.9;fill:none;stroke-linecap:round;stroke-linejoin:round"><use href="#i-eye"></use></svg>
                </button>
              </td>`
@@ -85,9 +85,9 @@ function renderStudentTable(data) {
         const levelBadge = levelBadgeMap[s.degree_level || 'bachelor'] || levelBadgeMap.bachelor;
         const genderIcon = s.gender === 'male' ? '♂' : s.gender === 'female' ? '♀' : '—';
         const genderStyle = s.gender === 'male' ? 'color:var(--blue);font-weight:600' : s.gender === 'female' ? 'color:var(--crimson);font-weight:600' : 'color:var(--ink3)';
-        html += `<tr id="stu-row-${s.id}" class="stu-prog-body-${progKey} stu-year-body-${yearKey}" onclick="showProfile('${s.id}')" style="cursor:pointer;display:none">
-          <td style="width:36px;padding:9px 8px 9px 32px" onclick="event.stopPropagation()">
-            <input type="checkbox" class="stu-cb" data-id="${s.id}" onchange="onStudentCheckChange()">
+        html += `<tr id="stu-row-${s.id}" class="stu-prog-body-${progKey} stu-year-body-${yearKey}" data-action="view" data-id="${s.id}" style="cursor:pointer;display:none">
+          <td style="width:36px;padding:9px 8px 9px 32px" data-stop-prop="1">
+            <input type="checkbox" class="stu-cb" data-id="${s.id}" data-cb-type="student">
           </td>
           <td class="text-mono text-crimson">${s.id}${isGraduated ? ' <span style="font-size:9px;font-weight:700;background:var(--green-light);color:var(--green);border-radius:3px;padding:1px 5px;vertical-align:middle">ALUMNI</span>' : ''}</td>
           <td><strong>${s.name_en}</strong>${s.name_my ? `<br><span class="text-muted my-text">${s.name_my}</span>` : ''}</td>
@@ -100,10 +100,10 @@ function renderStudentTable(data) {
           <td><strong class="${gpaColor}">${gpa.toFixed(1)}</strong></td>
           <td><span class="badge ${statusBadge}">${s.status}</span></td>
           ${pwDisplay}
-          <td class="flex gap-2" onclick="event.stopPropagation()">
-            <button class="btn btn-outline btn-sm" onclick="showProfile('${s.id}')">View</button>
-            ${currentRole === 'registrar' ? `<button class="btn btn-outline btn-sm" onclick="openEditModal('${s.id}')">Edit</button>` : ''}
-            ${currentRole === 'registrar' ? `<button class="btn btn-danger btn-sm" onclick="confirmDeleteStudent('${s.id}','${s.name_en.replace(/'/g,"\\'")}')"><svg style="width:13px;height:13px;stroke:currentColor;stroke-width:1.9;fill:none;stroke-linecap:round;stroke-linejoin:round"><use href="#i-trash"></use></svg></button>` : ''}
+          <td class="flex gap-2" data-stop-prop="1">
+            <button class="btn btn-outline btn-sm" data-action="view" data-id="${s.id}">View</button>
+            ${currentRole === 'registrar' ? `<button class="btn btn-outline btn-sm" data-action="edit" data-id="${s.id}">Edit</button>` : ''}
+            ${currentRole === 'registrar' ? `<button class="btn btn-danger btn-sm" data-action="delete" data-id="${s.id}" data-name="${s.name_en.replace(/'/g, '\\'')}"><svg style="width:13px;height:13px;stroke:currentColor;stroke-width:1.9;fill:none;stroke-linecap:round;stroke-linejoin:round"><use href="#i-trash"></use></svg></button>` : ''}
           </td>
         </tr>`;
       });
@@ -139,7 +139,7 @@ function renderStudentCardList(data) {
     const progTotal = Object.values(years).reduce((n, arr) => n + arr.length, 0);
     const progId = `scp-${pi}`;
     html += `
-      <div class="scard-prog-header open" id="${progId}-hdr" onclick="toggleScardProg('${progId}')">
+      <div class="scard-prog-header open" id="${progId}-hdr" data-action="toggle-scard-prog" data-prog-id="${progId}">
         <svg class="scard-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--crimson)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
         <span class="scard-prog-label">${prog}</span>
         <span class="scard-prog-count">${progTotal} student${progTotal!==1?'s':''}</span>
@@ -149,7 +149,7 @@ function renderStudentCardList(data) {
     Object.entries(years).forEach(([yr, studs], yi) => {
       const yearId = `scy-${pi}-${yi}`;
       html += `
-        <div class="scard-year-header open" id="${yearId}-hdr" onclick="toggleScardYear('${yearId}')">
+        <div class="scard-year-header open" id="${yearId}-hdr" data-action="toggle-scard-year" data-year-id="${yearId}">
           <svg class="scard-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--blue)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
           <span class="scard-year-label">${yr}</span>
           <span class="scard-year-count">${studs.length} student${studs.length!==1?'s':''}</span>
@@ -163,10 +163,10 @@ function renderStudentCardList(data) {
         const initials = (s.name_en || '?').split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
         const photoUrl = s.photo ? `${SUPABASE_URL}/storage/v1/object/public/student-photos/${s.photo}` : '';
         const avatarInner = photoUrl
-          ? `<img src="${photoUrl}" onerror="this.style.display='none';this.parentElement.textContent='${initials}'">`
+          ? `<img src="${photoUrl}" data-onerror-initials="${initials}">`
           : initials;
         html += `
-          <div class="scard" onclick="showProfile('${s.id}')">
+          <div class="scard" data-action="view" data-id="${s.id}">
             <div class="scard-avatar">${avatarInner}</div>
             <div class="scard-body">
               <div class="scard-name">${s.name_en}</div>
@@ -244,7 +244,7 @@ function showProfile(sid) {
   const avatarEl = document.getElementById('profAvatar');
   if (s.photo) {
     const photoUrl = `${SUPABASE_URL}/storage/v1/object/public/student-photos/${s.photo}`;
-    avatarEl.innerHTML = `<img src="${photoUrl}" alt="${s.name_en}" draggable="false" oncontextmenu="return false" style="pointer-events:none;user-select:none;-webkit-user-select:none" onerror="this.parentElement.innerHTML='${s.name_en.charAt(0)}'">`;
+    avatarEl.innerHTML = `<img src="${photoUrl}" alt="${s.name_en}" draggable="false" oncontextmenu="return false" style="pointer-events:none;user-select:none;-webkit-user-select:none" data-onerror-initial="${s.name_en.charAt(0)}">`;
   } else {
     avatarEl.textContent = s.name_en.charAt(0);
   }
@@ -344,8 +344,8 @@ function showProfile(sid) {
         <td class="text-mono">${updatedAt}</td>
         <td>${g.uploaded_by || '—'}</td>
         <td class="flex gap-2">
-          ${currentRole === 'registrar' ? `<button class="btn btn-outline btn-sm" onclick="openEditGradeModal('${sid}','${g.id}')"><svg style="width:13px;height:13px;stroke:currentColor;stroke-width:1.9;fill:none;stroke-linecap:round;stroke-linejoin:round"><use href="#i-edit"></use></svg></button>` : ''}
-          ${currentRole === 'registrar' ? `<button class="btn btn-danger btn-sm" onclick="confirmDeleteGrade('${sid}','${g.id}','${(g.course||'').replace(/'/g,"\\'")}')"><svg style="width:13px;height:13px;stroke:currentColor;stroke-width:1.9;fill:none;stroke-linecap:round;stroke-linejoin:round"><use href="#i-trash"></use></svg></button>` : ''}
+          ${currentRole === 'registrar' ? `<button class="btn btn-outline btn-sm" data-action="edit-grade" data-sid="${sid}" data-gid="${g.id}"><svg style="width:13px;height:13px;stroke:currentColor;stroke-width:1.9;fill:none;stroke-linecap:round;stroke-linejoin:round"><use href="#i-edit"></use></svg></button>` : ''}
+          ${currentRole === 'registrar' ? `<button class="btn btn-danger btn-sm" data-action="delete-grade" data-sid="${sid}" data-gid="${g.id}" data-course="${(g.course||'').replace(/'/g,\"'\")}"><svg style="width:13px;height:13px;stroke:currentColor;stroke-width:1.9;fill:none;stroke-linecap:round;stroke-linejoin:round"><use href="#i-trash"></use></svg></button>` : ''}
         </td>
       </tr>`;
     });
@@ -829,3 +829,57 @@ async function submitBulkStudents() {
   updateDashboardStats();
   toast(`✅ ${inserted} inserted, ${updated} updated, ${errs} errors.`, '👥');
 }
+
+// ══════════════════════════════════════════
+// EVENT DELEGATION — replaces all inline onclick/onchange/onerror
+// ══════════════════════════════════════════
+
+// ── Click delegate ──
+document.addEventListener('click', function(e) {
+  // Stop propagation for marked cells
+  if (e.target.closest('[data-stop-prop]')) {
+    e.stopPropagation();
+  }
+
+  const btn = e.target.closest('[data-action]');
+  if (!btn) return;
+
+  const action = btn.dataset.action;
+  const id     = btn.dataset.id;
+
+  if (action === 'view')             { e.stopPropagation(); showProfile(id); }
+  if (action === 'edit')             { e.stopPropagation(); openEditModal(id); }
+  if (action === 'delete')           { e.stopPropagation(); confirmDeleteStudent(id, btn.dataset.name); }
+  if (action === 'toggle-pw')        { e.stopPropagation(); toggleTablePwVisibility(btn); }
+  if (action === 'edit-grade')       { e.stopPropagation(); openEditGradeModal(btn.dataset.sid, btn.dataset.gid); }
+  if (action === 'delete-grade')     { e.stopPropagation(); confirmDeleteGrade(btn.dataset.sid, btn.dataset.gid, btn.dataset.course); }
+  if (action === 'toggle-prog')      { toggleStudentProgram(btn.dataset.progKey); }
+  if (action === 'toggle-year')      { toggleStudentYear(btn.dataset.yearKey); }
+  if (action === 'toggle-scard-prog'){ toggleScardProg(btn.dataset.progId); }
+  if (action === 'toggle-scard-year'){ toggleScardYear(btn.dataset.yearId); }
+});
+
+// ── Change delegate ──
+document.addEventListener('change', function(e) {
+  if (e.target.matches('.stu-group-cb')) {
+    toggleSelectGroup(e.target, e.target.dataset.group);
+  }
+  if (e.target.matches('.stu-cb')) {
+    onStudentCheckChange();
+  }
+});
+
+// ── onerror delegate for avatar images (card list + profile) ──
+document.addEventListener('error', function(e) {
+  if (e.target.tagName === 'IMG') {
+    const initials = e.target.dataset.onerrorInitials;
+    const initial  = e.target.dataset.onerrorInitial;
+    if (initials !== undefined) {
+      e.target.style.display = 'none';
+      e.target.parentElement.textContent = initials;
+    }
+    if (initial !== undefined) {
+      e.target.parentElement.innerHTML = initial;
+    }
+  }
+}, true); // useCapture=true so error events bubble up
