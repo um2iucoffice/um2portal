@@ -453,6 +453,96 @@ function ttFmt(t) {
   return parts[0] + ':' + parts[1];
 }
 
+// ── Attendance helpers ────────────────────────────────────────────────────────
+
+// Returns Myanmar local time as { h, m, totalMins, dateStr }
+function _myanmarNow() {
+  var now = new Date();
+  var totalMins = (now.getUTCHours() * 60 + now.getUTCMinutes() + 390) % (24 * 60);
+  var h = Math.floor(totalMins / 60);
+  var m = totalMins % 60;
+  // Build today's date string in Myanmar time (UTC+6:30)
+  var myanmarMs = now.getTime() + (6 * 60 + 30) * 60000;
+  var mDate = new Date(myanmarMs);
+  var dateStr = mDate.getUTCFullYear() + '-'
+    + String(mDate.getUTCMonth() + 1).padStart(2, '0') + '-'
+    + String(mDate.getUTCDate()).padStart(2, '0');
+  return { h: h, m: m, totalMins: totalMins, dateStr: dateStr };
+}
+
+// Returns 'open' | 'soon' | 'closed' for a given start_time "HH:MM:SS"
+function _attendanceWindowState(startTime) {
+  if (!startTime) return 'closed';
+  var parts = startTime.split(':').map(Number);
+  var startMins = parts[0] * 60 + (parts[1] || 0);
+  var now = _myanmarNow().totalMins;
+  if (now >= startMins - 15 && now <= startMins + 30) return 'open';
+  if (now >= startMins - 30 && now < startMins - 15) return 'soon';
+  return 'closed';
+}
+
+// Returns today's day-of-week name e.g. "Monday" in Myanmar time
+function _myanmarTodayName() {
+  var myanmarMs = Date.now() + (6 * 60 + 30) * 60000;
+  var days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  return days[new Date(myanmarMs).getUTCDay()];
+}
+
+// Called when student clicks Mark Attendance on a row
+window.markAttendance = async function(btn, lectureName, startTime, endTime) {
+  var studentId = window._currentStudentId || '';
+  if (!studentId) { alert('Session expired. Please log in again.'); return; }
+
+  var mn = _myanmarNow();
+  var sessionDate = mn.dateStr;
+
+  btn.disabled = true;
+  btn.textContent = 'Marking…';
+
+  try {
+    var res = await fetch('https://4dgx435mmk.execute-api.ap-southeast-1.amazonaws.com/mark-attendance', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        studentId:    studentId,
+        lectureName:  lectureName,
+        sessionDate:  sessionDate,
+        sessionFrom:  startTime,
+        sessionTill:  endTime || null
+      })
+    });
+    var data = await res.json();
+
+    if (data.success) {
+      btn.textContent = '✓ Present';
+      btn.style.background    = 'rgba(45,106,79,0.18)';
+      btn.style.borderColor   = 'rgba(45,106,79,0.4)';
+      btn.style.color         = '#52B788';
+      btn.style.cursor        = 'default';
+      // Store so it persists across re-renders this session
+      if (!window._markedAttendance) window._markedAttendance = {};
+      window._markedAttendance[lectureName + '|' + sessionDate + '|' + startTime] = true;
+    } else {
+      if ((data.message || '').includes('already')) {
+        btn.textContent = '✓ Already marked';
+        btn.style.color = '#52B788';
+      } else if ((data.message || '').includes('window')) {
+        btn.textContent = 'Window closed';
+        btn.style.color = 'var(--ink3)';
+        btn.disabled = false;
+      } else {
+        btn.textContent = data.message || 'Failed';
+        btn.style.color = 'var(--crimson)';
+        btn.disabled = false;
+      }
+    }
+  } catch(e) {
+    btn.textContent = 'Error — retry';
+    btn.style.color = 'var(--crimson)';
+    btn.disabled = false;
+  }
+};
+
 function renderTimetable(rows, activeDay) {
   var contentEl = document.getElementById('ttContent');
   if (!contentEl) return;
@@ -498,19 +588,43 @@ function renderTimetable(rows, activeDay) {
     if (orderedDays.indexOf(d) === -1) orderedDays.push(d);
   });
 
+  var todayName = _myanmarTodayName();
+  var mn = _myanmarNow();
+
   orderedDays.forEach(function(day) {
     var dayRows = groups[day];
+    var isToday = day.toLowerCase() === todayName.toLowerCase();
+
     html += '<div class="tt-day-group">'
-          + '<div class="tt-day-header"><span class="tt-day-dot"></span>' + day.toUpperCase() + '</div>';
+          + '<div class="tt-day-header"><span class="tt-day-dot"></span>' + day.toUpperCase()
+          + (isToday ? ' <span style="font-size:9px;font-weight:700;letter-spacing:.8px;background:rgba(45,106,79,0.18);color:#52B788;border:1px solid rgba(45,106,79,0.3);border-radius:20px;padding:2px 8px;margin-left:8px;vertical-align:middle">TODAY</span>' : '')
+          + '</div>';
 
     dayRows.forEach(function(r) {
-      var duration = ttDurationLabel(r.start_time, r.end_time);
-      var roomBadge = r.room
-        ? '<span class="tt-room-badge">' + escHtml(r.room) + '</span>'
-        : '';
-      var typeBadge = r.type
-        ? '<span class="tt-type-badge">' + escHtml(r.type) + '</span>'
-        : '';
+      var duration  = ttDurationLabel(r.start_time, r.end_time);
+      var roomBadge = r.room ? '<span class="tt-room-badge">' + escHtml(r.room) + '</span>' : '';
+      var typeBadge = r.type ? '<span class="tt-type-badge">' + escHtml(r.type) + '</span>' : '';
+
+      // Attendance button — only for today's rows
+      var attendanceBtn = '';
+      if (isToday && r.start_time) {
+        var subject = r.subject || r.course_name || r.title || '';
+        var key = escHtml(subject) + '|' + mn.dateStr + '|' + escHtml(r.start_time);
+        var alreadyMarked = window._markedAttendance && window._markedAttendance[subject + '|' + mn.dateStr + '|' + r.start_time];
+        var windowState = _attendanceWindowState(r.start_time);
+
+        if (alreadyMarked) {
+          attendanceBtn = '<button class="tt-attend-btn tt-attend-marked" disabled>✓ Present</button>';
+        } else if (windowState === 'open') {
+          attendanceBtn = '<button class="tt-attend-btn tt-attend-open"'
+            + ' onclick="markAttendance(this,' + JSON.stringify(subject) + ',' + JSON.stringify(r.start_time) + ',' + JSON.stringify(r.end_time || '') + ')"'
+            + '>Mark Attendance</button>';
+        } else if (windowState === 'soon') {
+          attendanceBtn = '<button class="tt-attend-btn tt-attend-soon" disabled>Opens soon</button>';
+        } else {
+          attendanceBtn = '<button class="tt-attend-btn tt-attend-closed" disabled>Closed</button>';
+        }
+      }
 
       html += '<div class="tt-row">'
             + '  <div class="tt-time-col">'
@@ -522,6 +636,7 @@ function renderTimetable(rows, activeDay) {
             + '    <div class="tt-subject">' + escHtml(r.subject || r.course_name || r.title || '—') + '</div>'
             + (r.instructor ? '<div class="tt-instructor">' + escHtml(r.instructor) + '</div>' : '')
             + '    <div class="tt-badges">' + roomBadge + typeBadge + '</div>'
+            + (attendanceBtn ? '    <div style="margin-top:10px">' + attendanceBtn + '</div>' : '')
             + '  </div>'
             + '</div>';
     });
