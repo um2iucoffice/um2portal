@@ -72,7 +72,7 @@ exports.handler = async (event) => {
         .catch(e => console.warn('Could not fetch enrollments:', e.message)),
 
       raw.year
-        ? supabase(`academic_years?name=eq.${encodeURIComponent(raw.year)}&select=id&limit=1`, {}, true)
+        ? supabase(`academic_years?program_id=eq.${encodeURIComponent(raw.year)}&select=id&limit=1`, {}, true)
             .then(rows => { if (rows && rows.length > 0) yearId = rows[0].id; })
             .catch(() => {})
         : Promise.resolve(),
