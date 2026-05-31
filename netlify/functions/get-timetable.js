@@ -52,8 +52,9 @@ exports.handler = async (event) => {
   try {
     // ── 1. Fetch student ─────────────────────────────────────
     const students = await supabase(
-      `students?id=eq.${encodeURIComponent(normId)}&select=id,program,year,status&limit=1`
-    );
+  `students?id=eq.${encodeURIComponent(normId)}&select=id,program,year,status&limit=1`,
+  {}, true
+);
     if (!students || students.length === 0) {
       return { statusCode: 200, headers: {'Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'GET,POST,OPTIONS','Access-Control-Allow-Headers':'Content-Type'},  headers: CORS_HEADERS, body: JSON.stringify({ success: false, message: 'Student not found.' }) };
     }
