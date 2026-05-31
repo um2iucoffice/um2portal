@@ -279,6 +279,9 @@ document.addEventListener('click', function(e) {
         printDocument('transcript');
       }
       break;
+    case 'set-post-type':
+      if (typeof window.setPostType === 'function') window.setPostType(el.dataset.type);
+      break;
     case 'submit-post':
       if (typeof window.submitPost === 'function') window.submitPost();
       break;
